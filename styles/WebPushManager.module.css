@@ -1,0 +1,97 @@
+.prompt,
+.toast {
+  position: fixed;
+  left: 1rem;
+  right: 1rem;
+  z-index: 1250;
+  width: min(460px, calc(100vw - 2rem));
+  margin-left: auto;
+  display: grid;
+  gap: 0.8rem;
+  padding: 1rem 1.1rem;
+  border-radius: 20px;
+  border: 1px solid rgba(59, 130, 246, 0.22);
+  background:
+    radial-gradient(circle at top right, rgba(20, 184, 166, 0.2), transparent 38%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(2, 6, 23, 0.96) 100%);
+  box-shadow: 0 20px 60px rgba(2, 6, 23, 0.42);
+}
+
+.prompt {
+  bottom: 5.8rem;
+}
+
+.toast {
+  bottom: 1rem;
+}
+
+.promptCopy,
+.toast {
+  color: #fff;
+}
+
+.eyebrow {
+  color: #67e8f9;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.promptCopy strong,
+.toast strong {
+  display: block;
+  font-size: 1rem;
+}
+
+.promptCopy p,
+.toast p {
+  margin: 0.25rem 0 0;
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+
+.promptActions {
+  display: flex;
+  gap: 0.7rem;
+}
+
+.primary,
+.secondary {
+  flex: 1;
+  border-radius: 14px;
+  padding: 0.9rem 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.primary {
+  border: none;
+  color: #fff;
+  background: linear-gradient(135deg, #2563eb 0%, #14b8a6 100%);
+}
+
+.secondary {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.primary:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.error {
+  color: #fca5a5 !important;
+}
+
+@media (max-width: 640px) {
+  .prompt {
+    bottom: 6.8rem;
+  }
+
+  .promptActions {
+    flex-direction: column;
+  }
+}

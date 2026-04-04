@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "crons": [
+    {
+      "path": "/api/cron/check-plan-expiration",
+      "schedule": "0 2 * * *"
+    }
+  ]
+}
+
+
+

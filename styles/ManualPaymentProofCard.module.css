@@ -1,0 +1,148 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.25rem;
+  border-radius: 18px;
+  border: 1px solid rgba(99, 102, 241, 0.18);
+  background: linear-gradient(180deg, rgba(17, 24, 39, 0.92) 0%, rgba(15, 23, 42, 0.96) 100%);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.header h3 {
+  margin: 0 0 0.35rem;
+  color: #fff;
+  font-size: 1.1rem;
+}
+
+.header p {
+  margin: 0;
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+
+.status {
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.statusPending {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.statusSubmitted {
+  background: rgba(16, 185, 129, 0.15);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.metaGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+
+.metaGrid div,
+.instructionsBox,
+.previousProof {
+  padding: 0.9rem 1rem;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.metaGrid span,
+.noteField span,
+.fileField span {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.metaGrid strong,
+.instructionsBox,
+.previousProof {
+  color: #fff;
+}
+
+.instructionsBox p,
+.previousProof p {
+  margin: 0.2rem 0;
+  color: #e5e7eb;
+}
+
+.previousProof a {
+  color: #93c5fd;
+}
+
+.form {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.fileField input,
+.noteField textarea {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(15, 23, 42, 0.8);
+  color: #fff;
+  padding: 0.85rem 0.95rem;
+}
+
+.noteField textarea {
+  resize: vertical;
+}
+
+.action {
+  border: none;
+  border-radius: 14px;
+  padding: 0.95rem 1.1rem;
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.action:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.errorBox,
+.successBox {
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+}
+
+.errorBox {
+  background: rgba(127, 29, 29, 0.32);
+  border: 1px solid rgba(248, 113, 113, 0.25);
+  color: #fecaca;
+}
+
+.successBox {
+  background: rgba(6, 78, 59, 0.34);
+  border: 1px solid rgba(52, 211, 153, 0.25);
+  color: #a7f3d0;
+}
+
+@media (max-width: 720px) {
+  .header {
+    flex-direction: column;
+  }
+}

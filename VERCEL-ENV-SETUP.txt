@@ -1,0 +1,96 @@
+========================================
+VARIÁVEIS DE AMBIENTE PARA VERCEL
+========================================
+
+COPIE CADA VARIÁVEL ABAIXO NA VERCEL:
+Settings → Environment Variables → Add New
+
+Marque: Production, Preview, Development (todas)
+
+========================================
+FRONTEND (7 variáveis)
+========================================
+
+Nome: NEXT_PUBLIC_FIREBASE_API_KEY
+Valor: AIzaSyCeexPh-jaUffQosOgfR8FIYuwQSO6Zt0A
+
+Nome: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+Valor: empregostp.firebaseapp.com
+
+Nome: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+Valor: empregostp
+
+Nome: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+Valor: empregostp.firebasestorage.app
+
+Nome: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+Valor: 1003664770533
+
+Nome: NEXT_PUBLIC_FIREBASE_APP_ID
+Valor: 1:1003664770533:web:38bccc1147f4948fff5b0c
+
+Nome: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+Valor: G-C1BJJJS1DB
+
+========================================
+BACKEND (3 variáveis)
+========================================
+
+Nome: FIREBASE_PROJECT_ID
+Valor: empregostp
+
+Nome: FIREBASE_CLIENT_EMAIL
+Valor: firebase-adminsdk-fbsvc@empregostp.iam.gserviceaccount.com
+
+Nome: FIREBASE_PRIVATE_KEY
+Valor:
+-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC4FkQ/HE6p4Aiv
+FMu47W2RGQ+SfNvPItELrj+Wv0fdjShqRsmxpIrOduw64mmkPzKii5VVCqC5WJnA
+nmSwQ5usBYCVBMO5G52tBch1k9N0ckoPWkLmAH+02mywEkRXs+F5MgsxigOe6t22
+m/C1NjuIBgj+fLyoJhMO/1kLyopLTKPmDHWoiQN6bM+vrAlTezf7U9hPgIb0K72U
++4nD0HliZyGPPMSDiZbT/5ZO9r/AMZ2xO7sWL0IaGJkyd1AJwj6wG/VzcfkbhTWB
+mTrV6y5bl+S/u5yrv4gUupglWNfxbMSXkbHJpRBQL75ywoRUG/3wAc3a9/14c9du
+w+JbJp4zAgMBAAECggEADjS9sIcdNPPSh7xZmlxMO8nMz1euWNZNfpLEWnxJbfoC
+N+1djEVv5s37nfGyCFhOLogKDqWC0LrbJqeyin21KjnEefuDpSnR6bPMC/LL+y0E
+tRmYlwpL0KeYgp/uQTxi9ojbn0eQzvc+A+UV1s4oGu+oSwdSQcGqb9pZw1Suhm/y
+bkNOzljzu5jHgKjRv81VXKyvLD9GWLyWQbK6LyzYQ5YL1pQA/Z0DiJefFlpvxLMD
+SdyvwSP/X4BsaR5ZmVS+fQaNTUkwkOJd2xsHPvn/Dsp1jWvRwJI/872IDBodVOHZ
+fiGMz0+Ri3DVyhcRJ6l40JB7WtWXQEDlNRKkhCJ0kQKBgQDzbW0jZGxbTJ4/jzh0
+jZul9eziE9scIpHH4nv8TC9FrTPfJdnp/AZ6Pk8IS6e8Rtm0p3Plu5PW6gwmgbb7
+m3ULip/TYBvWu+sk2j2HilvC2SzOdSiffkboNsjjqMzCN/ey8r4BukRNID01ksRq
+Cf2rXuFl1uN4KI2zbGXmcDiwowKBgQDBmD8X3tZ4nvZraBW3AoJmXN4ZShMtay3x
+Bqa8n3BvSd/lRLiytmJUQlBsGae9ltBoJWTYHxFVF9AdrPEW0dl/Fb2dt8tfcLBT
+JEn92uXZKJiTP2TkgcZyxFUUJceqXTJv0cX/o3EEosE/Gmm0NPqjWemqyk12KPDs
+nAz3MjnlMQKBgQCh9tvX4ZhrAsaD+bIRcqruOHu9TILL7IBco2flTXdif8R0o8Wi
+9moE6fJBzbyz+9wcZBIr96t9IkqlUEdEj4HIBRskU90R+gSRh5fK2BcHxOIYGEHI
+JQfet5zgRM7AJubrLLGZiqqpOlsfiyCegTlDzaRg0yKULz9g8y21rlM5ywKBgEwK
+jw3DO57ZYZVCpvThiXLHm313eRzn8n2vzSJdxf4QmF8npRydQvYxrgEn+pkfefDO
+b1PssBQqbFabrX73ImUmlvoyTTHJw5iEsoOBzbKEnZmI1wpiZx6BO6HUTR7/yGXf
+kdQd0LCvdRRiPY7JGIG9OWkaWV7GKgvmJ7mZAuChAoGAYkFElDpZtscfljUVfSjp
+zIHqye4LLwI6VvrEL/EY/1rZjCxaDIiphNZld74jcjP3Vs9CJSZIOzfGJ2wq/KuV
+ddNYrcxVRl/q4s3dUypIwV9SmQIgwecPUSVju6+qhGeSRv7DwFa4Z+vU2fbJt+Pw
+RB1If6qTQ0UGSKlwg3I1dNk=
+-----END PRIVATE KEY-----
+
+========================================
+IMPORTANTE PARA FIREBASE_PRIVATE_KEY:
+========================================
+- Cole TODA a chave (com -----BEGIN e -----END)
+- Mantenha as quebras de linha
+- Se der erro, tente adicionar aspas: "-----BEGIN..."
+
+========================================
+TOTAL: 10 variáveis
+========================================
+
+
+
+
+
+
+
+
+
+
+

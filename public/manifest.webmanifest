@@ -1,0 +1,24 @@
+{
+  "name": "EmpregoSTP",
+  "short_name": "EmpregoSTP",
+  "description": "Plataforma de vagas, candidaturas e recrutamento em São Tomé e Príncipe.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#0a0a0f",
+  "lang": "pt-PT",
+  "icons": [
+    {
+      "src": "/Logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/Emprego STP Logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

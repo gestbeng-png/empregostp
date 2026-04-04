@@ -1,0 +1,46 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    function isAuthenticated() { return request.auth != null; }
+    function isOwner(userId) { return request.auth.uid == userId; }
+    function isAdmin() {
+      return isAuthenticated()
+        && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.userType == 'admin';
+    }
+    
+    // Regras que você pediu
+    match /company-covers/{userId}/{allPaths=**} { allow read: if true; allow write: if isAuthenticated() && isOwner(userId); }
+    match /company-logos/{userId}/{allPaths=**} { allow read: if true; allow write: if isAuthenticated() && isOwner(userId); }
+    match /job-tdr/{userId}/{allPaths=**} { allow read: if isAuthenticated(); allow write: if isAuthenticated() && isOwner(userId); }
+    match /users/{userId}/{allPaths=**} { allow read: if isAuthenticated() && isOwner(userId); allow write: if isAuthenticated() && isOwner(userId); }
+
+    // --- O QUE FALTAVA (Necessário para o App funcionar) ---
+    match /cvUrl/{userId}/{fileName} { allow read: if true; allow write: if isAuthenticated() && isOwner(userId); }
+    match /photoUrl/{userId}/{fileName} { allow read: if true; allow write: if isAuthenticated() && isOwner(userId); }
+    match /certificados/{userId}/{fileName} { allow read: if true; allow write: if isAuthenticated() && isOwner(userId); }
+
+    // Documentos de Verificação (ADICIONADO)
+    match /verification/{docType}/{userId}/{fileName} { 
+      allow read: if isAuthenticated() && isOwner(userId); 
+      allow write: if isAuthenticated() && isOwner(userId); 
+    }
+
+    // Comprovativos de pagamento (assinaturas/planos)
+    // Sensível: somente o dono e admins podem ler/gerar download URL.
+    match /payment-proofs/{userId}/{allPaths=**} {
+      allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow write: if isAuthenticated()
+        && isOwner(userId)
+        && request.resource.size < 10 * 1024 * 1024
+        && (
+          request.resource.contentType.matches('image/.*')
+          || request.resource.contentType == 'application/pdf'
+        );
+    }
+    
+    // Bloqueia o resto
+    match /{allPaths=**} { allow read, write: if false; }
+  }
+}

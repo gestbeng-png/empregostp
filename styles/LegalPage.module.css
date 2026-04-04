@@ -1,0 +1,52 @@
+.page {
+  max-width: 940px;
+  margin: 0 auto;
+  padding: 4rem 1.5rem 4.5rem;
+}
+
+.panel {
+  padding: 2.4rem;
+  border-radius: 28px;
+  background: linear-gradient(180deg, rgba(9, 9, 15, 0.92), rgba(15, 23, 42, 0.88));
+  border: 1px solid var(--app-border-subtle);
+  box-shadow: var(--app-shadow-md);
+}
+
+.title {
+  margin-bottom: 1rem;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 900;
+}
+
+.copy {
+  display: grid;
+  gap: 1rem;
+}
+
+.copy p {
+  line-height: 1.8;
+  color: var(--app-text-secondary);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 0.5rem;
+  color: #60a5fa;
+  font-weight: 700;
+}
+
+.link:hover {
+  color: #93c5fd;
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding: 3rem 1rem 3.5rem;
+  }
+
+  .panel {
+    padding: 1.5rem;
+    border-radius: 22px;
+  }
+}
