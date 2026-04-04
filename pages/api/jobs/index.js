@@ -65,7 +65,16 @@ async function getAuthenticatedCompany(req, res) {
   const planSummary = getEmpresaPlanSummary(userData);
   if (userData.currentPlan && userData.currentPlan !== planSummary.planId) {
     try {
-      await userDoc.ref.update(getBasicEmpresaUpdate());
+      if (!planSummary.isActive) {
+        await userDoc.ref.update(getBasicEmpresaUpdate());
+      } else {
+        await userDoc.ref.update({
+          currentPlan: planSummary.planId,
+          planId: planSummary.planId,
+          planName: planSummary.planName || userData.planName || '',
+          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+      }
     } catch (error) {
       console.error('Erro ao sincronizar plano expirado da empresa:', error);
     }

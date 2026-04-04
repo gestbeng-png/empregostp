@@ -2608,7 +2608,7 @@
     padding: 0.5rem 0.5rem;
   }
   
-  .statusBtn span {
+.statusBtn span {
     display: none;
   }
   
@@ -2630,4 +2630,106 @@
   .modalGrid {
     grid-template-columns: 1fr;
   }
+}
+
+.sidebarLogoLink {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.logoutBtn {
+  margin-top: 0.5rem;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.logoutBtn:hover {
+  box-shadow: none;
+  background: rgba(239, 68, 68, 0.16);
+}
+
+.statIconAccent {
+  background: var(--accent-bg);
+  color: var(--accent-color);
+}
+
+.jobMetaIcon {
+  width: 14px;
+  height: 14px;
+}
+
+.applicationStatusAccent {
+  background: var(--status-bg);
+  color: var(--status-text);
+  border-color: var(--status-border);
+}
+
+.interviewSummaryResponse {
+  margin-top: 0.35rem !important;
+}
+
+.interviewStatusHighlight {
+  color: #e9d5ff;
+}
+
+.interviewReason {
+  margin-top: 0.15rem !important;
+  color: #f5d0fe !important;
+}
+
+.talentAvatarFallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+}
+
+.analyticsCardIconAccent {
+  background: var(--accent-bg);
+  color: var(--accent-color);
+}
+
+.emptyAction {
+  margin-top: 1rem;
+}
+
+.sectionNote {
+  margin-bottom: 1rem;
+  color: #94a3b8;
+}
+
+.sectionNoteWarning {
+  color: #fbbf24;
+}
+
+.sectionNoteError {
+  color: #fca5a5;
+}
+
+.buttonWide {
+  min-width: 190px;
+  justify-content: center;
+}
+
+.messagePlaceholderPadded {
+  padding: 1rem;
+  margin-top: 0;
+}
+
+.analyticsLegendDot {
+  background: var(--legend-color);
+}
+
+.analyticsSourceAccent {
+  background: var(--accent-color);
+}
+
+.modalFieldFull {
+  grid-column: 1 / -1;
 }

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Head from 'next/head';
 import { useState } from 'react';
 import { useRouter } from 'next/router';
+import styles from '../../../../styles/EmpresaJobDetail.module.css';
 
 function safeTimestampToMillis(timestamp) {
   if (!timestamp) return null;
@@ -11,6 +12,53 @@ function safeTimestampToMillis(timestamp) {
   if (typeof timestamp === 'number') return timestamp;
   if (typeof timestamp === 'string') return new Date(timestamp).getTime();
   return null;
+}
+
+const JOB_STATUS_LABELS = {
+  active: 'Ativa',
+  closed: 'Fechada',
+  disabled: 'Desativada',
+};
+
+const APPLICATION_STATUS_LABELS = {
+  pending: 'Pendente',
+  approved: 'Aprovada',
+  analysis: 'Em analise',
+  interview: 'Entrevista',
+  rejected: 'Rejeitada',
+};
+
+function splitCsv(value) {
+  if (!value) return [];
+  return String(value)
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function formatDate(value) {
+  if (!value) return 'Nao informado';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString('pt-PT', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
+function formatCurrency(value) {
+  if (!value) return 'Nao informado';
+  return Number(value).toLocaleString('pt-ST', { style: 'currency', currency: 'STN' });
+}
+
+function StatCard({ title, value, tone = 'default' }) {
+  return (
+    <article className={`${styles.statCard} ${styles[`stat${tone.charAt(0).toUpperCase()}${tone.slice(1)}`] || ''}`.trim()}>
+      <span className={styles.statLabel}>{title}</span>
+      <strong className={styles.statValue}>{value}</strong>
+    </article>
+  );
 }
 
 export default function DetalheVaga({ vaga, candidaturas }) {
@@ -26,7 +74,7 @@ export default function DetalheVaga({ vaga, candidaturas }) {
     try {
       setIsProcessing(true);
       const token = await getAuthToken();
-      if (!token) throw new Error('Sessão expirada');
+      if (!token) throw new Error('Sessao expirada');
 
       const response = await fetch(`/api/jobs/${vaga.id}`, {
         method: 'PATCH',
@@ -52,11 +100,11 @@ export default function DetalheVaga({ vaga, candidaturas }) {
   };
 
   const eliminarVaga = async () => {
-    if (!confirm('Tem certeza que deseja eliminar esta vaga? Esta ação é irreversível.')) return;
+    if (!confirm('Tem certeza que deseja eliminar esta vaga? Esta acao e irreversivel.')) return;
     try {
       setIsProcessing(true);
       const token = await getAuthToken();
-      if (!token) throw new Error('Sessão expirada');
+      if (!token) throw new Error('Sessao expirada');
 
       const response = await fetch(`/api/jobs/${vaga.id}`, {
         method: 'DELETE',
@@ -83,7 +131,7 @@ export default function DetalheVaga({ vaga, candidaturas }) {
     try {
       setIsProcessing(true);
       const token = await getAuthToken();
-      if (!token) throw new Error('Sessão expirada');
+      if (!token) throw new Error('Sessao expirada');
 
       const response = await fetch(`/api/applications/${candidaturaId}/status`, {
         method: 'PATCH',
@@ -91,9 +139,7 @@ export default function DetalheVaga({ vaga, candidaturas }) {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({
-          status: novoStatus
-        })
+        body: JSON.stringify({ status: novoStatus })
       });
 
       const data = await response.json();
@@ -114,16 +160,13 @@ export default function DetalheVaga({ vaga, candidaturas }) {
     return (
       <>
         <Head>
-          <style>{`
-            body {
-              background: #0a0a0f;
-              min-height: 100vh;
-            }
-          `}</style>
+          <title>Vaga nao encontrada - EmpregoSTP</title>
         </Head>
-        <main style={{ maxWidth: 900, margin: '2.5rem auto', padding: '0 1.5rem', textAlign: 'center' }}>
-          <h2 style={{ color: 'white' }}>Vaga não encontrada</h2>
-          <Link href="/dashboard/empresa" style={{ color: '#6366f1' }}>Voltar ao Dashboard</Link>
+        <main className={styles.emptyPage}>
+          <h2 className={styles.emptyTitle}>Vaga nao encontrada</h2>
+          <Link href="/dashboard/empresa" className={styles.backLink}>
+            Voltar ao Dashboard
+          </Link>
         </main>
       </>
     );
@@ -143,185 +186,158 @@ export default function DetalheVaga({ vaga, candidaturas }) {
     isPrivada,
     status,
     skillsAssessment,
+    createdAt,
   } = vaga;
 
-  const formatCurrency = (value) => {
-    if (!value) return 'Não informado';
-    return Number(value).toLocaleString('pt-ST', { style: 'currency', currency: 'STN' });
-  };
+  const requisitosList = splitCsv(requisitos);
+  const beneficiosList = splitCsv(beneficios);
+  const statusLabel = JOB_STATUS_LABELS[status] || status || 'Desconhecido';
 
-  const pendingCount = candidaturas.filter(c => c.status === 'pending' || !c.status).length;
-  const approvedCount = candidaturas.filter(c => c.status === 'approved').length;
-  const rejectedCount = candidaturas.filter(c => c.status === 'rejected').length;
+  const pendingCount = candidaturas.filter((c) => c.status === 'pending' || !c.status).length;
+  const approvedCount = candidaturas.filter((c) => c.status === 'approved').length;
+  const rejectedCount = candidaturas.filter((c) => c.status === 'rejected').length;
+
+  const salaryRange = salarioDe || salarioAte
+    ? `${formatCurrency(salarioDe)} - ${formatCurrency(salarioAte)}`
+    : 'Nao informado';
 
   return (
     <>
       <Head>
         <title>{titulo} - EmpregoSTP</title>
-        <style>{`
-          body {
-            background: #0a0a0f;
-            min-height: 100vh;
-          }
-        `}</style>
       </Head>
 
-      <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem', minHeight: '100vh' }}>
-
-        {/* Header */}
-        <Link href="/dashboard/empresa" style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          color: '#60a5fa',
-          textDecoration: 'none',
-          fontWeight: '600',
-          marginBottom: '2rem'
-        }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <main className={styles.page}>
+        <Link href="/dashboard/empresa" className={styles.backLink}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
           Voltar ao Dashboard
         </Link>
 
-        {/* Detalhes da Vaga */}
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.05)',
-          backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          borderRadius: '16px',
-          padding: '2rem',
-          marginBottom: '2rem'
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '2rem', flexWrap: 'wrap', marginBottom: '2rem' }}>
-            <div style={{ flex: 1 }}>
-              <h1 style={{ margin: '0 0 1rem 0', fontSize: '2rem', color: 'white', fontWeight: '900' }}>
-                {titulo}
-              </h1>
-              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.95rem' }}>
-                <span>{localizacao}</span>
-                <span>•</span>
-                <span>{tipoContrato}</span>
-                {isPrivada && (
-                  <>
-                    <span>•</span>
-                    <span>Privada</span>
-                  </>
-                )}
+        <section className={styles.heroCard}>
+          <div className={styles.heroHeader}>
+            <div className={styles.heroHeading}>
+              <div className={styles.heroBadgeRow}>
+                <span className={styles.heroBadge}>Detalhe da vaga</span>
+                {isPrivada ? <span className={`${styles.heroBadge} ${styles.heroBadgeMuted}`}>Privada</span> : null}
+              </div>
+              <h1 className={styles.heroTitle}>{titulo}</h1>
+              <div className={styles.heroMeta}>
+                {localizacao ? <span>{localizacao}</span> : null}
+                {tipoContrato ? <span>{tipoContrato}</span> : null}
+                <span>Publicada em {formatDate(createdAt || dataAbertura)}</span>
               </div>
             </div>
 
-            <div style={{
-              padding: '0.75rem 1.5rem',
-              background: status === 'active' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(100, 116, 139, 0.2)',
-              border: status === 'active' ? '2px solid rgba(16, 185, 129, 0.3)' : '2px solid rgba(100, 116, 139, 0.3)',
-              borderRadius: '12px',
-              color: status === 'active' ? '#34d399' : '#94a3b8',
-              fontWeight: '700',
-              whiteSpace: 'nowrap'
-            }}>
-              {status === 'active' ? 'Ativa' : status === 'closed' ? 'Fechada' : 'Desativada'}
+            <div className={`${styles.statusBadge} ${styles[`status${status.charAt(0).toUpperCase()}${status.slice(1)}`] || styles.statusDefault}`}>
+              {statusLabel}
             </div>
           </div>
 
-          {/* Informações da Vaga */}
-          <div style={{ display: 'grid', gap: '2rem' }}>
+          <div className={styles.heroStats}>
+            <StatCard title="Candidaturas" value={candidaturas.length} tone="blue" />
+            <StatCard title="Pendentes" value={pendingCount} tone="amber" />
+            <StatCard title="Aprovadas" value={approvedCount} tone="green" />
+            <StatCard title="Rejeitadas" value={rejectedCount} tone="red" />
+          </div>
+        </section>
 
-            <div>
-              <h3 style={{ margin: '0 0 1rem 0', color: 'white', fontSize: '1.2rem', fontWeight: '700' }}>Descrição</h3>
-              <p style={{ margin: 0, color: 'rgba(255, 255, 255, 0.8)', lineHeight: 1.7 }}>
-                {descricao || 'Não informado'}
-              </p>
-            </div>
+        <section className={styles.contentGrid}>
+          <div className={styles.mainColumn}>
+            <article className={styles.panel}>
+              <div className={styles.sectionHeader}>
+                <h2 className={styles.sectionTitle}>Descricao</h2>
+              </div>
+              <p className={styles.bodyCopy}>{descricao || 'Nao informado'}</p>
+            </article>
 
-            {requisitos && (
-              <div>
-                <h3 style={{ margin: '0 0 1rem 0', color: 'white', fontSize: '1.2rem', fontWeight: '700' }}>Requisitos</h3>
-                <ul style={{ paddingLeft: '1.5rem', color: 'rgba(255, 255, 255, 0.8)', lineHeight: 1.8 }}>
-                  {requisitos.split(',').map((req, i) => (
-                    <li key={i}>{req.trim()}</li>
+            {requisitosList.length > 0 ? (
+              <article className={styles.panel}>
+                <div className={styles.sectionHeader}>
+                  <h2 className={styles.sectionTitle}>Requisitos</h2>
+                </div>
+                <ul className={styles.list}>
+                  {requisitosList.map((req, index) => (
+                    <li key={`${req}-${index}`}>{req}</li>
                   ))}
                 </ul>
-              </div>
-            )}
+              </article>
+            ) : null}
 
-            {skillsAssessment?.enabled && skillsAssessment.questions?.length > 0 && (
-              <div>
-                <h3 style={{ margin: '0 0 1rem 0', color: 'white', fontSize: '1.2rem', fontWeight: '700' }}>Teste de Habilidades</h3>
-                <div style={{
-                  padding: '1.25rem',
-                  background: 'rgba(99, 102, 241, 0.08)',
-                  border: '1px solid rgba(99, 102, 241, 0.2)',
-                  borderRadius: '14px'
-                }}>
-                  <p style={{ margin: '0 0 1rem 0', color: '#c7d2fe', fontWeight: '600' }}>
-                    {skillsAssessment.questions.length} pergunta(s) • Nota mínima: {skillsAssessment.passingScore || 70}%
+            {skillsAssessment?.enabled && skillsAssessment.questions?.length > 0 ? (
+              <article className={styles.panel}>
+                <div className={styles.sectionHeader}>
+                  <h2 className={styles.sectionTitle}>Teste de Habilidades</h2>
+                  <span className={styles.sectionMeta}>{skillsAssessment.questions.length} pergunta(s)</span>
+                </div>
+                <div className={styles.assessmentCard}>
+                  <p className={styles.assessmentSummary}>
+                    Nota minima: <strong>{skillsAssessment.passingScore || 70}%</strong>
                   </p>
-                  <div style={{ display: 'grid', gap: '0.75rem' }}>
+                  <div className={styles.assessmentList}>
                     {skillsAssessment.questions.map((question, index) => (
-                      <div key={question.id || index} style={{ color: 'rgba(255, 255, 255, 0.82)' }}>
-                        <strong style={{ color: 'white' }}>{index + 1}. {question.prompt}</strong>
-                        <div style={{ marginTop: '0.35rem', color: '#a5b4fc', fontSize: '0.9rem' }}>
-                          {Array.isArray(question.options) ? question.options.length : 0} opções
-                        </div>
+                      <div key={question.id || index} className={styles.assessmentItem}>
+                        <strong>{index + 1}. {question.prompt}</strong>
+                        <span>{Array.isArray(question.options) ? question.options.length : 0} opcoes</span>
                       </div>
                     ))}
                   </div>
                 </div>
-              </div>
-            )}
+              </article>
+            ) : null}
 
-            <div>
-              <h3 style={{ margin: '0 0 1rem 0', color: 'white', fontSize: '1.2rem', fontWeight: '700' }}>Salário</h3>
-              <p style={{ margin: 0, color: '#34d399', fontSize: '1.1rem', fontWeight: '600' }}>
-                {formatCurrency(salarioDe)} — {formatCurrency(salarioAte)}
-              </p>
-            </div>
-
-            {beneficios && (
-              <div>
-                <h3 style={{ margin: '0 0 1rem 0', color: 'white', fontSize: '1.2rem', fontWeight: '700' }}>Benefícios</h3>
-                <ul style={{ paddingLeft: '1.5rem', color: 'rgba(255, 255, 255, 0.8)', lineHeight: 1.8 }}>
-                  {beneficios.split(',').map((b, i) => (
-                    <li key={i}>{b.trim()}</li>
+            {beneficiosList.length > 0 ? (
+              <article className={styles.panel}>
+                <div className={styles.sectionHeader}>
+                  <h2 className={styles.sectionTitle}>Beneficios</h2>
+                </div>
+                <ul className={styles.list}>
+                  {beneficiosList.map((item, index) => (
+                    <li key={`${item}-${index}`}>{item}</li>
                   ))}
                 </ul>
-              </div>
-            )}
-
-            <div>
-              <h3 style={{ margin: '0 0 1rem 0', color: 'white', fontSize: '1.2rem', fontWeight: '700' }}>Período de Candidatura</h3>
-              <p style={{ margin: 0, color: 'rgba(255, 255, 255, 0.8)' }}>
-                {dataAbertura || 'Não informado'} até {dataFecho || 'Não informado'}
-              </p>
-            </div>
-
+              </article>
+            ) : null}
           </div>
 
-          {vaga.tdrUrl && (
-            <div style={{ marginTop: '2.5rem', paddingTop: '2.5rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
-              <h3 style={{ margin: '0 0 1rem 0', color: 'white', fontSize: '1.2rem', fontWeight: '700' }}>Documentação (TDR)</h3>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '1.5rem',
-                background: 'rgba(2, 6, 23, 0.3)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '12px'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <div style={{
-                    width: '40px',
-                    height: '40px',
-                    background: 'rgba(34, 211, 238, 0.1)',
-                    borderRadius: '10px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#22d3ee'
-                  }}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <aside className={styles.sidebarColumn}>
+            <article className={styles.panel}>
+              <div className={styles.sectionHeader}>
+                <h2 className={styles.sectionTitle}>Resumo da vaga</h2>
+              </div>
+              <dl className={styles.summaryList}>
+                <div className={styles.summaryItem}>
+                  <dt>Salario</dt>
+                  <dd>{salaryRange}</dd>
+                </div>
+                <div className={styles.summaryItem}>
+                  <dt>Periodo</dt>
+                  <dd>{formatDate(dataAbertura)} ate {formatDate(dataFecho)}</dd>
+                </div>
+                <div className={styles.summaryItem}>
+                  <dt>Contrato</dt>
+                  <dd>{tipoContrato || 'Nao informado'}</dd>
+                </div>
+                <div className={styles.summaryItem}>
+                  <dt>Localizacao</dt>
+                  <dd>{localizacao || 'Nao informado'}</dd>
+                </div>
+                <div className={styles.summaryItem}>
+                  <dt>Privacidade</dt>
+                  <dd>{isPrivada ? 'Privada' : 'Publica'}</dd>
+                </div>
+              </dl>
+            </article>
+
+            {vaga.tdrUrl ? (
+              <article className={styles.panel}>
+                <div className={styles.sectionHeader}>
+                  <h2 className={styles.sectionTitle}>Documentacao</h2>
+                </div>
+                <div className={styles.docCard}>
+                  <div className={styles.docIcon}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                       <polyline points="14 2 14 8 20 8" />
                       <line x1="16" y1="13" x2="8" y2="13" />
@@ -329,371 +345,159 @@ export default function DetalheVaga({ vaga, candidaturas }) {
                       <polyline points="10 9 9 9 8 9" />
                     </svg>
                   </div>
-                  <div>
-                    <div style={{ color: 'white', fontWeight: '600' }}>Termos de Referência</div>
-                    <div style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.85rem' }}>Ficheiro PDF/Documento</div>
+                  <div className={styles.docInfo}>
+                    <strong>Termos de Referencia</strong>
+                    <span>Ficheiro PDF/Documento associado a esta vaga.</span>
                   </div>
                 </div>
-                <a
-                  href={vaga.tdrUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    padding: '0.6rem 1.25rem',
-                    background: 'rgba(34, 211, 238, 0.1)',
-                    border: '1px solid rgba(34, 211, 238, 0.3)',
-                    borderRadius: '10px',
-                    color: '#22d3ee',
-                    textDecoration: 'none',
-                    fontSize: '0.9rem',
-                    fontWeight: '700',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
+                <a href={vaga.tdrUrl} target="_blank" rel="noopener noreferrer" className={styles.docButton}>
                   Visualizar TDR
                 </a>
+              </article>
+            ) : null}
+
+            <article className={styles.panel}>
+              <div className={styles.sectionHeader}>
+                <h2 className={styles.sectionTitle}>Acoes</h2>
               </div>
-            </div>
-          )}
+              <div className={styles.actionsGrid}>
+                {vaga.status === 'active' ? (
+                  <button
+                    onClick={() => alterarStatus('closed')}
+                    disabled={isProcessing}
+                    className={`${styles.actionButton} ${styles.actionWarning}`}
+                  >
+                    {isProcessing ? 'Processando...' : 'Fechar Vaga'}
+                  </button>
+                ) : null}
 
-          {/* Botões de Ação */}
-          <div style={{
-            display: 'flex',
-            gap: '1rem',
-            marginTop: '2rem',
-            paddingTop: '2rem',
-            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-            flexWrap: 'wrap'
-          }}>
-            {vaga.status === 'active' && (
-              <button
-                onClick={() => alterarStatus('closed')}
-                disabled={isProcessing}
-                style={{
-                  padding: '0.75rem 1.5rem',
-                  background: 'rgba(245, 158, 11, 0.2)',
-                  border: '2px solid rgba(245, 158, 11, 0.3)',
-                  borderRadius: '12px',
-                  color: '#fbbf24',
-                  fontWeight: '700',
-                  cursor: isProcessing ? 'not-allowed' : 'pointer',
-                  fontSize: '0.95rem'
-                }}
-              >
-                {isProcessing ? 'Processando...' : 'Fechar Vaga'}
-              </button>
-            )}
-            {vaga.status === 'closed' && (
-              <button
-                onClick={() => alterarStatus('active')}
-                disabled={isProcessing}
-                style={{
-                  padding: '0.75rem 1.5rem',
-                  background: 'rgba(16, 185, 129, 0.2)',
-                  border: '2px solid rgba(16, 185, 129, 0.3)',
-                  borderRadius: '12px',
-                  color: '#34d399',
-                  fontWeight: '700',
-                  cursor: isProcessing ? 'not-allowed' : 'pointer',
-                  fontSize: '0.95rem'
-                }}
-              >
-                {isProcessing ? 'Processando...' : 'Reabrir Vaga'}
-              </button>
-            )}
-            <button
-              onClick={() => router.push(`/dashboard/admin/jobs/${vaga.id}/edit`)}
-              disabled={isProcessing}
-              style={{
-                padding: '0.75rem 1.5rem',
-                background: 'rgba(59, 130, 246, 0.2)',
-                border: '2px solid rgba(59, 130, 246, 0.3)',
-                borderRadius: '12px',
-                color: '#60a5fa',
-                fontWeight: '700',
-                cursor: isProcessing ? 'not-allowed' : 'pointer',
-                fontSize: '0.95rem'
-              }}
-            >
-              Editar Vaga
-            </button>
-            <button
-              onClick={eliminarVaga}
-              disabled={isProcessing}
-              style={{
-                padding: '0.75rem 1.5rem',
-                background: 'rgba(239, 68, 68, 0.2)',
-                border: '2px solid rgba(239, 68, 68, 0.3)',
-                borderRadius: '12px',
-                color: '#fca5a5',
-                fontWeight: '700',
-                cursor: isProcessing ? 'not-allowed' : 'pointer',
-                fontSize: '0.95rem',
-                marginLeft: 'auto'
-              }}
-            >
-              {isProcessing ? 'Eliminando...' : 'Eliminar Vaga'}
-            </button>
+                {vaga.status === 'closed' ? (
+                  <button
+                    onClick={() => alterarStatus('active')}
+                    disabled={isProcessing}
+                    className={`${styles.actionButton} ${styles.actionSuccess}`}
+                  >
+                    {isProcessing ? 'Processando...' : 'Reabrir Vaga'}
+                  </button>
+                ) : null}
+
+                <button
+                  onClick={() => router.push(`/dashboard/admin/jobs/${vaga.id}/edit`)}
+                  disabled={isProcessing}
+                  className={`${styles.actionButton} ${styles.actionPrimary}`}
+                >
+                  Editar Vaga
+                </button>
+
+                <button
+                  onClick={eliminarVaga}
+                  disabled={isProcessing}
+                  className={`${styles.actionButton} ${styles.actionDanger}`}
+                >
+                  {isProcessing ? 'Eliminando...' : 'Eliminar Vaga'}
+                </button>
+              </div>
+            </article>
+          </aside>
+        </section>
+
+        <section className={styles.applicationsPanel}>
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.sectionTitle}>Candidaturas</h2>
+            <span className={styles.sectionMeta}>{candidaturas.length} no total</span>
           </div>
-        </div>
-
-        {/* Estatísticas das Candidaturas */}
-        {candidaturas.length > 0 && (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '1.5rem',
-            marginBottom: '2rem'
-          }}>
-            <StatCard
-              title="Total"
-              value={candidaturas.length}
-              color="#3b82f6"
-            />
-            <StatCard
-              title="Pendentes"
-              value={pendingCount}
-              color="#f59e0b"
-            />
-            <StatCard
-              title="Aprovadas"
-              value={approvedCount}
-              color="#10b981"
-            />
-            <StatCard
-              title="Rejeitadas"
-              value={rejectedCount}
-              color="#ef4444"
-            />
-          </div>
-        )}
-
-        {/* Lista de Candidaturas */}
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.05)',
-          backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          borderRadius: '16px',
-          padding: '2rem'
-        }}>
-          <h2 style={{ margin: '0 0 1.5rem 0', color: 'white', fontSize: '1.5rem', fontWeight: '800' }}>
-            Candidaturas ({candidaturas.length})
-          </h2>
 
           {candidaturas.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-              <h3 style={{ margin: '0 0 0.5rem 0', color: 'white', fontSize: '1.3rem' }}>
-                Nenhuma candidatura ainda
-              </h3>
-              <p style={{ margin: 0, color: 'rgba(255, 255, 255, 0.7)' }}>
-                As candidaturas aparecerão aqui quando candidatos se inscreverem
-              </p>
+            <div className={styles.emptyApplications}>
+              <h3>Nenhuma candidatura ainda</h3>
+              <p>As candidaturas aparecerao aqui quando candidatos se inscreverem.</p>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {candidaturas.map((c) => (
-                <div key={c.id} style={{
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: '12px',
-                  padding: '1.5rem',
-                  transition: 'all 0.3s ease'
-                }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
-                    e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.3)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                  }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
-                    <div style={{ flex: 1 }}>
-                      <Link
-                        href={`/dashboard/empresa/candidato/${c.candidateId}`}
-                        style={{
-                          color: '#60a5fa',
-                          textDecoration: 'none',
-                          fontSize: '1.2rem',
-                          fontWeight: '700',
-                          display: 'block',
-                          marginBottom: '0.5rem'
-                        }}
-                      >
-                        {c.candidateName || 'Candidato'}
-                      </Link>
-                      <div style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.9rem', marginBottom: '0.25rem' }}>
-                        {c.candidateEmail || ''}
-                      </div>
-                      {c.createdAt && (
-                        <div style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.85rem' }}>
-                          Candidatou-se em: {new Date(c.createdAt).toLocaleDateString('pt-PT', {
-                            day: '2-digit',
-                            month: 'long',
-                            year: 'numeric'
-                          })}
-                        </div>
-                      )}
-                      {c.skillsAssessmentResult && (
-                        <div style={{ marginTop: '0.75rem', display: 'inline-flex', gap: '0.6rem', flexWrap: 'wrap' }}>
-                          <span style={{
-                            padding: '0.35rem 0.75rem',
-                            borderRadius: '999px',
-                            background: c.skillsAssessmentResult.passed ? 'rgba(16, 185, 129, 0.16)' : 'rgba(245, 158, 11, 0.16)',
-                            color: c.skillsAssessmentResult.passed ? '#6ee7b7' : '#fbbf24',
-                            border: c.skillsAssessmentResult.passed ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(245, 158, 11, 0.3)',
-                            fontSize: '0.82rem',
-                            fontWeight: '700'
-                          }}>
-                            Teste: {c.skillsAssessmentResult.score}%
-                          </span>
-                          <span style={{ color: '#a1a1aa', fontSize: '0.85rem' }}>
-                            {c.skillsAssessmentResult.correctAnswers}/{c.skillsAssessmentResult.totalQuestions} corretas
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                      {/* Status Badge */}
-                      <div style={{
-                        padding: '0.5rem 1rem',
-                        borderRadius: '12px',
-                        fontWeight: '700',
-                        fontSize: '0.9rem',
-                        background: c.status === 'approved' ? 'rgba(16, 185, 129, 0.2)' :
-                          c.status === 'rejected' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(245, 158, 11, 0.2)',
-                        color: c.status === 'approved' ? '#34d399' :
-                          c.status === 'rejected' ? '#fca5a5' : '#fbbf24',
-                        border: `2px solid ${c.status === 'approved' ? 'rgba(16, 185, 129, 0.3)' :
-                          c.status === 'rejected' ? 'rgba(239, 68, 68, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`
-                      }}>
-                        {c.status === 'pending' || !c.status ? 'Pendente' :
-                          c.status === 'approved' ? 'Aprovada' :
-                          c.status === 'analysis' ? 'Em análise' :
-                          c.status === 'interview' ? 'Entrevista' :
-                            c.status === 'rejected' ? 'Rejeitada' : c.status}
+            <div className={styles.applicationList}>
+              {candidaturas.map((candidatura) => {
+                const applicationStatus = candidatura.status || 'pending';
+                const applicationStatusLabel = APPLICATION_STATUS_LABELS[applicationStatus] || applicationStatus;
+                const result = candidatura.skillsAssessmentResult;
+                return (
+                  <article key={candidatura.id} className={styles.applicationCard}>
+                    <div className={styles.applicationMain}>
+                      <div className={styles.applicationIdentity}>
+                        <Link href={`/dashboard/empresa/candidato/${candidatura.candidateId}`} className={styles.applicationName}>
+                          {candidatura.candidateName || 'Candidato'}
+                        </Link>
+                        {candidatura.candidateEmail ? (
+                          <p className={styles.applicationEmail}>{candidatura.candidateEmail}</p>
+                        ) : null}
+                        {candidatura.createdAt ? (
+                          <p className={styles.applicationDate}>
+                            Candidatou-se em {formatDate(candidatura.createdAt)}
+                          </p>
+                        ) : null}
+                        {result ? (
+                          <div className={styles.applicationMetrics}>
+                            <span className={`${styles.assessmentBadge} ${result.passed ? styles.assessmentPassed : styles.assessmentReview}`}>
+                              Teste: {result.score}%
+                            </span>
+                            <span className={styles.assessmentMeta}>
+                              {result.correctAnswers}/{result.totalQuestions} corretas
+                            </span>
+                          </div>
+                        ) : null}
                       </div>
 
-                      {/* Ações */}
-                      {(c.status === 'pending' || !c.status) && (
-                        <div style={{ display: 'flex', gap: '0.75rem' }}>
-                          <button
-                            onClick={() => alterarStatusCandidatura(c.id, 'approved')}
-                            disabled={isProcessing}
-                            style={{
-                              padding: '0.6rem 1.25rem',
-                              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '10px',
-                              fontSize: '0.9rem',
-                              cursor: isProcessing ? 'not-allowed' : 'pointer',
-                              fontWeight: '600',
-                              transition: 'all 0.3s ease'
-                            }}
-                            onMouseEnter={(e) => {
-                              if (!isProcessing) e.currentTarget.style.transform = 'translateY(-2px)';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.transform = 'translateY(0)';
-                            }}
-                          >
-                            Aprovar
-                          </button>
-                          <button
-                            onClick={() => alterarStatusCandidatura(c.id, 'rejected')}
-                            disabled={isProcessing}
-                            style={{
-                              padding: '0.6rem 1.25rem',
-                              background: 'rgba(239, 68, 68, 0.2)',
-                              color: '#fca5a5',
-                              border: '2px solid rgba(239, 68, 68, 0.3)',
-                              borderRadius: '10px',
-                              fontSize: '0.9rem',
-                              cursor: isProcessing ? 'not-allowed' : 'pointer',
-                              fontWeight: '600',
-                              transition: 'all 0.3s ease'
-                            }}
-                            onMouseEnter={(e) => {
-                              if (!isProcessing) e.currentTarget.style.transform = 'translateY(-2px)';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.transform = 'translateY(0)';
-                            }}
-                          >
-                            Rejeitar
-                          </button>
-                        </div>
-                      )}
+                      <div className={styles.applicationAside}>
+                        <span className={`${styles.applicationStatus} ${styles[`application${applicationStatus.charAt(0).toUpperCase()}${applicationStatus.slice(1)}`] || styles.applicationPending}`}>
+                          {applicationStatusLabel}
+                        </span>
 
-                      {c.status === 'approved' && (
-                        <button
-                          onClick={() => alterarStatusCandidatura(c.id, 'rejected')}
-                          disabled={isProcessing}
-                          style={{
-                            padding: '0.5rem 1rem',
-                            background: 'rgba(239, 68, 68, 0.15)',
-                            color: '#fca5a5',
-                            border: '1px solid rgba(239, 68, 68, 0.3)',
-                            borderRadius: '8px',
-                            fontSize: '0.85rem',
-                            cursor: isProcessing ? 'not-allowed' : 'pointer',
-                            fontWeight: '600'
-                          }}
-                        >
-                          Reverter
-                        </button>
-                      )}
+                        {(applicationStatus === 'pending' || !applicationStatus) ? (
+                          <div className={styles.applicationActions}>
+                            <button
+                              onClick={() => alterarStatusCandidatura(candidatura.id, 'approved')}
+                              disabled={isProcessing}
+                              className={`${styles.smallActionButton} ${styles.smallActionApprove}`}
+                            >
+                              Aprovar
+                            </button>
+                            <button
+                              onClick={() => alterarStatusCandidatura(candidatura.id, 'rejected')}
+                              disabled={isProcessing}
+                              className={`${styles.smallActionButton} ${styles.smallActionReject}`}
+                            >
+                              Rejeitar
+                            </button>
+                          </div>
+                        ) : null}
 
-                      {c.status === 'rejected' && (
-                        <button
-                          onClick={() => alterarStatusCandidatura(c.id, 'approved')}
-                          disabled={isProcessing}
-                          style={{
-                            padding: '0.5rem 1rem',
-                            background: 'rgba(16, 185, 129, 0.15)',
-                            color: '#34d399',
-                            border: '1px solid rgba(16, 185, 129, 0.3)',
-                            borderRadius: '8px',
-                            fontSize: '0.85rem',
-                            cursor: isProcessing ? 'not-allowed' : 'pointer',
-                            fontWeight: '600'
-                          }}
-                        >
-                          Reconsiderar
-                        </button>
-                      )}
+                        {applicationStatus === 'approved' ? (
+                          <button
+                            onClick={() => alterarStatusCandidatura(candidatura.id, 'rejected')}
+                            disabled={isProcessing}
+                            className={`${styles.smallActionButton} ${styles.smallActionNeutral}`}
+                          >
+                            Reverter
+                          </button>
+                        ) : null}
+
+                        {applicationStatus === 'rejected' ? (
+                          <button
+                            onClick={() => alterarStatusCandidatura(candidatura.id, 'approved')}
+                            disabled={isProcessing}
+                            className={`${styles.smallActionButton} ${styles.smallActionNeutral}`}
+                          >
+                            Reconsiderar
+                          </button>
+                        ) : null}
+                      </div>
                     </div>
-                  </div>
-                </div>
-              ))}
+                  </article>
+                );
+              })}
             </div>
           )}
-        </div>
-
+        </section>
       </main>
     </>
-  );
-}
-
-function StatCard({ title, value, color }) {
-  return (
-    <div style={{
-      background: 'rgba(255, 255, 255, 0.05)',
-      backdropFilter: 'blur(10px)',
-      border: '1px solid rgba(255, 255, 255, 0.1)',
-      borderRadius: '12px',
-      padding: '1.5rem',
-      textAlign: 'center'
-    }}>
-      <div style={{ fontSize: '2.5rem', fontWeight: '900', color: color, marginBottom: '0.5rem' }}>
-        {value}
-      </div>
-      <div style={{ fontSize: '0.95rem', color: 'white', fontWeight: '600' }}>
-        {title}
-      </div>
-    </div>
   );
 }
 
@@ -721,7 +525,6 @@ export async function getServerSideProps(context) {
 
     const vagaData = vagaDoc.data();
 
-    // Verificar se a vaga pertence à empresa
     if (vagaData.companyId !== uid) {
       return { redirect: { destination: '/dashboard/empresa', permanent: false } };
     }
@@ -746,13 +549,12 @@ export async function getServerSideProps(context) {
       createdAt: safeTimestampToMillis(vagaData.createdAt) ? new Date(safeTimestampToMillis(vagaData.createdAt)).toISOString() : null
     };
 
-    // Buscar candidaturas
     const candidaturasSnap = await admin.firestore()
       .collection('applications')
       .where('jobId', '==', id)
       .get();
 
-    const candidaturas = candidaturasSnap.docs.map(doc => {
+    const candidaturas = candidaturasSnap.docs.map((doc) => {
       const data = doc.data();
       return {
         id: doc.id,
@@ -766,7 +568,6 @@ export async function getServerSideProps(context) {
       };
     });
 
-    // Ordenar por data
     candidaturas.sort((a, b) => {
       if (!a.createdAt) return 1;
       if (!b.createdAt) return -1;
@@ -780,4 +581,4 @@ export async function getServerSideProps(context) {
     console.error('Erro no getServerSideProps:', error);
     return { redirect: { destination: '/login', permanent: false } };
   }
-} 
+}

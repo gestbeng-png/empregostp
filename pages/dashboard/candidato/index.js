@@ -510,7 +510,7 @@ const CandidateDashboard = () => {
 	    if (!activePlan.features?.canVerifyProfile) {
 	      setVerificationMessage({
 	        type: 'error',
-	        text: 'A verificação de perfil é exclusiva do plano Verificação.'
+	        text: 'A verificação de perfil está disponível nos planos Verificação e Premium.'
 	      });
 	      return;
 	    }
@@ -604,12 +604,12 @@ const CandidateDashboard = () => {
           name: verificationData.cv?.name || prev.name
         }));
       }
-      setVerificationMessage({ type: 'success', text: 'Solicitação enviada com sucesso!' });
+      setVerificationMessage({ type: 'success', text: data.message || 'Solicitação enviada com sucesso!' });
       setVerificationStep(5); // Success state
 
     } catch (err) {
       console.error('Erro na verificação:', err);
-      setVerificationMessage({ type: 'error', text: 'Erro ao enviar. Tente novamente.' });
+      setVerificationMessage({ type: 'error', text: err?.message || 'Erro ao enviar. Tente novamente.' });
     } finally {
       setVerificationLoading(false);
     }
@@ -1609,32 +1609,25 @@ const CandidateDashboard = () => {
         return (
           <div className={styles.contentArea}>
             <div className={styles.profileHeader}>
-              <div className={styles.profileCover} style={{ backgroundImage: `url(${profile?.coverUrl || user?.cover || ''})`, position: 'relative' }}>
+              <div
+                className={`${styles.profileCover} ${styles.profileCoverEditable}`}
+                style={{ backgroundImage: `url(${profile?.coverUrl || user?.cover || ''})` }}
+              >
                 <div className={styles.coverOverlay} />
                 {editingProfile && (
-                  <label className={styles.editCoverBtn} style={{
-                    position: 'absolute', bottom: '20px', right: '20px',
-                    background: 'rgba(0,0,0,0.6)', color: 'white', padding: '8px 16px',
-                    borderRadius: '8px', cursor: 'pointer', zIndex: 10, backdropFilter: 'blur(4px)',
-                    border: '1px solid rgba(255,255,255,0.2)', fontSize: '0.9rem'
-                  }}>
+                  <label className={styles.editCoverBtn}>
                     {coverUploading ? 'Enviando...' : '📷 Alterar Capa'}
-                    <input type="file" style={{ display: 'none' }} accept="image/*" onChange={(e) => handlePhotoUpload(e, 'cover')} />
+                    <input type="file" className={styles.hiddenFileInput} accept="image/*" onChange={(e) => handlePhotoUpload(e, 'cover')} />
                   </label>
                 )}
               </div>
               <div className={styles.profileInfo}>
-                <div style={{ position: 'relative' }}>
+                <div className={styles.avatarEditWrap}>
                   <img src={profile?.photoUrl || user?.avatar || ''} alt="Avatar" className={styles.profileAvatar} />
                   {editingProfile && (
-                    <label style={{
-                      position: 'absolute', bottom: '0', right: '0',
-                      background: '#6366f1', width: '32px', height: '32px',
-                      borderRadius: '50%', display: 'flex', alignItems: 'center',
-                      justifyContent: 'center', cursor: 'pointer', border: '2px solid #1e293b'
-                    }}>
-                      <span style={{ fontSize: '14px' }}>✏️</span>
-                      <input type="file" style={{ display: 'none' }} accept="image/*" onChange={(e) => handlePhotoUpload(e, 'avatar')} />
+                    <label className={styles.avatarEditBtn}>
+                      <span className={styles.avatarEditIcon}>✏️</span>
+                      <input type="file" className={styles.hiddenFileInput} accept="image/*" onChange={(e) => handlePhotoUpload(e, 'avatar')} />
                     </label>
                   )}
                 </div>
@@ -1691,12 +1684,12 @@ const CandidateDashboard = () => {
             <div className={styles.profileGrid}>
               {/* EDIT MODE: FULL FORM */}
               {editingProfile ? (
-                <div className={styles.profileCardWide} style={{ gridColumn: '1 / -1' }}>
+                <div className={`${styles.profileCardWide} ${styles.profileCardWideFull}`}>
 
                   {/* Informações Pessoais */}
-                  <div style={{ marginBottom: '2rem', borderBottom: '1px solid #334155', paddingBottom: '2rem' }}>
-                    <h3 style={{ marginBottom: '1rem', color: '#94a3b8' }}>🧑‍💼 Informações Pessoais</h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
+                  <div className={styles.formSection}>
+                    <h3 className={styles.formSectionTitle}>🧑‍💼 Informações Pessoais</h3>
+                    <div className={styles.formSectionGrid}>
                       <input className={styles.profileInput} placeholder="Nome Completo" value={profileForm.name} onChange={(e) => handleProfileFieldChange('name', e.target.value)} />
                       <input className={styles.profileInput} type="date" placeholder="Data de Nascimento" value={profileForm.birthDate} onChange={(e) => handleProfileFieldChange('birthDate', e.target.value)} />
                       <input className={styles.profileInput} placeholder="Nacionalidade" value={profileForm.nationality} onChange={(e) => handleProfileFieldChange('nationality', e.target.value)} />
@@ -1711,12 +1704,12 @@ const CandidateDashboard = () => {
                   </div>
 
                   {/* Contatos */}
-                  <div style={{ marginBottom: '2rem', borderBottom: '1px solid #334155', paddingBottom: '2rem' }}>
-                    <h3 style={{ marginBottom: '1rem', color: '#94a3b8' }}>📞 Contatos</h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
+                  <div className={styles.formSection}>
+                    <h3 className={styles.formSectionTitle}>📞 Contatos</h3>
+                    <div className={styles.formSectionGrid}>
                       <input className={styles.profileInput} placeholder="Telefone" value={profileForm.phone} onChange={(e) => handleProfileFieldChange('phone', e.target.value)} />
                       <input className={styles.profileInput} placeholder="Localização" value={profileForm.location} onChange={(e) => handleProfileFieldChange('location', e.target.value)} />
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '0.75rem' }}>
+                      <div className={styles.inlineActionField}>
                         <input className={styles.profileInput} placeholder="LinkedIn URL" value={profileForm.linkedin} onChange={(e) => handleProfileFieldChange('linkedin', e.target.value)} />
                         <button type="button" className={styles.secondaryButton} onClick={handleImportLinkedIn}>
                           Importar
@@ -1727,9 +1720,9 @@ const CandidateDashboard = () => {
                   </div>
 
                   {/* Objetivo */}
-                  <div style={{ marginBottom: '2rem', borderBottom: '1px solid #334155', paddingBottom: '2rem' }}>
-                    <h3 style={{ marginBottom: '1rem', color: '#94a3b8' }}>🎯 Objetivo Profissional</h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                  <div className={styles.formSection}>
+                    <h3 className={styles.formSectionTitle}>🎯 Objetivo Profissional</h3>
+                    <div className={styles.formSectionGridTwo}>
                       <input className={styles.profileInput} placeholder="Área de Interesse" value={profileForm.objectiveArea} onChange={(e) => handleProfileFieldChange('objectiveArea', e.target.value)} />
                       <input className={styles.profileInput} placeholder="Tipo (Integral, Remoto...)" value={profileForm.objectiveType} onChange={(e) => handleProfileFieldChange('objectiveType', e.target.value)} />
                     </div>
@@ -1737,53 +1730,53 @@ const CandidateDashboard = () => {
                   </div>
 
                   {/* Resumo */}
-                  <div style={{ marginBottom: '2rem', borderBottom: '1px solid #334155', paddingBottom: '2rem' }}>
-                    <h3 style={{ marginBottom: '1rem', color: '#94a3b8' }}>📝 Resumo (Bio)</h3>
+                  <div className={styles.formSection}>
+                    <h3 className={styles.formSectionTitle}>📝 Resumo (Bio)</h3>
                     <textarea className={styles.profileTextarea} rows={4} value={profileForm.bio} onChange={(e) => handleProfileFieldChange('bio', e.target.value)} />
                   </div>
 
                   {/* Formação e Idiomas (TextAreas simples conforme Profile.js) */}
-                  <div style={{ marginBottom: '2rem', borderBottom: '1px solid #334155', paddingBottom: '2rem' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                  <div className={styles.formSection}>
+                    <div className={styles.formSectionGridWide}>
                       <div>
-                        <h3 style={{ marginBottom: '1rem', color: '#94a3b8' }}>🎓 Formação Acadêmica</h3>
-                        <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '0.5rem' }}>Linha por linha: Curso; Instituição; Ano</p>
+                        <h3 className={styles.formSectionTitle}>🎓 Formação Acadêmica</h3>
+                        <p className={styles.formSectionHint}>Linha por linha: Curso; Instituição; Ano</p>
                         <textarea className={styles.profileTextarea} rows={5} value={profileForm.education} onChange={(e) => handleProfileFieldChange('education', e.target.value)} />
                       </div>
                       <div>
-                        <h3 style={{ marginBottom: '1rem', color: '#94a3b8' }}>🗣️ Idiomas</h3>
-                        <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '0.5rem' }}>Linha por linha: Idioma; Nível</p>
+                        <h3 className={styles.formSectionTitle}>🗣️ Idiomas</h3>
+                        <p className={styles.formSectionHint}>Linha por linha: Idioma; Nível</p>
                         <textarea className={styles.profileTextarea} rows={5} value={profileForm.languages} onChange={(e) => handleProfileFieldChange('languages', e.target.value)} />
                       </div>
                     </div>
                   </div>
 
                   {/* Habilidades */}
-                  <div style={{ marginBottom: '2rem', borderBottom: '1px solid #334155', paddingBottom: '2rem' }}>
-                    <h3 style={{ marginBottom: '1rem', color: '#94a3b8' }}>💡 Habilidades</h3>
-                    <div style={{ display: 'grid', gap: '1rem' }}>
+                  <div className={styles.formSection}>
+                    <h3 className={styles.formSectionTitle}>💡 Habilidades</h3>
+                    <div className={styles.stackFields}>
                       <div>
-                        <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Hard Skills (separadas por vírgula)</label>
+                        <label className={styles.fieldLabel}>Hard Skills (separadas por vírgula)</label>
                         <input className={styles.profileInput} value={profileForm.skills} onChange={(e) => handleProfileFieldChange('skills', e.target.value)} />
                       </div>
                       <div>
-                        <label style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Soft Skills (separadas por vírgula)</label>
+                        <label className={styles.fieldLabel}>Soft Skills (separadas por vírgula)</label>
                         <input className={styles.profileInput} value={profileForm.skillsSoft} onChange={(e) => handleProfileFieldChange('skillsSoft', e.target.value)} />
                       </div>
                     </div>
                   </div>
 
                   {/* Competências Digitais */}
-                  <div style={{ marginBottom: '2rem', borderBottom: '1px solid #334155', paddingBottom: '2rem' }}>
-                    <h3 style={{ marginBottom: '1rem', color: '#94a3b8' }}>💻 Competências Digitais</h3>
-                    <form onSubmit={addDigitalSkill} style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-                      <input name="skill" className={styles.profileInput} placeholder="Adicionar ferramenta..." style={{ flex: 1 }} />
+                  <div className={styles.formSection}>
+                    <h3 className={styles.formSectionTitle}>💻 Competências Digitais</h3>
+                    <form onSubmit={addDigitalSkill} className={styles.digitalSkillForm}>
+                      <input name="skill" className={`${styles.profileInput} ${styles.digitalSkillInput}`} placeholder="Adicionar ferramenta..." />
                       <button type="submit" className={styles.secondaryButton}>+</button>
                     </form>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    <div className={styles.digitalSkills}>
                       {profileForm.digitalSkills.map(s => (
-                        <span key={s} style={{ background: 'rgba(59, 130, 246, 0.2)', color: '#60a5fa', padding: '0.25rem 0.75rem', borderRadius: '1rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          {s} <button type="button" onClick={() => removeDigitalSkill(s)} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}>×</button>
+                        <span key={s} className={styles.digitalSkillTag}>
+                          {s} <button type="button" className={styles.digitalSkillRemove} onClick={() => removeDigitalSkill(s)}>×</button>
                         </span>
                       ))}
                     </div>
@@ -1792,36 +1785,36 @@ const CandidateDashboard = () => {
                   {/* Experiência (Estruturada) */}
                   <div>
                     <div className={styles.profileCardWideHeader}>
-                      <h3 style={{ color: '#94a3b8' }}>💼 Experiência Profissional</h3>
+                      <h3 className={styles.formSectionTitle}>💼 Experiência Profissional</h3>
                       <button type="button" className={styles.secondaryButton} onClick={handleAddExperience}>+ Adicionar</button>
                     </div>
                     <div className={styles.timelineList}>
                       {profileForm.experiences.map((exp, index) => (
-                        <div key={index} className={styles.experienceItem} style={{ marginBottom: '1.5rem', borderBottom: '1px solid #1e293b', paddingBottom: '1rem' }}>
-                          <div className={styles.experienceFields} style={{ display: 'grid', gap: '0.5rem' }}>
+                        <div key={index} className={`${styles.experienceItem} ${styles.experienceItemExtended}`}>
+                          <div className={`${styles.experienceFields} ${styles.experienceFieldsCompact}`}>
                             <input className={styles.profileInput} value={exp.role} placeholder="Cargo" onChange={(e) => handleExperienceChange(index, 'role', e.target.value)} />
                             <input className={styles.profileInput} value={exp.company} placeholder="Empresa" onChange={(e) => handleExperienceChange(index, 'company', e.target.value)} />
                             <input className={styles.profileInput} value={exp.period} placeholder="Período" onChange={(e) => handleExperienceChange(index, 'period', e.target.value)} />
                             <textarea className={styles.profileTextarea} rows={2} value={exp.description} placeholder="Descrição" onChange={(e) => handleExperienceChange(index, 'description', e.target.value)} />
                           </div>
-                          <button type="button" className={styles.linkButton} style={{ color: '#ef4444', marginTop: '0.5rem' }} onClick={() => handleRemoveExperience(index)}>Remover</button>
+                          <button type="button" className={styles.linkButton} onClick={() => handleRemoveExperience(index)}>Remover</button>
                         </div>
                       ))}
                     </div>
                   </div>
 
                   {/* Certificados Upload */}
-                  <div style={{ marginTop: '2rem', paddingTop: '2rem', borderTop: '1px solid #334155' }}>
-                    <h3 style={{ marginBottom: '1rem', color: '#94a3b8' }}>📜 Certificados</h3>
-                    <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '1rem' }}>Adicione comprovativos em PDF</p>
+                  <div className={styles.sectionDividerTop}>
+                    <h3 className={styles.formSectionTitle}>📜 Certificados</h3>
+                    <p className={styles.formSectionHint}>Adicione comprovativos em PDF</p>
                     {activePlan.features?.canUploadCertificates ? (
-                      <label className={styles.secondaryButton} style={{ display: 'inline-block', cursor: 'pointer' }}>
+                      <label className={`${styles.secondaryButton} ${styles.certificateUploadButton}`}>
                         📤 Upload Certificados
-                        <input type="file" multiple accept=".pdf" style={{ display: 'none' }} onChange={handleCertUpload} />
+                        <input type="file" multiple accept=".pdf" className={styles.hiddenFileInput} onChange={handleCertUpload} />
                       </label>
                     ) : (
-                      <div style={{ marginBottom: '1rem' }}>
-                        <p style={{ color: '#f59e0b', marginBottom: '0.75rem' }}>
+                      <div className={styles.formSectionWarning}>
+                        <p className={styles.warningText}>
                           Este recurso é exclusivo dos planos Profissional e Premium.
                         </p>
                         <button type="button" className={styles.secondaryButton} onClick={() => setActiveTab('plans')}>
@@ -1830,11 +1823,11 @@ const CandidateDashboard = () => {
                       </div>
                     )}
                     {profileForm.certificateFiles.length > 0 && (
-                      <ul style={{ marginTop: '1rem', paddingLeft: '1rem' }}>
+                      <ul className={styles.certificateList}>
                         {profileForm.certificateFiles.map((url, i) => (
-                          <li key={i} style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                            <a href={url} target="_blank" rel="noreferrer" style={{ color: '#3b82f6' }}>Certificado {i + 1}</a>
-                            <button type="button" onClick={() => removeCertificate(i)} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}>Remover</button>
+                          <li key={i} className={styles.certificateListItem}>
+                            <a href={url} target="_blank" rel="noreferrer" className={styles.certificateLink}>Certificado {i + 1}</a>
+                            <button type="button" className={styles.linkButton} onClick={() => removeCertificate(i)}>Remover</button>
                           </li>
                         ))}
                       </ul>
@@ -1849,9 +1842,9 @@ const CandidateDashboard = () => {
                     <h3>Resumo</h3>
                     <p>{profile?.bio || user.bio}</p>
                     {user.objectiveArea && (
-                      <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #334155' }}>
-                        <p style={{ fontSize: '0.9rem', color: '#9ca3af' }}>🎯 Objetivo: <span style={{ color: 'white' }}>{user.objectiveArea} {user.objectiveType ? `(${user.objectiveType})` : ''}</span></p>
-                        {user.objectiveAspiration && <p style={{ fontSize: '0.85rem', color: '#6b7280', marginTop: '0.5rem' }}>&quot;{user.objectiveAspiration}&quot;</p>}
+                      <div className={styles.profileObjective}>
+                        <p className={styles.profileObjectiveValue}>🎯 Objetivo: <span>{user.objectiveArea} {user.objectiveType ? `(${user.objectiveType})` : ''}</span></p>
+                        {user.objectiveAspiration && <p className={styles.profileObjectiveQuote}>&quot;{user.objectiveAspiration}&quot;</p>}
                       </div>
                     )}
                   </div>
@@ -1860,7 +1853,7 @@ const CandidateDashboard = () => {
                     <h3>Competências</h3>
                     <div className={styles.skillsList}>
                       {profile?.skillsHard && profile.skillsHard.map((skill) => <span key={skill}>{skill}</span>)}
-                      {profile?.digitalSkills && profile.digitalSkills.map((s) => <span key={s} style={{ borderColor: '#3b82f6', color: '#60a5fa' }}>{s}</span>)}
+                      {profile?.digitalSkills && profile.digitalSkills.map((s) => <span key={s} className={styles.skillAccent}>{s}</span>)}
                     </div>
                   </div>
 
@@ -1869,14 +1862,14 @@ const CandidateDashboard = () => {
                     <p>📧 {profile?.email || user?.email}</p>
                     <p>📱 {profile?.phone || user?.phone}</p>
                     <p>📍 {profile?.city || profile?.location || user?.location}</p>
-                    {profile?.linkedin && <p><a href={profile.linkedin} target="_blank" rel="noreferrer" style={{ color: '#3b82f6' }}>LinkedIn</a></p>}
-                    {profile?.website && <p><a href={profile.website} target="_blank" rel="noreferrer" style={{ color: '#3b82f6' }}>Website</a></p>}
+                    {profile?.linkedin && <p><a href={profile.linkedin} target="_blank" rel="noreferrer" className={styles.profileExternalLink}>LinkedIn</a></p>}
+                    {profile?.website && <p><a href={profile.website} target="_blank" rel="noreferrer" className={styles.profileExternalLink}>Website</a></p>}
 
-                    <div className={styles.cvUploadSection} style={{ marginTop: '1.5rem' }}>
+                    <div className={`${styles.cvUploadSection} ${styles.cvUploadSectionStacked}`}>
                       <p className={styles.cvLabel}>Currículo atual</p>
                       <p className={styles.cvName}>{cvState.name || 'Nenhum CV'}</p>
                       {cvState.url && <a href={cvState.url} target="_blank" rel="noreferrer" className={styles.cvLink}>Ver CV</a>}
-                      <label className={styles.cvUploadButton} style={{ marginTop: '0.5rem' }}>
+                      <label className={styles.cvUploadButton}>
                         <input type="file" accept="application/pdf" onChange={handleCvChange} />
                         {cvState.uploading ? 'Enviando...' : 'Atualizar CV'}
                       </label>
@@ -1886,36 +1879,56 @@ const CandidateDashboard = () => {
                   <div className={styles.profileCardWide}>
                     <h3>Experiência</h3>
                     <div className={styles.timelineList}>
-                      {(profile?.experience || user.experience).map((exp, index) => (
-                        <article key={`${exp.company}-${index}`}>
-                          <h4>{exp.role}</h4>
-                          <p className={styles.profileMeta}>{exp.company} • {exp.period}</p>
-                          <p>{exp.description}</p>
-                        </article>
-                      ))}
+                      {(() => {
+                        const experienceItems = Array.isArray(profile?.experience)
+                          ? profile.experience
+                          : Array.isArray(user?.experience)
+                            ? user.experience
+                            : [];
+
+                        if (!experienceItems.length) {
+                          return <p className={styles.profileMeta}>Nenhuma experiência adicionada.</p>;
+                        }
+
+                        return experienceItems.map((exp, index) => {
+                          const role = exp?.role || exp?.title || '';
+                          const company = exp?.company || exp?.employer || exp?.organization || '';
+                          const period = exp?.period || exp?.dateRange || '';
+                          const description = exp?.description || exp?.details || '';
+                          return (
+                            <article key={`${company || 'exp'}-${index}`}>
+                              <h4>{role || 'Experiência profissional'}</h4>
+                              {(company || period) ? (
+                                <p className={styles.profileMeta}>{[company, period].filter(Boolean).join(' • ')}</p>
+                              ) : null}
+                              {description ? <p>{description}</p> : null}
+                            </article>
+                          );
+                        });
+                      })()}
                     </div>
                   </div>
 
                   {/* Detalhes Adicionais em Modo Visualização */}
                   {(user.education || user.languages || user.certifications) && (
                     <div className={styles.profileCardWide}>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem' }}>
+                      <div className={styles.detailGrid}>
                         {user.education && (
                           <div>
                             <h3>Formação</h3>
-                            <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', color: '#94a3b8' }}>{user.education}</pre>
+                            <pre className={styles.preformattedText}>{user.education}</pre>
                           </div>
                         )}
                         {user.languages && (
                           <div>
                             <h3>Idiomas</h3>
-                            <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', color: '#94a3b8' }}>{user.languages}</pre>
+                            <pre className={styles.preformattedText}>{user.languages}</pre>
                           </div>
                         )}
                         {user.certifications && (
                           <div>
                             <h3>Certificações</h3>
-                            <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', color: '#94a3b8' }}>{user.certifications}</pre>
+                            <pre className={styles.preformattedText}>{user.certifications}</pre>
                           </div>
                         )}
                       </div>
@@ -1924,7 +1937,7 @@ const CandidateDashboard = () => {
                   {user.certificateFiles && user.certificateFiles.length > 0 && (
                     <div className={styles.profileCardWide}>
                       <h3>Comprovativos / Certificados</h3>
-                      <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '1rem' }}>
+                      <div className={styles.documentChips}>
                         {user.certificateFiles.map((url, i) => (
                           <a key={i} href={url} target="_blank" rel="noreferrer" className={styles.secondaryButton}>
                             📄 Documento {i + 1}
@@ -1945,7 +1958,7 @@ const CandidateDashboard = () => {
           <div className={styles.messagesLayout}>
             <div className={styles.messagesList}>
               {conversations.length === 0 ? (
-                <p className={styles.messagePlaceholder} style={{ padding: '1rem' }}>Nenhuma conversa ainda.</p>
+                <p className={`${styles.messagePlaceholder} ${styles.messagePlaceholderPadded}`}>Nenhuma conversa ainda.</p>
               ) : conversations.map((conversation) => {
                 const initials = (conversation.participant.name || 'U').charAt(0).toUpperCase();
                 const timeLabel = conversation.lastMessageAt
@@ -2047,8 +2060,8 @@ const CandidateDashboard = () => {
       case 'notifications':
         return (
           <div className={styles.notificationsWrapper}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap' }}>
-              <h2 className={styles.sectionTitle} style={{ margin: 0 }}>Notificações</h2>
+            <div className={styles.notificationsHeader}>
+              <h2 className={`${styles.sectionTitle} ${styles.sectionTitleNoMargin}`}>Notificações</h2>
               <button
                 type="button"
                 className={styles.secondaryButton}
@@ -2104,13 +2117,13 @@ const CandidateDashboard = () => {
           <div className={styles.contentArea}>
             <h2 className={styles.sectionTitle}>Minhas Candidaturas</h2>
             {upcomingInterviews.length > 0 && (
-              <div className={styles.jobList} style={{ marginBottom: '1.25rem' }}>
+              <div className={`${styles.jobList} ${styles.jobListSpaced}`}>
                 {upcomingInterviews.map((application) => (
                   <div key={application.id} className={styles.jobCard}>
                     <div>
 	                      <p className={styles.jobTitle}>{application.jobTitle || 'Vaga'}</p>
 	                      <p className={styles.jobMeta}>{application.company || 'Empresa'} • {formatInterviewDate(application.interviewDetails?.scheduledAt)}</p>
-	                      <p className={styles.jobMeta} style={{ marginTop: '0.35rem', color: '#a5b4fc' }}>
+	                      <p className={`${styles.jobMeta} ${styles.jobMetaAccent}`}>
 	                        <InterviewPlaceOrLink interviewDetails={application.interviewDetails} />
 	                      </p>
 	                    </div>
@@ -2152,17 +2165,17 @@ const CandidateDashboard = () => {
         return (
           <div className={styles.contentArea}>
             <div className={styles.planGrid}>
-              <div className={styles.planDetails} style={{ flex: 1 }}>
+              <div className={`${styles.planDetails} ${styles.planDetailsMain}`}>
                 <h2>Verificação de Perfil</h2>
                 <p className={styles.planMeta}>Siga os passos para verificar sua identidade e ganhar destaque.</p>
 
-                <div style={{ margin: '1.5rem 0', padding: '1.5rem', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <div className={styles.verificationPanel}>
                   {!activePlan.features?.canVerifyProfile && profile?.verificationStatus !== 'pending' && profile?.verificationStatus !== 'verified' ? (
-                    <div style={{ textAlign: 'center', padding: '2rem' }}>
-                      <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔒</div>
-	                      <h3 style={{ color: '#f59e0b' }}>Recurso Premium</h3>
-	                      <p style={{ color: '#9ca3af', marginBottom: '1rem' }}>
-	                        A verificação de perfil é exclusiva do plano Verificação.
+                    <div className={styles.verificationState}>
+                      <div className={styles.verificationIcon}>🔒</div>
+	                      <h3 className={styles.verificationStateWarning}>Recurso Premium</h3>
+	                      <p className={styles.verificationStateText}>
+	                        A verificação de perfil está disponível nos planos Verificação e Premium.
 	                      </p>
                       <button
                         type="button"
@@ -2173,38 +2186,37 @@ const CandidateDashboard = () => {
                       </button>
                     </div>
                   ) : profile?.verificationStatus === 'pending' ? (
-                    <div style={{ textAlign: 'center', padding: '2rem' }}>
-                      <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⏳</div>
-                      <h3 style={{ color: 'white' }}>Em Análise</h3>
-                      <p style={{ color: '#9ca3af' }}>Seus documentos foram enviados e estão sendo analisados.</p>
-                      <button onClick={() => setVerificationStep(0)} className={styles.secondaryButton} style={{ marginTop: '1rem' }}>Ver Detalhes</button>
+                    <div className={styles.verificationState}>
+                      <div className={styles.verificationIcon}>⏳</div>
+                      <h3>Em Análise</h3>
+                      <p className={styles.verificationStateText}>Seus documentos foram enviados e estão sendo analisados.</p>
+                      <button onClick={() => setVerificationStep(0)} className={`${styles.secondaryButton} ${styles.verificationStateButton}`}>Ver Detalhes</button>
                     </div>
                   ) : profile?.verificationStatus === 'verified' ? (
-                    <div style={{ textAlign: 'center', padding: '2rem' }}>
-                      <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>✅</div>
-                      <h3 style={{ color: '#34d399' }}>Perfil Verificado!</h3>
-                      <p style={{ color: '#9ca3af' }}>Seu perfil está autenticado e com destaque.</p>
+                    <div className={styles.verificationState}>
+                      <div className={styles.verificationIcon}>✅</div>
+                      <h3 className={styles.verificationStateSuccess}>Perfil Verificado!</h3>
+                      <p className={styles.verificationStateText}>Seu perfil está autenticado e com destaque.</p>
                     </div>
                   ) : verificationStep === 0 ? (
                     // STEP 0: INTRO
-                    <div style={{ padding: '1rem' }}>
-                      <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
+                    <div className={styles.verificationIntro}>
+                      <ul className={styles.verificationChecklist}>
                         {[
                           'Documento de identificação (BI ou Passaporte)',
                           'Foto do rosto para confirmação',
                           'Currículo atualizado em PDF',
                           'Contato válido (email e telefone)'
                         ].map((item, i) => (
-                          <li key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#e4e4e7' }}>
-                            <span style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem' }}>✓</span>
+                          <li key={i} className={styles.verificationChecklistItem}>
+                            <span className={styles.verificationCheckmark}>✓</span>
                             {item}
                           </li>
                         ))}
                       </ul>
                       <button
                         type="button"
-                        className={styles.primaryButton}
-                        style={{ width: '100%', padding: '1rem', fontSize: '1rem' }}
+                        className={`${styles.primaryButton} ${styles.fullWidthButton}`}
                         onClick={handleVerificationNext}
                       >
                         Iniciar verificação
@@ -2212,27 +2224,27 @@ const CandidateDashboard = () => {
                     </div>
                   ) : verificationStep === 5 ? (
                     // SUCCESS
-                    <div style={{ textAlign: 'center', padding: '2rem' }}>
-                      <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🎉</div>
-                      <h3 style={{ color: 'white' }}>Solicitação Enviada!</h3>
-                      <p style={{ color: '#9ca3af', marginBottom: '1rem' }}>Analisaremos seus dados e retornaremos em até 48h.</p>
+                    <div className={styles.verificationState}>
+                      <div className={styles.verificationIcon}>🎉</div>
+                      <h3>Solicitação Enviada!</h3>
+                      <p className={styles.verificationStateText}>Analisaremos seus dados e retornaremos em até 48h.</p>
                       <button onClick={() => setVerificationStep(0)} className={styles.secondaryButton}>Voltar</button>
                     </div>
                   ) : (
                     // WIZARD STEPS
-                    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem' }}>
-                        <button onClick={handleVerificationBack} style={{ background: 'none', border: 'none', color: '#6366f1', cursor: 'pointer', fontSize: '1.2rem' }}>←</button>
-                        <span style={{ color: '#9ca3af', fontSize: '0.9rem' }}>Passo {verificationStep} de 4</span>
+                    <div className={styles.verificationWizard}>
+                      <div className={styles.verificationWizardHeader}>
+                        <button onClick={handleVerificationBack} className={styles.verificationBackButton}>←</button>
+                        <span className={styles.verificationStepLabel}>Passo {verificationStep} de 4</span>
                       </div>
 
-                      <div style={{ flex: 1 }}>
+                      <div className={styles.verificationWizardBody}>
                         {verificationStep === 1 && (
                           <>
-                            <h3 style={{ color: 'white', marginBottom: '1rem' }}>Confirme seu Contato</h3>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            <h3 className={styles.verificationStepTitle}>Confirme seu Contato</h3>
+                            <div className={styles.verificationFieldGroup}>
                               <div>
-                                <label style={{ display: 'block', color: '#9ca3af', marginBottom: '0.5rem' }}>Email</label>
+                                <label className={styles.verificationFieldLabel}>Email</label>
                                 <input
                                   className={styles.profileInput}
                                   value={verificationData.email}
@@ -2240,7 +2252,7 @@ const CandidateDashboard = () => {
                                 />
                               </div>
                               <div>
-                                <label style={{ display: 'block', color: '#9ca3af', marginBottom: '0.5rem' }}>Telefone</label>
+                                <label className={styles.verificationFieldLabel}>Telefone</label>
                                 <input
                                   className={styles.profileInput}
                                   value={verificationData.phone}
@@ -2253,11 +2265,11 @@ const CandidateDashboard = () => {
 
                         {verificationStep === 2 && (
                           <>
-                            <h3 style={{ color: 'white', marginBottom: '1rem' }}>Documento de Identidade</h3>
-                            <p style={{ color: '#9ca3af', marginBottom: '1rem' }}>Envie uma foto legível do seu BI ou Passaporte.</p>
-                            <label className={styles.cvUploadButton} style={{ padding: '2rem', borderStyle: 'dashed', textAlign: 'center' }}>
-                              <span style={{ fontSize: '2rem' }}>🆔</span>
-                              <span style={{ display: 'block', margin: '1rem 0' }}>
+                            <h3 className={styles.verificationStepTitle}>Documento de Identidade</h3>
+                            <p className={styles.verificationStepDescription}>Envie uma foto legível do seu BI ou Passaporte.</p>
+                            <label className={`${styles.cvUploadButton} ${styles.verificationUpload}`}>
+                              <span className={styles.verificationUploadIcon}>🆔</span>
+                              <span className={styles.verificationUploadText}>
                                 {verificationData.idDocument ? verificationData.idDocument.name : 'Selecionar Documento'}
                               </span>
                               <input type="file" accept="image/*,.pdf" onChange={(e) => handleVerificationFile('idDocument', e.target.files[0])} />
@@ -2267,11 +2279,11 @@ const CandidateDashboard = () => {
 
                         {verificationStep === 3 && (
                           <>
-                            <h3 style={{ color: 'white', marginBottom: '1rem' }}>Foto do Rosto (Selfie)</h3>
-                            <p style={{ color: '#9ca3af', marginBottom: '1rem' }}>Tire uma selfie segurando seu documento para provar veracidade.</p>
-                            <label className={styles.cvUploadButton} style={{ padding: '2rem', borderStyle: 'dashed', textAlign: 'center' }}>
-                              <span style={{ fontSize: '2rem' }}>🤳</span>
-                              <span style={{ display: 'block', margin: '1rem 0' }}>
+                            <h3 className={styles.verificationStepTitle}>Foto do Rosto (Selfie)</h3>
+                            <p className={styles.verificationStepDescription}>Tire uma selfie segurando seu documento para provar veracidade.</p>
+                            <label className={`${styles.cvUploadButton} ${styles.verificationUpload}`}>
+                              <span className={styles.verificationUploadIcon}>🤳</span>
+                              <span className={styles.verificationUploadText}>
                                 {verificationData.selfie ? verificationData.selfie.name : 'Selecionar Selfie'}
                               </span>
                               <input type="file" accept="image/*" onChange={(e) => handleVerificationFile('selfie', e.target.files[0])} />
@@ -2281,19 +2293,19 @@ const CandidateDashboard = () => {
 
                         {verificationStep === 4 && (
                           <>
-                            <h3 style={{ color: 'white', marginBottom: '1rem' }}>Currículo Atualizado</h3>
-                            <p style={{ color: '#9ca3af', marginBottom: '1rem' }}>Confirme se este é o seu CV mais recente.</p>
+                            <h3 className={styles.verificationStepTitle}>Currículo Atualizado</h3>
+                            <p className={styles.verificationStepDescription}>Confirme se este é o seu CV mais recente.</p>
 
                             {user.cvUrl && !verificationData.cv && (
-                              <div style={{ background: 'rgba(255,255,255,0.05)', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              <div className={styles.verificationExistingCv}>
                                 <span>📄</span>
-                                <span style={{ color: 'white' }}>{user.cvName || 'Currículo Atual'}</span>
-                                <span style={{ marginLeft: 'auto', color: '#10b981', fontSize: '0.8rem' }}>Já salvo</span>
+                                <span className={styles.verificationExistingCvName}>{user.cvName || 'Currículo Atual'}</span>
+                                <span className={styles.verificationExistingCvStatus}>Já salvo</span>
                               </div>
                             )}
 
-                            <label className={styles.cvUploadButton} style={{ padding: '1.5rem', borderStyle: 'dashed', textAlign: 'center' }}>
-                              <span style={{ display: 'block' }}>
+                            <label className={`${styles.cvUploadButton} ${styles.verificationUpload} ${styles.verificationUploadCompact}`}>
+                              <span className={styles.verificationUploadText}>
                                 {verificationData.cv ? verificationData.cv.name : 'Enviar novo PDF (Opcional)'}
                               </span>
                               <input type="file" accept=".pdf" onChange={(e) => handleVerificationFile('cv', e.target.files[0])} />
@@ -2302,11 +2314,10 @@ const CandidateDashboard = () => {
                         )}
                       </div>
 
-                      <div style={{ marginTop: '2rem' }}>
+                      <div className={styles.verificationActions}>
                         {verificationStep < 4 ? (
                           <button
-                            className={styles.primaryButton}
-                            style={{ width: '100%' }}
+                            className={`${styles.primaryButton} ${styles.fullWidthButton}`}
                             disabled={
                               (verificationStep === 1 && (!verificationData.email || !verificationData.phone)) ||
                               (verificationStep === 2 && !verificationData.idDocument) ||
@@ -2318,8 +2329,7 @@ const CandidateDashboard = () => {
                           </button>
                         ) : (
                           <button
-                            className={styles.primaryButton}
-                            style={{ width: '100%' }}
+                            className={`${styles.primaryButton} ${styles.fullWidthButton}`}
                             onClick={handleVerificationSubmit}
                             disabled={verificationLoading}
                           >
@@ -2327,7 +2337,7 @@ const CandidateDashboard = () => {
                           </button>
                         )}
                         {verificationMessage && (
-                          <p style={{ color: '#ef4444', textAlign: 'center', marginTop: '1rem' }}>{verificationMessage.text}</p>
+                          <p className={styles.verificationMessage}>{verificationMessage.text}</p>
                         )}
                       </div>
                     </div>
@@ -2335,7 +2345,7 @@ const CandidateDashboard = () => {
                 </div>
               </div>
 
-              <div className={styles.planResources} style={{ width: '320px' }}>
+              <div className={`${styles.planResources} ${styles.planResourcesFixed}`}>
                 <h3>Benefícios</h3>
                 <ul className={styles.planFeatures}>
                   <li>Selo de confiança no perfil</li>

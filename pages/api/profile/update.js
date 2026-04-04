@@ -133,10 +133,17 @@ export default async function handler(req, res) {
       const planSummary = getPlanSummary(existingUserData);
 
       if (existingUserData.currentPlan && existingUserData.currentPlan !== planSummary.planId) {
-        userUpdates.currentPlan = 'basic_candidato';
-        userUpdates.planId = 'basic_candidato';
-        userUpdates.planName = 'Básico';
-        userUpdates.planEndDate = null;
+        if (!planSummary.isActive) {
+          userUpdates.currentPlan = 'basic_candidato';
+          userUpdates.planId = 'basic_candidato';
+          userUpdates.planName = 'Básico';
+          userUpdates.planEndDate = null;
+        } else {
+          // Normaliza legacy ids (ex.: "premium") sem rebaixar o utilizador.
+          userUpdates.currentPlan = planSummary.planId;
+          userUpdates.planId = planSummary.planId;
+          userUpdates.planName = planSummary.planName || existingUserData.planName || '';
+        }
       }
 
       const certificateAccess = canUploadCertificate(planSummary.planId, nextCertificates.length);

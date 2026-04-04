@@ -1,9 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import Link from 'next/link';
 import { getAuth } from 'firebase/auth';
 import LandingHeader from '../../../components/LandingHeader';
 import { requireAdminPageAuth } from '../../../lib/adminPageGuard';
+import styles from '../../../styles/AdminPanel.module.css';
+
+const getMessageTone = (message) => {
+  const normalized = String(message || '').toLowerCase();
+  return normalized.includes('sucesso') ? styles.alertSuccess : styles.alertError;
+};
 
 export default function PaymentSettings() {
   const router = useRouter();
@@ -24,7 +31,7 @@ export default function PaymentSettings() {
         setLoading(true);
         const auth = getAuth();
         const token = await auth.currentUser?.getIdToken();
-        
+
         if (!token) {
           router.push('/login');
           return;
@@ -32,7 +39,7 @@ export default function PaymentSettings() {
 
         const res = await fetch('/api/admin/payment-settings', {
           headers: {
-            'Authorization': `Bearer ${token}`
+            Authorization: `Bearer ${token}`
           }
         });
 
@@ -46,27 +53,28 @@ export default function PaymentSettings() {
         setLoading(false);
       }
     }
+
     loadSettings();
   }, [router]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({
       ...prev,
       [name]: value
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
     try {
       setSaving(true);
       setMessage('');
-      
+
       const auth = getAuth();
       const token = await auth.currentUser?.getIdToken();
-      
+
       if (!token) {
         router.push('/login');
         return;
@@ -76,7 +84,7 @@ export default function PaymentSettings() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify(formData)
       });
@@ -100,238 +108,117 @@ export default function PaymentSettings() {
     <>
       <Head>
         <title>Configurações de Pagamento - Admin</title>
-        <style>{`
-          body {
-            background: linear-gradient(180deg, #0a0e1a 0%, #1a1f35 100%);
-            min-height: 100vh;
-          }
-        `}</style>
       </Head>
       <LandingHeader />
-      
-      <main style={{ 
-        maxWidth: '900px', 
-        margin: '0 auto', 
-        padding: '2rem',
-        minHeight: '100vh'
-      }}>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '2rem'
-        }}>
-          <h1 style={{ 
-            fontSize: '2rem', 
-            fontWeight: '900', 
-            color: 'white',
-            margin: 0
-          }}>
-            Configurações de Pagamento
-          </h1>
-          <button
-            onClick={() => router.push('/dashboard/admin')}
-            style={{
-              padding: '0.75rem 1.5rem',
-              background: 'rgba(59, 130, 246, 0.2)',
-              border: '2px solid rgba(59, 130, 246, 0.3)',
-              borderRadius: '12px',
-              color: '#60a5fa',
-              fontWeight: '700',
-              cursor: 'pointer'
-            }}
-          >
-            Voltar
-          </button>
+
+      <main className={`${styles.page} ${styles.pageNarrow}`}>
+        <div className={styles.headerCard}>
+          <div className={styles.headerCopy}>
+            <Link
+              href="/dashboard/admin"
+              className={`${styles.linkButton} ${styles.buttonAccent} ${styles.buttonSmall}`}
+              style={{ '--button-bg': 'rgba(59, 130, 246, 0.2)', '--button-border': 'rgba(59, 130, 246, 0.3)', '--button-color': '#60a5fa' }}
+            >
+              ← Voltar
+            </Link>
+            <h1 className={`${styles.headerTitle} ${styles.headerTitleSmall}`}>Configurações de Pagamento</h1>
+            <p className={styles.headerSubtitle}>Defina os dados bancários e as instruções exibidas no fluxo de pagamento manual.</p>
+          </div>
         </div>
 
-        {message && (
-          <div style={{
-            padding: '1rem 1.5rem',
-            marginBottom: '2rem',
-            background: message.includes('sucesso') 
-              ? 'rgba(16, 185, 129, 0.15)'
-              : 'rgba(239, 68, 68, 0.15)',
-            border: `2px solid ${message.includes('sucesso') 
-              ? 'rgba(16, 185, 129, 0.3)'
-              : 'rgba(239, 68, 68, 0.3)'}`,
-            borderRadius: '12px',
-            color: message.includes('sucesso') ? '#34d399' : '#fca5a5',
-            fontSize: '0.95rem'
-          }}>
+        {message ? (
+          <div className={`${styles.alert} ${getMessageTone(message)}`}>
             {message}
           </div>
+        ) : null}
+
+        {loading ? (
+          <div className={styles.loadingState}>
+            <div className={styles.spinner} />
+            <p className={styles.loadingText}>Carregando configurações...</p>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className={`${styles.surface} ${styles.panel}`}>
+            <div className={styles.formGrid}>
+              <div className={styles.formField}>
+                <label htmlFor="account-number" className={styles.formLabel}>Número da Conta *</label>
+                <input
+                  id="account-number"
+                  type="text"
+                  name="accountNumber"
+                  value={formData.accountNumber}
+                  onChange={handleChange}
+                  required
+                  placeholder="Ex: 89606091001"
+                  className={styles.inputControl}
+                />
+              </div>
+
+              <div className={styles.formField}>
+                <label htmlFor="account-name" className={styles.formLabel}>Nome da Conta</label>
+                <input
+                  id="account-name"
+                  type="text"
+                  name="accountName"
+                  value={formData.accountName}
+                  onChange={handleChange}
+                  placeholder="Ex: EmpregoSTP"
+                  className={styles.inputControl}
+                />
+              </div>
+
+              <div className={styles.formField}>
+                <label htmlFor="bank-name" className={styles.formLabel}>Nome do Banco</label>
+                <input
+                  id="bank-name"
+                  type="text"
+                  name="bankName"
+                  value={formData.bankName}
+                  onChange={handleChange}
+                  placeholder="Ex: Banco Internacional"
+                  className={styles.inputControl}
+                />
+              </div>
+
+              <div className={styles.formField}>
+                <label htmlFor="payment-email" className={styles.formLabel}>Email para Comprovativos</label>
+                <input
+                  id="payment-email"
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Ex: empregoSTP@gmail.com"
+                  className={styles.inputControl}
+                />
+              </div>
+
+              <div className={`${styles.formField} ${styles.formFieldFull}`}>
+                <label htmlFor="payment-instructions" className={styles.formLabel}>Instruções de Pagamento</label>
+                <textarea
+                  id="payment-instructions"
+                  name="instructions"
+                  value={formData.instructions}
+                  onChange={handleChange}
+                  rows={5}
+                  placeholder="Instruções que aparecerão para o candidato ao assinar um plano..."
+                  className={styles.textareaControl}
+                />
+              </div>
+            </div>
+
+            <div className={styles.buttonGroupEnd}>
+              <button
+                type="submit"
+                disabled={saving || loading}
+                className={`${styles.buttonBase} ${styles.buttonAccent}`}
+                style={{ '--button-bg': 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)', '--button-border': 'transparent', '--button-color': '#fff' }}
+              >
+                {saving ? 'Salvando...' : 'Salvar Configurações'}
+              </button>
+            </div>
+          </form>
         )}
-
-        <form onSubmit={handleSubmit} style={{
-          background: 'rgba(255, 255, 255, 0.05)',
-          backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          borderRadius: '20px',
-          padding: '2rem'
-        }}>
-          <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{
-              display: 'block',
-              marginBottom: '0.5rem',
-              color: 'white',
-              fontWeight: '600',
-              fontSize: '0.95rem'
-            }}>
-              Número da Conta *
-            </label>
-            <input
-              type="text"
-              name="accountNumber"
-              value={formData.accountNumber}
-              onChange={handleChange}
-              required
-              placeholder="Ex: 89606091001"
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                borderRadius: '12px',
-                border: '2px solid rgba(255, 255, 255, 0.1)',
-                background: 'rgba(255, 255, 255, 0.05)',
-                color: 'white',
-                fontSize: '1rem'
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{
-              display: 'block',
-              marginBottom: '0.5rem',
-              color: 'white',
-              fontWeight: '600',
-              fontSize: '0.95rem'
-            }}>
-              Nome da Conta
-            </label>
-            <input
-              type="text"
-              name="accountName"
-              value={formData.accountName}
-              onChange={handleChange}
-              placeholder="Ex: EmpregoSTP"
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                borderRadius: '12px',
-                border: '2px solid rgba(255, 255, 255, 0.1)',
-                background: 'rgba(255, 255, 255, 0.05)',
-                color: 'white',
-                fontSize: '1rem'
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{
-              display: 'block',
-              marginBottom: '0.5rem',
-              color: 'white',
-              fontWeight: '600',
-              fontSize: '0.95rem'
-            }}>
-              Nome do Banco
-            </label>
-            <input
-              type="text"
-              name="bankName"
-              value={formData.bankName}
-              onChange={handleChange}
-              placeholder="Ex: Banco Internacional"
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                borderRadius: '12px',
-                border: '2px solid rgba(255, 255, 255, 0.1)',
-                background: 'rgba(255, 255, 255, 0.05)',
-                color: 'white',
-                fontSize: '1rem'
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{
-              display: 'block',
-              marginBottom: '0.5rem',
-              color: 'white',
-              fontWeight: '600',
-              fontSize: '0.95rem'
-            }}>
-              Email para Comprovativos
-            </label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Ex: empregoSTP@gmail.com"
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                borderRadius: '12px',
-                border: '2px solid rgba(255, 255, 255, 0.1)',
-                background: 'rgba(255, 255, 255, 0.05)',
-                color: 'white',
-                fontSize: '1rem'
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: '2rem' }}>
-            <label style={{
-              display: 'block',
-              marginBottom: '0.5rem',
-              color: 'white',
-              fontWeight: '600',
-              fontSize: '0.95rem'
-            }}>
-              Instruções de Pagamento
-            </label>
-            <textarea
-              name="instructions"
-              value={formData.instructions}
-              onChange={handleChange}
-              rows={4}
-              placeholder="Instruções que aparecerão para o candidato ao assinar um plano..."
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                borderRadius: '12px',
-                border: '2px solid rgba(255, 255, 255, 0.1)',
-                background: 'rgba(255, 255, 255, 0.05)',
-                color: 'white',
-                fontSize: '1rem',
-                resize: 'vertical'
-              }}
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={saving || loading}
-            style={{
-              width: '100%',
-              padding: '1rem',
-              background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '12px',
-              fontSize: '1rem',
-              fontWeight: '700',
-              cursor: saving || loading ? 'not-allowed' : 'pointer',
-              opacity: saving || loading ? 0.7 : 1,
-              boxShadow: '0 4px 15px rgba(251, 191, 36, 0.4)'
-            }}
-          >
-            {saving ? 'Salvando...' : 'Salvar Configurações'}
-          </button>
-        </form>
       </main>
     </>
   );

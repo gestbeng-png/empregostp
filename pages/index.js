@@ -180,7 +180,14 @@ export async function getServerSideProps() {
     const stats = {
       activeJobs: jobs.length,
       activeCandidates: candidatesSnapshot.size,
-      activeCompanies: companiesSnapshot.size
+      activeCompanies: companiesSnapshot.size,
+      recentJobsLast14Days: jobs.filter((job) => {
+        if (!job.createdAt) return false;
+        const createdAt = new Date(job.createdAt);
+        if (Number.isNaN(createdAt.getTime())) return false;
+        const ageInDays = (new Date().getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24);
+        return ageInDays <= 14;
+      }).length
     };
 
     return {
@@ -296,7 +303,7 @@ const resolveCategoryConfig = (category) => {
 
 export default function HomePage({
   jobs: initialJobs = [],
-  stats = { activeJobs: 0, activeCandidates: 0, activeCompanies: 0 },
+  stats = { activeJobs: 0, activeCandidates: 0, activeCompanies: 0, recentJobsLast14Days: 0 },
   spotlightCandidates = []
 }) {
   const router = useRouter();
@@ -386,10 +393,12 @@ export default function HomePage({
 
   const displayedCategories = categories.length === 0 ? FALLBACK_CATEGORIES : categories.slice(0, 6);
   const featuredJobs = filteredJobs.filter((job) => job.destaque).slice(0, 3);
+  const highlightedJobsCount = initialJobs.filter((job) => job.destaque).length;
   const statsCards = [
-    { label: 'Vagas Ativas', value: `${stats.activeJobs}+`, color: '#60a5fa' },
-    { label: 'Taxa de Sucesso', value: '95%', color: '#34d399' },
-    { label: 'Suporte Disponível', value: '24/7', color: '#818cf8' }
+    { label: 'Vagas Ativas', value: `${stats.activeJobs}+`, description: 'Oportunidades abertas agora', color: '#60a5fa' },
+    { label: 'Empresas', value: `${stats.activeCompanies}+`, description: 'Organizações a recrutar', color: '#34d399' },
+    { label: 'Talentos', value: `${stats.activeCandidates}+`, description: 'Perfis já registados', color: '#818cf8' },
+    { label: 'Perfis em Vitrine', value: `${spotlightCandidates.length}+`, description: 'Candidatos verificados em destaque', color: '#f59e0b' }
   ];
 
   return (
@@ -412,6 +421,10 @@ export default function HomePage({
             <div className={styles.heroContainer}>
               <div className={styles.heroGrid}>
                 <div className={styles.heroContent}>
+                  <div className={styles.heroEyebrow}>
+                    Plataforma nacional de recrutamento para São Tomé e Príncipe
+                  </div>
+
                   <h1 className={styles.heroTitle}>
                     Conectando <span className={styles.heroAccentBlue}>Talentos</span>
                     <br />
@@ -449,41 +462,67 @@ export default function HomePage({
                 </div>
 
                 <div className={styles.heroVisual}>
-                  {visibleSpotlightCandidates.map((candidate, index) => {
-                    const isFirst = index === 0;
-                    const avatarGradient = candidate.destaque
-                      ? 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)'
-                      : isFirst
-                        ? 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)'
-                        : 'linear-gradient(135deg, #10b981 0%, #34d399 100%)';
-                    const avatarShadow = candidate.destaque
-                      ? 'rgba(245, 158, 11, 0.45)'
-                      : isFirst
-                        ? 'rgba(59, 130, 246, 0.45)'
-                        : 'rgba(16, 185, 129, 0.45)';
+                  <div className={styles.heroShowcase}>
+                    <div className={styles.heroCandidatesStack}>
+                      {visibleSpotlightCandidates.length === 0 ? (
+                        <article className={styles.heroCandidatesEmpty}>
+                          <strong>Perfis em atualização</strong>
+                          <p>A vitrine de talentos será preenchida assim que existirem candidatos verificados disponíveis.</p>
+                        </article>
+                      ) : visibleSpotlightCandidates.map((candidate, index) => {
+                        const isFirst = index === 0;
+                        const avatarGradient = candidate.destaque
+                          ? 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)'
+                          : isFirst
+                            ? 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)'
+                            : 'linear-gradient(135deg, #10b981 0%, #34d399 100%)';
+                        const avatarShadow = candidate.destaque
+                          ? 'rgba(245, 158, 11, 0.45)'
+                          : isFirst
+                            ? 'rgba(59, 130, 246, 0.45)'
+                            : 'rgba(16, 185, 129, 0.45)';
 
-                    return (
-                      <article
-                        key={candidate.id}
-                        className={`${styles.candidateCard} ${isFirst ? styles.candidateCardTop : styles.candidateCardBottom}`}
-                        style={{
-                          '--candidate-avatar-gradient': avatarGradient,
-                          '--candidate-avatar-shadow': avatarShadow,
-                          '--candidate-delay': isFirst ? '0s' : '1.5s'
-                        }}
-                      >
-                        <div className={styles.candidateAvatar}>{candidate.initials}</div>
-                        <div className={styles.candidateMeta}>
-                          <h3 className={styles.candidateName}>{candidate.fullName}</h3>
-                          <p className={styles.candidateHeadline}>{candidate.headline}</p>
-                          <div className={styles.candidateTags}>
-                            <span className={styles.candidateTag}>Verificado</span>
-                            {candidate.destaque ? <span className={styles.candidateFeaturedTag}>Destaque</span> : null}
-                          </div>
-                        </div>
-                      </article>
-                    );
-                  })}
+                        return (
+                          <article
+                            key={candidate.id}
+                            className={styles.heroCandidateCard}
+                            style={{
+                              '--candidate-avatar-gradient': avatarGradient,
+                              '--candidate-avatar-shadow': avatarShadow,
+                              '--candidate-delay': isFirst ? '0s' : '1.5s'
+                            }}
+                          >
+                            <div className={styles.candidateAvatar}>{candidate.initials}</div>
+                            <div className={styles.candidateMeta}>
+                              <div className={styles.heroCandidateTop}>
+                                <h3 className={styles.candidateName}>{candidate.fullName}</h3>
+                                {candidate.destaque ? <span className={styles.candidateFeaturedTag}>Destaque</span> : null}
+                              </div>
+                              <p className={styles.candidateHeadline}>{candidate.headline}</p>
+                              <div className={styles.candidateTags}>
+                                <span className={styles.candidateTag}>Verificado</span>
+                                <span className={styles.heroCandidateMetaText}>Perfil em vitrine</span>
+                              </div>
+                            </div>
+                          </article>
+                        );
+                      })}
+                    </div>
+
+                    <div className={styles.heroShowcaseFooter}>
+                      <div>
+                        <span className={styles.heroShowcaseFooterLabel}>Acesso rápido</span>
+                        <strong className={styles.heroShowcaseFooterValue}>
+                          {spotlightCandidates.length > 0
+                            ? `${spotlightCandidates.length} perfis em vitrine neste momento`
+                            : 'Novos perfis serão destacados assim que forem verificados'}
+                        </strong>
+                      </div>
+                      <Link href="/candidatos" className={styles.heroShowcaseLink}>
+                        Ver perfis
+                      </Link>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -492,11 +531,21 @@ export default function HomePage({
           <section className={styles.statsSection}>
             <div className={styles.statsGlow}></div>
             <div className={styles.sectionContainer}>
+              <div className={`${styles.sectionIntro} ${styles.sectionIntroCompact}`}>
+                <div className={`${styles.sectionBadge} ${styles.badgeIndigo}`}>
+                  <span>Números Reais</span>
+                </div>
+                <h2 className={styles.sectionHeading}>
+                  Indicadores que mostram a <span className={styles.sectionAccentIndigo}>força da plataforma</span>
+                </h2>
+              </div>
+
               <div className={styles.statsGrid}>
                 {statsCards.map((item) => (
                   <article key={item.label} className={styles.statCard} style={buildAccentVars(item.color)}>
                     <p className={styles.statValue}>{item.value}</p>
                     <p className={styles.statLabel}>{item.label}</p>
+                    <p className={styles.statMeta}>{item.description}</p>
                   </article>
                 ))}
               </div>
@@ -507,27 +556,34 @@ export default function HomePage({
             <div className={styles.jobsGlowLeft}></div>
             <div className={styles.jobsGlowRight}></div>
             <div className={styles.sectionContainer}>
-              <div className={styles.sectionIntro}>
-                <div className={`${styles.sectionBadge} ${styles.badgeBlue}`}>
-                  <span>Vagas em Destaque</span>
+              <div className={styles.jobsSectionHead}>
+                <div className={styles.jobsLead}>
+                  <div className={`${styles.sectionBadge} ${styles.badgeBlue}`}>
+                    <span>Vagas em Destaque</span>
+                  </div>
+                  <h2 className={styles.sectionHeading}>
+                    Encontre Sua <span className={styles.sectionAccentBlue}>Próxima Oportunidade</span>
+                  </h2>
+                  <p className={styles.sectionDescription}>
+                    Uma seleção objetiva das vagas com melhor visibilidade, seguida das oportunidades mais recentes publicadas na plataforma.
+                  </p>
                 </div>
-                <h2 className={styles.sectionHeading}>
-                  Encontre Sua <span className={styles.sectionAccentBlue}>Próxima Oportunidade</span>
-                </h2>
-                <p className={styles.sectionDescription}>
-                  Milhares de empresas estão procurando talentos como você. Explore as vagas mais recentes.
-                </p>
               </div>
 
               {featuredJobs.length > 0 ? (
                 <div className={styles.featuredPanel}>
                   <div className={styles.featuredPanelHeader}>
-                    <h3 className={styles.featuredPanelTitle}>⭐ Vagas em Destaque</h3>
-                    <p className={styles.featuredPanelText}>As melhores oportunidades selecionadas para você</p>
+                    <h3 className={styles.featuredPanelTitle}>Seleção Editorial</h3>
+                    <p className={styles.featuredPanelText}>As vagas com maior prioridade visual e melhor exposição nesta semana</p>
                   </div>
                   <JobList jobs={featuredJobs} />
                 </div>
               ) : null}
+
+              <div className={styles.jobsListIntro}>
+                <h3 className={styles.jobsListTitle}>Últimas oportunidades abertas</h3>
+                <p className={styles.jobsListText}>Atualizadas diretamente das empresas que estão a contratar agora.</p>
+              </div>
 
               <JobList jobs={filteredJobs.slice(0, 6)} />
 

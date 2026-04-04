@@ -4,6 +4,7 @@ import { FiMapPin, FiBriefcase, FiClock, FiShare2, FiBookmark, FiChevronRight, F
 import { HiOutlineBuildingOffice2 } from 'react-icons/hi2';
 import { useAuth } from '../context/AuthContext';
 import Badge from './Badge';
+import styles from '../styles/JobCard.module.css';
 
 const JobCard = ({ vaga, onToggleSave, isSaved: initialIsSaved = false }) => {
   const { user } = useAuth();
@@ -190,360 +191,80 @@ const JobCard = ({ vaga, onToggleSave, isSaved: initialIsSaved = false }) => {
   const badgeStatus = destaque ? 'urgent' : status;
 
   return (
-    <>
-      <style jsx>{`
-        .job-card {
-          position: relative;
-          background: linear-gradient(160deg, rgba(15, 23, 42, 0.78) 0%, rgba(2, 6, 23, 0.92) 100%);
-          border: 1px solid rgba(51, 65, 85, 0.6);
-          border-radius: 26px;
-          padding: 1.4rem;
-          overflow: hidden;
-          display: flex;
-          flex-direction: column;
-          gap: 1.1rem;
-          transition: all 0.4s ease;
-        }
-        .job-card.featured {
-          background: linear-gradient(135deg, rgba(251, 146, 60, 0.08) 0%, rgba(59, 130, 246, 0.08) 100%);
-          border: 2px solid rgba(251, 146, 60, 0.4);
-          box-shadow: 0 0 30px rgba(251, 146, 60, 0.15);
-        }
-        .job-card::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          border-radius: inherit;
-          border: 1px solid transparent;
-          background: linear-gradient(120deg, rgba(59, 130, 246, 0.18), rgba(99, 102, 241, 0)) border-box;
-          -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-          -webkit-mask-composite: xor;
-          mask-composite: exclude;
-          pointer-events: none;
-          opacity: 0;
-          transition: opacity 0.4s ease;
-        }
-        .job-card.featured::before {
-          background: linear-gradient(120deg, rgba(251, 146, 60, 0.25), rgba(251, 146, 60, 0)) border-box;
-          opacity: 1;
-        }
-        .job-card:hover {
-          border-color: rgba(59, 130, 246, 0.3);
-          background: linear-gradient(160deg, rgba(15, 23, 42, 0.9) 0%, rgba(2, 6, 23, 0.98) 100%);
-          transform: translateY(-6px);
-          box-shadow: 0 26px 60px rgba(8, 112, 184, 0.16);
-        }
-        .job-card.featured:hover {
-          border-color: rgba(251, 146, 60, 0.6);
-          background: linear-gradient(135deg, rgba(251, 146, 60, 0.12) 0%, rgba(59, 130, 246, 0.12) 100%);
-          transform: translateY(-8px);
-          box-shadow: 0 30px 70px rgba(251, 146, 60, 0.2);
-        }
-        .job-card:hover::before {
-          opacity: 1;
-        }
-        .job-glow {
-          position: absolute;
-          right: -80px;
-          top: -80px;
-          width: 160px;
-          height: 160px;
-          border-radius: 999px;
-          background: rgba(37, 99, 235, 0.12);
-          filter: blur(48px);
-          opacity: 0;
-          transition: opacity 0.4s ease;
-        }
-        .job-card.featured .job-glow {
-          background: rgba(251, 146, 60, 0.2);
-          opacity: 0.5;
-        }
-        .job-card:hover .job-glow {
-          opacity: 1;
-        }
-        .featured-badge {
-          position: absolute;
-          top: -1px;
-          right: -1px;
-          background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
-          color: white;
-          padding: 0.5rem 1rem;
-          border-radius: 0 26px 0 16px;
-          font-weight: 700;
-          font-size: 0.75rem;
-          display: flex;
-          align-items: center;
-          gap: 0.4rem;
-          z-index: 2;
-          box-shadow: 0 4px 12px rgba(251, 146, 60, 0.3);
-        }
-        .job-top {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          position: relative;
-          z-index: 1;
-        }
-        .bookmark {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 38px;
-          height: 38px;
-          border-radius: 12px;
-          border: 1px solid rgba(51, 65, 85, 0.6);
-          color: #94a3b8;
-          background: rgba(15, 23, 42, 0.6);
-          transition: all 0.3s ease;
-        }
-        .bookmark:hover {
-          color: #60a5fa;
-          border-color: rgba(59, 130, 246, 0.35);
-          background: rgba(15, 23, 42, 0.9);
-        }
-        .bookmark.is-saved {
-          color: #fbbf24;
-          border-color: rgba(251, 191, 36, 0.35);
-          background: rgba(30, 41, 59, 0.7);
-        }
-        .company-label {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.4rem;
-          color: #7dd3fc;
-          font-size: 0.6rem;
-          font-weight: 800;
-          text-transform: uppercase;
-          letter-spacing: 0.2em;
-          margin-bottom: 0.6rem;
-          padding: 0.3rem 0.7rem;
-          border-radius: 999px;
-          background: rgba(30, 58, 138, 0.25);
-          border: 1px solid rgba(59, 130, 246, 0.25);
-        }
-        .job-title {
-          font-size: 1.28rem;
-          font-weight: 900;
-          color: #f8fafc;
-          line-height: 1.3;
-          margin: 0 0 0.9rem;
-        }
-        .job-card:hover .job-title {
-          color: #60a5fa;
-        }
-        .meta-grid {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 0.6rem;
-          color: rgba(148, 163, 184, 0.9);
-          font-size: 0.8rem;
-        }
-        .meta-pill {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          background: rgba(2, 6, 23, 0.65);
-          padding: 0.55rem 0.8rem;
-          border-radius: 16px;
-          border: 1px solid rgba(30, 41, 59, 0.7);
-        }
-        .salary-card {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          padding: 0.9rem 1rem;
-          background: rgba(2, 6, 23, 0.75);
-          border-radius: 20px;
-          border: 1px solid rgba(51, 65, 85, 0.5);
-        }
-        .salary-icon {
-          width: 42px;
-          height: 42px;
-          border-radius: 14px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
-          color: white;
-          box-shadow: 0 10px 20px rgba(30, 64, 175, 0.35);
-        }
-        .salary-label {
-          font-size: 0.55rem;
-          font-weight: 800;
-          color: rgba(148, 163, 184, 0.8);
-          text-transform: uppercase;
-          letter-spacing: 0.18em;
-        }
-        .salary-value {
-          font-size: 0.98rem;
-          font-weight: 900;
-          color: #f8fafc;
-        }
-        .actions {
-          display: grid;
-          grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.9fr);
-          gap: 0.75rem;
-          align-items: stretch;
-        }
-        .action-primary {
-          flex: 1;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 0.5rem;
-          padding: 0.85rem 0.9rem;
-          min-height: 48px;
-          border-radius: 18px;
-          background: rgba(30, 41, 59, 0.9);
-          border: 1px solid rgba(71, 85, 105, 0.7);
-          color: #f8fafc;
-          font-weight: 800;
-          font-size: 0.9rem;
-          letter-spacing: 0.01em;
-          transition: all 0.3s ease;
-          text-decoration: none;
-          box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.5);
-        }
-        .action-primary:hover {
-          background: rgba(51, 65, 85, 0.95);
-          border-color: rgba(100, 116, 139, 0.8);
-          transform: translateY(-1px);
-          box-shadow: 0 10px 22px rgba(15, 23, 42, 0.35);
-        }
-        .action-primary:active {
-          transform: translateY(0);
-          box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.6);
-        }
-        .action-secondary {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-height: 48px;
-          padding: 0.8rem 1.1rem;
-          border-radius: 18px;
-          background: rgba(15, 23, 42, 0.9);
-          border: 1px solid rgba(51, 65, 85, 0.7);
-          color: rgba(226, 232, 240, 0.9);
-          font-weight: 800;
-          font-size: 0.8rem;
-          transition: all 0.3s ease;
-          box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.5);
-        }
-        .action-secondary:hover {
-          background: rgba(30, 41, 59, 0.95);
-          border-color: rgba(100, 116, 139, 0.8);
-          color: #f8fafc;
-          transform: translateY(-1px);
-          box-shadow: 0 10px 20px rgba(15, 23, 42, 0.3);
-        }
-        .footer {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          border-top: 1px solid rgba(30, 41, 59, 0.6);
-          padding-top: 0.85rem;
-          font-size: 0.75rem;
-          color: rgba(148, 163, 184, 0.8);
-          font-weight: 600;
-        }
-        .footer span {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.4rem;
-        }
-        .job-id {
-          background: rgba(30, 41, 59, 0.8);
-          padding: 0.2rem 0.5rem;
-          border-radius: 6px;
-          color: rgba(148, 163, 184, 0.9);
-        }
-        @media (max-width: 768px) {
-          .job-card {
-            padding: 1.2rem;
-          }
-          .meta-grid {
-            grid-template-columns: 1fr;
-          }
-          .actions {
-            grid-template-columns: 1fr;
-          }
-        }
-      `}</style>
+    <div className={`${styles.jobCard} ${destaque ? styles.jobCardFeatured : ''}`}>
+      <div className={styles.jobGlow} />
 
-      <div className={`job-card ${destaque ? 'featured' : ''}`}>
-        <div className="job-glow" />
-
-        {destaque && (
-          <div className="featured-badge">
-            <span>⭐</span>
-            <span>Em Destaque</span>
-          </div>
-        )}
-
-        <div className="job-top">
-          <Badge status={badgeStatus} />
-          {userType !== 'empresa' && (
-            <button
-              className={`bookmark ${isSaved ? 'is-saved' : ''}`}
-              onClick={handleToggleSave}
-              disabled={saving}
-              title={isSaved ? 'Remover dos salvos' : 'Salvar vaga'}
-            >
-              <FiBookmark size={18} />
-            </button>
-          )}
+      {destaque && (
+        <div className={styles.featuredBadge}>
+          <span>⭐</span>
+          <span>Em Destaque</span>
         </div>
+      )}
 
-        <div>
-          <div className="company-label">
-            <HiOutlineBuildingOffice2 size={14} />
-            <span>{companyLabel}</span>
-          </div>
-          <h3 className="job-title">{titulo}</h3>
+      <div className={styles.jobTop}>
+        <Badge status={badgeStatus} />
+        {userType !== 'empresa' && (
+          <button
+            type="button"
+            className={`${styles.bookmark} ${isSaved ? styles.bookmarkSaved : ''}`}
+            onClick={handleToggleSave}
+            disabled={saving}
+            title={isSaved ? 'Remover dos salvos' : 'Salvar vaga'}
+          >
+            <FiBookmark size={18} />
+          </button>
+        )}
+      </div>
 
-        <div className="meta-grid">
-          <div className="meta-pill">
-            <FiMapPin size={14} color="rgba(96, 165, 250, 0.8)" />
+      <div className={styles.content}>
+        <div className={styles.companyLabel}>
+          <HiOutlineBuildingOffice2 size={14} />
+          <span>{companyLabel}</span>
+        </div>
+        <h3 className={styles.jobTitle}>{titulo}</h3>
+
+        <div className={styles.metaGrid}>
+          <div className={styles.metaPill}>
+            <FiMapPin size={14} className={styles.metaIcon} />
             <span>{locationLabel}</span>
           </div>
-          <div className="meta-pill">
-            <FiBriefcase size={14} color="rgba(96, 165, 250, 0.8)" />
+          <div className={styles.metaPill}>
+            <FiBriefcase size={14} className={styles.metaIcon} />
             <span>{getContractTypeLabel()}</span>
           </div>
-          <div className="meta-pill">
-            <FiClock size={14} color="rgba(96, 165, 250, 0.8)" />
+          <div className={styles.metaPill}>
+            <FiClock size={14} className={styles.metaIcon} />
             <span>{formatPublishedAgo()}</span>
           </div>
-          <div className="meta-pill">
-            <FiEye size={14} color="rgba(96, 165, 250, 0.8)" />
+          <div className={styles.metaPill}>
+            <FiEye size={14} className={styles.metaIcon} />
             <span>{viewsCount} visualizações</span>
           </div>
         </div>
-        </div>
 
-        <div className="salary-card">
-          <div className="salary-icon">
+        <div className={styles.salaryCard}>
+          <div className={styles.salaryIcon}>
             <FiDollarSign size={20} />
           </div>
-          <div>
-            <p className="salary-label">Faixa Salarial</p>
-            <p className="salary-value">{salaryRange}</p>
+          <div className={styles.salaryMeta}>
+            <span className={styles.salaryLabel}>Faixa Salarial</span>
+            <p className={styles.salaryValue}>{salaryRange}</p>
           </div>
         </div>
-
-        <div className="actions">
-          <Link href={`/vaga/${id}`} className="action-primary">
-            Ver Detalhes
-            <FiChevronRight size={16} />
-          </Link>
-          <button className="action-secondary" onClick={handleShare} title="Partilhar">
-            <FiShare2 size={18} />
-          </button>
-        </div>
-
-        {/* Tempo de publicação removido por solicitação */}
       </div>
-    </>
+
+      <div className={styles.actions}>
+        <Link href={`/vaga/${id}`} className={styles.actionPrimary}>
+          Ver Detalhes
+          <FiChevronRight size={16} />
+        </Link>
+        <button type="button" className={styles.actionSecondary} onClick={handleShare} title="Partilhar">
+          <FiShare2 size={18} />
+        </button>
+      </div>
+
+      {/* Tempo de publicação removido por solicitação */}
+    </div>
   );
 };
 

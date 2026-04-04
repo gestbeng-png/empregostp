@@ -48,6 +48,13 @@ function isStaticAsset(pathname) {
   return pathname.startsWith('/_next/') || /\.(?:js|css|png|jpg|jpeg|svg|webp|ico|woff2?)$/i.test(pathname);
 }
 
+function shouldBypassRequest(pathname) {
+  if (pathname.startsWith('/_next/static/chunks/')) return true;
+  if (pathname.startsWith('/_next/webpack-hmr')) return true;
+  if (self.location.hostname === 'localhost' && pathname.startsWith('/_next/')) return true;
+  return false;
+}
+
 function isApiRequest(pathname) {
   return pathname.startsWith('/api/');
 }
@@ -146,6 +153,7 @@ self.addEventListener('fetch', (event) => {
   const requestUrl = new URL(event.request.url);
   if (requestUrl.origin !== self.location.origin) return;
   if (isApiRequest(requestUrl.pathname)) return;
+  if (shouldBypassRequest(requestUrl.pathname)) return;
 
   if (event.request.mode === 'navigate') {
     if (isCriticalDashboardPage(requestUrl.pathname)) {

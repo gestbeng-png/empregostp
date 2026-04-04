@@ -1,6 +1,25 @@
 import { admin } from '../../lib/firebaseAdmin';
 import { canVerifyProfile, getPlanSummary } from '../../lib/candidatePlanFeatures';
 
+function sanitizeFirestoreValue(value) {
+  if (value === undefined) return undefined;
+  if (value === null) return null;
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => sanitizeFirestoreValue(item))
+      .filter((item) => item !== undefined);
+  }
+  if (typeof value === 'object') {
+    const result = {};
+    Object.entries(value).forEach(([key, val]) => {
+      const next = sanitizeFirestoreValue(val);
+      if (next !== undefined) result[key] = next;
+    });
+    return result;
+  }
+  return value;
+}
+
 /**
  * API para gerenciar verificações de perfil
  * POST: Solicitar verificação
@@ -43,6 +62,8 @@ export default async function handler(req, res) {
 async function handlePost(req, res, decodedToken) {
   try {
     const { uid, documents, companyName } = req.body;
+    const safeCompanyName = typeof companyName === 'string' ? companyName.trim() : '';
+    const safeDocuments = sanitizeFirestoreValue(documents || {}) || {};
 
     if (!uid) {
       return res.status(400).json({ error: 'UID não fornecido' });
@@ -68,17 +89,29 @@ async function handlePost(req, res, decodedToken) {
     }
 
     const planSummary = getPlanSummary(targetUserData);
+    // Sincronização de plano:
+    // - Se estiver expirado, volta para básico
+    // - Se estiver ativo mas o identificador estiver legacy (ex.: "premium"), normaliza para o planId atual
     if (targetUserData.currentPlan && targetUserData.currentPlan !== planSummary.planId) {
       try {
-        await targetUserRef.update({
-          currentPlan: 'basic_candidato',
-          planId: 'basic_candidato',
-          planName: 'Básico',
-          planEndDate: null,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp()
-        });
+        if (!planSummary.isActive) {
+          await targetUserRef.update({
+            currentPlan: 'basic_candidato',
+            planId: 'basic_candidato',
+            planName: 'Básico',
+            planEndDate: null,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp()
+          });
+        } else {
+          await targetUserRef.update({
+            currentPlan: planSummary.planId,
+            planId: planSummary.planId,
+            planName: planSummary.planName || targetUserData.planName || '',
+            updatedAt: admin.firestore.FieldValue.serverTimestamp()
+          });
+        }
       } catch (planSyncError) {
-        console.error('Erro ao sincronizar plano expirado para verificação:', planSyncError);
+        console.error('Erro ao sincronizar plano para verificação:', planSyncError);
       }
     }
 
@@ -92,19 +125,71 @@ async function handlePost(req, res, decodedToken) {
       });
     }
 
-    // Verificar se já existe verificação ativa
-    const existingVerifications = await admin
+    // Se já existe verificação pendente, atualizamos a existente (reenvio) em vez de bloquear.
+    const pendingSnapshot = await admin
       .firestore()
       .collection('verifications')
       .where('uid', '==', uid)
-      .where('status', 'in', ['pending', 'approved'])
+      .where('status', '==', 'pending')
       .get();
 
-    if (!existingVerifications.empty) {
-      const existing = existingVerifications.docs[0].data();
+    if (!pendingSnapshot.empty) {
+      // Escolhe a mais recente por submittedAt/updatedAt.
+      const pendingDoc = pendingSnapshot.docs.sort((a, b) => {
+        const aTime = a.data().updatedAt?.toDate?.()?.getTime?.() || a.data().submittedAt?.toDate?.()?.getTime?.() || 0;
+        const bTime = b.data().updatedAt?.toDate?.()?.getTime?.() || b.data().submittedAt?.toDate?.()?.getTime?.() || 0;
+        return bTime - aTime;
+      })[0];
+
+      await pendingDoc.ref.update({
+        documents: safeDocuments,
+        companyName: safeCompanyName,
+        submittedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        resubmittedAt: admin.firestore.FieldValue.serverTimestamp(),
+        submittedBy: decodedToken.uid,
+      });
+
+      await admin.firestore().collection('users').doc(uid).set({
+        verificationStatus: 'pending',
+        verificationDate: admin.firestore.FieldValue.serverTimestamp(),
+        verificationData: safeDocuments,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+
+      await admin.firestore().collection('audit_logs').add({
+        action: 'VERIFICATION_RESUBMITTED',
+        userId: uid,
+        initiatedBy: decodedToken.uid,
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        details: {
+          verificationId: pendingDoc.id,
+          companyName: safeCompanyName,
+        },
+      });
+
+      return res.status(200).json({
+        id: pendingDoc.id,
+        message: 'Verificação reenviada com sucesso (pedido atualizado).',
+        status: 'pending',
+        updated: true,
+      });
+    }
+
+    // Se já foi aprovado, não cria novo pedido.
+    const approvedSnapshot = await admin
+      .firestore()
+      .collection('verifications')
+      .where('uid', '==', uid)
+      .where('status', '==', 'approved')
+      .limit(1)
+      .get();
+
+    if (!approvedSnapshot.empty) {
       return res.status(400).json({
-        error: 'Já existe uma verificação ativa',
-        status: existing.status,
+        error: 'O seu perfil já foi aprovado na verificação. Se ainda não aparece como verificado, peça ao suporte para sincronizar.',
+        status: 'approved',
+        code: 'ALREADY_APPROVED'
       });
     }
 
@@ -112,8 +197,8 @@ async function handlePost(req, res, decodedToken) {
     const verificationData = {
       uid,
       status: 'pending',
-      documents: documents || {},
-      companyName: companyName || '',
+      documents: safeDocuments,
+      companyName: safeCompanyName,
       submittedAt: admin.firestore.FieldValue.serverTimestamp(),
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -128,7 +213,7 @@ async function handlePost(req, res, decodedToken) {
     await admin.firestore().collection('users').doc(uid).set({
       verificationStatus: 'pending',
       verificationDate: admin.firestore.FieldValue.serverTimestamp(),
-      verificationData: documents || {},
+      verificationData: safeDocuments,
       updatedAt: admin.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
 
@@ -140,7 +225,7 @@ async function handlePost(req, res, decodedToken) {
       timestamp: admin.firestore.FieldValue.serverTimestamp(),
       details: {
         verificationId: docRef.id,
-        companyName,
+        companyName: safeCompanyName,
       },
     });
 

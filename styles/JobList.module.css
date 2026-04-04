@@ -1,12 +1,12 @@
 .emptyState {
   max-width: 800px;
   margin: 0 auto;
-  padding: 4rem 2rem;
+  padding: var(--app-space-3xl) var(--app-card-padding-lg);
   text-align: center;
-  border-radius: 28px;
+  border-radius: var(--app-card-radius-lg);
   border: 1px dashed rgba(96, 165, 250, 0.28);
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.84), rgba(15, 23, 42, 0.64));
-  box-shadow: var(--app-shadow-sm);
+  background: var(--app-card-surface);
+  box-shadow: var(--app-shadow-card);
 }
 
 .emptyIcon {
@@ -38,16 +38,17 @@
 
 .jobListGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-  gap: 1.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: var(--app-grid-gap-md);
   width: 100%;
   margin: 0 auto;
+  align-items: stretch;
 }
 
 @media (max-width: 768px) {
   .jobListGrid {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: 1.25rem;
   }
 }
 

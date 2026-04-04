@@ -10,6 +10,29 @@ function MyApp({ Component, pageProps }) {
     if (typeof window === 'undefined') return undefined;
     if (!('serviceWorker' in navigator)) return undefined;
 
+    if (process.env.NODE_ENV !== 'production') {
+      const cleanupDevServiceWorker = async () => {
+        try {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(registrations.map((registration) => registration.unregister()));
+        } catch (error) {
+          // Keep development mode resilient even if SW cleanup fails.
+        }
+
+        if ('caches' in window) {
+          try {
+            const cacheKeys = await caches.keys();
+            await Promise.all(cacheKeys.map((cacheKey) => caches.delete(cacheKey)));
+          } catch (error) {
+            // Best effort cache cleanup.
+          }
+        }
+      };
+
+      cleanupDevServiceWorker();
+      return undefined;
+    }
+
     const registerWorker = async () => {
       try {
         await navigator.serviceWorker.register('/sw.js');

@@ -6,6 +6,26 @@ import PublicPageShell from '../components/PublicPageShell';
 import VerificationBadge from '../components/VerificationBadge';
 import styles from '../styles/CandidatosPage.module.css';
 
+function toMillis(value) {
+  if (!value) return 0;
+  if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+  if (value instanceof Date) return value.getTime();
+  if (typeof value.toMillis === 'function') return value.toMillis();
+  if (typeof value.toDate === 'function') {
+    const d = value.toDate();
+    return d instanceof Date ? d.getTime() : 0;
+  }
+  if (typeof value.seconds === 'number') return value.seconds * 1000;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? 0 : d.getTime();
+}
+
+function toIsoDateString(value) {
+  const millis = toMillis(value);
+  if (!millis) return null;
+  return new Date(millis).toISOString();
+}
+
 async function getViewerAccess(context, admin) {
   const baseAccess = {
     userType: 'guest',
@@ -118,14 +138,13 @@ export async function getServerSideProps(context) {
           experience: profileData.experience || userData.experiencia || '',
           verified,
           destaque: userData.destaque || userData.curriculoDestacado || false,
-          createdAt: userData.createdAt,
+          createdAt: toIsoDateString(userData.createdAt),
+          createdAtMillis: toMillis(userData.createdAt),
         };
       })
       .filter((candidato) => candidato.verified)
       .sort((a, b) => {
-        const aTime = a.createdAt?.seconds || 0;
-        const bTime = b.createdAt?.seconds || 0;
-        return bTime - aTime;
+        return (b.createdAtMillis || 0) - (a.createdAtMillis || 0);
       });
 
     return {
@@ -192,14 +211,23 @@ export default function Candidatos({ candidatos = [], totalCandidatos = 0, viewe
       filtered = filtered.sort((a, b) => (b.destaque ? 1 : 0) - (a.destaque ? 1 : 0));
     } else {
       filtered = filtered.sort((a, b) => {
-        const aTime = a.createdAt?.seconds || 0;
-        const bTime = b.createdAt?.seconds || 0;
-        return bTime - aTime;
+        return (b.createdAtMillis || 0) - (a.createdAtMillis || 0);
       });
     }
 
     return filtered;
   }, [candidatos, searchTerm, selectedArea, sortBy]);
+
+  const featuredCandidatesCount = useMemo(
+    () => candidatos.filter((candidato) => candidato.destaque).length,
+    [candidatos]
+  );
+
+  const activeFilterChips = [
+    searchTerm.trim() ? `Busca: ${searchTerm.trim()}` : null,
+    selectedArea ? `Área: ${selectedArea}` : null,
+    sortBy === 'destaque' ? 'Ordenação: Destacados' : 'Ordenação: Mais recentes',
+  ].filter(Boolean);
 
   function resetFilters() {
     setSearchTerm('');
@@ -221,10 +249,26 @@ export default function Candidatos({ candidatos = [], totalCandidatos = 0, viewe
           <section className={styles.hero}>
             <div className={styles.container}>
               <div className={styles.heroContent}>
+                <div className={styles.heroBadge}>Banco de talentos validado</div>
                 <h1 className={styles.title}>Candidatos Verificados</h1>
                 <p className={styles.subtitle}>
                   Banco de talentos com perfis validados pela plataforma.
                 </p>
+
+                <div className={styles.heroStats}>
+                  <div className={styles.heroStatCard}>
+                    <span className={styles.heroStatLabel}>Verificados</span>
+                    <strong className={styles.heroStatValue}>{totalCandidatos}</strong>
+                  </div>
+                  <div className={styles.heroStatCard}>
+                    <span className={styles.heroStatLabel}>Áreas</span>
+                    <strong className={styles.heroStatValue}>{uniqueAreas.length}</strong>
+                  </div>
+                  <div className={styles.heroStatCard}>
+                    <span className={styles.heroStatLabel}>Destacados</span>
+                    <strong className={styles.heroStatValue}>{featuredCandidatesCount}</strong>
+                  </div>
+                </div>
               </div>
             </div>
           </section>
@@ -270,6 +314,16 @@ export default function Candidatos({ candidatos = [], totalCandidatos = 0, viewe
                     <option value="destaque">Destacados</option>
                   </select>
                 </div>
+
+                {activeFilterChips.length > 0 ? (
+                  <div className={styles.activeFilters}>
+                    {activeFilterChips.map((chip) => (
+                      <span key={chip} className={styles.filterChip}>
+                        {chip}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
               </div>
 
               <div className={styles.resultsSection}>

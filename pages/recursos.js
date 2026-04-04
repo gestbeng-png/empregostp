@@ -424,578 +424,6 @@ export default function RecursosPage({
 
   const faqItems = faqs.length ? faqs : FAQS;
 
-  const styles = {
-    page: {
-      position: 'relative'
-    },
-    hero: {
-      background: 'linear-gradient(135deg, #09090b 0%, #18181b 100%)',
-      padding: '5rem 0 4rem',
-      position: 'relative',
-      overflow: 'hidden'
-    },
-    heroGlow1: {
-      position: 'absolute',
-      top: '-20%',
-      right: '10%',
-      width: '600px',
-      height: '600px',
-      background: 'radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 70%)',
-      borderRadius: '50%',
-      filter: 'blur(100px)',
-      pointerEvents: 'none'
-    },
-    heroGlow2: {
-      position: 'absolute',
-      bottom: '-30%',
-      left: '5%',
-      width: '500px',
-      height: '500px',
-      background: 'radial-gradient(circle, rgba(99, 102, 241, 0.06) 0%, transparent 70%)',
-      borderRadius: '50%',
-      filter: 'blur(80px)',
-      pointerEvents: 'none'
-    },
-    container: {
-      maxWidth: '1200px',
-      margin: '0 auto',
-      padding: '0 2rem',
-      position: 'relative',
-      zIndex: 1
-    },
-    heroContent: {
-      textAlign: 'center',
-      marginBottom: '2.5rem'
-    },
-    badge: {
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: '0.5rem',
-      padding: '0.5rem 1rem',
-      background: 'rgba(16, 185, 129, 0.1)',
-      border: '1px solid rgba(16, 185, 129, 0.2)',
-      borderRadius: '100px',
-      marginBottom: '1.5rem'
-    },
-    badgeIcon: {
-      width: '18px',
-      height: '18px',
-      color: '#10b981'
-    },
-    badgeText: {
-      color: '#6ee7b7',
-      fontSize: '0.85rem',
-      fontWeight: 600
-    },
-    title: {
-      margin: '0 0 1rem',
-      fontSize: 'clamp(2rem, 4vw, 3rem)',
-      fontWeight: 800,
-      color: '#fafafa',
-      letterSpacing: '-0.02em',
-      lineHeight: 1.2
-    },
-    subtitle: {
-      margin: '0 auto',
-      maxWidth: '650px',
-      fontSize: '1.1rem',
-      color: '#a1a1aa',
-      lineHeight: 1.7
-    },
-    searchBar: {
-      maxWidth: '600px',
-      margin: '2rem auto 0',
-      position: 'relative'
-    },
-    searchIcon: {
-      position: 'absolute',
-      left: '1.25rem',
-      top: '50%',
-      transform: 'translateY(-50%)',
-      width: '20px',
-      height: '20px',
-      color: '#52525b'
-    },
-    searchInput: {
-      width: '100%',
-      padding: '1rem 1.25rem 1rem 3.5rem',
-      background: 'rgba(255, 255, 255, 0.03)',
-      border: '1px solid rgba(255, 255, 255, 0.08)',
-      borderRadius: '14px',
-      color: '#fafafa',
-      fontSize: '1rem',
-      outline: 'none',
-      transition: 'all 0.2s ease'
-    },
-    audienceFilters: {
-      marginTop: '1rem',
-      display: 'flex',
-      justifyContent: 'center',
-      gap: '0.5rem',
-      flexWrap: 'wrap'
-    },
-    audienceBtn: {
-      padding: '0.45rem 0.9rem',
-      background: 'rgba(255, 255, 255, 0.03)',
-      border: '1px solid rgba(255, 255, 255, 0.08)',
-      borderRadius: '999px',
-      color: '#a1a1aa',
-      fontSize: '0.8rem',
-      fontWeight: 600,
-      cursor: 'pointer'
-    },
-    audienceBtnActive: {
-      background: 'rgba(99, 102, 241, 0.16)',
-      borderColor: 'rgba(99, 102, 241, 0.4)',
-      color: '#c7d2fe'
-    },
-    section: {
-      padding: '3rem 0'
-    },
-    sectionHeader: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: '1.5rem',
-      flexWrap: 'wrap',
-      gap: '1rem'
-    },
-    sectionTitle: {
-      margin: 0,
-      fontSize: '1.5rem',
-      fontWeight: 700,
-      color: '#fafafa',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '0.75rem'
-    },
-    sectionIcon: {
-      width: '24px',
-      height: '24px',
-      color: '#10b981'
-    },
-    categories: {
-      display: 'flex',
-      gap: '0.5rem',
-      flexWrap: 'wrap'
-    },
-    categoryBtn: {
-      padding: '0.5rem 1rem',
-      background: 'rgba(255, 255, 255, 0.03)',
-      border: '1px solid rgba(255, 255, 255, 0.06)',
-      borderRadius: '8px',
-      color: '#a1a1aa',
-      fontSize: '0.85rem',
-      fontWeight: 500,
-      cursor: 'pointer',
-      transition: 'all 0.15s ease'
-    },
-    categoryBtnActive: {
-      background: 'rgba(16, 185, 129, 0.15)',
-      borderColor: 'rgba(16, 185, 129, 0.3)',
-      color: '#6ee7b7'
-    },
-    templatesGrid: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(4, 1fr)',
-      gap: '1.25rem'
-    },
-    templateCard: {
-      background: 'rgba(255, 255, 255, 0.02)',
-      border: '1px solid rgba(255, 255, 255, 0.06)',
-      borderRadius: '14px',
-      padding: '1.25rem',
-      transition: 'all 0.2s ease',
-      cursor: 'pointer'
-    },
-    templateHeader: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'flex-start',
-      marginBottom: '0.75rem'
-    },
-    templateCategory: {
-      padding: '0.25rem 0.6rem',
-      borderRadius: '6px',
-      fontSize: '0.65rem',
-      fontWeight: 700,
-      textTransform: 'uppercase',
-      letterSpacing: '0.05em'
-    },
-    templateFormat: {
-      padding: '0.25rem 0.5rem',
-      background: 'rgba(255, 255, 255, 0.05)',
-      borderRadius: '4px',
-      color: '#71717a',
-      fontSize: '0.7rem',
-      fontWeight: 600
-    },
-    templateTitle: {
-      margin: '0 0 0.5rem',
-      fontSize: '0.95rem',
-      fontWeight: 600,
-      color: '#fafafa',
-      lineHeight: 1.3
-    },
-    templateDescription: {
-      margin: '0 0 1rem',
-      color: '#71717a',
-      fontSize: '0.8rem',
-      lineHeight: 1.5
-    },
-    templateFooter: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center'
-    },
-    templateDownloads: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '0.3rem',
-      color: '#52525b',
-      fontSize: '0.75rem'
-    },
-    templateDownloadIcon: {
-      width: '14px',
-      height: '14px'
-    },
-    templateButton: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '0.3rem',
-      padding: '0.4rem 0.75rem',
-      background: 'rgba(16, 185, 129, 0.15)',
-      border: 'none',
-      borderRadius: '6px',
-      color: '#6ee7b7',
-      fontSize: '0.75rem',
-      fontWeight: 600,
-      cursor: 'pointer'
-    },
-    guidesGrid: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(2, 1fr)',
-      gap: '1.25rem'
-    },
-    guideCard: {
-      background: 'rgba(255, 255, 255, 0.02)',
-      border: '1px solid rgba(255, 255, 255, 0.06)',
-      borderRadius: '16px',
-      padding: '1.5rem',
-      display: 'flex',
-      gap: '1.25rem',
-      transition: 'all 0.2s ease',
-      cursor: 'pointer'
-    },
-    guideIcon: {
-      width: '56px',
-      height: '56px',
-      borderRadius: '12px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      flexShrink: 0
-    },
-    guideIconSvg: {
-      width: '28px',
-      height: '28px'
-    },
-    guideContent: {
-      flex: 1
-    },
-    guideHeader: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'flex-start',
-      marginBottom: '0.5rem'
-    },
-    guideCategory: {
-      padding: '0.25rem 0.6rem',
-      borderRadius: '6px',
-      fontSize: '0.65rem',
-      fontWeight: 700,
-      textTransform: 'uppercase',
-      letterSpacing: '0.05em',
-      background: 'rgba(99, 102, 241, 0.15)',
-      color: '#a5b4fc'
-    },
-    guidePopular: {
-      padding: '0.25rem 0.6rem',
-      borderRadius: '6px',
-      fontSize: '0.65rem',
-      fontWeight: 700,
-      background: 'rgba(245, 158, 11, 0.15)',
-      color: '#fbbf24'
-    },
-    guideTitle: {
-      margin: '0 0 0.5rem',
-      fontSize: '1.05rem',
-      fontWeight: 600,
-      color: '#fafafa',
-      lineHeight: 1.3
-    },
-    guideDescription: {
-      margin: '0 0 1rem',
-      color: '#71717a',
-      fontSize: '0.85rem',
-      lineHeight: 1.5
-    },
-    guideMeta: {
-      display: 'flex',
-      gap: '1rem'
-    },
-    guideMetaItem: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '0.3rem',
-      color: '#52525b',
-      fontSize: '0.75rem'
-    },
-    guideMetaIcon: {
-      width: '14px',
-      height: '14px'
-    },
-    guideFooter: {
-      marginTop: '1rem',
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      gap: '0.8rem',
-      flexWrap: 'wrap'
-    },
-    guideButton: {
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: '0.35rem',
-      padding: '0.5rem 0.8rem',
-      background: 'rgba(99, 102, 241, 0.16)',
-      border: '1px solid rgba(99, 102, 241, 0.35)',
-      borderRadius: '7px',
-      color: '#c7d2fe',
-      fontSize: '0.78rem',
-      fontWeight: 600,
-      textDecoration: 'none'
-    },
-    guideButtons: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '0.5rem',
-      flexWrap: 'wrap'
-    },
-    disabledButton: {
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: '0.35rem',
-      padding: '0.5rem 0.8rem',
-      background: 'rgba(255, 255, 255, 0.03)',
-      border: '1px solid rgba(255, 255, 255, 0.08)',
-      borderRadius: '7px',
-      color: '#71717a',
-      fontSize: '0.78rem',
-      fontWeight: 600
-    },
-    toolsGrid: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(3, 1fr)',
-      gap: '1.25rem'
-    },
-    toolCard: {
-      background: 'rgba(255, 255, 255, 0.02)',
-      border: '1px solid rgba(255, 255, 255, 0.06)',
-      borderRadius: '14px',
-      padding: '1.5rem',
-      textAlign: 'center',
-      transition: 'all 0.2s ease',
-      cursor: 'pointer'
-    },
-    toolIcon: {
-      width: '60px',
-      height: '60px',
-      borderRadius: '14px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      margin: '0 auto 1rem'
-    },
-    toolIconSvg: {
-      width: '30px',
-      height: '30px'
-    },
-    toolTitle: {
-      margin: '0 0 0.5rem',
-      fontSize: '1rem',
-      fontWeight: 600,
-      color: '#fafafa'
-    },
-    toolDescription: {
-      margin: '0 0 1rem',
-      color: '#71717a',
-      fontSize: '0.85rem',
-      lineHeight: 1.5
-    },
-    toolButton: {
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: '0.4rem',
-      padding: '0.6rem 1.25rem',
-      background: 'transparent',
-      border: '1px solid rgba(255, 255, 255, 0.1)',
-      borderRadius: '8px',
-      color: '#a1a1aa',
-      fontSize: '0.85rem',
-      fontWeight: 500,
-      cursor: 'pointer',
-      transition: 'all 0.15s ease'
-    },
-    faqSection: {
-      background: 'rgba(255, 255, 255, 0.02)',
-      borderRadius: '20px',
-      padding: '2rem'
-    },
-    faqList: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '0.75rem'
-    },
-    faqItem: {
-      background: 'rgba(255, 255, 255, 0.02)',
-      border: '1px solid rgba(255, 255, 255, 0.06)',
-      borderRadius: '12px',
-      overflow: 'hidden'
-    },
-    faqQuestion: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: '1rem 1.25rem',
-      cursor: 'pointer',
-      transition: 'background 0.15s ease'
-    },
-    faqQuestionText: {
-      margin: 0,
-      fontSize: '0.95rem',
-      fontWeight: 600,
-      color: '#e4e4e7'
-    },
-    faqIcon: {
-      width: '20px',
-      height: '20px',
-      color: '#71717a',
-      transition: 'transform 0.2s ease'
-    },
-    faqAnswer: {
-      padding: '0 1.25rem 1rem',
-      color: '#a1a1aa',
-      fontSize: '0.9rem',
-      lineHeight: 1.7
-    },
-    linksSection: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(3, 1fr)',
-      gap: '1.25rem'
-    },
-    linkCard: {
-      background: 'rgba(255, 255, 255, 0.02)',
-      border: '1px solid rgba(255, 255, 255, 0.06)',
-      borderRadius: '12px',
-      padding: '1.25rem',
-      transition: 'all 0.2s ease'
-    },
-    linkCategory: {
-      display: 'inline-block',
-      padding: '0.25rem 0.6rem',
-      background: 'rgba(99, 102, 241, 0.15)',
-      borderRadius: '6px',
-      color: '#a5b4fc',
-      fontSize: '0.65rem',
-      fontWeight: 700,
-      textTransform: 'uppercase',
-      letterSpacing: '0.05em',
-      marginBottom: '0.75rem'
-    },
-    linkTitle: {
-      margin: '0 0 0.35rem',
-      fontSize: '0.95rem',
-      fontWeight: 600,
-      color: '#fafafa'
-    },
-    linkDescription: {
-      margin: '0 0 0.75rem',
-      color: '#71717a',
-      fontSize: '0.8rem',
-      lineHeight: 1.5
-    },
-    linkAnchor: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '0.3rem',
-      color: '#10b981',
-      fontSize: '0.8rem',
-      fontWeight: 600,
-      textDecoration: 'none'
-    },
-    linkIcon: {
-      width: '14px',
-      height: '14px'
-    },
-    contactSection: {
-      background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%)',
-      border: '1px solid rgba(16, 185, 129, 0.2)',
-      borderRadius: '20px',
-      padding: '3rem',
-      textAlign: 'center',
-      marginTop: '3rem'
-    },
-    contactTitle: {
-      margin: '0 0 0.75rem',
-      fontSize: '1.5rem',
-      fontWeight: 700,
-      color: '#fafafa'
-    },
-    contactText: {
-      margin: '0 auto 2rem',
-      maxWidth: '500px',
-      color: '#a1a1aa',
-      fontSize: '1rem',
-      lineHeight: 1.7
-    },
-    contactMethods: {
-      display: 'flex',
-      justifyContent: 'center',
-      gap: '2rem',
-      flexWrap: 'wrap'
-    },
-    contactMethod: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '0.75rem'
-    },
-    contactIcon: {
-      width: '44px',
-      height: '44px',
-      borderRadius: '12px',
-      background: 'rgba(16, 185, 129, 0.15)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      color: '#10b981'
-    },
-    contactIconSvg: {
-      width: '22px',
-      height: '22px'
-    },
-    contactLabel: {
-      margin: 0,
-      fontSize: '0.75rem',
-      color: '#71717a'
-    },
-    contactValue: {
-      margin: 0,
-      fontSize: '0.95rem',
-      fontWeight: 600,
-      color: '#fafafa'
-    }
-  };
 
   return (
     <>
@@ -1088,31 +516,33 @@ export default function RecursosPage({
                   const downloads = Number(template.downloads) || 0;
                   const fileUrl = template.downloadUrl;
                   return (
-                    <div key={template.id || template.title} style={styles.templateCard}>
-                      <div style={styles.templateHeader}>
-                        <span style={{
-                          ...styles.templateCategory,
-                          background: `${template.color || '#10b981'}15`,
-                          color: template.color || '#10b981'
-                        }}>
+                    <div key={template.id || template.title} className={pageStyles.templateCard}>
+                      <div className={pageStyles.templateHeader}>
+                        <span
+                          className={pageStyles.templateCategory}
+                          style={{
+                            '--resource-accent': template.color || '#10b981',
+                            '--resource-accent-soft': `${template.color || '#10b981'}15`
+                          }}
+                        >
                           {template.category || 'Recursos'}
                         </span>
-                        <span style={styles.templateFormat}>{template.format || 'Documento'}</span>
+                        <span className={pageStyles.templateFormat}>{template.format || 'Documento'}</span>
                       </div>
-                      <h3 style={styles.templateTitle}>{template.title}</h3>
-                      <p style={styles.templateDescription}>{template.description}</p>
-                      <div style={styles.templateFooter}>
-                        <span style={styles.templateDownloads}>
-                          <span style={styles.templateDownloadIcon}>{icons.download}</span>
+                      <h3 className={pageStyles.templateTitle}>{template.title}</h3>
+                      <p className={pageStyles.templateDescription}>{template.description}</p>
+                      <div className={pageStyles.templateFooter}>
+                        <span className={pageStyles.templateDownloads}>
+                          <span className={pageStyles.templateDownloadIcon}>{icons.download}</span>
                           {downloads.toLocaleString('pt-PT')} downloads
                         </span>
                         {fileUrl ? (
-                          <a href={fileUrl} style={styles.templateButton}>
-                            <span style={styles.templateDownloadIcon}>{icons.download}</span>
+                          <a href={fileUrl} className={pageStyles.templateButton}>
+                            <span className={pageStyles.templateDownloadIcon}>{icons.download}</span>
                             Baixar
                           </a>
                         ) : (
-                          <span style={styles.disabledButton}>Em breve</span>
+                          <span className={pageStyles.disabledButton}>Em breve</span>
                         )}
                       </div>
                     </div>
@@ -1138,42 +568,48 @@ export default function RecursosPage({
                 <p className={pageStyles.emptyMessage}>Sem guias cadastradas no momento.</p>
               ) : (
                 guidesToShow.map((guide) => (
-                  <div key={guide.id || guide.title} style={styles.guideCard}>
-                    <div style={{ ...styles.guideIcon, background: `${guide.color || '#6366f1'}15` }}>
-                      <span style={{ ...styles.guideIconSvg, color: guide.color || '#6366f1' }}>{icons.book}</span>
+                  <div key={guide.id || guide.title} className={pageStyles.guideCard}>
+                    <div
+                      className={pageStyles.guideIcon}
+                      style={{
+                        '--resource-accent': guide.color || '#6366f1',
+                        '--resource-accent-soft': `${guide.color || '#6366f1'}15`
+                      }}
+                    >
+                      <span className={pageStyles.guideIconSvg}>{icons.book}</span>
                     </div>
-                    <div style={styles.guideContent}>
-                      <div style={styles.guideHeader}>
-                        <span style={styles.guideCategory}>{guide.category || 'Orientação'}</span>
-                        {guide.popular && <span style={styles.guidePopular}>Popular</span>}
+                    <div className={pageStyles.guideContent}>
+                      <div className={pageStyles.guideHeader}>
+                        <span className={pageStyles.guideCategory}>{guide.category || 'Orientação'}</span>
+                        {guide.popular && <span className={pageStyles.guidePopular}>Popular</span>}
                       </div>
-                      <h3 style={styles.guideTitle}>{guide.title}</h3>
-                      <p style={styles.guideDescription}>{guide.description}</p>
-                      <div style={styles.guideFooter}>
-                        <div style={styles.guideMeta}>
-                          <span style={styles.guideMetaItem}>
-                            <span style={styles.guideMetaIcon}>{icons.clock}</span>
+                      <h3 className={pageStyles.guideTitle}>{guide.title}</h3>
+                      <p className={pageStyles.guideDescription}>{guide.description}</p>
+                      <div className={pageStyles.guideFooter}>
+                        <div className={pageStyles.guideMeta}>
+                          <span className={pageStyles.guideMetaItem}>
+                            <span className={pageStyles.guideMetaIcon}>{icons.clock}</span>
                             {guide.readTime || '—'}
                           </span>
-                          <span style={styles.guideMetaItem}>
-                            <span style={styles.guideMetaIcon}>{icons.file}</span>
+                          <span className={pageStyles.guideMetaItem}>
+                            <span className={pageStyles.guideMetaIcon}>{icons.file}</span>
                             {guide.pages ? `${guide.pages} páginas` : '—'}
                           </span>
                         </div>
-                        <div style={styles.guideButtons}>
+                        <div className={pageStyles.guideButtons}>
                           {guide.readUrl ? (
-                            <Link href={guide.readUrl} style={styles.guideButton}>
+                            <Link href={guide.readUrl} className={pageStyles.guideButton}>
                               Ler guia
                             </Link>
                           ) : null}
                           {guide.downloadUrl ? (
-                            <a href={guide.downloadUrl} style={styles.guideButton}>
-                              <span style={styles.templateDownloadIcon}>{icons.download}</span>
+                            <a href={guide.downloadUrl} className={pageStyles.guideButton}>
+                              <span className={pageStyles.templateDownloadIcon}>{icons.download}</span>
                               Baixar anexo
                             </a>
                           ) : null}
                           {!guide.readUrl && !guide.downloadUrl ? (
-                            <span style={styles.disabledButton}>Em breve</span>
+                            <span className={pageStyles.disabledButton}>Em breve</span>
                           ) : null}
                         </div>
                       </div>
@@ -1206,29 +642,35 @@ export default function RecursosPage({
                   const isInternalAction = actionUrl?.startsWith('/');
                   const actionLabel = isLocked ? 'Desbloquear recurso' : 'Usar Ferramenta';
                   return (
-                    <div key={tool.id || tool.title} style={styles.toolCard}>
-                      <div style={{ ...styles.toolIcon, background: `${tool.color || '#10b981'}15` }}>
-                        <span style={{ ...styles.toolIconSvg, color: tool.color || '#10b981' }}>{icon}</span>
+                    <div key={tool.id || tool.title} className={pageStyles.toolCard}>
+                      <div
+                        className={pageStyles.toolIcon}
+                        style={{
+                          '--resource-accent': tool.color || '#10b981',
+                          '--resource-accent-soft': `${tool.color || '#10b981'}15`
+                        }}
+                      >
+                        <span className={pageStyles.toolIconSvg}>{icon}</span>
                       </div>
-                      <h3 style={styles.toolTitle}>{tool.title}</h3>
-                      <p style={styles.toolDescription}>{tool.description}</p>
+                      <h3 className={pageStyles.toolTitle}>{tool.title}</h3>
+                      <p className={pageStyles.toolDescription}>{tool.description}</p>
                       {actionUrl ? (
                         isInternalAction ? (
-                          <Link href={actionUrl} style={styles.toolButton}>
+                          <Link href={actionUrl} className={pageStyles.toolButton}>
                             {actionLabel}
                             <span style={{ width: '14px', height: '14px' }}>{icons.chevronRight}</span>
                           </Link>
                         ) : (
-                          <a href={actionUrl} target="_blank" rel="noreferrer" style={styles.toolButton}>
+                          <a href={actionUrl} target="_blank" rel="noreferrer" className={pageStyles.toolButton}>
                             {actionLabel}
                             <span style={{ width: '14px', height: '14px' }}>{icons.chevronRight}</span>
                           </a>
                         )
                       ) : (
-                        <span style={styles.disabledButton}>Em breve</span>
+                        <span className={pageStyles.disabledButton}>Em breve</span>
                       )}
                       {isLocked && (
-                        <p style={{ marginTop: '0.5rem', color: '#9ca3af', fontSize: '0.75rem' }}>
+                        <p className={pageStyles.toolLocked}>
                           Disponivel apenas para plano Profissional.
                         </p>
                       )}
@@ -1253,24 +695,24 @@ export default function RecursosPage({
             <div className={pageStyles.faqSection}>
               <div className={pageStyles.faqList}>
                 {faqItems.map(faq => (
-                  <div key={faq.id || faq.question} style={styles.faqItem}>
+                  <div key={faq.id || faq.question} className={pageStyles.faqItem}>
                     <div 
-                      style={styles.faqQuestion}
+                      className={pageStyles.faqQuestion}
                       onClick={() => {
                         const currentId = faq.id || faq.question;
                         setExpandedFaq(expandedFaq === currentId ? null : currentId);
                       }}
                     >
-                      <p style={styles.faqQuestionText}>{faq.question}</p>
-                      <span style={{
-                        ...styles.faqIcon,
-                        transform: expandedFaq === (faq.id || faq.question) ? 'rotate(180deg)' : 'rotate(0)'
-                      }}>
+                      <p className={pageStyles.faqQuestionText}>{faq.question}</p>
+                      <span className={[
+                        pageStyles.faqIcon,
+                        expandedFaq === (faq.id || faq.question) ? pageStyles.faqIconOpen : '',
+                      ].filter(Boolean).join(' ')}>
                         {icons.chevronDown}
                       </span>
                     </div>
                     {expandedFaq === (faq.id || faq.question) && (
-                      <div style={styles.faqAnswer}>{faq.answer}</div>
+                      <div className={pageStyles.faqAnswer}>{faq.answer}</div>
                     )}
                   </div>
                 ))}
@@ -1291,13 +733,13 @@ export default function RecursosPage({
 
             <div className={pageStyles.linksSection}>
               {LINKS.map(link => (
-                <div key={link.id} style={styles.linkCard}>
-                  <span style={styles.linkCategory}>{link.category}</span>
-                  <h3 style={styles.linkTitle}>{link.title}</h3>
-                  <p style={styles.linkDescription}>{link.description}</p>
-                  <a href={link.url} target="_blank" rel="noopener noreferrer" style={styles.linkAnchor}>
+                <div key={link.id} className={pageStyles.linkCard}>
+                  <span className={pageStyles.linkCategory}>{link.category}</span>
+                  <h3 className={pageStyles.linkTitle}>{link.title}</h3>
+                  <p className={pageStyles.linkDescription}>{link.description}</p>
+                  <a href={link.url} target="_blank" rel="noopener noreferrer" className={pageStyles.linkAnchor}>
                     Visitar site
-                    <span style={styles.linkIcon}>{icons.chevronRight}</span>
+                    <span className={pageStyles.linkIcon}>{icons.chevronRight}</span>
                   </a>
                 </div>
               ))}

@@ -203,7 +203,8 @@ export default function AdminAuditoria() {
 
   const fetchActivities = useCallback(async (options = {}) => {
     const append = Boolean(options.append);
-    if (append && !nextCursorId) return;
+    const cursorIdParam = options.cursorId ? String(options.cursorId) : null;
+    if (append && !cursorIdParam) return;
 
     if (append) {
       setLoadingMore(true);
@@ -229,8 +230,8 @@ export default function AdminAuditoria() {
       if (filterStartDate) params.set('startDate', filterStartDate);
       if (filterEndDate) params.set('endDate', filterEndDate);
       params.set('pageSize', String(pageSize));
-      if (append && nextCursorId) {
-        params.set('cursorId', nextCursorId);
+      if (append && cursorIdParam) {
+        params.set('cursorId', cursorIdParam);
       }
 
       const res = await fetch(`/api/admin/activities?${params.toString()}`, {
@@ -259,11 +260,11 @@ export default function AdminAuditoria() {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [filterType, filterSearch, filterStartDate, filterEndDate, pageSize, nextCursorId]);
+  }, [filterType, filterSearch, filterStartDate, filterEndDate, pageSize]);
 
   useEffect(() => {
     fetchActivities({ append: false });
-  }, [filterType, filterSearch, filterStartDate, filterEndDate, pageSize]);
+  }, [fetchActivities]);
 
   function handleClearFilters() {
     setFilterType('all');
@@ -520,7 +521,7 @@ export default function AdminAuditoria() {
           {!loading && hasMore && (
             <div style={{ textAlign: 'center', marginTop: '1.5rem', display: 'grid', gap: '0.65rem', justifyItems: 'center' }}>
               <button
-                onClick={() => fetchActivities({ append: true })}
+                onClick={() => fetchActivities({ append: true, cursorId: nextCursorId })}
                 disabled={loadingMore}
                 style={{
                   ...s.btn,

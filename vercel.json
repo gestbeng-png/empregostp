@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "name": "empregostp",
   "crons": [
     {
       "path": "/api/cron/check-plan-expiration",

@@ -1,0 +1,643 @@
+.page {
+  width: min(var(--app-public-width), calc(100% - (var(--app-page-inline) * 2)));
+  margin: 0 auto;
+  padding: clamp(2rem, 4vw, 3rem) 0 clamp(4rem, 7vw, 5rem);
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 1.5rem;
+  color: var(--app-text-secondary);
+  font-weight: 600;
+}
+
+.backLink:hover {
+  color: #dbeafe;
+}
+
+.heroCard {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(1.5rem, 3vw, 2.2rem);
+  border: 1px solid var(--app-card-border-strong);
+  border-radius: var(--app-card-radius-lg);
+  background:
+    radial-gradient(circle at top right, rgba(99, 102, 241, 0.18), transparent 28%),
+    radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.1), transparent 20%),
+    var(--app-card-surface-strong);
+  box-shadow: var(--app-shadow-card-hover);
+}
+
+.heroHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.heroHeading {
+  min-width: 0;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.heroBadgeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.heroBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2rem;
+  padding: 0.4rem 0.85rem;
+  border: 1px solid rgba(129, 140, 248, 0.26);
+  border-radius: 999px;
+  background: rgba(99, 102, 241, 0.14);
+  color: #e0e7ff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.heroBadgeMuted {
+  border-color: rgba(148, 163, 184, 0.2);
+  background: rgba(148, 163, 184, 0.08);
+  color: var(--app-text-secondary);
+}
+
+.heroTitle {
+  font-size: clamp(2rem, 4.2vw, 3.05rem);
+  line-height: 1.02;
+}
+
+.heroMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem 1.15rem;
+}
+
+.heroMeta span {
+  position: relative;
+  color: var(--app-text-secondary);
+  font-size: 0.96rem;
+}
+
+.heroMeta span:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: -0.62rem;
+  top: 50%;
+  width: 0.28rem;
+  height: 0.28rem;
+  border-radius: 50%;
+  background: rgba(148, 163, 184, 0.4);
+  transform: translateY(-50%);
+}
+
+.statusBadge,
+.applicationStatus {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 0.95rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.statusActive,
+.applicationApproved {
+  border-color: rgba(16, 185, 129, 0.28);
+  background: rgba(16, 185, 129, 0.12);
+  color: #86efac;
+}
+
+.statusClosed,
+.applicationRejected {
+  border-color: rgba(239, 68, 68, 0.28);
+  background: rgba(239, 68, 68, 0.12);
+  color: #fca5a5;
+}
+
+.statusDisabled,
+.applicationPending {
+  border-color: rgba(245, 158, 11, 0.28);
+  background: rgba(245, 158, 11, 0.12);
+  color: #fcd34d;
+}
+
+.statusDefault,
+.applicationAnalysis,
+.applicationInterview {
+  border-color: rgba(96, 165, 250, 0.28);
+  background: rgba(59, 130, 246, 0.12);
+  color: #93c5fd;
+}
+
+.heroStats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1.75rem;
+}
+
+.statCard {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  gap: 0.55rem;
+  padding: 1rem 1.05rem;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: var(--app-card-radius-sm);
+  background: rgba(2, 6, 23, 0.42);
+  backdrop-filter: blur(14px);
+}
+
+.statCard::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.3);
+}
+
+.statBlue::before {
+  background: #60a5fa;
+}
+
+.statAmber::before {
+  background: #f59e0b;
+}
+
+.statGreen::before {
+  background: #10b981;
+}
+
+.statRed::before {
+  background: #ef4444;
+}
+
+.statLabel {
+  color: var(--app-text-muted);
+  font-size: 0.84rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.statValue {
+  font-size: clamp(1.55rem, 3vw, 2rem);
+  line-height: 1;
+  color: var(--app-text-primary);
+}
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.95fr);
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+  align-items: start;
+}
+
+.mainColumn,
+.sidebarColumn {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.panel,
+.applicationsPanel {
+  padding: clamp(1.35rem, 2.4vw, 1.7rem);
+  border: 1px solid var(--app-card-border);
+  border-radius: var(--app-card-radius-md);
+  background: var(--app-card-surface);
+  box-shadow: var(--app-shadow-card);
+}
+
+.applicationsPanel {
+  margin-top: 1.5rem;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.sectionTitle {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.sectionMeta {
+  color: var(--app-text-muted);
+  font-size: 0.92rem;
+}
+
+.bodyCopy {
+  color: var(--app-text-secondary);
+  line-height: 1.8;
+  white-space: pre-wrap;
+}
+
+.list {
+  display: grid;
+  gap: 0.8rem;
+  padding-left: 1.2rem;
+}
+
+.list li {
+  color: var(--app-text-secondary);
+}
+
+.assessmentCard {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid rgba(129, 140, 248, 0.18);
+  border-radius: var(--app-card-radius-sm);
+  background: rgba(99, 102, 241, 0.06);
+}
+
+.assessmentSummary {
+  color: var(--app-text-secondary);
+}
+
+.assessmentSummary strong {
+  color: var(--app-text-primary);
+}
+
+.assessmentList {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.assessmentItem {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.95rem 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 18px;
+  background: rgba(2, 6, 23, 0.34);
+}
+
+.assessmentItem strong {
+  font-size: 0.98rem;
+  line-height: 1.45;
+}
+
+.assessmentItem span {
+  color: var(--app-text-muted);
+  font-size: 0.9rem;
+}
+
+.summaryList {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.summaryItem {
+  display: grid;
+  gap: 0.32rem;
+  padding: 0.9rem 0.95rem;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.summaryItem dt {
+  color: var(--app-text-muted);
+  font-size: 0.84rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.summaryItem dd {
+  margin: 0;
+  color: var(--app-text-primary);
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.docCard {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(96, 165, 250, 0.18);
+  border-radius: var(--app-card-radius-sm);
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.docIcon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 18px;
+  background: rgba(59, 130, 246, 0.18);
+  color: #bfdbfe;
+}
+
+.docInfo {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.docInfo strong {
+  font-size: 1rem;
+}
+
+.docInfo span {
+  color: var(--app-text-muted);
+  font-size: 0.92rem;
+}
+
+.docButton,
+.actionButton,
+.smallActionButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 18px;
+  font-weight: 700;
+  transition:
+    transform var(--app-transition-fast),
+    border-color var(--app-transition-fast),
+    background var(--app-transition-fast),
+    color var(--app-transition-fast),
+    box-shadow var(--app-transition-fast);
+}
+
+.docButton:hover,
+.actionButton:hover,
+.smallActionButton:hover {
+  transform: translateY(-1px);
+}
+
+.docButton {
+  width: 100%;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(99, 102, 241, 0.92));
+  color: #eff6ff;
+  box-shadow: 0 16px 34px rgba(37, 99, 235, 0.25);
+}
+
+.docButton:hover {
+  color: #ffffff;
+}
+
+.actionsGrid {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.actionButton {
+  width: 100%;
+  min-height: 3.25rem;
+}
+
+.actionPrimary {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.92), rgba(139, 92, 246, 0.92));
+  color: #f8fafc;
+  box-shadow: 0 16px 34px rgba(99, 102, 241, 0.24);
+}
+
+.actionSuccess {
+  background: rgba(16, 185, 129, 0.14);
+  border-color: rgba(16, 185, 129, 0.28);
+  color: #a7f3d0;
+}
+
+.actionWarning {
+  background: rgba(245, 158, 11, 0.14);
+  border-color: rgba(245, 158, 11, 0.28);
+  color: #fde68a;
+}
+
+.actionDanger {
+  background: rgba(239, 68, 68, 0.14);
+  border-color: rgba(239, 68, 68, 0.28);
+  color: #fecaca;
+}
+
+.emptyApplications {
+  display: grid;
+  gap: 0.55rem;
+  place-items: center;
+  min-height: 220px;
+  text-align: center;
+  border: 1px dashed rgba(148, 163, 184, 0.22);
+  border-radius: var(--app-card-radius-sm);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.emptyApplications h3 {
+  font-size: 1.15rem;
+}
+
+.emptyApplications p {
+  max-width: 32rem;
+  color: var(--app-text-muted);
+}
+
+.applicationList {
+  display: grid;
+  gap: 1rem;
+}
+
+.applicationCard {
+  padding: 1.1rem 1.15rem;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: var(--app-card-radius-sm);
+  background: rgba(2, 6, 23, 0.38);
+  transition:
+    transform var(--app-transition-fast),
+    border-color var(--app-transition-fast),
+    box-shadow var(--app-transition-fast);
+}
+
+.applicationCard:hover {
+  transform: translateY(-2px);
+  border-color: rgba(99, 102, 241, 0.28);
+  box-shadow: var(--app-shadow-card);
+}
+
+.applicationMain {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.applicationIdentity {
+  min-width: 0;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.applicationName {
+  color: var(--app-text-primary);
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.applicationName:hover {
+  color: #c7d2fe;
+}
+
+.applicationEmail,
+.applicationDate,
+.assessmentMeta {
+  color: var(--app-text-muted);
+  font-size: 0.92rem;
+}
+
+.applicationMetrics {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.35rem;
+}
+
+.assessmentBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.42rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.assessmentPassed {
+  border-color: rgba(16, 185, 129, 0.28);
+  background: rgba(16, 185, 129, 0.12);
+  color: #86efac;
+}
+
+.assessmentReview {
+  border-color: rgba(245, 158, 11, 0.28);
+  background: rgba(245, 158, 11, 0.12);
+  color: #fde68a;
+}
+
+.applicationAside {
+  display: grid;
+  justify-items: end;
+  gap: 0.85rem;
+  flex: 0 0 auto;
+}
+
+.applicationActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+.smallActionButton {
+  min-height: 2.55rem;
+  padding-inline: 0.9rem;
+  font-size: 0.9rem;
+}
+
+.smallActionApprove {
+  background: rgba(16, 185, 129, 0.14);
+  border-color: rgba(16, 185, 129, 0.28);
+  color: #a7f3d0;
+}
+
+.smallActionReject {
+  background: rgba(239, 68, 68, 0.14);
+  border-color: rgba(239, 68, 68, 0.28);
+  color: #fecaca;
+}
+
+.smallActionNeutral {
+  background: rgba(148, 163, 184, 0.1);
+  border-color: rgba(148, 163, 184, 0.18);
+  color: var(--app-text-secondary);
+}
+
+.emptyPage {
+  width: min(760px, calc(100% - (var(--app-page-inline) * 2)));
+  margin: 0 auto;
+  padding: 6rem 0 4rem;
+  display: grid;
+  gap: 1rem;
+  justify-items: start;
+}
+
+.emptyTitle {
+  font-size: clamp(2rem, 4vw, 2.75rem);
+}
+
+@media (max-width: 1100px) {
+  .heroStats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .contentGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .page {
+    padding-top: 1.5rem;
+  }
+
+  .heroHeader,
+  .sectionHeader,
+  .applicationMain {
+    flex-direction: column;
+  }
+
+  .heroTitle {
+    font-size: clamp(1.8rem, 10vw, 2.3rem);
+  }
+
+  .heroMeta span:not(:last-child)::after {
+    display: none;
+  }
+
+  .heroStats {
+    grid-template-columns: 1fr;
+  }
+
+  .docCard {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .applicationAside,
+  .applicationActions {
+    width: 100%;
+    justify-items: stretch;
+    justify-content: flex-start;
+  }
+
+  .applicationStatus,
+  .smallActionButton {
+    width: 100%;
+  }
+}

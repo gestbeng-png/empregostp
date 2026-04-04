@@ -31,11 +31,16 @@
   --app-shadow-sm: 0 10px 30px rgba(2, 6, 23, 0.16);
   --app-shadow-md: 0 18px 50px rgba(2, 6, 23, 0.28);
   --app-shadow-lg: 0 28px 70px rgba(2, 6, 23, 0.36);
+  --app-shadow-card: 0 18px 44px rgba(2, 6, 23, 0.24);
+  --app-shadow-card-hover: 0 26px 58px rgba(2, 6, 23, 0.34);
 
   --app-radius-sm: 10px;
   --app-radius-md: 16px;
   --app-radius-lg: 24px;
   --app-radius-xl: 32px;
+  --app-card-radius-sm: 18px;
+  --app-card-radius-md: 24px;
+  --app-card-radius-lg: 30px;
 
   --app-space-xs: 0.25rem;
   --app-space-sm: 0.5rem;
@@ -43,6 +48,30 @@
   --app-space-lg: 1.5rem;
   --app-space-xl: 2rem;
   --app-space-2xl: 3rem;
+  --app-space-3xl: 4rem;
+  --app-card-padding-sm: 1rem;
+  --app-card-padding-md: 1.35rem;
+  --app-card-padding-lg: 1.75rem;
+  --app-card-gap-sm: 0.75rem;
+  --app-card-gap-md: 1rem;
+  --app-card-gap-lg: 1.35rem;
+  --app-grid-gap-md: 1.5rem;
+  --app-grid-gap-lg: 2rem;
+  --app-section-space-md: clamp(4rem, 6vw, 5.5rem);
+  --app-section-space-lg: clamp(5rem, 8vw, 7rem);
+  --app-page-inline: clamp(1rem, 2vw, 2rem);
+  --app-public-width: 1280px;
+  --app-public-width-narrow: 1120px;
+
+  --app-card-border: rgba(148, 163, 184, 0.16);
+  --app-card-border-strong: rgba(96, 165, 250, 0.24);
+  --app-card-border-warm: rgba(251, 146, 60, 0.28);
+  --app-card-surface: linear-gradient(160deg, rgba(15, 23, 42, 0.78) 0%, rgba(2, 6, 23, 0.92) 100%);
+  --app-card-surface-strong: linear-gradient(160deg, rgba(15, 23, 42, 0.9) 0%, rgba(2, 6, 23, 0.98) 100%);
+  --app-card-surface-soft: rgba(255, 255, 255, 0.05);
+  --app-card-surface-blue: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.06) 100%);
+  --app-card-surface-green: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.06) 100%);
+  --app-card-surface-warm: linear-gradient(135deg, rgba(251, 146, 60, 0.12) 0%, rgba(59, 130, 246, 0.08) 100%);
 
   --app-font-sans: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --app-transition-fast: 160ms ease;

@@ -48,13 +48,29 @@ export default async function handler(req, res) {
         // Handle older datasets without expected index/orderBy support.
         if (error?.code !== 9) throw error;
         let fallbackQuery = admin.firestore().collection('subscription-requests').orderBy('createdAt', 'desc');
-        if (normalizedStatus !== 'all') {
-          fallbackQuery = fallbackQuery.where('status', '==', normalizedStatus);
-        }
         if (cursorDoc) {
           fallbackQuery = fallbackQuery.startAfter(cursorDoc);
         }
-        snapshot = await fallbackQuery.limit(limitN + 1).get();
+        try {
+          if (normalizedStatus !== 'all') {
+            fallbackQuery = fallbackQuery.where('status', '==', normalizedStatus);
+          }
+          snapshot = await fallbackQuery.limit(limitN + 1).get();
+        } catch (fallbackError) {
+          if (fallbackError?.code !== 9) throw fallbackError;
+          // Last fallback: broad query and in-memory filter by status.
+          let broadQuery = admin.firestore().collection('subscription-requests').orderBy('createdAt', 'desc');
+          if (cursorDoc) {
+            broadQuery = broadQuery.startAfter(cursorDoc);
+          }
+          const broadSnapshot = await broadQuery.limit((limitN + 1) * 3).get();
+          const filteredDocs = normalizedStatus === 'all'
+            ? broadSnapshot.docs
+            : broadSnapshot.docs.filter((doc) => String(doc.data()?.status || '').toLowerCase() === normalizedStatus);
+          snapshot = {
+            docs: filteredDocs
+          };
+        }
       }
 
       let docs = snapshot.docs;

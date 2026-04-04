@@ -185,7 +185,7 @@ const getHiringTips = (plan) => TIP_LIBRARY[plan] || TIP_LIBRARY.default;
 const Sidebar = ({ activeTab, setActiveTab, currentPlan, profile, onLogout, pendingApplicationsCount = 0, unreadMessages = 0 }) => (
   <aside className={styles.sidebar}>
     <div className={styles.sidebarLogo}>
-      <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', width: '100%' }}>
+      <Link href="/" className={styles.sidebarLogoLink}>
         <img
           src="/assets/Emprego STP Logo (2) 1.png"
           alt="EmpregoSTP Logo"
@@ -226,9 +226,8 @@ const Sidebar = ({ activeTab, setActiveTab, currentPlan, profile, onLogout, pend
       {onLogout && (
         <button 
           type="button" 
-          className={styles.createJobBtn} 
+          className={`${styles.createJobBtn} ${styles.logoutBtn}`}
           onClick={onLogout}
-          style={{ marginTop: '0.5rem', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.2)' }}
         >
           <span className={styles.navIcon}>{icons.logout}</span>
           Sair
@@ -358,7 +357,10 @@ const TopBar = ({
 const StatisticCard = ({ label, value, trend, icon, color = '#6366f1' }) => (
   <div className={styles.statCard}>
     <div className={styles.statHeader}>
-      <div className={styles.statIcon} style={{ background: `${color}15`, color: color }}>
+      <div
+        className={`${styles.statIcon} ${styles.statIconAccent}`}
+        style={{ '--accent-bg': `${color}15`, '--accent-color': color }}
+      >
         {icon || icons.badge}
       </div>
       <span className={styles.statTrend}>{trend}</span>
@@ -382,14 +384,14 @@ const JobCard = ({ job }) => {
       </div>
       <div className={styles.jobDetails}>
         <span className={styles.jobMeta}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '14px', height: '14px' }}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={styles.jobMetaIcon}>
             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
             <circle cx="12" cy="10" r="3" />
           </svg>
           {job.localizacao || 'Local não informado'}
         </span>
         <span className={styles.jobMeta}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '14px', height: '14px' }}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={styles.jobMetaIcon}>
             <rect x="2" y="7" width="20" height="14" rx="2" />
             <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" />
           </svg>
@@ -504,7 +506,14 @@ const ApplicationCard = ({ application, onStatusUpdate, onOpenInterviewScheduler
           <p className={styles.applicationMeta}>{application.candidateEmail || ''}</p>
         </div>
         <div className={styles.applicationRight}>
-          <span className={styles.applicationStatus} style={{ background: colors.bg, color: colors.text, borderColor: colors.border }}>
+          <span
+            className={`${styles.applicationStatus} ${styles.applicationStatusAccent}`}
+            style={{
+              '--status-bg': colors.bg,
+              '--status-text': colors.text,
+              '--status-border': colors.border
+            }}
+          >
             {updating ? 'Atualizando...' : statusLabel}
           </span>
           <span className={styles.applicationDate}>
@@ -522,11 +531,11 @@ const ApplicationCard = ({ application, onStatusUpdate, onOpenInterviewScheduler
               ? application.interviewDetails.location || 'Local a confirmar'
               : application.interviewDetails.link || 'Link a confirmar'}
           </span>
-          <p style={{ marginTop: '0.35rem' }}>
-            Resposta do candidato: <strong style={{ color: '#e9d5ff' }}>{interviewStatusLabel}</strong>
+          <p className={styles.interviewSummaryResponse}>
+            Resposta do candidato: <strong className={styles.interviewStatusHighlight}>{interviewStatusLabel}</strong>
           </p>
           {showRescheduleReason && (
-            <p style={{ marginTop: '0.15rem', color: '#f5d0fe' }}>
+            <p className={styles.interviewReason}>
               Motivo: {String(application.interviewDetails.rescheduleReason || '').trim()}
             </p>
           )}
@@ -606,7 +615,7 @@ const TalentCard = ({ talent, locked }) => {
         {talent.avatar ? (
           <img src={talent.avatar} alt={talent.name} />
         ) : (
-          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700 }}>
+          <div className={styles.talentAvatarFallback}>
             {(talent.name || '?').slice(0, 1).toUpperCase()}
           </div>
         )}
@@ -635,7 +644,10 @@ const TalentCard = ({ talent, locked }) => {
 const AnalyticsCard = ({ title, value, subtitle, color, icon, change }) => (
   <div className={styles.analyticsCard}>
     <div className={styles.analyticsCardHeader}>
-      <div className={styles.analyticsCardIcon} style={{ background: `${color}15`, color: color }}>
+      <div
+        className={`${styles.analyticsCardIcon} ${styles.analyticsCardIconAccent}`}
+        style={{ '--accent-bg': `${color}15`, '--accent-color': color }}
+      >
         {icon}
       </div>
       {change !== undefined && (
@@ -655,7 +667,7 @@ const EmptyState = ({ icon, title, message, action }) => (
     <div className={styles.emptyIcon}>{icon || icons.inbox}</div>
     <h3>{title}</h3>
     <p>{message}</p>
-    {action && <div style={{ marginTop: '1rem' }}>{action}</div>}
+    {action && <div className={styles.emptyAction}>{action}</div>}
   </div>
 );
 
@@ -1594,17 +1606,17 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
               <span className={styles.searchHint}>{filteredTalents.length} talentos encontrados</span>
             </div>
             {!companyPlanFeatures.accessTalentPool && (
-              <div style={{ marginBottom: '1rem', color: '#fbbf24' }}>
+              <div className={`${styles.sectionNote} ${styles.sectionNoteWarning}`}>
                 Plano Básico: visualização limitada aos candidatos que já se candidataram às suas vagas.
                 {' '}
                 <Link href="/premium/empresa" className={styles.actionLink}>Desbloquear banco completo</Link>
               </div>
             )}
             {companyPlanFeatures.accessTalentPool && loadingTalentPool && (
-              <p style={{ marginBottom: '1rem', color: '#94a3b8' }}>A carregar banco de talentos...</p>
+              <p className={styles.sectionNote}>A carregar banco de talentos...</p>
             )}
             {companyPlanFeatures.accessTalentPool && talentPoolError && (
-              <p style={{ marginBottom: '1rem', color: '#fca5a5' }}>{talentPoolError}</p>
+              <p className={`${styles.sectionNote} ${styles.sectionNoteError}`}>{talentPoolError}</p>
             )}
             <div className={styles.talentsGrid}>
               {filteredTalents.map((talent, index) => (
@@ -1642,8 +1654,7 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
                 type="button"
                 onClick={handleExportApplications}
                 disabled={exportingCsv}
-                className={styles.applicationBtnOutline}
-                style={{ minWidth: '190px', justifyContent: 'center' }}
+                className={`${styles.applicationBtnOutline} ${styles.buttonWide}`}
               >
                 {exportingCsv ? 'A exportar...' : 'Exportar CSV'}
               </button>
@@ -1759,11 +1770,11 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
               <div className={styles.messagesLayout}>
                 <div className={styles.messagesList}>
                   {loadingConversations ? (
-                    <p className={styles.messagePlaceholder} style={{ padding: '1rem' }}>A carregar conversas...</p>
+                    <p className={`${styles.messagePlaceholder} ${styles.messagePlaceholderPadded}`}>A carregar conversas...</p>
                   ) : messagesError ? (
-                    <p className={styles.messagePlaceholder} style={{ padding: '1rem' }}>{messagesError}</p>
+                    <p className={`${styles.messagePlaceholder} ${styles.messagePlaceholderPadded}`}>{messagesError}</p>
                   ) : conversations.length === 0 ? (
-                    <p className={styles.messagePlaceholder} style={{ padding: '1rem' }}>Nenhuma conversa ainda. Abra um perfil de candidato para iniciar.</p>
+                    <p className={`${styles.messagePlaceholder} ${styles.messagePlaceholderPadded}`}>Nenhuma conversa ainda. Abra um perfil de candidato para iniciar.</p>
                   ) : conversations.map((conversation) => {
                     const initials = (conversation.participant.name || 'U').charAt(0).toUpperCase();
                     const timeLabel = conversation.lastMessageAt
@@ -1987,8 +1998,8 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
                         <p>Tendencia semanal</p>
                       </div>
                       <div className={styles.analyticsLegend}>
-                        <span><i style={{ background: '#6366f1' }}></i> Views</span>
-                        <span><i style={{ background: '#10b981' }}></i> Apps</span>
+                        <span><i className={styles.analyticsLegendDot} style={{ '--legend-color': '#6366f1' }}></i> Views</span>
+                        <span><i className={styles.analyticsLegendDot} style={{ '--legend-color': '#10b981' }}></i> Apps</span>
                       </div>
                     </div>
                     <div className={styles.analyticsChartWrapper}>
@@ -2034,13 +2045,16 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
                       {sourceData.map((source) => (
                         <div key={source.name} className={styles.analyticsSourceItem}>
                           <div className={styles.analyticsSourceInfo}>
-                            <span className={styles.analyticsSourceDot} style={{ background: source.color }}></span>
+                            <span
+                              className={`${styles.analyticsSourceDot} ${styles.analyticsSourceAccent}`}
+                              style={{ '--accent-color': source.color }}
+                            ></span>
                             <span className={styles.analyticsSourceName}>{source.name}</span>
                           </div>
                           <div className={styles.analyticsSourceBar}>
                             <div
-                              className={styles.analyticsSourceProgress}
-                              style={{ width: `${source.value}%`, background: source.color }}
+                              className={`${styles.analyticsSourceProgress} ${styles.analyticsSourceAccent}`}
+                              style={{ width: `${source.value}%`, '--accent-color': source.color }}
                             ></div>
                           </div>
                           <span className={styles.analyticsSourceValue}>{source.value}%</span>
@@ -2275,7 +2289,7 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
               </label>
 
               {interviewForm.interviewMode === 'online' ? (
-                <label className={styles.modalField} style={{ gridColumn: '1 / -1' }}>
+                <label className={`${styles.modalField} ${styles.modalFieldFull}`}>
                   <span>Link da entrevista</span>
                   <input
                     type="url"
@@ -2285,7 +2299,7 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
                   />
                 </label>
               ) : (
-                <label className={styles.modalField} style={{ gridColumn: '1 / -1' }}>
+                <label className={`${styles.modalField} ${styles.modalFieldFull}`}>
                   <span>Local da entrevista</span>
                   <input
                     type="text"
@@ -2296,7 +2310,7 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
                 </label>
               )}
 
-              <label className={styles.modalField} style={{ gridColumn: '1 / -1' }}>
+              <label className={`${styles.modalField} ${styles.modalFieldFull}`}>
                 <span>Notas para o candidato</span>
                 <textarea
                   rows="4"

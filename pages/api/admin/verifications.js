@@ -6,6 +6,12 @@ export default async function handler(req, res) {
     }
 
     try {
+        // Evitar respostas 304/ETag em APIs de admin (o fetch no browser trata 304 como erro e pode vir sem body).
+        res.setHeader('Cache-Control', 'no-store, max-age=0');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+        res.setHeader('ETag', String(Date.now()));
+
         // Verify admin authentication
         const token = req.headers.authorization?.split('Bearer ')[1];
         if (!token) {
@@ -50,7 +56,7 @@ export default async function handler(req, res) {
                 const userDoc = await admin.firestore().collection('users').doc(verificationData.uid).get();
                 if (userDoc.exists) {
                     const userData = userDoc.data();
-                    candidateInfo.name = userData.name || userData.displayName || 'Desconhecido';
+                    candidateInfo.name = userData.fullName || userData.name || userData.displayName || 'Desconhecido';
                     if (!candidateInfo.email || candidateInfo.email === 'Não informado') {
                         candidateInfo.email = userData.email || 'Não informado';
                     }
