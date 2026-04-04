@@ -404,9 +404,12 @@ export default function VagasPage({ initialJobs = [] }) {
   );
 }
 
-export async function getServerSideProps() {
+export async function getServerSideProps(context) {
   try {
     const { admin } = await import('../../lib/firebaseAdmin');
+    // Cache público no edge para reduzir latência de listagem de vagas.
+    // A lista não depende de autenticação (salvos são carregados no cliente).
+    context?.res?.setHeader?.('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=120');
     
     // Função auxiliar para serializar Timestamps
     const serializeTimestamp = (timestamp) => {

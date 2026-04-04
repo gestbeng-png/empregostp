@@ -2,14 +2,28 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { ResponsiveContainer, BarChart, Bar, XAxis, CartesianGrid, Tooltip, Cell, AreaChart, Area } from 'recharts';
+import dynamic from 'next/dynamic';
 import { useAuth } from '../../../context/AuthContext';
-import EmpresaPlansCatalog from '../../../components/EmpresaPlansCatalog';
 import styles from '../../../styles/EmpresaDashboard.module.css';
 import nookies from 'nookies';
 import { getEmpresaPlanFeatures, normalizeEmpresaPlanId } from '../../../lib/empresaPlanFeatures';
 import { fetchActiveEmpresaPlans } from '../../../lib/empresaPlansCatalog';
 import { getInterviewStatusLabelPt } from '../../../lib/interviewClient';
+
+const EmpresaApplicationsChart = dynamic(() => import('../../../components/charts/EmpresaApplicationsChart'), {
+  ssr: false,
+  loading: () => <div className={styles.chartWrapper} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#a1a1aa' }}>Carregando gráfico...</div>
+});
+
+const EmpresaWeeklyViewsAppsChart = dynamic(() => import('../../../components/charts/EmpresaWeeklyViewsAppsChart'), {
+  ssr: false,
+  loading: () => <div className={styles.analyticsChartWrapper} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#a1a1aa' }}>Carregando gráfico...</div>
+});
+
+const EmpresaPlansCatalog = dynamic(() => import('../../../components/EmpresaPlansCatalog'), {
+  ssr: false,
+  loading: () => <div className={styles.sectionBlock} style={{ color: '#a1a1aa' }}>Carregando planos...</div>
+});
 
 const MENU_ITEMS = [
   { id: 'dashboard', label: 'Visão Geral', icon: 'dashboard' },
@@ -1488,36 +1502,7 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
                   <small>Ultimos 7 dias</small>
                 </div>
                 <div className={styles.chartWrapper}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                      <defs>
-                        <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
-                          <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid stroke="rgba(255,255,255,0.04)" strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="name" stroke="#52525b" axisLine={false} tickLine={false} fontSize={12} />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: '#18181b',
-                          border: '1px solid rgba(255,255,255,0.1)',
-                          borderRadius: '10px',
-                          boxShadow: '0 10px 40px rgba(0,0,0,0.5)'
-                        }}
-                        labelStyle={{ color: '#fff', fontWeight: 600 }}
-                        itemStyle={{ color: '#a5b4fc' }}
-                      />
-                      <Area
-                        type="monotone"
-                        dataKey="value"
-                        stroke="#6366f1"
-                        strokeWidth={2}
-                        fillOpacity={1}
-                        fill="url(#colorValue)"
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
+                  <EmpresaApplicationsChart data={chartData} />
                 </div>
               </div>
               <div className={styles.tipsCard}>
@@ -2003,33 +1988,7 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
                       </div>
                     </div>
                     <div className={styles.analyticsChartWrapper}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={weeklyData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                          <defs>
-                            <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
-                              <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-                            </linearGradient>
-                            <linearGradient id="colorApps" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                              <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid stroke="rgba(255,255,255,0.04)" strokeDasharray="3 3" vertical={false} />
-                          <XAxis dataKey="name" stroke="#52525b" axisLine={false} tickLine={false} fontSize={12} />
-                          <Tooltip
-                            contentStyle={{
-                              backgroundColor: '#18181b',
-                              border: '1px solid rgba(255,255,255,0.1)',
-                              borderRadius: '10px',
-                              boxShadow: '0 10px 40px rgba(0,0,0,0.5)'
-                            }}
-                            labelStyle={{ color: '#fff', fontWeight: 600 }}
-                          />
-                          <Area type="monotone" dataKey="views" stroke="#6366f1" strokeWidth={2} fillOpacity={1} fill="url(#colorViews)" />
-                          <Area type="monotone" dataKey="apps" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorApps)" />
-                        </AreaChart>
-                      </ResponsiveContainer>
+                      <EmpresaWeeklyViewsAppsChart data={weeklyData} />
                     </div>
                   </div>
 

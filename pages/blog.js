@@ -7,7 +7,7 @@ import { admin } from '../lib/firebaseAdmin';
 import { safeText, safeTimestampToISOString, safeTimestampToMillis } from '../lib/firestoreNormalize';
 import { isContentPublished, normalizeContentStatus } from '../lib/contentPublication';
 
-export async function getServerSideProps() {
+export async function getServerSideProps(context) {
   const fetchWithFallback = async (collectionName) => {
     const collectionRef = admin.firestore().collection(collectionName);
     try {
@@ -25,6 +25,10 @@ export async function getServerSideProps() {
   };
 
   try {
+    // Cache público no edge (Vercel) para reduzir latência e carga no Firestore.
+    // Não depende de autenticação.
+    context?.res?.setHeader?.('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
+
     const [postsSnapshot, newsSnapshot] = await Promise.all([
       fetchWithFallback('posts'),
       fetchWithFallback('news')

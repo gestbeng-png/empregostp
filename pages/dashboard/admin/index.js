@@ -2,12 +2,17 @@ import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Head from 'next/head';
-import { ResponsiveContainer, BarChart, Bar, XAxis, CartesianGrid, Tooltip } from 'recharts';
+import dynamic from 'next/dynamic';
 import nookies from 'nookies';
 import LandingHeader from '../../../components/LandingHeader';
 import { admin } from '../../../lib/firebaseAdmin';
 import { auth } from '../../../lib/firebase';
 import styles from '../../../styles/AdminPanel.module.css';
+
+const AdminSystemFlowChart = dynamic(() => import('../../../components/charts/AdminSystemFlowChart'), {
+  ssr: false,
+  loading: () => <div className={styles.chartWrap} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.65)' }}>Carregando gráfico...</div>
+});
 
 const formatDate = (value, locale = 'pt-PT', options = {}) => {
   if (!value) return 'N/A';
@@ -271,14 +276,7 @@ export default function AdminDashboard({ initialStats = null, lastJobs = [] }) {
                   <div className={styles.chartPanel}>
                     <h3 className={styles.chartTitle}>Fluxo do Sistema</h3>
                     <div className={styles.chartWrap}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={chartData}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.08)" vertical={false} />
-                          <XAxis dataKey="name" stroke="rgba(255, 255, 255, 0.6)" fontSize={12} axisLine={false} tickLine={false} />
-                          <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: 'none', borderRadius: '12px', color: 'white' }} />
-                          <Bar dataKey="value" fill="#6366f1" radius={[10, 10, 0, 0]} barSize={34} />
-                        </BarChart>
-                      </ResponsiveContainer>
+                      <AdminSystemFlowChart data={chartData} />
                     </div>
                   </div>
                 </div>

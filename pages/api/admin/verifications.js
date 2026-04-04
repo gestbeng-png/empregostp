@@ -28,12 +28,9 @@ export default async function handler(req, res) {
         }
 
         // Fetch all verifications (without complex ordering that requires index)
-        console.log('Fetching verifications from Firestore...');
         const verificationsSnapshot = await admin.firestore()
             .collection('verifications')
             .get();
-
-        console.log(`Found ${verificationsSnapshot.docs.length} verifications`);
         
         // Sort in memory to avoid index requirement
         const allDocs = verificationsSnapshot.docs.sort((a, b) => {

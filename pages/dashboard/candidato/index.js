@@ -2,20 +2,22 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
-import {
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  XAxis,
-  CartesianGrid,
-  Tooltip
-} from 'recharts';
+import dynamic from 'next/dynamic';
 import { useAuth } from '../../../context/AuthContext';
-import CandidatePremiumPlansExperience from '../../../components/CandidatePremiumPlansExperience';
 import { getCareerAdvice } from '../../../lib/geminiService';
 import { extractLinkedInProfileHints } from '../../../lib/linkedin';
 import { downloadInterviewICS, isLikelyUrl } from '../../../lib/interviewClient';
 import styles from '../../../styles/DashboardCandidato.module.css';
+
+const CandidateApplicationsChart = dynamic(() => import('../../../components/charts/CandidateApplicationsChart'), {
+  ssr: false,
+  loading: () => <div className={styles.chartWrapper} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>Carregando gráfico...</div>
+});
+
+const CandidatePremiumPlansExperience = dynamic(() => import('../../../components/CandidatePremiumPlansExperience'), {
+  ssr: false,
+  loading: () => <div className={styles.planCard} style={{ padding: '1rem', color: '#94a3b8' }}>Carregando planos...</div>
+});
 
 const icons = {
   dashboard: (
@@ -1500,14 +1502,7 @@ const CandidateDashboard = () => {
                   <small>Últimos 7 dias</small>
                 </div>
                 <div className={styles.chartWrapper}>
-                  <ResponsiveContainer width="100%" height={220}>
-                    <AreaChart data={chartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                      <CartesianGrid stroke="#1e293b" vertical={false} strokeDasharray="3 3" />
-                      <XAxis dataKey="name" stroke="#94a3b8" axisLine={false} tickLine={false} />
-                      <Tooltip contentStyle={{ backgroundColor: '#0b1223', border: 'none', borderRadius: '12px' }} />
-                      <Area type="monotone" dataKey="value" stroke="#6366f1" fill="#6366f1" fillOpacity={0.2} strokeWidth={3} />
-                    </AreaChart>
-                  </ResponsiveContainer>
+                  <CandidateApplicationsChart data={chartData} />
                 </div>
               </div>
               <div className={styles.tipsCard}>
