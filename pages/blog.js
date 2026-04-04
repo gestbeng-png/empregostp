@@ -676,15 +676,15 @@ export default function BlogPage({ initialPosts = [], initialNews = [] }) {
         <meta name="description" content="Artigos, dicas de carreira, novidades e histórias de sucesso da maior plataforma de emprego em São Tomé e Príncipe." />
       </Head>
 
-      <div style={styles.page}>
+      <div style={styles.page} className="blogPage">
         <LandingHeader />
 
         {/* Hero */}
-        <section style={styles.hero}>
+        <section style={styles.hero} className="blogHero">
           <div style={styles.heroGlow1} />
           <div style={styles.heroGlow2} />
 
-          <div style={styles.container}>
+          <div style={styles.container} className="blogContainer">
             <div style={styles.heroContent}>
               <div style={styles.badge}>
                 <span style={styles.badgeIcon}>{icons.trending}</span>
@@ -729,12 +729,15 @@ export default function BlogPage({ initialPosts = [], initialNews = [] }) {
             {/* Featured Post — comes first */}
             {featuredPost && (
               <section style={{ ...styles.section, paddingTop: '3rem' }}>
-                <div style={styles.container}>
-                  <div style={styles.featuredCard}>
-                    <div style={{ ...styles.featuredImage, backgroundImage: `url(${featuredPost.image})` }}>
+                <div style={styles.container} className="blogContainer">
+                  <div style={styles.featuredCard} className="blogFeaturedCard">
+                    <div
+                      style={{ ...styles.featuredImage, backgroundImage: `url(${featuredPost.image})` }}
+                      className="blogFeaturedImage"
+                    >
                       <div style={styles.featuredImageOverlay} />
                     </div>
-                    <div style={styles.featuredContent}>
+                    <div style={styles.featuredContent} className="blogFeaturedContent">
                       <span style={styles.featuredCategory}>{featuredPost.category}</span>
                       <h2 style={styles.featuredTitle}>{featuredPost.title}</h2>
                       <p style={styles.featuredExcerpt}>{featuredPost.excerpt}</p>
@@ -837,13 +840,14 @@ export default function BlogPage({ initialPosts = [], initialNews = [] }) {
 
             {/* Main Content */}
             <section style={styles.section}>
-              <div style={styles.container}>
+              <div style={styles.container} className="blogContainer">
                 {/* Categories Filter */}
-                <div style={styles.categories}>
+                <div style={styles.categories} className="blogCategories">
                   {categories.map(cat => (
                     <button
                       key={cat.id}
                       type="button"
+                      className="blogCategoryBtn"
                       onClick={() => setActiveCategory(cat.id)}
                       style={{
                         ...styles.categoryBtn,
@@ -855,10 +859,10 @@ export default function BlogPage({ initialPosts = [], initialNews = [] }) {
                   ))}
                 </div>
 
-                <div style={styles.mainGrid}>
+                <div style={styles.mainGrid} className="blogMainGrid">
                   {/* Posts Grid */}
                   <div>
-                    <div style={styles.postsGrid}>
+                    <div style={styles.postsGrid} className="blogPostsGrid">
                       {filteredPosts.map(post => (
                         <Link href={`/blog/${post.id}`} key={post.id} style={{ textDecoration: 'none' }}>
                           <article style={styles.postCard}>
@@ -896,7 +900,7 @@ export default function BlogPage({ initialPosts = [], initialNews = [] }) {
                   </div>
 
                   {/* Sidebar */}
-                  <aside style={styles.sidebar}>
+                  <aside style={styles.sidebar} className="blogSidebar">
                     {/* News */}
                     <div style={styles.sidebarCard}>
                       <h3 style={styles.sidebarTitle}>
@@ -941,18 +945,19 @@ export default function BlogPage({ initialPosts = [], initialNews = [] }) {
                 </div>
 
                 {/* Newsletter */}
-                <div style={styles.newsletter}>
+                <div style={styles.newsletter} className="blogNewsletter">
                   <h2 style={styles.newsletterTitle}>Receba novidades no seu email</h2>
                   <p style={styles.newsletterText}>
                     Subscreva nossa newsletter e receba artigos, dicas de carreira e oportunidades diretamente no seu email.
                   </p>
-                  <form style={styles.newsletterForm} onSubmit={handleNewsletterSubmit}>
+                  <form style={styles.newsletterForm} className="blogNewsletterForm" onSubmit={handleNewsletterSubmit}>
                     <input
                       type="email"
                       placeholder="Seu melhor email"
                       value={emailNewsletter}
                       onChange={(e) => setEmailNewsletter(e.target.value)}
                       style={styles.newsletterInput}
+                      className="blogNewsletterInput"
                       required
                     />
                     <button type="submit" style={styles.newsletterButton}>
@@ -966,6 +971,80 @@ export default function BlogPage({ initialPosts = [], initialNews = [] }) {
         )}
         <Footer />
       </div>
+
+      <style jsx>{`
+        @media (max-width: 1024px) {
+          .blogMainGrid {
+            grid-template-columns: 1fr !important;
+            gap: 1.5rem !important;
+          }
+
+          .blogFeaturedCard {
+            grid-template-columns: 1fr !important;
+          }
+
+          .blogFeaturedContent {
+            padding: 1.75rem !important;
+          }
+
+          .blogPostsGrid {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+          }
+        }
+
+        @media (max-width: 720px) {
+          .blogContainer {
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+          }
+
+          .blogHero {
+            padding: 3rem 0 2.25rem !important;
+          }
+
+          .blogFeaturedImage {
+            min-height: 220px !important;
+          }
+
+          .blogPostsGrid {
+            grid-template-columns: 1fr !important;
+            gap: 1rem !important;
+          }
+
+          .blogCategories {
+            flex-wrap: nowrap !important;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 0.5rem;
+          }
+
+          .blogCategories::-webkit-scrollbar {
+            display: none;
+          }
+
+          .blogCategories :global(.blogCategoryBtn) {
+            white-space: nowrap !important;
+            flex: 0 0 auto;
+          }
+
+          .blogNewsletter {
+            padding: 1.75rem !important;
+          }
+
+          .blogNewsletterForm {
+            flex-direction: column !important;
+          }
+
+          .blogNewsletterInput {
+            width: 100% !important;
+          }
+
+          .blogNewsletterForm :global(button) {
+            width: 100% !important;
+            justify-content: center !important;
+          }
+        }
+      `}</style>
     </>
   );
 }

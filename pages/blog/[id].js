@@ -55,7 +55,8 @@ export default function BlogPost({ post }) {
             gap: '1rem',
             marginBottom: '1rem',
             fontSize: '0.9rem',
-            color: 'rgba(255,255,255,0.8)'
+            color: 'rgba(255,255,255,0.8)',
+            flexWrap: 'wrap'
         },
         category: {
             background: post.color || '#6366f1',
@@ -96,13 +97,13 @@ export default function BlogPost({ post }) {
                 <meta name="description" content={post.excerpt} />
             </Head>
 
-            <div style={styles.page}>
+            <div style={styles.page} className="blogPostPage">
                 <LandingHeader />
 
-                <div style={styles.hero}>
-                    <div style={styles.container}>
+                <div style={styles.hero} className="blogPostHero">
+                    <div style={styles.container} className="blogPostContainer">
                         <Link href="/blog" style={styles.backLink}>← Voltar ao Blog</Link>
-                        <div style={styles.meta}>
+                        <div style={styles.meta} className="blogPostMeta">
                             <span style={styles.category}>{post.category}</span>
                             <span>{post.readTime} de leitura</span>
                             <span>•</span>
@@ -115,7 +116,7 @@ export default function BlogPost({ post }) {
                     </div>
                 </div>
 
-                <article style={styles.container}>
+                <article style={styles.container} className="blogPostContainer">
                     <div
                         style={styles.content}
                         dangerouslySetInnerHTML={{ __html: post.content }}
@@ -135,6 +136,44 @@ export default function BlogPost({ post }) {
         .blog-content a { color: #818cf8; text-decoration: underline; }
         .blog-content blockquote { border-left: 4px solid #6366f1; padding-left: 1rem; color: #a1a1aa; font-style: italic; margin: 2rem 0; }
         .blog-content img { max-width: 100%; border-radius: 12px; margin: 2rem 0; }
+
+        @media (max-width: 720px) {
+          .blogPostHero {
+            height: 52vh !important;
+            min-height: 320px !important;
+            padding: 0 0 2.25rem !important;
+          }
+
+          .blogPostContainer {
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+          }
+
+          .blogPostMeta {
+            gap: 0.65rem !important;
+          }
+
+          .blog-content {
+            font-size: 1rem !important;
+            padding: 2.25rem 0 !important;
+          }
+
+          .blog-content h2 {
+            font-size: 1.45rem !important;
+          }
+
+          .blog-content h3 {
+            font-size: 1.2rem !important;
+          }
+
+          .blog-content img {
+            margin: 1.25rem 0 !important;
+          }
+
+          .blog-content blockquote {
+            margin: 1.25rem 0 !important;
+          }
+        }
       `}</style>
         </>
     );
