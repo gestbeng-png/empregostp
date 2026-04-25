@@ -1,0 +1,316 @@
+.card {
+  position: relative;
+  display: grid;
+  gap: 0.95rem;
+  min-height: 186px;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(38, 52, 91, 0.98), rgba(28, 41, 76, 0.98)),
+    rgba(11, 22, 49, 0.48);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 14px 28px rgba(4, 10, 25, 0.14);
+  text-decoration: none;
+  overflow: hidden;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(217, 255, 47, 0.42);
+  background:
+    linear-gradient(180deg, rgba(41, 58, 101, 1), rgba(29, 43, 79, 1)),
+    rgba(10, 20, 46, 0.68);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 18px 36px rgba(4, 10, 25, 0.18);
+}
+
+.cardLight {
+  border-color: rgba(30, 43, 77, 0.12);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(247, 251, 255, 1)),
+    #ffffff;
+  box-shadow:
+    0 14px 28px rgba(15, 23, 42, 0.07),
+    0 1px 0 rgba(255, 255, 255, 0.82) inset;
+}
+
+.cardLight:hover {
+  border-color: rgba(32, 87, 215, 0.18);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(249, 252, 255, 1)),
+    #ffffff;
+  box-shadow:
+    0 18px 34px rgba(15, 23, 42, 0.09),
+    0 1px 0 rgba(255, 255, 255, 0.88) inset;
+}
+
+.edgeGlow {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 96px;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #d9ff2f 0%, #5fb8f5 100%);
+  opacity: 0.95;
+}
+
+.cardLight .edgeGlow {
+  height: 5px;
+}
+
+.ribbonRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.72rem;
+}
+
+.avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #ffffff, #edf5ff);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 8px 18px rgba(8, 16, 34, 0.16);
+}
+
+.logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.initials {
+  color: #1b2c59;
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.cardLight .avatar {
+  background: linear-gradient(180deg, #ffffff, #edf5ff);
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+}
+
+.top {
+  min-width: 0;
+  display: grid;
+  gap: 0.38rem;
+}
+
+.title {
+  margin: 0;
+  color: #ffffff;
+  font-size: 1.06rem;
+  font-weight: 800;
+  line-height: 1.28;
+  letter-spacing: -0.02em;
+}
+
+.cardLight .title {
+  color: #162a55;
+}
+
+.companyName {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.cardLight .companyName {
+  color: #5d7195;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-height: 24px;
+  padding: 0.18rem 0.55rem;
+  border-radius: 6px;
+  background: #d9ff2f;
+  color: #132547;
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.badgeMuted {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  padding: 0.18rem 0.55rem;
+  border-radius: 6px;
+  background: rgba(95, 184, 245, 0.16);
+  color: #9ad2ff;
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.cardLight .badgeMuted {
+  background: rgba(95, 184, 245, 0.14);
+  color: #2057d7;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 24px;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  border: 1px solid transparent;
+}
+
+.statusOpen {
+  background: rgba(217, 255, 47, 0.16);
+  border-color: rgba(217, 255, 47, 0.26);
+  color: #efff9a;
+}
+
+.statusClosed {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.cardLight .statusOpen {
+  background: rgba(217, 255, 47, 0.18);
+  border-color: rgba(217, 255, 47, 0.38);
+  color: #1e2b4d;
+}
+
+.cardLight .statusClosed {
+  background: rgba(123, 141, 168, 0.1);
+  border-color: rgba(123, 141, 168, 0.2);
+  color: #62759a;
+}
+
+.statusDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.9;
+}
+
+.meta {
+  display: grid;
+  gap: 0.42rem;
+}
+
+.salary {
+  margin: -0.05rem 0 0;
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.cardLight .salary {
+  color: #162a55;
+}
+
+.metaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.metaIcon {
+  width: 0.95rem;
+  min-width: 0.95rem;
+  height: 0.95rem;
+  display: inline-block;
+  color: rgba(255, 255, 255, 0.86);
+  flex-shrink: 0;
+}
+
+.cardLight .metaItem {
+  color: #596d92;
+}
+
+.cardLight .metaIcon {
+  color: #6d7fa0;
+}
+
+.footer {
+  margin-top: auto;
+  padding-top: 0.7rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.cardLight .footer {
+  border-top-color: rgba(21, 37, 79, 0.1);
+}
+
+.footerLabel {
+  color: #d9ff2f;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.cardLight .footerLabel {
+  color: #2057d7;
+}
+
+.footerArrow {
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 900;
+  transition: transform 160ms ease;
+}
+
+.cardLight .footerArrow {
+  color: #1e2b4d;
+}
+
+.cardLight .badge {
+  color: #132547;
+  box-shadow: 0 6px 12px rgba(217, 255, 47, 0.16);
+}
+
+.cardLight .salary {
+  color: #1e3161;
+  font-size: 0.96rem;
+}
+
+.card:hover .footerArrow {
+  transform: translateX(3px);
+}

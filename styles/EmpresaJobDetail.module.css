@@ -1,5 +1,8 @@
 .page {
-  width: min(var(--app-public-width), calc(100% - (var(--app-page-inline) * 2)));
+  width: min(
+    var(--app-public-width),
+    calc(100% - (var(--app-page-inline) * 2))
+  );
   margin: 0 auto;
   padding: clamp(2rem, 4vw, 3rem) 0 clamp(4rem, 7vw, 5rem);
 }
@@ -14,7 +17,7 @@
 }
 
 .backLink:hover {
-  color: #dbeafe;
+  color: #2057d7;
 }
 
 .heroCard {
@@ -24,10 +27,17 @@
   border: 1px solid var(--app-card-border-strong);
   border-radius: var(--app-card-radius-lg);
   background:
-    radial-gradient(circle at top right, rgba(99, 102, 241, 0.18), transparent 28%),
-    radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.1), transparent 20%),
-    var(--app-card-surface-strong);
-  box-shadow: var(--app-shadow-card-hover);
+    radial-gradient(
+      circle at top right,
+      rgba(95, 184, 245, 0.18),
+      transparent 28%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.98),
+      rgba(244, 249, 255, 0.98)
+    );
+  box-shadow: var(--app-shadow-card);
 }
 
 .heroHeader {
@@ -55,10 +65,10 @@
   justify-content: center;
   min-height: 2rem;
   padding: 0.4rem 0.85rem;
-  border: 1px solid rgba(129, 140, 248, 0.26);
+  border: 1px solid rgba(32, 87, 215, 0.18);
   border-radius: 999px;
-  background: rgba(99, 102, 241, 0.14);
-  color: #e0e7ff;
+  background: rgba(95, 184, 245, 0.12);
+  color: #2057d7;
   font-size: 0.82rem;
   font-weight: 700;
   letter-spacing: 0.03em;
@@ -89,7 +99,7 @@
 }
 
 .heroMeta span:not(:last-child)::after {
-  content: '';
+  content: "";
   position: absolute;
   right: -0.62rem;
   top: 50%;
@@ -116,31 +126,31 @@
 
 .statusActive,
 .applicationApproved {
-  border-color: rgba(16, 185, 129, 0.28);
-  background: rgba(16, 185, 129, 0.12);
-  color: #86efac;
+  border-color: rgba(34, 197, 94, 0.24);
+  background: rgba(34, 197, 94, 0.1);
+  color: #166534;
 }
 
 .statusClosed,
 .applicationRejected {
   border-color: rgba(239, 68, 68, 0.28);
   background: rgba(239, 68, 68, 0.12);
-  color: #fca5a5;
+  color: #b91c1c;
 }
 
 .statusDisabled,
 .applicationPending {
-  border-color: rgba(245, 158, 11, 0.28);
-  background: rgba(245, 158, 11, 0.12);
-  color: #fcd34d;
+  border-color: rgba(148, 163, 184, 0.24);
+  background: rgba(148, 163, 184, 0.12);
+  color: #4c6285;
 }
 
 .statusDefault,
 .applicationAnalysis,
 .applicationInterview {
-  border-color: rgba(96, 165, 250, 0.28);
-  background: rgba(59, 130, 246, 0.12);
-  color: #93c5fd;
+  border-color: rgba(32, 87, 215, 0.22);
+  background: rgba(95, 184, 245, 0.12);
+  color: #2057d7;
 }
 
 .heroStats {
@@ -158,12 +168,12 @@
   padding: 1rem 1.05rem;
   border: 1px solid rgba(148, 163, 184, 0.14);
   border-radius: var(--app-card-radius-sm);
-  background: rgba(2, 6, 23, 0.42);
-  backdrop-filter: blur(14px);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: none;
 }
 
 .statCard::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0 auto 0 0;
   width: 4px;
@@ -172,15 +182,15 @@
 }
 
 .statBlue::before {
-  background: #60a5fa;
+  background: #2057d7;
 }
 
 .statAmber::before {
-  background: #f59e0b;
+  background: #7f9cc6;
 }
 
 .statGreen::before {
-  background: #10b981;
+  background: #2f91d8;
 }
 
 .statRed::before {
@@ -266,9 +276,9 @@
   display: grid;
   gap: 1rem;
   padding: 1rem;
-  border: 1px solid rgba(129, 140, 248, 0.18);
+  border: 1px solid rgba(32, 87, 215, 0.16);
   border-radius: var(--app-card-radius-sm);
-  background: rgba(99, 102, 241, 0.06);
+  background: rgba(95, 184, 245, 0.08);
 }
 
 .assessmentSummary {
@@ -290,7 +300,7 @@
   padding: 0.95rem 1rem;
   border: 1px solid rgba(148, 163, 184, 0.14);
   border-radius: 18px;
-  background: rgba(2, 6, 23, 0.34);
+  background: rgba(248, 251, 255, 0.94);
 }
 
 .assessmentItem strong {
@@ -314,7 +324,7 @@
   padding: 0.9rem 0.95rem;
   border: 1px solid rgba(148, 163, 184, 0.12);
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.03);
+  background: #f7fbff;
 }
 
 .summaryItem dt {
@@ -350,8 +360,8 @@
   width: 3rem;
   height: 3rem;
   border-radius: 18px;
-  background: rgba(59, 130, 246, 0.18);
-  color: #bfdbfe;
+  background: rgba(95, 184, 245, 0.16);
+  color: #2057d7;
 }
 
 .docInfo {
@@ -395,9 +405,13 @@
 
 .docButton {
   width: 100%;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(99, 102, 241, 0.92));
+  background: linear-gradient(
+    135deg,
+    rgba(32, 87, 215, 0.95),
+    rgba(95, 184, 245, 0.95)
+  );
   color: #eff6ff;
-  box-shadow: 0 16px 34px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 16px 34px rgba(32, 87, 215, 0.18);
 }
 
 .docButton:hover {
@@ -409,33 +423,54 @@
   gap: 0.9rem;
 }
 
+.inlineNotice {
+  display: grid;
+  gap: 0.4rem;
+  margin-bottom: 0.9rem;
+  padding: 0.95rem 1rem;
+  border: 1px solid rgba(95, 184, 245, 0.22);
+  border-radius: 16px;
+  background: rgba(238, 246, 255, 0.92);
+}
+
+.inlineNotice p {
+  margin: 0;
+  color: #2057d7;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
 .actionButton {
   width: 100%;
   min-height: 3.25rem;
 }
 
 .actionPrimary {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.92), rgba(139, 92, 246, 0.92));
+  background: linear-gradient(
+    135deg,
+    rgba(32, 87, 215, 0.95),
+    rgba(95, 184, 245, 0.95)
+  );
   color: #f8fafc;
-  box-shadow: 0 16px 34px rgba(99, 102, 241, 0.24);
+  box-shadow: 0 16px 34px rgba(32, 87, 215, 0.18);
 }
 
 .actionSuccess {
-  background: rgba(16, 185, 129, 0.14);
-  border-color: rgba(16, 185, 129, 0.28);
-  color: #a7f3d0;
+  background: rgba(95, 184, 245, 0.14);
+  border-color: rgba(95, 184, 245, 0.28);
+  color: #2057d7;
 }
 
 .actionWarning {
-  background: rgba(245, 158, 11, 0.14);
-  border-color: rgba(245, 158, 11, 0.28);
-  color: #fde68a;
+  background: rgba(148, 163, 184, 0.12);
+  border-color: rgba(148, 163, 184, 0.24);
+  color: #4c6285;
 }
 
 .actionDanger {
   background: rgba(239, 68, 68, 0.14);
   border-color: rgba(239, 68, 68, 0.28);
-  color: #fecaca;
+  color: #b91c1c;
 }
 
 .emptyApplications {
@@ -446,7 +481,7 @@
   text-align: center;
   border: 1px dashed rgba(148, 163, 184, 0.22);
   border-radius: var(--app-card-radius-sm);
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(248, 251, 255, 0.92);
 }
 
 .emptyApplications h3 {
@@ -467,7 +502,7 @@
   padding: 1.1rem 1.15rem;
   border: 1px solid rgba(148, 163, 184, 0.16);
   border-radius: var(--app-card-radius-sm);
-  background: rgba(2, 6, 23, 0.38);
+  background: rgba(255, 255, 255, 0.94);
   transition:
     transform var(--app-transition-fast),
     border-color var(--app-transition-fast),
@@ -476,7 +511,7 @@
 
 .applicationCard:hover {
   transform: translateY(-2px);
-  border-color: rgba(99, 102, 241, 0.28);
+  border-color: rgba(32, 87, 215, 0.22);
   box-shadow: var(--app-shadow-card);
 }
 
@@ -500,7 +535,7 @@
 }
 
 .applicationName:hover {
-  color: #c7d2fe;
+  color: #2057d7;
 }
 
 .applicationEmail,
@@ -508,6 +543,47 @@
 .assessmentMeta {
   color: var(--app-text-muted);
   font-size: 0.92rem;
+}
+
+.applicationBadgeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.2rem;
+}
+
+.applicationBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.34rem 0.62rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.applicationBadgePriority {
+  background: rgba(148, 163, 184, 0.12);
+  border-color: rgba(148, 163, 184, 0.22);
+  color: #4c6285;
+}
+
+.applicationBadgeHighlight {
+  background: rgba(95, 184, 245, 0.14);
+  border-color: rgba(32, 87, 215, 0.22);
+  color: #2057d7;
+}
+
+.applicationBadgePremium {
+  background: rgba(95, 184, 245, 0.12);
+  border-color: rgba(32, 87, 215, 0.18);
+  color: #2057d7;
+}
+
+.applicationBadgeEarly {
+  background: rgba(6, 182, 212, 0.14);
+  border-color: rgba(6, 182, 212, 0.28);
+  color: #0f5d8e;
 }
 
 .applicationMetrics {
@@ -529,15 +605,39 @@
 }
 
 .assessmentPassed {
-  border-color: rgba(16, 185, 129, 0.28);
-  background: rgba(16, 185, 129, 0.12);
-  color: #86efac;
+  border-color: rgba(34, 197, 94, 0.24);
+  background: rgba(34, 197, 94, 0.1);
+  color: #166534;
 }
 
 .assessmentReview {
-  border-color: rgba(245, 158, 11, 0.28);
-  background: rgba(245, 158, 11, 0.12);
-  color: #fde68a;
+  border-color: rgba(148, 163, 184, 0.24);
+  background: rgba(148, 163, 184, 0.12);
+  color: #4c6285;
+}
+
+.applicationInsight {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 0.4rem;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 16px;
+  background: rgba(248, 251, 255, 0.94);
+}
+
+.applicationInsight strong {
+  color: var(--app-text-primary);
+  font-size: 0.86rem;
+}
+
+.applicationInsight p,
+.applicationInsight span {
+  margin: 0;
+  color: var(--app-text-secondary);
+  font-size: 0.88rem;
+  line-height: 1.65;
+  white-space: pre-wrap;
 }
 
 .applicationAside {
@@ -561,15 +661,15 @@
 }
 
 .smallActionApprove {
-  background: rgba(16, 185, 129, 0.14);
-  border-color: rgba(16, 185, 129, 0.28);
-  color: #a7f3d0;
+  background: rgba(95, 184, 245, 0.14);
+  border-color: rgba(95, 184, 245, 0.28);
+  color: #2057d7;
 }
 
 .smallActionReject {
   background: rgba(239, 68, 68, 0.14);
   border-color: rgba(239, 68, 68, 0.28);
-  color: #fecaca;
+  color: #b91c1c;
 }
 
 .smallActionNeutral {

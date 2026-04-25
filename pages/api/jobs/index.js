@@ -1,5 +1,7 @@
 import { admin } from '../../../lib/firebaseAdmin';
 import { canCreateJob, canHighlightJob, getEmpresaPlanSummary, getJobExpirationDate } from '../../../lib/empresaPlanFeatures';
+import { buildJobApplicationPremiumFields } from '../../../lib/candidateApplicationPremium';
+import { getEffectiveJobStatus, syncExpiredJobStatus } from '../../../lib/jobExpiration';
 import { normalizeSkillsAssessmentInput } from '../../../lib/skillsAssessment';
 
 function toIsoDateString(value) {
@@ -89,9 +91,11 @@ async function getAuthenticatedCompany(req, res) {
 }
 
 function buildJobResponse(doc, data, applicationCount = 0) {
+  const effectiveStatus = getEffectiveJobStatus(data);
   return {
     id: doc.id,
     ...data,
+    status: effectiveStatus,
     createdAt: toIsoDateString(data.createdAt) || toIsoDateString(data.updatedAt),
     updatedAt: toIsoDateString(data.updatedAt) || toIsoDateString(data.createdAt),
     publishedAt: toIsoDateString(data.publishedAt),
@@ -125,8 +129,14 @@ export default async function handler(req, res) {
         }
       });
 
-      const vagas = jobsSnapshot.docs
-        .map((doc) => buildJobResponse(doc, doc.data(), applicationCounts[doc.id] || 0))
+      const normalizedJobs = await Promise.all(
+        jobsSnapshot.docs.map(async (doc) => {
+          const synced = await syncExpiredJobStatus(doc.ref, doc.data(), admin);
+          return buildJobResponse(doc, synced.jobData, applicationCounts[doc.id] || 0);
+        })
+      );
+
+      const vagas = normalizedJobs
         .sort((a, b) => (b.createdAtMillis || 0) - (a.createdAtMillis || 0));
 
       return res.status(200).json({
@@ -156,7 +166,10 @@ export default async function handler(req, res) {
       vagasDisponiveis = 1,
       palavrasChave = '',
       categoria = '',
-      skillsAssessment = null
+      skillsAssessment = null,
+      premiumOnly = false,
+      earlyAccessHours = 0,
+      requireCoverLetter = false
     } = req.body || {};
 
     if (!titulo || !descricao || !localizacao || !tipoContrato || !dataFecho) {
@@ -184,6 +197,11 @@ export default async function handler(req, res) {
 
     const finalCloseDate = requestedCloseDate > maxExpirationDate ? maxExpirationDate : requestedCloseDate;
     const openDate = dataAbertura || new Date().toISOString().split('T')[0];
+    const premiumApplicationFields = buildJobApplicationPremiumFields({
+      premiumOnly,
+      earlyAccessHours,
+      requireCoverLetter
+    });
 
     const payload = {
       titulo: `${titulo}`.trim(),
@@ -207,6 +225,7 @@ export default async function handler(req, res) {
       palavrasChave: normalizeKeywords(palavrasChave),
       categoria: `${categoria}`.trim(),
       skillsAssessment: normalizeSkillsAssessmentInput(skillsAssessment),
+      ...premiumApplicationFields,
       companyId: auth.uid,
       companyName: auth.userData.name || auth.userData.fullName || '',
       status: 'active',
@@ -215,7 +234,7 @@ export default async function handler(req, res) {
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       publishedAt: admin.firestore.FieldValue.serverTimestamp(),
-      expiresAt: admin.firestore.Timestamp.fromDate(maxExpirationDate),
+      expiresAt: admin.firestore.Timestamp.fromDate(finalCloseDate),
       planId
     };
 

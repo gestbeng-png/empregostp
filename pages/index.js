@@ -1,130 +1,419 @@
-import Head from 'next/head';
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import PublicPageShell from '../components/PublicPageShell';
-import JobList from '../components/home/JobList';
-import Link from 'next/link';
-import { admin } from '../lib/firebaseAdmin';
-import styles from '../styles/HomePage.module.css';
+import Head from "next/head";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import PublicPageShell from "../components/PublicPageShell";
+import CompactJobCard from "../components/home/CompactJobCard";
+import { admin } from "../lib/firebaseAdmin";
+import { getEmpresaPlanSummary } from "../lib/empresaPlanFeatures";
+import {
+  safeText,
+  safeTimestampToISOString,
+  safeTimestampToMillis,
+} from "../lib/firestoreNormalize";
+import {
+  isContentPublished,
+  normalizeContentStatus,
+} from "../lib/contentPublication";
+import styles from "../styles/HomePage.module.css";
 
-export async function getServerSideProps() {
-  try {
-    console.log('Iniciando busca de dados do servidor...');
+function serializeDateValue(value) {
+  if (!value) return null;
+  if (typeof value === "string") return value;
+  if (value?.toDate) return value.toDate().toISOString();
 
-    // Buscar todas as vagas ativas
-    const jobsRef = admin.firestore().collection('jobs');
-    const activeJobsSnapshot = await jobsRef.where('status', '==', 'active').get();
-    const activeJobsData = activeJobsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
 
-    // Coletar IDs de empresa das vagas
-    const companyIds = [...new Set(
-      activeJobsData
-        .map(job => job.companyId)
-        .filter(id => id)
-    )];
+function compareRecentJobs(a, b) {
+  if (a.destaque && !b.destaque) return -1;
+  if (!a.destaque && b.destaque) return 1;
+  if (a.premiumOnly && !b.premiumOnly) return -1;
+  if (!a.premiumOnly && b.premiumOnly) return 1;
+  return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+}
 
-    // Buscar dados das empresas
-    let companiesMap = new Map();
-    if (companyIds.length > 0) {
-      const companiesSnapshot = await admin.firestore()
-        .collection('users')
-        .where(admin.firestore.FieldPath.documentId(), 'in', companyIds)
-        .get();
+function normalizeContractType(value = "") {
+  const normalized = String(value || "").toLowerCase();
+  const types = {
+    "full-time": "Tempo integral",
+    "tempo integral": "Tempo integral",
+    "part-time": "Meio período",
+    "meio período": "Meio período",
+    "meio periodo": "Meio período",
+    contract: "Contrato",
+    contrato: "Contrato",
+    internship: "Estágio",
+    estagio: "Estágio",
+    estágio: "Estágio",
+    freelance: "Freelance",
+    voluntariado: "Voluntariado",
+  };
 
-      companiesSnapshot.docs.forEach(doc => {
-        companiesMap.set(doc.id, doc.data());
-      });
+  return types[normalized] || value || "Não informado";
+}
+
+function formatSalaryRange(fromValue, toValue) {
+  const normalizeMoney = (value) => {
+    if (!value && value !== 0) return "";
+    if (String(value).trim().toLowerCase() === "a combinar") return "";
+
+    const numeric = Number.parseFloat(
+      String(value)
+        .replace(/[^\d,.-]/g, "")
+        .replace(",", "."),
+    );
+    if (!Number.isFinite(numeric)) return "";
+
+    return new Intl.NumberFormat("pt-PT", {
+      maximumFractionDigits: 0,
+    }).format(numeric);
+  };
+
+  const from = normalizeMoney(fromValue);
+  const to = normalizeMoney(toValue);
+
+  if (from && to && from !== to) return `${from} - ${to} Db`;
+  if (from) return `${from} Db`;
+  if (to) return `${to} Db`;
+  return "A combinar";
+}
+
+function formatPublishedAgo(value) {
+  if (!value) return "Agora";
+
+  const publishedDate = new Date(value);
+  if (Number.isNaN(publishedDate.getTime())) return "Agora";
+
+  const diffMs = Date.now() - publishedDate.getTime();
+  const minutes = Math.floor(diffMs / (1000 * 60));
+  const hours = Math.floor(diffMs / (1000 * 60 * 60));
+  const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (days >= 1) return `${days}d`;
+  if (hours >= 1) return `${hours}h`;
+  if (minutes >= 1) return `${minutes}m`;
+  return "Agora";
+}
+
+function getInitials(value = "") {
+  return (
+    String(value)
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part.charAt(0).toUpperCase())
+      .join("") || "ES"
+  );
+}
+
+function getPostDateLabel(post) {
+  const source = post?.createdAt || post?.updatedAt;
+  if (!source) return "Agora";
+
+  const date = new Date(source);
+  if (Number.isNaN(date.getTime())) return "Agora";
+
+  return date.toLocaleDateString("pt-PT", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function truncateText(value = "", maxLength = 112) {
+  const normalized = String(value || "")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (normalized.length <= maxLength) return normalized;
+  return `${normalized.slice(0, maxLength - 1).trim()}…`;
+}
+
+function VerificationBadgeIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path
+        fillRule="evenodd"
+        d="M12 2.25c1.18 0 2.24.52 2.95 1.34a3.9 3.9 0 013.03 1.13 3.9 3.9 0 011.13 3.03c.82.71 1.34 1.77 1.34 2.95s-.52 2.24-1.34 2.95a3.9 3.9 0 01-1.13 3.03 3.9 3.9 0 01-3.03 1.13A3.89 3.89 0 0112 21.75a3.89 3.89 0 01-2.95-1.34 3.9 3.9 0 01-3.03-1.13 3.9 3.9 0 01-1.13-3.03A3.89 3.89 0 013.75 12c0-1.18.52-2.24 1.34-2.95a3.9 3.9 0 011.13-3.03 3.9 3.9 0 013.03-1.13A3.89 3.89 0 0112 2.25zm2.28 6.97a.75.75 0 10-1.06-1.06l-2.67 2.66-1.22-1.22a.75.75 0 10-1.06 1.06l1.75 1.75a.75.75 0 001.06 0l3.2-3.19z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
+}
+
+const FALLBACK_CATEGORIES = [
+  {
+    name: "Marketing Digital",
+    icon: "fa-bullhorn",
+    color: "#2563eb",
+    count: "...",
+  },
+  { name: "Programação", icon: "fa-code", color: "#10b981", count: "..." },
+  { name: "Design", icon: "fa-palette", color: "#0ea5e9", count: "..." },
+];
+
+const CATEGORY_CONFIGS = {
+  Marketing: { icon: "fa-bullhorn", color: "#2563eb" },
+  "Marketing Digital": { icon: "fa-bullhorn", color: "#2563eb" },
+  Programação: { icon: "fa-code", color: "#10b981" },
+  Desenvolvimento: { icon: "fa-code", color: "#10b981" },
+  Design: { icon: "fa-palette", color: "#0ea5e9" },
+  Administração: { icon: "fa-briefcase", color: "#4f46e5" },
+  Gestão: { icon: "fa-briefcase", color: "#4f46e5" },
+  "Gestão e Administração": { icon: "fa-briefcase", color: "#4f46e5" },
+  Vendas: { icon: "fa-chart-line", color: "#f97316" },
+  Educação: { icon: "fa-graduation-cap", color: "#7c3aed" },
+  Saúde: { icon: "fa-heartbeat", color: "#ec4899" },
+  Engenharia: { icon: "fa-wrench", color: "#06b6d4" },
+  Finanças: { icon: "fa-dollar-sign", color: "#14b8a6" },
+  "Recursos Humanos": { icon: "fa-users", color: "#0f766e" },
+  RH: { icon: "fa-users", color: "#0f766e" },
+};
+
+const HOW_IT_WORKS_STEPS = [
+  {
+    number: "01",
+    title: "Crie uma Conta",
+    desc: "Registe-se gratuitamente e entre no ecossistema da plataforma.",
+    icon: "fa-user-plus",
+  },
+  {
+    number: "02",
+    title: "Carregue seu CV",
+    desc: "Organize o seu perfil, CV e informações principais numa só conta.",
+    icon: "fa-file-arrow-up",
+  },
+  {
+    number: "03",
+    title: "Explore as Vagas",
+    desc: "Descubra vagas novas, guarde oportunidades e acompanhe prazos.",
+    icon: "fa-magnifying-glass",
+  },
+  {
+    number: "04",
+    title: "Candidata",
+    desc: "Envie a sua candidatura e acompanhe o processo com mais clareza.",
+    icon: "fa-paper-plane",
+  },
+];
+
+function resolveCategoryConfig(category) {
+  return (
+    CATEGORY_CONFIGS[category?.name] || {
+      icon: category?.icon || "fa-folder",
+      color: category?.color || "#2563eb",
     }
+  );
+}
 
-    // Combinar dados das vagas com empresas
-    const jobs = activeJobsData.map(jobData => {
-      const companyData = companiesMap.get(jobData.companyId) || {};
+async function fetchCollectionWithFallback(collectionName) {
+  const collectionRef = admin.firestore().collection(collectionName);
+  try {
+    return await collectionRef.orderBy("createdAt", "desc").get();
+  } catch (error) {
+    console.warn(
+      `[home] fallback sem orderBy em ${collectionName}:`,
+      error?.message || error,
+    );
+    return collectionRef.get();
+  }
+}
 
-      return {
-        id: jobData.id,
-        titulo: jobData.titulo || jobData.title || 'Sem título',
-        localizacao: jobData.localizacao || jobData.location || jobData.cidade || 'Local não especificado',
-        tipoContrato: jobData.tipoContrato || jobData.contractType || jobData.tipo || 'Não informado',
-        salarioDe: jobData.salarioDe || jobData.salario || jobData.salaryMin || '',
-        salarioAte: jobData.salarioAte || jobData.salaryMax || '',
-        empresaLogo: companyData.logo || jobData.logo || '/assets/default-logo.png',
-        empresaNome: companyData.name || companyData.fullName || jobData.empresa || 'Empresa Confidencial',
-        descricao: jobData.descricao || jobData.description || '',
-        requisitos: jobData.requisitos || jobData.requirements || [],
-        experiencia: jobData.experiencia || jobData.experience || '',
-        prazo: jobData.prazo || jobData.deadline || jobData.dataLimite || '',
-        status: jobData.status || 'active',
-        remoto: jobData.remoto || jobData.remote || false,
-        destaque: jobData.destaque || jobData.featured || false,
-        companyId: jobData.companyId || '',
-        publicadoEm: jobData.publicadoEm || jobData.publishedAt || jobData.createdAt,
-        createdAt: jobData.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
-        updatedAt: jobData.updatedAt?.toDate?.()?.toISOString() || new Date().toISOString()
-      };
+export async function getServerSideProps(context) {
+  try {
+    context?.res?.setHeader?.(
+      "Cache-Control",
+      "public, s-maxage=60, stale-while-revalidate=300",
+    );
+
+    const [
+      activeJobsSnapshot,
+      companiesSnapshot,
+      candidatesSnapshot,
+      postsSnapshot,
+    ] = await Promise.all([
+      admin
+        .firestore()
+        .collection("jobs")
+        .where("status", "==", "active")
+        .get(),
+      admin
+        .firestore()
+        .collection("users")
+        .where("userType", "==", "empresa")
+        .get(),
+      admin
+        .firestore()
+        .collection("users")
+        .where("userType", "==", "candidato")
+        .get(),
+      fetchCollectionWithFallback("posts"),
+    ]);
+
+    const activeJobsData = activeJobsSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    const companyIds = [
+      ...new Set(activeJobsData.map((job) => job.companyId).filter(Boolean)),
+    ];
+    const companyRefs = companyIds.map((companyId) =>
+      admin.firestore().collection("users").doc(companyId),
+    );
+    const companyDocs = companyRefs.length
+      ? await admin.firestore().getAll(...companyRefs)
+      : [];
+    const companiesMap = new Map();
+
+    companyDocs.forEach((doc) => {
+      if (!doc.exists) return;
+      const companyData = doc.data() || {};
+      companiesMap.set(doc.id, {
+        raw: companyData,
+        planSummary: getEmpresaPlanSummary(companyData),
+      });
     });
 
-    jobs.sort((a, b) => {
-      // Vagas em destaque vêm primeiro, depois ordenar por data
-      if (a.destaque && !b.destaque) return -1;
-      if (!a.destaque && b.destaque) return 1;
-      return new Date(b.createdAt) - new Date(a.createdAt);
-    });
+    const jobs = activeJobsData
+      .map((jobData) => {
+        const companyEntry = companiesMap.get(jobData.companyId) || {};
+        const companyData = companyEntry.raw || {};
+        const planSummary = companyEntry.planSummary || null;
 
-    // Buscar estatísticas
-    const companiesSnapshot = await admin.firestore().collection('users').where('userType', '==', 'empresa').get();
-    const candidatesSnapshot = await admin.firestore().collection('users').where('userType', '==', 'candidato').get();
+        return {
+          id: jobData.id,
+          titulo: jobData.titulo || jobData.title || "Sem título",
+          localizacao:
+            jobData.localizacao ||
+            jobData.location ||
+            jobData.cidade ||
+            "Local não especificado",
+          tipoContrato:
+            jobData.tipoContrato ||
+            jobData.contractType ||
+            jobData.tipo ||
+            "Não informado",
+          salarioDe:
+            jobData.salarioDe || jobData.salario || jobData.salaryMin || "",
+          salarioAte: jobData.salarioAte || jobData.salaryMax || "",
+          empresaLogo: planSummary?.features?.logoOnJob
+            ? companyData.logo || jobData.logo || ""
+            : "",
+          empresaNome:
+            companyData.name ||
+            companyData.fullName ||
+            jobData.empresa ||
+            "Empresa Confidencial",
+          companyName:
+            companyData.name ||
+            companyData.fullName ||
+            jobData.empresa ||
+            "Empresa Confidencial",
+          companyVerified: Boolean(planSummary?.features?.companyVerified),
+          descricao: jobData.descricao || jobData.description || "",
+          experiencia: jobData.experiencia || jobData.experience || "",
+          prazo: jobData.prazo || jobData.deadline || jobData.dataLimite || "",
+          dataFecho: serializeDateValue(
+            jobData.dataFecho ||
+              jobData.expiresAt ||
+              jobData.deadline ||
+              jobData.prazo ||
+              jobData.dataLimite,
+          ),
+          status: jobData.status || "active",
+          remoto: jobData.remoto || jobData.remote || false,
+          destaque: jobData.destaque || jobData.featured || false,
+          premiumOnly: Boolean(jobData.premiumOnly || jobData.isPremiumOnly),
+          categoria: jobData.categoria || jobData.category || "",
+          palavrasChave: Array.isArray(jobData.palavrasChave)
+            ? jobData.palavrasChave
+            : Array.isArray(jobData.keywords)
+              ? jobData.keywords
+              : [],
+          companyId: jobData.companyId || "",
+          publicadoEm: serializeDateValue(
+            jobData.publicadoEm || jobData.publishedAt || jobData.createdAt,
+          ),
+          createdAt:
+            serializeDateValue(jobData.createdAt) || new Date().toISOString(),
+          updatedAt:
+            serializeDateValue(jobData.updatedAt) || new Date().toISOString(),
+        };
+      })
+      .sort(compareRecentJobs);
 
-    // Perfis para vitrine da home: verificados e priorizando destacados.
-    const [verifiedFlagSnap, verifiedLegacySnap, verifiedLegacy2Snap, verifiedStatusSnap, approvedStatusSnap] = await Promise.all([
-      admin.firestore()
-        .collection('users')
-        .where('userType', '==', 'candidato')
-        .where('verified', '==', true)
+    const [
+      verifiedFlagSnap,
+      verifiedLegacySnap,
+      verifiedLegacy2Snap,
+      verifiedStatusSnap,
+      approvedStatusSnap,
+    ] = await Promise.all([
+      admin
+        .firestore()
+        .collection("users")
+        .where("userType", "==", "candidato")
+        .where("verified", "==", true)
         .limit(60)
         .get(),
-      admin.firestore()
-        .collection('users')
-        .where('userType', '==', 'candidato')
-        .where('verificado', '==', true)
+      admin
+        .firestore()
+        .collection("users")
+        .where("userType", "==", "candidato")
+        .where("verificado", "==", true)
         .limit(60)
         .get(),
-      admin.firestore()
-        .collection('users')
-        .where('userType', '==', 'candidato')
-        .where('isVerified', '==', true)
+      admin
+        .firestore()
+        .collection("users")
+        .where("userType", "==", "candidato")
+        .where("isVerified", "==", true)
         .limit(60)
         .get(),
-      admin.firestore()
-        .collection('users')
-        .where('userType', '==', 'candidato')
-        .where('verificationStatus', '==', 'verified')
+      admin
+        .firestore()
+        .collection("users")
+        .where("userType", "==", "candidato")
+        .where("verificationStatus", "==", "verified")
         .limit(60)
         .get(),
-      admin.firestore()
-        .collection('users')
-        .where('userType', '==', 'candidato')
-        .where('verificationStatus', '==', 'approved')
+      admin
+        .firestore()
+        .collection("users")
+        .where("userType", "==", "candidato")
+        .where("verificationStatus", "==", "approved")
         .limit(60)
-        .get()
+        .get(),
     ]);
 
     const verifiedUsersMap = new Map();
     for (const doc of verifiedFlagSnap.docs) verifiedUsersMap.set(doc.id, doc);
-    for (const doc of verifiedLegacySnap.docs) verifiedUsersMap.set(doc.id, doc);
-    for (const doc of verifiedLegacy2Snap.docs) verifiedUsersMap.set(doc.id, doc);
-    for (const doc of verifiedStatusSnap.docs) verifiedUsersMap.set(doc.id, doc);
-    for (const doc of approvedStatusSnap.docs) verifiedUsersMap.set(doc.id, doc);
+    for (const doc of verifiedLegacySnap.docs)
+      verifiedUsersMap.set(doc.id, doc);
+    for (const doc of verifiedLegacy2Snap.docs)
+      verifiedUsersMap.set(doc.id, doc);
+    for (const doc of verifiedStatusSnap.docs)
+      verifiedUsersMap.set(doc.id, doc);
+    for (const doc of approvedStatusSnap.docs)
+      verifiedUsersMap.set(doc.id, doc);
 
     const verifiedUserDocs = Array.from(verifiedUsersMap.values());
     const verifiedUserIds = verifiedUserDocs.map((doc) => doc.id);
-
     const profileDocs = verifiedUserIds.length
-      ? await admin.firestore().getAll(...verifiedUserIds.map((uid) => admin.firestore().collection('profiles').doc(uid)))
+      ? await admin
+          .firestore()
+          .getAll(
+            ...verifiedUserIds.map((uid) =>
+              admin.firestore().collection("profiles").doc(uid),
+            ),
+          )
       : [];
 
     const profileMap = new Map();
     profileDocs.forEach((profileDoc) => {
-      if (profileDoc.exists) profileMap.set(profileDoc.id, profileDoc.data() || {});
+      if (profileDoc.exists)
+        profileMap.set(profileDoc.id, profileDoc.data() || {});
     });
 
     const spotlightCandidates = verifiedUserDocs
@@ -136,7 +425,7 @@ export async function getServerSideProps() {
           userData.name ||
           profileData.fullName ||
           profileData.name ||
-          'Candidato verificado';
+          "Candidato verificado";
 
         const headline =
           userData.headline ||
@@ -144,38 +433,68 @@ export async function getServerSideProps() {
           profileData.headline ||
           profileData.profession ||
           profileData.objectiveArea ||
-          'Profissional';
+          "Profissional";
 
         const destaque = Boolean(
           userData.destaque ||
           userData.curriculoDestacado ||
           profileData.destaque ||
-          profileData.curriculoDestacado
+          profileData.curriculoDestacado,
         );
 
-        const createdAtRaw = userData.createdAt || profileData.createdAt || null;
+        const createdAtRaw =
+          userData.createdAt || profileData.createdAt || null;
         const createdAt = createdAtRaw?.toDate?.()?.toISOString?.() || null;
-        const initials = String(fullName)
-          .split(' ')
-          .filter(Boolean)
-          .slice(0, 2)
-          .map((part) => part.charAt(0).toUpperCase())
-          .join('') || 'CV';
 
         return {
           id: doc.id,
           fullName,
           headline,
-          initials,
+          initials: getInitials(fullName),
+          photoUrl:
+            userData.photoUrl ||
+            userData.photo ||
+            profileData.photoUrl ||
+            profileData.photo ||
+            "",
           verified: true,
           destaque,
-          createdAt
+          createdAt,
         };
       })
       .sort((a, b) => {
         if (a.destaque !== b.destaque) return b.destaque ? 1 : -1;
-        return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+        return (
+          new Date(b.createdAt || 0).getTime() -
+          new Date(a.createdAt || 0).getTime()
+        );
       });
+
+    const latestPosts = postsSnapshot.docs
+      .map((doc) => {
+        const data = doc.data() || {};
+        return {
+          id: doc.id,
+          title: safeText(data.title, "Sem título"),
+          excerpt: safeText(data.excerpt, ""),
+          category: safeText(data.category, "Blog"),
+          image: safeText(data.image, ""),
+          readTime: safeText(data.readTime, "5 min"),
+          status: normalizeContentStatus(data.status),
+          createdAt: safeTimestampToISOString(data.createdAt),
+          updatedAt: safeTimestampToISOString(data.updatedAt),
+          createdAtMs: safeTimestampToMillis(data.createdAt),
+          updatedAtMs: safeTimestampToMillis(data.updatedAt),
+        };
+      })
+      .filter((post) => isContentPublished(post.status))
+      .sort(
+        (a, b) =>
+          (b.createdAtMs || b.updatedAtMs || 0) -
+          (a.createdAtMs || a.updatedAtMs || 0),
+      )
+      .slice(0, 2)
+      .map(({ createdAtMs, updatedAtMs, ...post }) => post);
 
     const stats = {
       activeJobs: jobs.length,
@@ -185,189 +504,89 @@ export async function getServerSideProps() {
         if (!job.createdAt) return false;
         const createdAt = new Date(job.createdAt);
         if (Number.isNaN(createdAt.getTime())) return false;
-        const ageInDays = (new Date().getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24);
+        const ageInDays =
+          (new Date().getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24);
         return ageInDays <= 14;
-      }).length
+      }).length,
     };
 
     return {
       props: {
         jobs: JSON.parse(JSON.stringify(jobs)),
-        stats: stats,
-        spotlightCandidates: JSON.parse(JSON.stringify(spotlightCandidates))
-      }
+        stats,
+        spotlightCandidates: JSON.parse(JSON.stringify(spotlightCandidates)),
+        latestPosts: JSON.parse(JSON.stringify(latestPosts)),
+      },
     };
   } catch (error) {
-    console.error('Erro fatal ao buscar dados da home:', error);
+    console.error("Erro fatal ao buscar dados da home:", error);
     return {
       props: {
         jobs: [],
         stats: {
           activeJobs: 0,
           activeCandidates: 0,
-          activeCompanies: 0
+          activeCompanies: 0,
+          recentJobsLast14Days: 0,
         },
-        spotlightCandidates: []
-      }
+        spotlightCandidates: [],
+        latestPosts: [],
+      },
     };
   }
 }
 
-
-const FALLBACK_CATEGORIES = [
-  { name: 'Marketing Digital', icon: 'fa-bullhorn', color: '#3b82f6', count: '...' },
-  { name: 'Programação', icon: 'fa-code', color: '#10b981', count: '...' },
-  { name: 'Design', icon: 'fa-palette', color: '#f59e0b', count: '...' },
-  { name: 'Administração', icon: 'fa-briefcase', color: '#8b5cf6', count: '...' },
-  { name: 'Vendas', icon: 'fa-chart-line', color: '#ef4444', count: '...' },
-  { name: 'Educação', icon: 'fa-graduation-cap', color: '#06b6d4', count: '...' }
-];
-
-const CATEGORY_CONFIGS = {
-  Marketing: { icon: 'fa-bullhorn', color: '#3b82f6' },
-  'Marketing Digital': { icon: 'fa-bullhorn', color: '#3b82f6' },
-  Programação: { icon: 'fa-code', color: '#10b981' },
-  Desenvolvimento: { icon: 'fa-code', color: '#10b981' },
-  Design: { icon: 'fa-palette', color: '#f59e0b' },
-  Administração: { icon: 'fa-briefcase', color: '#8b5cf6' },
-  Gestão: { icon: 'fa-briefcase', color: '#8b5cf6' },
-  'Gestão e Administração': { icon: 'fa-briefcase', color: '#8b5cf6' },
-  Vendas: { icon: 'fa-chart-line', color: '#ef4444' },
-  Educação: { icon: 'fa-graduation-cap', color: '#06b6d4' },
-  Saúde: { icon: 'fa-heartbeat', color: '#ec4899' },
-  Engenharia: { icon: 'fa-wrench', color: '#14b8a6' },
-  Finanças: { icon: 'fa-dollar-sign', color: '#f59e0b' },
-  'Recursos Humanos': { icon: 'fa-users', color: '#6366f1' },
-  RH: { icon: 'fa-users', color: '#6366f1' },
-  Jurídico: { icon: 'fa-balance-scale', color: '#8b5cf6' },
-  Atendimento: { icon: 'fa-headset', color: '#10b981' }
-};
-
-const HOW_IT_WORKS_STEPS = [
-  { number: '1', title: 'Crie sua Conta', desc: 'Registre-se gratuitamente em menos de 2 minutos', icon: 'fa-user-plus', color: '#3b82f6' },
-  { number: '2', title: 'Complete seu Perfil', desc: 'Adicione suas experiências e habilidades', icon: 'fa-file-alt', color: '#10b981' },
-  { number: '3', title: 'Explore Vagas', desc: 'Navegue por milhares de oportunidades', icon: 'fa-search', color: '#f59e0b' },
-  { number: '4', title: 'Candidate-se', desc: 'Aplique com um clique para as vagas desejadas', icon: 'fa-paper-plane', color: '#8b5cf6' }
-];
-
-const normalizeHexColor = (color) => {
-  if (typeof color !== 'string') return null;
-  const trimmed = color.trim();
-  if (!trimmed.startsWith('#')) return null;
-
-  let hex = trimmed.slice(1);
-  if (hex.length === 3) {
-    hex = hex.split('').map((char) => `${char}${char}`).join('');
-  }
-
-  return hex.length === 6 ? `#${hex}` : null;
-};
-
-const hexToRgbChannels = (color) => {
-  const normalized = normalizeHexColor(color);
-  if (!normalized) return null;
-
-  const hex = normalized.slice(1);
-  const red = parseInt(hex.slice(0, 2), 16);
-  const green = parseInt(hex.slice(2, 4), 16);
-  const blue = parseInt(hex.slice(4, 6), 16);
-  return `${red}, ${green}, ${blue}`;
-};
-
-const buildAccentVars = (color, fallback = '#64748b') => {
-  const accentColor = normalizeHexColor(color) || fallback;
-  const rgb = hexToRgbChannels(accentColor) || hexToRgbChannels(fallback);
-
-  return {
-    '--accent-color': accentColor,
-    '--accent-soft': `rgba(${rgb}, 0.14)`,
-    '--accent-border': `rgba(${rgb}, 0.34)`,
-    '--accent-strong': `rgba(${rgb}, 0.5)`,
-    '--accent-glow': `rgba(${rgb}, 0.28)`
-  };
-};
-
-const resolveCategoryConfig = (category) => {
-  const mappedConfig = CATEGORY_CONFIGS[category.name];
-  if (mappedConfig) return mappedConfig;
-
-  if (category.icon || category.color) {
-    return {
-      icon: category.icon || 'fa-folder',
-      color: category.color || '#64748b'
-    };
-  }
-
-  return { icon: 'fa-folder', color: '#64748b' };
-};
-
 export default function HomePage({
   jobs: initialJobs = [],
-  stats = { activeJobs: 0, activeCandidates: 0, activeCompanies: 0, recentJobsLast14Days: 0 },
-  spotlightCandidates = []
+  stats = {
+    activeJobs: 0,
+    activeCandidates: 0,
+    activeCompanies: 0,
+    recentJobsLast14Days: 0,
+  },
+  spotlightCandidates = [],
+  latestPosts = [],
 }) {
   const router = useRouter();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [filteredJobs, setFilteredJobs] = useState(initialJobs);
   const [categories, setCategories] = useState([]);
-  const [spotlightOffset, setSpotlightOffset] = useState(0);
+  const [newsletterEmail, setNewsletterEmail] = useState("");
 
   useEffect(() => {
     setFilteredJobs(initialJobs);
 
-    fetch('/api/jobs/categories')
-      .then(res => res.json())
-      .then(data => {
+    fetch("/api/jobs/categories")
+      .then((res) => res.json())
+      .then((data) => {
         const predefinedCategories = [
-          { name: 'Marketing Digital', icon: 'fa-bullhorn', color: '#3b82f6' },
-          { name: 'Programação', icon: 'fa-code', color: '#10b981' },
-          { name: 'Design', icon: 'fa-palette', color: '#f59e0b' },
-          { name: 'Gestão e Administração', icon: 'fa-briefcase', color: '#8b5cf6' },
-          { name: 'Vendas', icon: 'fa-chart-line', color: '#ef4444' },
-          { name: 'Educação', icon: 'fa-graduation-cap', color: '#06b6d4' }
+          { name: "Marketing Digital", icon: "fa-bullhorn", color: "#2563eb" },
+          { name: "Programação", icon: "fa-code", color: "#10b981" },
+          { name: "Design", icon: "fa-palette", color: "#0ea5e9" },
         ];
 
-        const categoriesWithCounts = predefinedCategories.map(predef => {
-          const realCategory = data.categories?.find(c => c.name === predef.name);
+        const categoriesWithCounts = predefinedCategories.map((predef) => {
+          const realCategory = data.categories?.find(
+            (category) => category.name === predef.name,
+          );
           return {
             ...predef,
-            count: realCategory ? realCategory.count : 0
+            count: realCategory ? realCategory.count : 0,
           };
         });
 
         setCategories(categoriesWithCounts);
       })
-      .catch(err => {
-        console.error('Erro ao buscar categorias:', err);
-        setCategories(FALLBACK_CATEGORIES.map((category) => ({ ...category, count: 0 })));
+      .catch((error) => {
+        console.error("Erro ao buscar categorias:", error);
+        setCategories(
+          FALLBACK_CATEGORIES.map((category) => ({ ...category, count: 0 })),
+        );
       });
   }, [initialJobs]);
 
-  useEffect(() => {
-    setSpotlightOffset(0);
-  }, [spotlightCandidates.length]);
-
-  useEffect(() => {
-    if (spotlightCandidates.length <= 2) return undefined;
-
-    const intervalId = setInterval(() => {
-      setSpotlightOffset((currentOffset) => (currentOffset + 1) % spotlightCandidates.length);
-    }, 6000);
-
-    return () => clearInterval(intervalId);
-  }, [spotlightCandidates.length]);
-
-  const visibleSpotlightCandidates = (() => {
-    if (spotlightCandidates.length <= 2) return spotlightCandidates;
-
-    const firstCandidate = spotlightCandidates[spotlightOffset % spotlightCandidates.length];
-    const secondCandidate = spotlightCandidates[(spotlightOffset + 1) % spotlightCandidates.length];
-
-    return [firstCandidate, secondCandidate];
-  })();
-
-  const handleSearch = (e) => {
-    const term = e.target.value.toLowerCase();
+  const handleSearch = (event) => {
+    const term = event.target.value.toLowerCase();
     setSearchTerm(term);
 
     if (!term) {
@@ -375,11 +594,13 @@ export default function HomePage({
       return;
     }
 
-    const filtered = initialJobs.filter(job =>
-      (job.titulo?.toLowerCase() || '').includes(term) ||
-      (job.empresaNome?.toLowerCase() || '').includes(term) ||
-      (job.localizacao?.toLowerCase() || '').includes(term) ||
-      (job.tipoContrato?.toLowerCase() || '').includes(term)
+    const filtered = initialJobs.filter(
+      (job) =>
+        (job.titulo?.toLowerCase() || "").includes(term) ||
+        (job.empresaNome?.toLowerCase() || "").includes(term) ||
+        (job.localizacao?.toLowerCase() || "").includes(term) ||
+        (job.tipoContrato?.toLowerCase() || "").includes(term) ||
+        (job.categoria?.toLowerCase() || "").includes(term),
     );
 
     setFilteredJobs(filtered);
@@ -388,252 +609,268 @@ export default function HomePage({
   const handleSearchSubmit = (event) => {
     event.preventDefault();
     const query = searchTerm.trim();
-    router.push(query ? `/vagas?search=${encodeURIComponent(query)}` : '/vagas');
+    router.push(
+      query ? `/vagas?search=${encodeURIComponent(query)}` : "/vagas",
+    );
   };
 
-  const displayedCategories = categories.length === 0 ? FALLBACK_CATEGORIES : categories.slice(0, 6);
-  const featuredJobs = filteredJobs.filter((job) => job.destaque).slice(0, 3);
-  const highlightedJobsCount = initialJobs.filter((job) => job.destaque).length;
-  const statsCards = [
-    { label: 'Vagas Ativas', value: `${stats.activeJobs}+`, description: 'Oportunidades abertas agora', color: '#60a5fa' },
-    { label: 'Empresas', value: `${stats.activeCompanies}+`, description: 'Organizações a recrutar', color: '#34d399' },
-    { label: 'Talentos', value: `${stats.activeCandidates}+`, description: 'Perfis já registados', color: '#818cf8' },
-    { label: 'Perfis em Vitrine', value: `${spotlightCandidates.length}+`, description: 'Candidatos verificados em destaque', color: '#f59e0b' }
+  const handleNewsletterSubmit = (event) => {
+    event.preventDefault();
+    router.push("/blog");
+  };
+
+  const displayedCategories = (
+    categories.length === 0 ? FALLBACK_CATEGORIES : categories
+  ).slice(0, 3);
+  const heroJobs = filteredJobs.slice(0, 4);
+  const jobsPreview = filteredJobs.slice(0, 8);
+  const featuredCandidates = spotlightCandidates.slice(0, 3);
+  const networkCandidates = spotlightCandidates.slice(0, 5);
+  const newsPosts =
+    latestPosts.length > 0
+      ? latestPosts.slice(0, 2)
+      : [
+          {
+            id: "blog",
+            title: "Explore conteúdos e dicas para melhorar a sua carreira",
+            excerpt:
+              "Veja artigos, recursos e atualizações do mercado de trabalho na plataforma.",
+            category: "Blog",
+            image: "",
+            readTime: "5 min",
+          },
+          {
+            id: "recursos",
+            title:
+              "Descubra recursos práticos para CV, candidatura e preparação",
+            excerpt:
+              "Use ferramentas e conteúdos do Emprego STP para dar mais força ao seu perfil.",
+            category: "Recursos",
+            image: "",
+            readTime: "4 min",
+          },
+        ];
+
+  const metrics = [
+    { label: "Vagas ativas", value: `${stats.activeJobs}+` },
+    { label: "Empresas ativas", value: `${stats.activeCompanies}+` },
+    { label: "Talentos registados", value: `${stats.activeCandidates}+` },
+  ];
+  const heroSuggestions = [
+    "Gestão",
+    "Venda",
+    "Marketing Digital",
+    "Programação",
+    "Design",
+  ];
+
+  const candidateFeatures = [
+    "Criar perfil profissional",
+    "Guardar vagas favoritas",
+    "Gerir candidaturas com mais clareza",
+  ];
+
+  const companyFeatures = [
+    "Publicar vagas com mais visibilidade",
+    "Receber candidaturas organizadas",
+    "Aceder ao banco de talentos",
   ];
 
   return (
     <>
       <Head>
-        <title>Empregos STP - Connecting Devs with Employers</title>
-        <meta name="description" content="A melhor plataforma de empregos em São Tomé e Príncipe. Conectando talentos às melhores oportunidades." />
+        <title>Empregos STP - Conectando Talentos ao Sucesso</title>
+        <meta
+          name="description"
+          content="A melhor plataforma de empregos em São Tomé e Príncipe. Conectando talentos às melhores oportunidades."
+        />
         <link rel="icon" href="/favicon.ico" />
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+        <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+        />
       </Head>
 
-      <PublicPageShell>
+      <PublicPageShell headerVariant="light">
         <div className={styles.page}>
           <section className={styles.hero}>
-            <div className={styles.heroGlowPrimary}></div>
-            <div className={styles.heroGlowSecondary}></div>
-            <div className={styles.heroLinePrimary}></div>
-            <div className={styles.heroLineSecondary}></div>
+            <div className={styles.sectionContainer}>
+              <div className={styles.heroCanvas}>
+                <span
+                  className={`${styles.heroSpark} ${styles.heroSparkBlueLeft}`}
+                  aria-hidden="true"
+                />
+                <span
+                  className={`${styles.heroSpark} ${styles.heroSparkBlueRight}`}
+                  aria-hidden="true"
+                />
+                <span
+                  className={`${styles.heroSpark} ${styles.heroSparkLime}`}
+                  aria-hidden="true"
+                />
 
-            <div className={styles.heroContainer}>
-              <div className={styles.heroGrid}>
-                <div className={styles.heroContent}>
-                  <div className={styles.heroEyebrow}>
-                    Plataforma nacional de recrutamento para São Tomé e Príncipe
-                  </div>
+                {heroJobs.map((job, index) => (
+                  <Link
+                    key={job.id}
+                    href={`/vaga/${job.id}`}
+                    className={`${styles.heroFloatingCard} ${styles[`floatingCard${index + 1}`]}`}
+                  >
+                    <div className={styles.heroFloatingIcon}>
+                      {job.empresaLogo ? (
+                        <img
+                          src={job.empresaLogo}
+                          alt={job.empresaNome}
+                          className={styles.heroFloatingLogo}
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      ) : (
+                        <span>{getInitials(job.empresaNome)}</span>
+                      )}
+                    </div>
+                    <div className={styles.heroFloatingBody}>
+                      <strong>{truncateText(job.titulo, 34)}</strong>
+                      <span>{job.empresaNome}</span>
+                      <div className={styles.heroFloatingMeta}>
+                        <small>
+                          <i className="fas fa-briefcase" aria-hidden="true" />
+                          {normalizeContractType(job.tipoContrato)}
+                        </small>
+                        <em className={styles.heroFloatingTag}>OPEN</em>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
 
+                <div className={styles.heroRingOuter} aria-hidden="true" />
+                <div className={styles.heroRingInner}>
+                  <p className={styles.heroEyebrow}>
+                    Empregos em São Tomé e Príncipe
+                  </p>
                   <h1 className={styles.heroTitle}>
-                    Conectando <span className={styles.heroAccentBlue}>Talentos</span>
+                    Conectando
                     <br />
-                    às Melhores <span className={styles.heroAccentGreen}>Oportunidades</span>
+                    <span className={styles.heroTitleAccent}>Talentos</span>
+                    <br />
+                    ao Sucesso
                   </h1>
-
                   <p className={styles.heroDescription}>
-                    Descubra milhares de vagas em São Tomé e Príncipe. Encontre o emprego ideal que corresponde às suas habilidades e ambições profissionais.
+                    Somos a plataforma que aproxima candidatos e empresas com
+                    uma experiência mais clara, rápida e acessível.
                   </p>
 
-                  <form className={styles.searchForm} onSubmit={handleSearchSubmit}>
+                  <form
+                    className={styles.searchForm}
+                    onSubmit={handleSearchSubmit}
+                  >
                     <div className={styles.searchField}>
-                      <i className={`fas fa-search ${styles.searchIcon}`}></i>
+                      <i className="fas fa-search" aria-hidden="true" />
                       <input
                         type="text"
-                        placeholder="Digite o cargo, empresa ou palavra-chave..."
                         value={searchTerm}
                         onChange={handleSearch}
                         className={styles.searchInput}
+                        placeholder="Título da vaga"
+                        aria-label="Pesquisar vagas na homepage"
                       />
                     </div>
-                    <button type="submit" className={styles.primaryAction}>
-                      Buscar Vagas
+                    <button type="submit" className={styles.searchButton}>
+                      BUSCA
                     </button>
                   </form>
 
-                  <div className={styles.ratingRow}>
-                    <div className={styles.ratingStars}>
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <i key={star} className="fas fa-star"></i>
-                      ))}
-                    </div>
-                    <span className={styles.ratingText}>Empresas e talentos a recrutar com mais clareza em STP</span>
+                  <div className={styles.heroSuggestions}>
+                    <strong>Sugestão</strong>
+                    {heroSuggestions.map((item) => (
+                      <span key={item}>{item}</span>
+                    ))}
                   </div>
                 </div>
-
-                <div className={styles.heroVisual}>
-                  <div className={styles.heroShowcase}>
-                    <div className={styles.heroCandidatesStack}>
-                      {visibleSpotlightCandidates.length === 0 ? (
-                        <article className={styles.heroCandidatesEmpty}>
-                          <strong>Perfis em atualização</strong>
-                          <p>A vitrine de talentos será preenchida assim que existirem candidatos verificados disponíveis.</p>
-                        </article>
-                      ) : visibleSpotlightCandidates.map((candidate, index) => {
-                        const isFirst = index === 0;
-                        const avatarGradient = candidate.destaque
-                          ? 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)'
-                          : isFirst
-                            ? 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)'
-                            : 'linear-gradient(135deg, #10b981 0%, #34d399 100%)';
-                        const avatarShadow = candidate.destaque
-                          ? 'rgba(245, 158, 11, 0.45)'
-                          : isFirst
-                            ? 'rgba(59, 130, 246, 0.45)'
-                            : 'rgba(16, 185, 129, 0.45)';
-
-                        return (
-                          <article
-                            key={candidate.id}
-                            className={styles.heroCandidateCard}
-                            style={{
-                              '--candidate-avatar-gradient': avatarGradient,
-                              '--candidate-avatar-shadow': avatarShadow,
-                              '--candidate-delay': isFirst ? '0s' : '1.5s'
-                            }}
-                          >
-                            <div className={styles.candidateAvatar}>{candidate.initials}</div>
-                            <div className={styles.candidateMeta}>
-                              <div className={styles.heroCandidateTop}>
-                                <h3 className={styles.candidateName}>{candidate.fullName}</h3>
-                                {candidate.destaque ? <span className={styles.candidateFeaturedTag}>Destaque</span> : null}
-                              </div>
-                              <p className={styles.candidateHeadline}>{candidate.headline}</p>
-                              <div className={styles.candidateTags}>
-                                <span className={styles.candidateTag}>Verificado</span>
-                                <span className={styles.heroCandidateMetaText}>Perfil em vitrine</span>
-                              </div>
-                            </div>
-                          </article>
-                        );
-                      })}
-                    </div>
-
-                    <div className={styles.heroShowcaseFooter}>
-                      <div>
-                        <span className={styles.heroShowcaseFooterLabel}>Acesso rápido</span>
-                        <strong className={styles.heroShowcaseFooterValue}>
-                          {spotlightCandidates.length > 0
-                            ? `${spotlightCandidates.length} perfis em vitrine neste momento`
-                            : 'Novos perfis serão destacados assim que forem verificados'}
-                        </strong>
-                      </div>
-                      <Link href="/candidatos" className={styles.heroShowcaseLink}>
-                        Ver perfis
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section className={styles.statsSection}>
-            <div className={styles.statsGlow}></div>
-            <div className={styles.sectionContainer}>
-              <div className={`${styles.sectionIntro} ${styles.sectionIntroCompact}`}>
-                <div className={`${styles.sectionBadge} ${styles.badgeIndigo}`}>
-                  <span>Números Reais</span>
-                </div>
-                <h2 className={styles.sectionHeading}>
-                  Indicadores que mostram a <span className={styles.sectionAccentIndigo}>força da plataforma</span>
-                </h2>
-              </div>
-
-              <div className={styles.statsGrid}>
-                {statsCards.map((item) => (
-                  <article key={item.label} className={styles.statCard} style={buildAccentVars(item.color)}>
-                    <p className={styles.statValue}>{item.value}</p>
-                    <p className={styles.statLabel}>{item.label}</p>
-                    <p className={styles.statMeta}>{item.description}</p>
-                  </article>
-                ))}
               </div>
             </div>
           </section>
 
           <section className={styles.jobsSection}>
-            <div className={styles.jobsGlowLeft}></div>
-            <div className={styles.jobsGlowRight}></div>
             <div className={styles.sectionContainer}>
-              <div className={styles.jobsSectionHead}>
-                <div className={styles.jobsLead}>
-                  <div className={`${styles.sectionBadge} ${styles.badgeBlue}`}>
-                    <span>Vagas em Destaque</span>
-                  </div>
-                  <h2 className={styles.sectionHeading}>
-                    Encontre Sua <span className={styles.sectionAccentBlue}>Próxima Oportunidade</span>
-                  </h2>
-                  <p className={styles.sectionDescription}>
-                    Uma seleção objetiva das vagas com melhor visibilidade, seguida das oportunidades mais recentes publicadas na plataforma.
-                  </p>
-                </div>
+              <div className={styles.sectionHeaderDark}>
+                <h2 className={styles.sectionTitleDark}>
+                  Veja vagas disponíveis
+                </h2>
+                <Link href="/vagas" className={styles.sectionLinkDark}>
+                  TODAS
+                </Link>
               </div>
 
-              {featuredJobs.length > 0 ? (
-                <div className={styles.featuredPanel}>
-                  <div className={styles.featuredPanelHeader}>
-                    <h3 className={styles.featuredPanelTitle}>Seleção Editorial</h3>
-                    <p className={styles.featuredPanelText}>As vagas com maior prioridade visual e melhor exposição nesta semana</p>
-                  </div>
-                  <JobList jobs={featuredJobs} />
-                </div>
-              ) : null}
-
-              <div className={styles.jobsListIntro}>
-                <h3 className={styles.jobsListTitle}>Últimas oportunidades abertas</h3>
-                <p className={styles.jobsListText}>Atualizadas diretamente das empresas que estão a contratar agora.</p>
+              <div className={styles.compactJobsGrid}>
+                {jobsPreview.map((job) => (
+                  <CompactJobCard
+                    key={job.id}
+                    href={`/vaga/${job.id}`}
+                    title={job.titulo}
+                    badgeLabel={job.destaque ? "Destaque" : "Nova"}
+                    status={job.status}
+                    salary={formatSalaryRange(job.salarioDe, job.salarioAte)}
+                    companyName={job.empresaNome}
+                    companyLogo={job.empresaLogo}
+                    imageAlt={job.empresaNome}
+                    metaItems={[
+                      {
+                        icon: "fas fa-location-dot",
+                        text: job.localizacao,
+                      },
+                      {
+                        icon: "fas fa-briefcase",
+                        text: normalizeContractType(job.tipoContrato),
+                      },
+                      {
+                        icon: "fas fa-clock",
+                        text: formatPublishedAgo(
+                          job.publicadoEm || job.createdAt,
+                        ),
+                      },
+                    ]}
+                  />
+                ))}
               </div>
-
-              <JobList jobs={filteredJobs.slice(0, 6)} />
-
-              {filteredJobs.length > 6 ? (
-                <div className={styles.viewAllWrap}>
-                  <Link href="/vagas" className={styles.linkAction}>
-                    Ver Todas as Vagas
-                    <i className="fas fa-arrow-right"></i>
-                  </Link>
-                </div>
-              ) : null}
             </div>
           </section>
 
           <section className={styles.categoriesSection}>
             <div className={styles.sectionContainer}>
-              <div className={styles.sectionIntro}>
-                <div className={`${styles.sectionBadge} ${styles.badgeGreen}`}>
-                  <span>Categorias</span>
-                </div>
-                <h2 className={styles.sectionHeading}>
-                  Explore por <span className={styles.sectionAccentGreen}>Categoria</span>
+              <div className={styles.sectionHeaderLight}>
+                <h2 className={styles.sectionTitleLight}>
+                  Categorias populares
                 </h2>
-                <p className={styles.sectionDescription}>
-                  Encontre as melhores oportunidades na sua área de interesse.
-                </p>
+                <Link href="/vagas" className={styles.sectionLinkLight}>
+                  TODAS
+                </Link>
               </div>
 
-              <div className={styles.categoryGrid}>
+              <div className={styles.categoriesGrid}>
                 {displayedCategories.map((category) => {
                   const config = resolveCategoryConfig(category);
-                  const accentVars = buildAccentVars(config.color);
-                  const countLabel = typeof category.count === 'number'
-                    ? `${category.count} vaga${category.count !== 1 ? 's' : ''} disponível${category.count !== 1 ? 'is' : ''}`
-                    : category.count;
+                  const countLabel =
+                    typeof category.count === "number"
+                      ? `${category.count} vaga${category.count !== 1 ? "s" : ""}`
+                      : category.count;
 
                   return (
                     <Link
                       key={category.name}
                       href={`/vagas?categoria=${encodeURIComponent(category.name.toLowerCase())}`}
-                      className={styles.categoryLink}
-                      style={accentVars}
+                      className={styles.categoryCard}
+                      style={{ "--category-tone": config.color }}
                     >
-                      <article className={styles.categoryCard}>
-                        <div className={styles.categoryCardIconWrap}>
-                          <i className={`fas ${config.icon} ${styles.categoryCardIcon}`}></i>
-                        </div>
+                      <span className={styles.categoryIcon}>
+                        <i
+                          className={`fas ${config.icon}`}
+                          aria-hidden="true"
+                        />
+                      </span>
+                      <div>
                         <h3 className={styles.categoryName}>{category.name}</h3>
                         <p className={styles.categoryCount}>{countLabel}</p>
-                      </article>
+                      </div>
                     </Link>
                   );
                 })}
@@ -641,66 +878,371 @@ export default function HomePage({
             </div>
           </section>
 
-          <section className={styles.stepsSection}>
+          <section id="testemunhos" className={styles.signalsSection}>
             <div className={styles.sectionContainer}>
-              <div className={styles.sectionIntro}>
-                <div className={`${styles.sectionBadge} ${styles.badgeIndigo}`}>
-                  <span>Processo</span>
+              <div className={styles.signalsGrid}>
+                <article className={styles.metricsCard}>
+                  <div className={styles.metricsGrid}>
+                    {metrics.map((item) => (
+                      <div key={item.label} className={styles.metricItem}>
+                        <strong className={styles.metricValue}>
+                          {item.value}
+                        </strong>
+                        <span className={styles.metricLabel}>{item.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </article>
+
+                <article className={styles.testimonialCard}>
+                  <h2 className={styles.testimonialTitle}>Testemunhos</h2>
+                  <div className={styles.testimonialAvatars}>
+                    {featuredCandidates.length ? (
+                      featuredCandidates.map((candidate) => (
+                        <span
+                          key={candidate.id}
+                          className={styles.testimonialAvatar}
+                        >
+                          {candidate.initials}
+                        </span>
+                      ))
+                    ) : (
+                      <>
+                        <span className={styles.testimonialAvatar}>ES</span>
+                        <span className={styles.testimonialAvatar}>ST</span>
+                        <span className={styles.testimonialAvatar}>JP</span>
+                      </>
+                    )}
+                  </div>
+                  <p className={styles.testimonialText}>
+                    Empresas e talentos estão a usar a plataforma para encontrar
+                    oportunidades com mais rapidez e clareza.
+                  </p>
+                </article>
+              </div>
+            </div>
+          </section>
+
+          <section className={styles.aboutSection}>
+            <div className={styles.sectionContainer}>
+              <div className={styles.aboutGrid}>
+                <div className={styles.aboutContent}>
+                  <p className={styles.aboutEyebrow}>Sobre nós</p>
+                  <h2 className={styles.aboutTitle}>
+                    Uma plataforma feita para aproximar candidatos e empresas
+                  </h2>
+                  <p className={styles.aboutText}>
+                    Facilitar o acesso ao emprego em São Tomé e Príncipe,
+                    tornando a procura e a divulgação de vagas mais rápidas,
+                    transparentes e humanas.
+                  </p>
+                  <div className={styles.aboutActions}>
+                    <Link href="/vagas" className={styles.aboutPrimary}>
+                      PESQUISAR VAGAS
+                    </Link>
+                    <Link
+                      href="/register?type=candidato"
+                      className={styles.aboutSecondary}
+                    >
+                      CANDIDATAR-ME
+                    </Link>
+                  </div>
                 </div>
-                <h2 className={styles.sectionHeading}>
-                  Como <span className={styles.sectionAccentIndigo}>Funciona</span>
+
+                <div className={styles.networkPanel} aria-hidden="true">
+                  <div className={styles.networkCenter}>+</div>
+                  {networkCandidates.map((candidate, index) => (
+                    <span
+                      key={candidate.id}
+                      className={`${styles.networkNode} ${styles[`networkNode${index + 1}`] || ""}`}
+                    >
+                      {candidate.initials}
+                    </span>
+                  ))}
+                  {!networkCandidates.length ? (
+                    <>
+                      <span
+                        className={`${styles.networkNode} ${styles.networkNode1}`}
+                      >
+                        CV
+                      </span>
+                      <span
+                        className={`${styles.networkNode} ${styles.networkNode2}`}
+                      >
+                        RH
+                      </span>
+                      <span
+                        className={`${styles.networkNode} ${styles.networkNode3}`}
+                      >
+                        TI
+                      </span>
+                      <span
+                        className={`${styles.networkNode} ${styles.networkNode4}`}
+                      >
+                        MK
+                      </span>
+                    </>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className={styles.processSection}>
+            <div className={styles.sectionContainer}>
+              <div className={styles.processPanel}>
+                <h2 className={styles.processTitle}>
+                  Como a plataforma funciona!
                 </h2>
-                <p className={styles.sectionDescription}>
-                  Comece sua jornada profissional em apenas 4 passos simples.
+                <p className={styles.processText}>
+                  Um fluxo claro para descobrir oportunidades, preparar o perfil
+                  e candidatar-se com mais confiança.
                 </p>
+
+                <div className={styles.processGrid}>
+                  {HOW_IT_WORKS_STEPS.map((step) => (
+                    <article key={step.number} className={styles.processStep}>
+                      <span className={styles.processStepIcon}>
+                        <i className={`fas ${step.icon}`} aria-hidden="true" />
+                      </span>
+                      <h3 className={styles.processStepTitle}>{step.title}</h3>
+                      <p className={styles.processStepText}>{step.desc}</p>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className={styles.talentsSection}>
+            <div className={styles.sectionContainer}>
+              <div className={styles.talentsGrid}>
+                <div className={styles.talentsContent}>
+                  <p className={styles.talentsEyebrow}>Talentos em destaque</p>
+                  <h2 className={styles.talentsTitle}>
+                    Encontre <span>Candidatos</span> Qualificados
+                  </h2>
+                  <p className={styles.talentsText}>
+                    Explore perfis verificados, descubra profissionais em
+                    vitrine e acelere o recrutamento com mais confiança.
+                  </p>
+                  <div className={styles.talentsActions}>
+                    <Link href="/candidatos" className={styles.talentsLink}>
+                      EXPLORAR
+                    </Link>
+                    <p className={styles.talentsHint}>
+                      Perfis validados e prontos para recrutamento.
+                    </p>
+                  </div>
+                </div>
+
+                <div className={styles.candidatesPanel}>
+                  <ul className={styles.candidatesList}>
+                    {(featuredCandidates.length
+                      ? featuredCandidates
+                      : [
+                          {
+                            id: "fallback-1",
+                            fullName: "Candidato Verificado",
+                            headline: "Perfil em destaque",
+                            initials: "CV",
+                          },
+                          {
+                            id: "fallback-2",
+                            fullName: "Talento em análise",
+                            headline: "Perfil profissional",
+                            initials: "TA",
+                          },
+                          {
+                            id: "fallback-3",
+                            fullName: "Novo candidato",
+                            headline: "Disponível para oportunidades",
+                            initials: "NC",
+                          },
+                        ]
+                    ).map((candidate) => {
+                      const profileHref = candidate.id?.startsWith("fallback-")
+                        ? "/candidatos"
+                        : `/candidatos/${candidate.id}`;
+
+                      return (
+                        <li
+                          key={candidate.id}
+                          className={styles.homeCandidateListItem}
+                        >
+                          <Link
+                            href={profileHref}
+                            className={styles.homeCandidateCard}
+                          >
+                            {candidate.photoUrl ? (
+                              <img
+                                src={candidate.photoUrl}
+                                alt={candidate.fullName}
+                                className={styles.homeCandidateAvatarImage}
+                                loading="lazy"
+                                decoding="async"
+                              />
+                            ) : (
+                              <div className={styles.homeCandidateAvatar}>
+                                {candidate.initials}
+                              </div>
+                            )}
+                            <div className={styles.homeCandidateInfo}>
+                              <div className={styles.homeCandidateTitleRow}>
+                                <h3 className={styles.homeCandidateName}>
+                                  {candidate.fullName}
+                                </h3>
+                                {candidate.verified ? (
+                                  <span
+                                    className={styles.homeCandidateVerified}
+                                  >
+                                    <VerificationBadgeIcon />
+                                    Verificado
+                                  </span>
+                                ) : null}
+                              </div>
+                              <p className={styles.homeCandidateHeadline}>
+                                {candidate.headline}
+                              </p>
+                              <span className={styles.homeCandidateStatus}>
+                                Ver perfil
+                              </span>
+                            </div>
+                            <span
+                              className={styles.homeCandidateArrow}
+                              aria-hidden="true"
+                            >
+                              →
+                            </span>
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className={styles.newsSection}>
+            <div className={styles.sectionContainer}>
+              <div className={styles.sectionHeaderLight}>
+                <h2 className={styles.sectionTitleLight}>
+                  Novidades sobre mercado de trabalho
+                </h2>
+                <Link href="/blog" className={styles.sectionLinkLight}>
+                  EXPLORAR
+                </Link>
               </div>
 
-              <div className={styles.stepsGrid}>
-                {HOW_IT_WORKS_STEPS.map((step) => (
-                  <article key={step.number} className={styles.stepCard} style={buildAccentVars(step.color)}>
-                    <div className={styles.stepIconWrap}>
-                      <i className={`fas ${step.icon}`}></i>
-                      <span className={styles.stepNumber}>{step.number}</span>
+              <div className={styles.newsGrid}>
+                <article className={styles.newsletterCard}>
+                  <h3 className={styles.newsletterTitle}>
+                    Subscreva a nossa Newsletter
+                  </h3>
+                  <p className={styles.newsletterText}>
+                    Receba novidades, dicas e conteúdos do mercado de trabalho
+                    diretamente no seu email.
+                  </p>
+                  <form
+                    className={styles.newsletterForm}
+                    onSubmit={handleNewsletterSubmit}
+                  >
+                    <input
+                      type="email"
+                      value={newsletterEmail}
+                      onChange={(event) =>
+                        setNewsletterEmail(event.target.value)
+                      }
+                      className={styles.newsletterInput}
+                      placeholder="Seu email"
+                      aria-label="Email para subscrever a newsletter"
+                    />
+                    <button type="submit" className={styles.newsletterButton}>
+                      Submeter
+                    </button>
+                  </form>
+                </article>
+
+                {newsPosts.map((post) => (
+                  <Link
+                    key={post.id}
+                    href={
+                      post.id === "recursos" ? "/recursos" : `/blog/${post.id}`
+                    }
+                    className={styles.postCard}
+                  >
+                    <div className={styles.postImageWrap}>
+                      {post.image ? (
+                        <img
+                          src={post.image}
+                          alt={post.title}
+                          className={styles.postImage}
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      ) : (
+                        <div className={styles.postImagePlaceholder}>
+                          {getInitials(post.title)}
+                        </div>
+                      )}
                     </div>
-                    <h3 className={styles.stepTitle}>{step.title}</h3>
-                    <p className={styles.stepDescription}>{step.desc}</p>
-                  </article>
+
+                    <div className={styles.postBody}>
+                      <span className={styles.postCategory}>
+                        {post.category}
+                      </span>
+                      <h3 className={styles.postTitle}>{post.title}</h3>
+                      <p className={styles.postExcerpt}>
+                        {truncateText(post.excerpt, 120)}
+                      </p>
+                      <div className={styles.postMeta}>
+                        <span>{getPostDateLabel(post)}</span>
+                        <span>{post.readTime || "5 min"}</span>
+                      </div>
+                    </div>
+                  </Link>
                 ))}
               </div>
             </div>
           </section>
 
-          <section className={styles.ctaSection}>
-            <div className={styles.ctaGlowPrimary}></div>
-            <div className={styles.ctaGlowSecondary}></div>
-
+          <section className={styles.dualSection}>
             <div className={styles.sectionContainer}>
-              <div className={styles.ctaGrid}>
-                <article className={`${styles.ctaCard} ${styles.ctaCardGreen}`}>
-                  <div className={styles.ctaIconWrap}>
-                    <i className="fas fa-user-tie"></i>
-                  </div>
-                  <h3 className={styles.ctaCardTitle}>Para Candidatos</h3>
-                  <p className={styles.ctaCardText}>
-                    Encontre as melhores oportunidades e dê o próximo passo na sua carreira.
+              <div className={styles.dualGrid}>
+                <article
+                  className={`${styles.dualCard} ${styles.dualCardCandidate}`}
+                >
+                  <p className={styles.dualEyebrow}>Ser um Candidato</p>
+                  <h2 className={styles.dualTitle}>
+                    Organize o seu perfil e encontre melhores oportunidades
+                  </h2>
+                  <p className={styles.dualText}>
+                    {candidateFeatures.join(" • ")}
                   </p>
-                  <Link href="/register?type=candidato" className={styles.secondaryAction}>
-                    Começar Agora
-                    <i className="fas fa-arrow-right"></i>
+                  <Link
+                    href="/register?type=candidato"
+                    className={styles.dualLink}
+                  >
+                    INSCRIÇÃO
                   </Link>
                 </article>
 
-                <article className={`${styles.ctaCard} ${styles.ctaCardBlue}`}>
-                  <div className={styles.ctaIconWrap}>
-                    <i className="fas fa-building"></i>
-                  </div>
-                  <h3 className={styles.ctaCardTitle}>Para Empresas</h3>
-                  <p className={styles.ctaCardText}>
-                    Encontre os melhores talentos para impulsionar seu negócio.
+                <article
+                  className={`${styles.dualCard} ${styles.dualCardEmployer}`}
+                >
+                  <p className={styles.dualEyebrow}>Ser um Empregador</p>
+                  <h2 className={styles.dualTitle}>
+                    Publique vagas e encontre talentos com mais eficiência
+                  </h2>
+                  <p className={styles.dualText}>
+                    {companyFeatures.join(" • ")}
                   </p>
-                  <Link href="/register?type=empresa" className={styles.primaryAction}>
-                    Publicar Vaga
-                    <i className="fas fa-arrow-right"></i>
+                  <Link
+                    href="/register?type=empresa"
+                    className={styles.dualLink}
+                  >
+                    REGISTAR
                   </Link>
                 </article>
               </div>

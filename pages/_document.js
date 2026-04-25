@@ -2,13 +2,12 @@ import { Html, Head, Main, NextScript } from 'next/document'
 
 export default function Document() {
   return (
-    <Html lang="pt">
+    <Html lang="pt-PT">
       <Head>
         <meta charSet="utf-8" />
-        <link rel="icon" href="/assets/Emprego STP Logo (2) 1.png" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+        <meta name="color-scheme" content="light" />
+        <meta name="format-detection" content="telephone=no, date=no, email=no, address=no" />
+        <link rel="icon" href="/assets/Emprego STP Logo 2.png" />
       </Head>
       <body>
         <Main />

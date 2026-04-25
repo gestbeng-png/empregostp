@@ -1,6 +1,10 @@
 import { admin } from '../../../../lib/firebaseAdmin';
 import { randomUUID } from 'crypto';
 import { serializeFirestoreValue } from '../../../../lib/empresaPlansCatalog';
+import {
+  getFirebaseStorageErrorMessage,
+  isFirebaseStorageBillingDisabledError
+} from '../../../../lib/firebaseStorageError';
 import { sendPushToUser } from '../../../../lib/serverNotifications';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
@@ -303,7 +307,14 @@ export default async function handler(req, res) {
     if (error?.message?.includes('Formato') || error?.message?.includes('10MB')) {
       return res.status(400).json({ error: error.message });
     }
-    return res.status(500).json({ error: 'Erro interno do servidor' });
+    if (isFirebaseStorageBillingDisabledError(error)) {
+      return res.status(503).json({
+        error: getFirebaseStorageErrorMessage(error)
+      });
+    }
+    return res.status(500).json({
+      error: getFirebaseStorageErrorMessage(error, 'Erro interno do servidor')
+    });
   }
 }
 

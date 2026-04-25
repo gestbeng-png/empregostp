@@ -1,0 +1,192 @@
+.page {
+  width: min(var(--app-public-width-narrow), calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 1.4rem 0 4.5rem;
+}
+
+.hero {
+  padding: 2rem 0 1.4rem;
+}
+
+.heroPanel {
+  max-width: 860px;
+  padding: 2.35rem 2.2rem;
+  border: 1px solid var(--app-border-subtle);
+  border-radius: 28px;
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+  box-shadow: var(--app-shadow-card);
+}
+
+.heroKicker {
+  margin: 0 0 0.8rem;
+  color: var(--app-brand-primary);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.heroTitle {
+  margin: 0 0 1rem;
+  font-size: clamp(2.2rem, 4.8vw, 3.8rem);
+  line-height: 1;
+}
+
+.heroText {
+  max-width: 720px;
+  color: var(--app-text-secondary);
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.sectionGrid,
+.bottomGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.1rem;
+}
+
+.section,
+.motto,
+.contact {
+  position: relative;
+  padding: 1.5rem;
+  border: 1px solid var(--app-border-subtle);
+  border-radius: 24px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  box-shadow: var(--app-shadow-card);
+  overflow: hidden;
+}
+
+.section::after,
+.motto::after,
+.contact::after {
+  content: "";
+  position: absolute;
+  right: -34px;
+  top: -30px;
+  width: 120px;
+  height: 120px;
+  border-radius: 999px;
+  background: radial-gradient(
+    circle,
+    rgba(95, 184, 245, 0.18),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 0.85rem;
+}
+
+.sectionAccent {
+  width: 40px;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #5fb8f5, #d9ff2f);
+  flex-shrink: 0;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 900;
+}
+
+.sectionText {
+  color: var(--app-text-secondary);
+  font-size: 0.98rem;
+  line-height: 1.76;
+}
+
+.valuesSection {
+  margin-top: 1.1rem;
+}
+
+.valuesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.9rem;
+  margin-top: 1rem;
+}
+
+.valueCard {
+  padding: 1rem 1.05rem;
+  border: 1px solid var(--app-border-subtle);
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: var(--app-shadow-sm);
+}
+
+.valueCard h3 {
+  margin-bottom: 0.4rem;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.valueCard p {
+  color: var(--app-text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
+
+.bottomGrid {
+  margin-top: 1.1rem;
+}
+
+.mottoKicker {
+  margin-bottom: 0.65rem;
+  color: var(--app-brand-primary);
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.motto h2,
+.contact h2 {
+  margin-bottom: 0.75rem;
+  font-size: 1.45rem;
+  font-weight: 900;
+}
+
+.motto p,
+.contact p {
+  color: var(--app-text-secondary);
+  line-height: 1.72;
+}
+
+.contact span {
+  color: var(--app-brand-primary);
+  font-weight: 700;
+}
+
+@media (max-width: 800px) {
+  .sectionGrid,
+  .bottomGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .page {
+    width: min(100% - 24px, 100%);
+    padding-bottom: 3.5rem;
+  }
+
+  .heroPanel,
+  .section,
+  .motto,
+  .contact {
+    padding: 1.4rem;
+    border-radius: 20px;
+  }
+
+  .heroTitle {
+    font-size: clamp(2rem, 9vw, 2.8rem);
+  }
+}

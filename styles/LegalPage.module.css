@@ -1,21 +1,62 @@
 .page {
-  max-width: 940px;
+  width: min(980px, calc(100% - 2rem));
   margin: 0 auto;
-  padding: 4rem 1.5rem 4.5rem;
+  padding: 1.4rem 0 4.5rem;
 }
 
-.panel {
-  padding: 2.4rem;
+.hero {
+  padding: 2rem 0 1.35rem;
+}
+
+.heroPanel {
+  padding: 2.3rem 2.15rem;
   border-radius: 28px;
-  background: linear-gradient(180deg, rgba(9, 9, 15, 0.92), rgba(15, 23, 42, 0.88));
   border: 1px solid var(--app-border-subtle);
-  box-shadow: var(--app-shadow-md);
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+  box-shadow: var(--app-shadow-card);
+}
+
+.heroKicker {
+  margin: 0 0 0.75rem;
+  color: var(--app-brand-primary);
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
 }
 
 .title {
   margin-bottom: 1rem;
-  font-size: clamp(2rem, 4vw, 3rem);
+  font-size: clamp(2rem, 4vw, 3.1rem);
   font-weight: 900;
+}
+
+.heroText {
+  max-width: 760px;
+  color: var(--app-text-secondary);
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.heroDate {
+  margin-top: 0.95rem;
+  color: var(--app-text-muted);
+  font-size: 0.84rem;
+}
+
+.stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.panel,
+.section,
+.contact {
+  padding: 1.7rem;
+  border-radius: 24px;
+  border: 1px solid var(--app-border-subtle);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  box-shadow: var(--app-shadow-card);
 }
 
 .copy {
@@ -23,30 +64,71 @@
   gap: 1rem;
 }
 
-.copy p {
-  line-height: 1.8;
+.copy p,
+.section p,
+.section li,
+.contact p {
+  line-height: 1.78;
   color: var(--app-text-secondary);
+}
+
+.section ul {
+  margin: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0 0 1rem;
+  font-size: 1.3rem;
+  font-weight: 900;
+}
+
+.sectionTitle span {
+  width: 6px;
+  height: 26px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #5fb8f5, #d9ff2f);
+}
+
+.contact h2 {
+  margin-bottom: 0.5rem;
+  font-size: 1.3rem;
+  font-weight: 900;
+}
+
+.contactEmail {
+  margin-top: 0.75rem;
+  color: var(--app-brand-primary);
+  font-weight: 700;
 }
 
 .link {
   display: inline-flex;
   align-items: center;
-  margin-top: 0.5rem;
-  color: #60a5fa;
+  margin-top: 0.35rem;
+  color: var(--app-brand-primary);
   font-weight: 700;
 }
 
 .link:hover {
-  color: #93c5fd;
+  color: var(--app-brand-primary-hover);
 }
 
 @media (max-width: 640px) {
   .page {
-    padding: 3rem 1rem 3.5rem;
+    width: min(100% - 24px, 100%);
+    padding-bottom: 3.5rem;
   }
 
-  .panel {
-    padding: 1.5rem;
-    border-radius: 22px;
+  .heroPanel,
+  .panel,
+  .section,
+  .contact {
+    padding: 1.4rem;
+    border-radius: 20px;
   }
 }

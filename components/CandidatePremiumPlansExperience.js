@@ -3,12 +3,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { getAuth } from 'firebase/auth';
 import ManualPaymentProofCard from './ManualPaymentProofCard';
-import { getCandidatePlanFeatures } from '../lib/candidatePlanFeatures';
-import { DEFAULT_CANDIDATO_PLANS } from '../lib/defaultPlans';
-
-const DEFAULT_PLANS = DEFAULT_CANDIDATO_PLANS.filter((plan) =>
-  ['verification_candidato', 'professional_candidato', 'unlimited_candidato'].includes(plan.id)
-);
+import { getCandidateMarketingPlans } from '../lib/candidateCatalog';
 
 function PaymentForm({ plan, paymentSettings, onConfirm, onCancel }) {
   if (!plan || Number(plan.price) === 0) return null;
@@ -151,10 +146,10 @@ export default function CandidatePremiumPlansExperience({
   const [paymentSettings, setPaymentSettings] = useState(null);
   const [pendingPaymentRequest, setPendingPaymentRequest] = useState(null);
 
-  const plans = useMemo(() => DEFAULT_PLANS.map((plan) => ({
-    ...plan,
-    ...getCandidatePlanFeatures(plan.id)
-  })), []);
+  const plans = useMemo(
+    () => getCandidateMarketingPlans({ includeBasic: false, includeVerification: true }),
+    []
+  );
 
   useEffect(() => {
     async function bootstrap() {

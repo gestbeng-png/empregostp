@@ -1,20 +1,5 @@
 import { admin } from '../../../lib/firebaseAdmin';
-
-const BASIC_PLAN_FALLBACKS = {
-  empresa: {
-    id: 'basic_empresa',
-    name: 'Básico',
-    features: ['1 vaga por mês', 'Visualização de candidatos', 'Suporte básico'],
-    vagasLimit: 1,
-    destaque: false
-  },
-  candidato: {
-    id: 'basic_candidato',
-    name: 'Básico',
-    features: ['3 candidaturas por mês', 'Cadastro de currículo', 'Candidatura a vagas básicas', 'Suporte básico'],
-    curriculoDestacado: false
-  }
-};
+import { getDefaultBasicPlanForUserType } from '../../../lib/defaultPlans';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -36,7 +21,7 @@ export default async function handler(req, res) {
 
     // Buscar plano básico compatível com o tipo de usuário
     const basicPlanDoc = await admin.firestore().collection('plans').doc(basicPlanId).get();
-    const basicPlan = basicPlanDoc.exists ? basicPlanDoc.data() : BASIC_PLAN_FALLBACKS[normalizedUserType];
+    const basicPlan = basicPlanDoc.exists ? basicPlanDoc.data() : getDefaultBasicPlanForUserType(normalizedUserType);
 
     // Criar documento do usuário com plano básico
     const userPayload = {

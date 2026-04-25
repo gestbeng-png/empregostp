@@ -1,5 +1,6 @@
 import { admin } from '../../../../lib/firebaseAdmin';
 import { canHighlightJob, getEmpresaPlanSummary } from '../../../../lib/empresaPlanFeatures';
+import { getEffectiveJobStatus, syncExpiredJobStatus } from '../../../../lib/jobExpiration';
 
 /**
  * PATCH /api/jobs/[id]/destaque
@@ -35,7 +36,8 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: 'Job not found' });
     }
 
-    const job = jobDoc.data();
+    const synced = await syncExpiredJobStatus(jobRef, jobDoc.data(), admin);
+    const job = synced.jobData;
 
     // Verify ownership
     if (job.companyId !== userId) {
@@ -43,7 +45,7 @@ export default async function handler(req, res) {
     }
 
     const highlightRequested = req.body?.destaque === true;
-    if (highlightRequested && job.status !== 'active') {
+    if (highlightRequested && getEffectiveJobStatus(job) !== 'active') {
       return res.status(400).json({ error: 'Apenas vagas ativas podem ficar em destaque' });
     }
 

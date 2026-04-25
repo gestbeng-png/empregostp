@@ -1,5 +1,7 @@
 import { admin } from '../../../lib/firebaseAdmin';
 import { getPlanSummary, canApplyToJob, canSaveJob, canUploadCertificate, canUseCvGenerator } from '../../../lib/candidatePlanFeatures';
+import { buildCandidateVisibility, calculateCandidateProfileCompletion } from '../../../lib/candidateProfileInsights';
+import { buildCandidateOptimizationInsights } from '../../../lib/candidateOptimizationInsights';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -48,6 +50,21 @@ export default async function handler(req, res) {
       }
     }
 
+    const [profileDoc, applicationsSnap, jobsSnap] = await Promise.all([
+      admin.firestore().collection('profiles').doc(uid).get(),
+      admin.firestore().collection('applications').where('candidateId', '==', uid).get(),
+      admin.firestore().collection('jobs').where('status', '==', 'active').limit(80).get(),
+    ]);
+    const profileData = profileDoc.exists ? profileDoc.data() || {} : {};
+    const profileCompletion = calculateCandidateProfileCompletion(userData, profileData);
+    const visibility = buildCandidateVisibility(userData, profileData);
+    const optimizationInsights = buildCandidateOptimizationInsights({
+      userData,
+      profileData,
+      applications: applicationsSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })),
+      jobs: jobsSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })),
+    });
+
     // Verificar status de recursos
     const applyStatus = await canApplyToJob(uid, planId, admin);
     const saveStatus = await canSaveJob(uid, planId, admin);
@@ -83,8 +100,6 @@ export default async function handler(req, res) {
     let certificateStatus;
     const cvGeneratorStatus = canUseCvGenerator(planId);
     if (planSummary.features.canUploadCertificates) {
-      const profileDoc = await admin.firestore().collection('profiles').doc(uid).get();
-      const profileData = profileDoc.exists ? profileDoc.data() : {};
       const certificates = profileData.certificateFiles || [];
       const certificateAccess = canUploadCertificate(planId, certificates.length);
       certificateStatus = {
@@ -106,6 +121,9 @@ export default async function handler(req, res) {
         ...planSummary,
         views: planSummary.features.canViewStats ? profileViewsCount : 0
       },
+      profileCompletion,
+      visibility,
+      optimizationInsights,
       resources: {
         applications: {
           ...applyStatus,
@@ -128,7 +146,18 @@ export default async function handler(req, res) {
           current: planSummary.features.canViewStats ? profileViewsCount : 0,
           limit: null,
           label: 'Visualizações do perfil'
+        },
+        profileCompletion: {
+          allowed: true,
+          current: profileCompletion.score,
+          limit: 100,
+          label: 'Completude do perfil'
         }
+      },
+      profileViewsSummary: {
+        total: profileViewsCount,
+        uniqueCompanies: uniqueProfileViewers.length,
+        canSeeDetailedViewers: planSummary.features.canSeeWhoViewedProfile
       },
       profileViewers: planSummary.features.canSeeWhoViewedProfile ? uniqueProfileViewers.slice(0, 10) : [],
       isPlanActive: planSummary.isActive // Usar o isActive do planSummary que já trata plano básico

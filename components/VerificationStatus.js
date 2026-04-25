@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { getAuth } from 'firebase/auth';
 import VerificationModal from './VerificationModal';
 import VerificationBadge from './VerificationBadge';
 
@@ -27,14 +28,21 @@ export default function VerificationStatus({
       
       return () => clearInterval(interval);
     }
-  }, [userId, isOwner]);
+  }, [fetchVerificationStatus, userId, isOwner]);
 
-  const fetchVerificationStatus = async () => {
+  const fetchVerificationStatus = useCallback(async () => {
     try {
       setLoading(true);
+      const auth = getAuth();
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) return;
       // Add timestamp to bust cache
       const timestamp = new Date().getTime();
-      const response = await fetch(`/api/verifications?uid=${userId}&t=${timestamp}`);
+      const response = await fetch(`/api/verifications?uid=${userId}&t=${timestamp}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       if (response.ok) {
         const data = await response.json();
         const verification = data.verifications?.[0];
@@ -51,7 +59,7 @@ export default function VerificationStatus({
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
   const getStatusColor = () => {
     switch (status) {
@@ -62,6 +70,8 @@ export default function VerificationStatus({
         return '#ef4444';
       case 'pending':
         return '#f59e0b';
+      case 'partial':
+        return '#a855f7';
       default:
         return '#6b7280';
     }
@@ -76,6 +86,8 @@ export default function VerificationStatus({
         return 'Rejeitado';
       case 'pending':
         return 'Pendente';
+      case 'partial':
+        return 'Parcial';
       default:
         return 'Não verificado';
     }
@@ -90,6 +102,8 @@ export default function VerificationStatus({
         return 'O seu pedido de verificação foi rejeitado. Pode tentar novamente.';
       case 'pending':
         return 'O seu pedido está em análise. Aguarde a decisão do admin.';
+      case 'partial':
+        return 'Alguns blocos foram aprovados, mas ainda existem itens por corrigir.';
       default:
         return 'Solicite a verificação para ganhar credibilidade.';
     }

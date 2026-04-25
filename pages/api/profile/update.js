@@ -39,6 +39,19 @@ const mapPlanInfo = (userData) => ({
   vagasLimit: userData.vagasLimit
 });
 
+const serializeValue = (value) => {
+  if (value === null || value === undefined) return value;
+  if (Array.isArray(value)) return value.map((item) => serializeValue(item));
+  if (typeof value?.toDate === 'function') return value.toDate().toISOString();
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, currentValue]) => [key, serializeValue(currentValue)])
+    );
+  }
+  return value;
+};
+
 const mapProfileResponse = (userData, profileData) => ({
   ...profileData,
   fullName: userData.name || userData.fullName || '',
@@ -50,6 +63,9 @@ const mapProfileResponse = (userData, profileData) => ({
   cvUrl: userData.cvUrl || profileData.cvUrl || '',
   cvName: userData.cvName || profileData.cvName || '',
   verificationStatus: userData.verificationStatus || profileData.verificationStatus || 'unverified',
+  verificationSummary: serializeValue(userData.verificationSummary || profileData.verificationSummary || null),
+  verificationItems: serializeValue(userData.verificationItems || profileData.verificationItems || null),
+  verificationId: userData.verificationId || profileData.verificationId || null,
   ...mapPlanInfo(userData)
 });
 
@@ -162,9 +178,11 @@ export default async function handler(req, res) {
     }
 
     if (Object.keys(userUpdates).length) {
+      userUpdates.updatedAt = admin.firestore.FieldValue.serverTimestamp();
       await userRef.update(userUpdates);
     }
     if (Object.keys(profileUpdates).length) {
+      profileUpdates.updatedAt = admin.firestore.FieldValue.serverTimestamp();
       await profileRef.set(profileUpdates, { merge: true });
     }
 

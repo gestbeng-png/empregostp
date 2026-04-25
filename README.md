@@ -237,3 +237,61 @@ Este projeto está sob a licença ISC.
   
 </div>
 
+
+
+para empresa incluir esses servicos: Vagas em destaque na homepage
+Vagas no topo dos resultados de pesquisa
+Selo “Empresa em recrutamento”
+Campanhas promocionais da vaga por email
+Divulgação em redes sociais da plataforma
+Notificações push para candidatos compatíveis
+Destaque visual da marca da empresa
+Página empresarial personalizada,Pré-filtragem automática de candidatos
+Perguntas eliminatórias na candidatura
+Matching CV-vaga
+Ranking automático de candidatos
+Testes técnicos ou psicométricos integrados
+Vídeo-apresentação do candidato
+Agendamento de entrevistas
+Shortlist automática
+Rejeição automática de perfis sem critérios mínimos,Perfil institucional avançado
+Página com cultura, missão, benefícios e ambiente
+Upload de fotos e vídeos da empresa
+Depoimentos de colaboradores
+Selo de empresa verificada
+Página de carreiras personalizada
+Publicação de artigos ou conteúdos da empresa no blog da plataforma,Tempo médio até contratação
+Origem dos candidatos
+Perfil mais comum dos candidatos
+Comparação entre vagas/publicações
+Relatórios exportáveis
+Recomendações para melhorar anúncios,Alertas automáticos quando surge candidato ideal
+Respostas automáticas aos candidatos
+Pipeline tipo ATS: recebido, em análise, entrevista, aprovado, rejeitado
+Templates de mensagens
+Integração com email
+Integração com calendário para entrevistas
+Exportação de candidatos em PDF/Excel
+Multiutilizador para RH da mesma empresa,Verificação da empresa
+Verificação documental
+Selo anti-fraude
+Moderação de vagas
+Apoio prioritário
+Auditoria de anúncios suspeitos
+Controlo de acessos por equipa, Criação profissional do anúncio da vaga
+Apoio na definição do perfil ideal
+Curadoria manual de candidatos
+Headhunting para posições específicas
+Campanhas de recrutamento dedicadas
+Consultoria de recrutamento
+Apoio à contratação em massa,Recomendação por IA de candidatos
+Escrita assistida de descrições de vagas
+Benchmark salarial por função
+Talent pool privado
+Talent rediscovery: reaproveitar antigos candidatos
+Recrutamento para estágios
+Recrutamento para freelancers
+Recrutamento por projeto
+Programa de referral interno
+Landing pages de campanhas de recrutamento
+# EmpregoSTP-white

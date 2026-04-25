@@ -5,9 +5,12 @@
     {
       "path": "/api/cron/check-plan-expiration",
       "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/check-job-expiration",
+      "schedule": "15 2 * * *"
     }
   ]
 }
-
 
 

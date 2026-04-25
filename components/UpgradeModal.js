@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { getCandidateUpgradePlans } from '../lib/candidateCatalog';
 
 /**
  * Modal exibido quando o utilizador atinge o limite do plano.
@@ -12,10 +13,7 @@ export default function UpgradeModal({ isOpen, onClose, message, upgradeUrl = '/
         { name: 'Profissional', price: '100 Db/mês', highlight: ['5 vagas ativas', '1 destaque', 'Exportar candidaturas', 'Suporte prioritário'] },
         { name: 'PRO', price: '2000 Db/mês', highlight: ['Vagas ilimitadas', 'Mensagens diretas com candidatos', 'Analytics completos', 'Banco de talentos'], popular: true }
       ]
-    : [
-        { name: 'Profissional', price: '50 Db/mês', highlight: ['20 candidaturas/mês', 'Salvar vagas', 'Gerador de CV em PDF', 'Notificações'] },
-        { name: 'Premium', price: '200 Db/mês', highlight: ['Candidaturas ilimitadas', 'Vagas ilimitadas', 'Quem viu o perfil', 'Suporte VIP'], popular: true }
-      ];
+    : getCandidateUpgradePlans();
 
   return (
     <div
@@ -63,7 +61,7 @@ export default function UpgradeModal({ isOpen, onClose, message, upgradeUrl = '/
           </p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.75rem', marginBottom: '1.5rem' }}>
           {plans.map((plan) => (
             <div
               key={plan.name}

@@ -1,21 +1,7 @@
 import { admin } from '../../lib/firebaseAdmin';
 import { getPlanSummary } from '../../lib/candidatePlanFeatures';
-
-const normalizeText = (value = '') =>
-  String(value)
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim();
-
-const toArray = (value) => {
-  if (Array.isArray(value)) return value;
-  if (!value) return [];
-  return String(value)
-    .split(',')
-    .map((item) => item.trim())
-    .filter(Boolean);
-};
+import { buildCandidateSignals } from '../../lib/candidateProfileInsights';
+import { analyzeCandidateJobFit } from '../../lib/candidateOptimizationInsights';
 
 const serializeTimestamp = (value) => {
   if (!value) return null;
@@ -23,70 +9,6 @@ const serializeTimestamp = (value) => {
   if (value instanceof Date) return value.toISOString();
   if (typeof value === 'string') return value;
   return null;
-};
-
-const scoreJob = (job, candidateSignals) => {
-  const text = normalizeText(
-    [
-      job.titulo,
-      job.descricao,
-      job.requisitos,
-      job.localizacao,
-      job.tipoContrato,
-      job.empresa,
-      job.empresaNome
-    ]
-      .filter(Boolean)
-      .join(' ')
-  );
-
-  let score = 0;
-  const reasons = [];
-
-  const matchedSkills = candidateSignals.skills.filter((skill) => skill && text.includes(skill)).slice(0, 3);
-  if (matchedSkills.length) {
-    score += matchedSkills.length * 18;
-    reasons.push(`Compatível com ${matchedSkills.join(', ')}`);
-  }
-
-  if (candidateSignals.area && text.includes(candidateSignals.area)) {
-    score += 24;
-    reasons.push(`Alinhada com a sua área: ${candidateSignals.areaRaw}`);
-  }
-
-  const jobLocation = normalizeText(job.localizacao || job.location || '');
-  if (job.remoto) {
-    score += 12;
-    reasons.push('Aceita trabalho remoto');
-  } else if (
-    candidateSignals.location &&
-    jobLocation &&
-    (jobLocation.includes(candidateSignals.location) || candidateSignals.location.includes(jobLocation))
-  ) {
-    score += 14;
-    reasons.push(`Localização compatível: ${job.localizacao || job.location}`);
-  }
-
-  const contractType = normalizeText(job.tipoContrato || job.contractType || '');
-  if (candidateSignals.objectiveType && contractType && contractType.includes(candidateSignals.objectiveType)) {
-    score += 10;
-    reasons.push(`Tipo de contrato alinhado: ${job.tipoContrato || job.contractType}`);
-  }
-
-  const createdAt = serializeTimestamp(job.createdAt);
-  if (createdAt) {
-    const ageInDays = Math.floor((Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60 * 24));
-    if (ageInDays <= 14) {
-      score += 6;
-      reasons.push('Vaga publicada recentemente');
-    }
-  }
-
-  if (!reasons.length) {
-    reasons.push('Compatibilidade geral com o seu perfil');
-  }
-
-  return { score, reasons };
 };
 
 export default async function handler(req, res) {
@@ -137,19 +59,7 @@ export default async function handler(req, res) {
         .filter(Boolean)
     );
 
-    const candidateSignals = {
-      skills: [
-        ...toArray(profileData.skillsHard),
-        ...toArray(profileData.skillsSoft),
-        ...toArray(profileData.digitalSkills)
-      ]
-        .map((skill) => normalizeText(skill))
-        .filter(Boolean),
-      area: normalizeText(profileData.objectiveArea || ''),
-      areaRaw: profileData.objectiveArea || '',
-      location: normalizeText(profileData.city || profileData.location || userData.location || ''),
-      objectiveType: normalizeText(profileData.objectiveType || '')
-    };
+    const candidateSignals = buildCandidateSignals(userData, profileData);
 
     const jobs = jobsSnap.docs
       .map((doc) => {
@@ -171,14 +81,20 @@ export default async function handler(req, res) {
 
     const recommendations = jobs
       .map((job) => {
-        const { score, reasons } = scoreJob(job, candidateSignals);
-        const fallbackScore = hasEnoughSignals ? score : 8;
+        const { matchPercent, reasons, visibility, matchLabel, missingSkills, cvOptimizationTips } = analyzeCandidateJobFit(job, userData, profileData);
+        const fallbackScore = hasEnoughSignals ? matchPercent : 18;
         const normalizedReasons = hasEnoughSignals ? reasons : ['Vaga ativa recente para explorar novas oportunidades'];
 
         return {
           ...job,
           score: fallbackScore,
-          reasons: normalizedReasons.slice(0, 3)
+          matchPercent: fallbackScore,
+          matchLabel: hasEnoughSignals ? matchLabel : 'Compatibilidade exploratoria',
+          reasons: normalizedReasons.slice(0, 3),
+          missingSkills: hasEnoughSignals ? missingSkills.slice(0, 3) : [],
+          cvOptimizationTips: hasEnoughSignals ? cvOptimizationTips.slice(0, 2) : [],
+          candidatePriority: visibility.priorityInSearch,
+          candidateProfileComplete: visibility.isProfileComplete
         };
       })
       .filter((job) => job.score > 0)

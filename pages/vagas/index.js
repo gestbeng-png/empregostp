@@ -1,259 +1,360 @@
-import React, { useState, useEffect } from 'react';
-import Head from 'next/head';
-import { useRouter } from 'next/router';
-import PublicPageShell from '../../components/PublicPageShell';
-import JobCard from '../../components/JobCard';
-import { useAuth } from '../../context/AuthContext';
-import styles from '../../styles/VagasPage.module.css';
-// import { HeaderAd, InContentAdWrapper, FooterAd, BetweenJobsAd } from '../../components/ads'; // Temporariamente removido
+import React, { useState, useEffect } from "react";
+import Head from "next/head";
+import { useRouter } from "next/router";
+import PublicPageShell from "../../components/PublicPageShell";
+import CompactJobCard from "../../components/home/CompactJobCard";
+import styles from "../../styles/VagasPage.module.css";
+
+function normalizeSearchValue(value) {
+  if (Array.isArray(value)) {
+    return value.join(" ");
+  }
+  return String(value || "");
+}
+
+function matchesSearch(job, term) {
+  const haystack = [
+    job.titulo,
+    job.descricao,
+    job.localizacao,
+    job.categoria,
+    ...(Array.isArray(job.palavrasChave) ? job.palavrasChave : []),
+    normalizeSearchValue(job.requisitos),
+    normalizeSearchValue(job.beneficios),
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  return haystack.includes(term);
+}
+
+function compareRecentJobs(a, b) {
+  if (a.destaque && !b.destaque) return -1;
+  if (!a.destaque && b.destaque) return 1;
+  if (a.premiumOnly && !b.premiumOnly) return -1;
+  if (!a.premiumOnly && b.premiumOnly) return 1;
+  return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+}
+
+function getCardBadgeLabel(vaga) {
+  if (vaga.remoto) return "REMOTO";
+
+  const normalized = String(vaga.tipoContrato || "").toLowerCase();
+  const labels = {
+    "tempo integral": "FULL-TIME",
+    "full-time": "FULL-TIME",
+    "meio período": "PART-TIME",
+    "meio periodo": "PART-TIME",
+    "part-time": "PART-TIME",
+    estágio: "ESTÁGIO",
+    estagio: "ESTÁGIO",
+    internship: "ESTÁGIO",
+    contrato: "CONTRATO",
+    contract: "CONTRATO",
+    freelance: "FREELANCE",
+    voluntariado: "VOLUNTARIADO",
+  };
+
+  return labels[normalized] || "VAGA";
+}
+
+function normalizeContractType(value = "") {
+  const normalized = String(value || "").toLowerCase();
+  const types = {
+    "full-time": "Tempo integral",
+    "tempo integral": "Tempo integral",
+    "part-time": "Meio período",
+    "meio período": "Meio período",
+    "meio periodo": "Meio período",
+    contract: "Contrato",
+    contrato: "Contrato",
+    internship: "Estágio",
+    estagio: "Estágio",
+    estágio: "Estágio",
+    freelance: "Freelance",
+    voluntariado: "Voluntariado",
+  };
+
+  return types[normalized] || value || "Não informado";
+}
+
+function formatPublishedAgo(value) {
+  if (!value) return "Agora";
+
+  const publishedDate = new Date(value);
+  if (Number.isNaN(publishedDate.getTime())) return "Agora";
+
+  const diffMs = Date.now() - publishedDate.getTime();
+  const minutes = Math.floor(diffMs / (1000 * 60));
+  const hours = Math.floor(diffMs / (1000 * 60 * 60));
+  const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (days >= 1) return `${days}d`;
+  if (hours >= 1) return `${hours}h`;
+  if (minutes >= 1) return `${minutes}m`;
+  return "Agora";
+}
+
+function formatCardSalary(fromValue, toValue) {
+  const normalizeMoney = (value) => {
+    if (!value && value !== 0) return "";
+
+    const numeric = Number.parseFloat(
+      String(value)
+        .replace(/[^\d,.-]/g, "")
+        .replace(",", "."),
+    );
+
+    if (!Number.isFinite(numeric)) return "";
+
+    return new Intl.NumberFormat("en-US", {
+      maximumFractionDigits: 0,
+    }).format(numeric);
+  };
+
+  const from = normalizeMoney(fromValue);
+  const to = normalizeMoney(toValue);
+
+  if (from && to && from !== to) return `${from} - ${to} STN`;
+  if (from) return `${from} STN`;
+  if (to) return `${to} STN`;
+  return "A combinar";
+}
 
 export default function VagasPage({ initialJobs = [] }) {
   const router = useRouter();
-  const { user } = useAuth();
-  const [jobs, setJobs] = useState(initialJobs);
+  const jobs = initialJobs;
   const [filteredJobs, setFilteredJobs] = useState(initialJobs);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [savedJobIds, setSavedJobIds] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState({
-    localizacao: '',
-    tipoContrato: '',
-    status: '',
+    localizacao: "",
+    tipoContrato: "",
+    status: "",
+    categoria: "",
     showFeatured: false,
+    showRemote: false,
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [sortBy, setSortBy] = useState('recentes');
+  const [sortBy, setSortBy] = useState("recentes");
 
-  // Aplicar termo de busca da URL quando a página carregar
   useEffect(() => {
-    if (router.query.search) {
-      setSearchTerm(router.query.search);
-    }
-  }, [router.query.search]);
+    setSearchTerm(
+      typeof router.query.search === "string" ? router.query.search : "",
+    );
+    setFilters((prev) => ({
+      ...prev,
+      categoria:
+        typeof router.query.categoria === "string"
+          ? router.query.categoria
+          : "",
+    }));
+  }, [router.query.search, router.query.categoria]);
 
-  // Carregar vagas salvas do usuário
-  useEffect(() => {
-    async function loadSavedJobs() {
-      if (!user) return;
-      
-      try {
-        const { getAuth } = await import('firebase/auth');
-        const auth = getAuth();
-        const token = await auth.currentUser?.getIdToken();
-        
-        if (!token) return;
-        
-        const response = await fetch('/api/saved-jobs', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          const ids = data.savedJobs?.map(job => job.id) || [];
-          setSavedJobIds(ids);
-        }
-      } catch (err) {
-        console.error('Erro ao carregar vagas salvas:', err);
-      }
-    }
-    
-    loadSavedJobs();
-  }, [user]);
-  
-  // Lista de localizações e tipos de contrato únicos para os filtros
-  const [localizacoes, setLocalizacoes] = useState([]);
-  const [tiposContrato, setTiposContrato] = useState([]);
-
-  // Extrair opções de filtro dos dados
-  useEffect(() => {
-    if (jobs.length > 0) {
-      const uniqueLocalizacoes = [...new Set(jobs.map(job => job.localizacao).filter(Boolean))];
-      const uniqueTiposContrato = [...new Set(jobs.map(job => job.tipoContrato).filter(Boolean))];
-      
-      setLocalizacoes(uniqueLocalizacoes);
-      setTiposContrato(uniqueTiposContrato);
-    }
-  }, [jobs]);
-
-  // Aplicar filtros e busca
   useEffect(() => {
     setIsLoading(true);
-    
-    // Simulando um pequeno delay para mostrar o loading
+
     const timeoutId = setTimeout(() => {
       let result = [...jobs];
-      
-      // Aplicar termo de busca
-      if (searchTerm.trim()) {
-        const term = searchTerm.toLowerCase().trim();
-        result = result.filter(job => 
-          (job.titulo?.toLowerCase().includes(term)) || 
-          (job.descricao?.toLowerCase().includes(term)) ||
-          (job.requisitos?.toLowerCase().includes(term)) ||
-          (job.localizacao?.toLowerCase().includes(term))
-        );
-      }
-      
-      // Aplicar filtros
-      if (filters.localizacao) {
-        result = result.filter(job => job.localizacao === filters.localizacao);
-      }
-      
-      if (filters.tipoContrato) {
-        result = result.filter(job => job.tipoContrato === filters.tipoContrato);
-      }
-      
-      if (filters.status) {
-        result = result.filter(job => job.status === filters.status);
+      const normalizedSearch = searchTerm.toLowerCase().trim();
+
+      if (normalizedSearch) {
+        result = result.filter((job) => matchesSearch(job, normalizedSearch));
       }
 
-      // Aplicar filtro de vagas em destaque
-      if (filters.showFeatured) {
-        result = result.filter(job => job.destaque === true || job.featured === true || job.isFeatured === true);
+      if (filters.localizacao) {
+        result = result.filter(
+          (job) => job.localizacao === filters.localizacao,
+        );
       }
-      
-      // Aplicar ordenação
-      if (sortBy === 'recentes') {
+
+      if (filters.tipoContrato) {
+        result = result.filter(
+          (job) => job.tipoContrato === filters.tipoContrato,
+        );
+      }
+
+      if (filters.status) {
+        result = result.filter((job) => job.status === filters.status);
+      }
+
+      if (filters.categoria) {
+        result = result.filter(
+          (job) =>
+            String(job.categoria || "").toLowerCase() ===
+            String(filters.categoria).toLowerCase(),
+        );
+      }
+
+      if (filters.showFeatured) {
+        result = result.filter(
+          (job) =>
+            job.destaque === true ||
+            job.featured === true ||
+            job.isFeatured === true,
+        );
+      }
+
+      if (filters.showRemote) {
+        result = result.filter((job) => job.remoto === true);
+      }
+
+      if (sortBy === "recentes") {
+        result.sort(compareRecentJobs);
+      } else if (sortBy === "prazo") {
         result.sort((a, b) => {
-          // Vagas em destaque vêm primeiro
           if (a.destaque && !b.destaque) return -1;
           if (!a.destaque && b.destaque) return 1;
-          return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+          return (
+            new Date(a.dataFecho || "9999-12-31") -
+            new Date(b.dataFecho || "9999-12-31")
+          );
         });
-      } else if (sortBy === 'prazo') {
-        result.sort((a, b) => {
-          if (a.destaque && !b.destaque) return -1;
-          if (!a.destaque && b.destaque) return 1;
-          return new Date(a.dataFecho || '9999-12-31') - new Date(b.dataFecho || '9999-12-31');
-        });
-      } else if (sortBy === 'salario') {
+      } else if (sortBy === "salario") {
         result.sort((a, b) => {
           if (a.destaque && !b.destaque) return -1;
           if (!a.destaque && b.destaque) return 1;
           return (Number(b.salarioDe) || 0) - (Number(a.salarioDe) || 0);
         });
       }
-      
+
       setFilteredJobs(result);
       setIsLoading(false);
-    }, 300);
-    
+    }, 220);
+
     return () => clearTimeout(timeoutId);
-  }, [searchTerm, filters, jobs, sortBy]);
+  }, [filters, jobs, searchTerm, sortBy]);
 
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-  };
-
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    // A busca já é aplicada pelo useEffect quando searchTerm muda
-  };
-
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target;
-    setFilters(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const clearFilters = () => {
-    setSearchTerm('');
-    setFilters({
-      localizacao: '',
-      tipoContrato: '',
-      status: '',
-      showFeatured: false,
-    });
-    setSortBy('recentes');
-  };
-
-  const totalJobs = jobs.length;
-  const openJobs = jobs.filter(job => {
-    const normalized = String(job.status || 'active').toLowerCase();
-    return normalized === 'active' || normalized === 'open' || normalized === 'aberta';
-  }).length;
-  const featuredJobs = jobs.filter(job => job.destaque || job.featured || job.isFeatured).length;
-
-  const sortLabel = {
-    recentes: 'Mais recentes',
-    prazo: 'Prazo de candidatura',
-    salario: 'Maior salário'
-  }[sortBy] || 'Mais recentes';
+  const localizacoes = [
+    ...new Set(jobs.map((job) => job.localizacao).filter(Boolean)),
+  ];
+  const tiposContrato = [
+    ...new Set(jobs.map((job) => job.tipoContrato).filter(Boolean)),
+  ];
+  const categorias = [
+    ...new Set(jobs.map((job) => job.categoria).filter(Boolean)),
+  ];
 
   const activeFilterChips = [
     searchTerm.trim() ? `Busca: ${searchTerm.trim()}` : null,
     filters.localizacao ? `Localização: ${filters.localizacao}` : null,
     filters.tipoContrato ? `Contrato: ${filters.tipoContrato}` : null,
     filters.status ? `Status: ${filters.status}` : null,
-    filters.showFeatured ? '⭐ Apenas Destaques' : null,
-    sortLabel ? `Ordenação: ${sortLabel}` : null
+    filters.categoria ? `Categoria: ${filters.categoria}` : null,
+    filters.showFeatured ? "Somente destaques" : null,
+    filters.showRemote ? "Somente remotas" : null,
   ].filter(Boolean);
+  const hasActiveFilters = activeFilterChips.length > 0;
+
+  const sortLabel =
+    {
+      recentes: "Mais recentes",
+      prazo: "Prazo de candidatura",
+      salario: "Maior salário",
+    }[sortBy] || "Mais recentes";
+  const handleSearchSubmit = (event) => {
+    event.preventDefault();
+  };
+
+  const handleFilterChange = (event) => {
+    const { name, value } = event.target;
+    setFilters((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const clearFilters = () => {
+    setSearchTerm("");
+    setFilters({
+      localizacao: "",
+      tipoContrato: "",
+      status: "",
+      categoria: "",
+      showFeatured: false,
+      showRemote: false,
+    });
+    setSortBy("recentes");
+  };
 
   return (
     <>
       <Head>
         <title>Vagas de Emprego - EmpregoSTP</title>
-        <meta name="description" content="Encontre as melhores vagas de emprego em São Tomé e Príncipe" />
+        <meta
+          name="description"
+          content="Descubra vagas com melhor contexto, filtros úteis e candidaturas mais rápidas em São Tomé e Príncipe."
+        />
       </Head>
 
-      <PublicPageShell>
-      {/* <HeaderAd /> Temporariamente removido */}
-      <main className={styles.page}>
-        <section className={styles.hero}>
-          <div className={styles.heroContent}>
-            <div className={styles.heroBadge}>Mercado de trabalho ativo em STP</div>
-            <h1 className={styles.heroTitle}>
-              Encontre sua próxima <span className={styles.heroAccent}>Oportunidade</span>
-            </h1>
-            <p className={styles.heroText}>
-              Explore vagas com melhor organização visual, filtros claros e prioridade para as oportunidades em destaque.
-            </p>
-
-            <div className={styles.statsGrid}>
-              <div className={styles.statCard}>
-                <p className={styles.statLabel}>Total de vagas</p>
-                <p className={styles.statValue}>{totalJobs}</p>
-              </div>
-              <div className={styles.statCard}>
-                <p className={styles.statLabel}>Vagas abertas</p>
-                <p className={styles.statValue}>{openJobs}</p>
-              </div>
-              <div className={styles.statCard}>
-                <p className={styles.statLabel}>Em destaque</p>
-                <p className={styles.statValue}>{featuredJobs}</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className={styles.filtersPanel}>
-          <form onSubmit={handleSearchSubmit}>
-            <div className={styles.searchGroup}>
-              <div className={styles.searchField}>
-                <svg
-                  className={styles.searchIcon}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
+      <PublicPageShell headerVariant="light">
+        <main className={styles.page}>
+          <section className={styles.discoverySection}>
+            <form className={styles.filtersPanel} onSubmit={handleSearchSubmit}>
+              <div className={styles.sidebarHeader}>
+                <div>
+                  <p className={styles.sidebarEyebrow}>Refinar pesquisa</p>
+                  <h2 className={styles.sidebarTitle}>Filtros da vitrine</h2>
+                  <p className={styles.sidebarSummary}>
+                    {hasActiveFilters
+                      ? `${activeFilterChips.length} filtro${activeFilterChips.length > 1 ? "s" : ""} ativo${activeFilterChips.length > 1 ? "s" : ""}`
+                      : "Use os filtros para cortar ruído e chegar mais rápido à vaga certa."}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  className={styles.clearButton}
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <input
-                  type="text"
-                  placeholder="Buscar vagas por título, descrição, requisitos ou localização..."
-                  value={searchTerm}
-                  onChange={handleSearchChange}
-                  className={styles.searchInput}
-                />
+                  Limpar
+                </button>
               </div>
-            </div>
 
-            <div className={styles.filtersRow}>
-              <div className={styles.filterCluster}>
+              <div className={styles.searchGroup}>
+                <label className={styles.filterLabel}>Pesquisar vagas</label>
+                <div className={styles.searchField}>
+                  <svg
+                    className={styles.searchIcon}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                  <input
+                    type="text"
+                    placeholder="Título, skills, descrição ou localização"
+                    aria-label="Pesquisar vagas"
+                    value={searchTerm}
+                    onChange={(event) => setSearchTerm(event.target.value)}
+                    className={styles.searchInput}
+                  />
+                </div>
+              </div>
+
+              <div className={styles.filterGrid}>
+                <div className={styles.filterGroup}>
+                  <label className={styles.filterLabel}>Categoria</label>
+                  <select
+                    name="categoria"
+                    value={filters.categoria}
+                    onChange={handleFilterChange}
+                    className={styles.filterControl}
+                  >
+                    <option value="">Todas</option>
+                    {categorias.map((categoria) => (
+                      <option key={categoria} value={categoria}>
+                        {categoria}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 <div className={styles.filterGroup}>
                   <label className={styles.filterLabel}>Localização</label>
                   <select
@@ -264,13 +365,15 @@ export default function VagasPage({ initialJobs = [] }) {
                   >
                     <option value="">Todas</option>
                     {localizacoes.map((loc) => (
-                      <option key={loc} value={loc}>{loc}</option>
+                      <option key={loc} value={loc}>
+                        {loc}
+                      </option>
                     ))}
                   </select>
                 </div>
 
                 <div className={styles.filterGroup}>
-                  <label className={styles.filterLabel}>Tipo de Contrato</label>
+                  <label className={styles.filterLabel}>Contrato</label>
                   <select
                     name="tipoContrato"
                     value={filters.tipoContrato}
@@ -279,13 +382,15 @@ export default function VagasPage({ initialJobs = [] }) {
                   >
                     <option value="">Todos</option>
                     {tiposContrato.map((tipo) => (
-                      <option key={tipo} value={tipo}>{tipo}</option>
+                      <option key={tipo} value={tipo}>
+                        {tipo}
+                      </option>
                     ))}
                   </select>
                 </div>
 
                 <div className={styles.filterGroup}>
-                  <label className={styles.filterLabel}>Status</label>
+                  <label className={styles.filterLabel}>Estado</label>
                   <select
                     name="status"
                     value={filters.status}
@@ -298,107 +403,166 @@ export default function VagasPage({ initialJobs = [] }) {
                     <option value="disabled">Desativada</option>
                   </select>
                 </div>
-
-                <div className={styles.filterGroup}>
-                  <label className={styles.filterLabel}>Ordenar por</label>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    className={styles.filterControl}
-                  >
-                    <option value="recentes">Mais recentes</option>
-                    <option value="prazo">Prazo de candidatura</option>
-                    <option value="salario">Maior salário</option>
-                  </select>
-                </div>
               </div>
 
-              <div className={styles.actionsRow}>
-                <label className={`${styles.featuredToggle} ${filters.showFeatured ? styles.featuredToggleActive : ''}`}>
+              <div className={styles.quickToggles}>
+                <label
+                  className={`${styles.toggleChip} ${filters.showFeatured ? styles.toggleChipActive : ""}`}
+                >
                   <input
                     type="checkbox"
                     name="showFeatured"
                     checked={filters.showFeatured}
-                    onChange={(e) => {
+                    onChange={(event) => {
                       setFilters((prev) => ({
                         ...prev,
-                        showFeatured: e.target.checked
+                        showFeatured: event.target.checked,
                       }));
                     }}
-                    className={styles.featuredToggleInput}
+                    className={styles.toggleInput}
                   />
-                  <span>Apenas Destaques</span>
+                  <span>Somente destaque</span>
                 </label>
 
-                <button type="button" onClick={clearFilters} className={styles.clearButton}>
-                  <svg className={styles.clearIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                <label
+                  className={`${styles.toggleChip} ${filters.showRemote ? styles.toggleChipActive : ""}`}
+                >
+                  <input
+                    type="checkbox"
+                    name="showRemote"
+                    checked={filters.showRemote}
+                    onChange={(event) => {
+                      setFilters((prev) => ({
+                        ...prev,
+                        showRemote: event.target.checked,
+                      }));
+                    }}
+                    className={styles.toggleInput}
+                  />
+                  <span>Somente remotas</span>
+                </label>
+              </div>
+            </form>
+
+            <div className={styles.resultsPanel}>
+              <div className={styles.resultsHeader}>
+                <div>
+                  <p className={styles.resultsEyebrow}>
+                    Resultados encontrados
+                  </p>
+                  <h2 className={styles.resultsTitle}>
+                    {filteredJobs.length}{" "}
+                    {filteredJobs.length === 1
+                      ? "vaga encontrada"
+                      : "vagas encontradas"}
+                  </h2>
+                  <p className={styles.resultsMeta}>
+                    Ordenação atual: {sortLabel}
+                  </p>
+                </div>
+
+                <div className={styles.resultsActions}>
+                  <div className={styles.sortGroup}>
+                    <label className={styles.filterLabel}>Ordenar por</label>
+                    <select
+                      value={sortBy}
+                      onChange={(event) => setSortBy(event.target.value)}
+                      className={styles.sortControl}
+                    >
+                      <option value="recentes">Mais recentes</option>
+                      <option value="prazo">Prazo de candidatura</option>
+                      <option value="salario">Maior salário</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {activeFilterChips.length > 0 ? (
+                <div className={styles.activeFilters}>
+                  {activeFilterChips.map((chip) => (
+                    <span key={chip} className={styles.filterChip}>
+                      {chip}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+
+              {isLoading ? (
+                <div className={styles.loadingState}>
+                  <div className={styles.loadingSpinner}></div>
+                  <p className={styles.loadingText}>
+                    Atualizando resultados...
+                  </p>
+                </div>
+              ) : filteredJobs.length === 0 ? (
+                <div className={styles.emptyState}>
+                  <svg
+                    className={styles.emptyIcon}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="1.5"
+                      d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
                   </svg>
-                  Limpar Filtros
-                </button>
-              </div>
+                  <h3 className={styles.emptyTitle}>
+                    Nenhuma vaga combina com os filtros atuais
+                  </h3>
+                  <p className={styles.emptyText}>
+                    Limpe os filtros ou experimente outra combinação de
+                    categoria, localização e modalidade para ampliar os
+                    resultados.
+                  </p>
+                  <button onClick={clearFilters} className={styles.emptyButton}>
+                    Limpar filtros
+                  </button>
+                </div>
+              ) : (
+                <div className={styles.jobsList}>
+                  {filteredJobs.map((vaga) => (
+                    <CompactJobCard
+                      key={vaga.id}
+                      href={`/vaga/${vaga.id}`}
+                      variant="light"
+                      title={vaga.titulo}
+                      badgeLabel={getCardBadgeLabel(vaga)}
+                      status={vaga.status}
+                      salary={formatCardSalary(vaga.salarioDe, vaga.salarioAte)}
+                      companyName={
+                        vaga.empresaNome || vaga.companyName || "Empresa"
+                      }
+                      companyLogo={vaga.empresaLogo}
+                      imageAlt={
+                        vaga.empresaNome || vaga.companyName || "Empresa"
+                      }
+                      metaItems={[
+                        {
+                          icon: "fas fa-location-dot",
+                          text: vaga.localizacao || "Local não informado",
+                        },
+                        {
+                          icon: "fas fa-briefcase",
+                          text: normalizeContractType(vaga.tipoContrato),
+                        },
+                        {
+                          icon: "fas fa-clock",
+                          text: formatPublishedAgo(
+                            vaga.publicadoEm || vaga.createdAt,
+                          ),
+                        },
+                      ]}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
-
-            {activeFilterChips.length > 0 ? (
-              <div className={styles.activeFilters}>
-                {activeFilterChips.map((chip) => (
-                  <span key={chip} className={styles.filterChip}>
-                    {chip}
-                  </span>
-                ))}
-              </div>
-            ) : null}
-          </form>
-        </section>
-
-        <section className={styles.resultsSection}>
-          <div className={styles.resultsHeader}>
-            <p className={styles.resultsCount}>
-              {filteredJobs.length} {filteredJobs.length === 1 ? 'vaga encontrada' : 'vagas encontradas'}
-            </p>
-            <p className={styles.resultsMeta}>Ordenação: {sortLabel}</p>
-          </div>
-
-          {isLoading ? (
-            <div className={styles.loadingState}>
-              <div className={styles.loadingSpinner}></div>
-              <p className={styles.loadingText}>Carregando resultados...</p>
-            </div>
-          ) : filteredJobs.length === 0 ? (
-            <div className={styles.emptyState}>
-              <svg className={styles.emptyIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <h3 className={styles.emptyTitle}>Nenhuma vaga encontrada</h3>
-              <p className={styles.emptyText}>
-                Tente ajustar seus filtros ou usar termos diferentes na busca.
-              </p>
-              <button onClick={clearFilters} className={styles.emptyButton}>
-                Limpar Filtros e Busca
-              </button>
-            </div>
-          ) : (
-            <div className={styles.jobsList}>
-              {filteredJobs.map((vaga) => (
-                <JobCard
-                  key={vaga.id}
-                  vaga={vaga}
-                  isSaved={savedJobIds.includes(vaga.id)}
-                  onToggleSave={(jobId) => {
-                    if (savedJobIds.includes(jobId)) {
-                      setSavedJobIds(savedJobIds.filter((id) => id !== jobId));
-                    } else {
-                      setSavedJobIds([...savedJobIds, jobId]);
-                    }
-                  }}
-                />
-              ))}
-            </div>
-          )}
-        </section>
-      </main>
-      
-      {/* <FooterAd /> Temporariamente removido */}
+          </section>
+        </main>
       </PublicPageShell>
     </>
   );
@@ -406,73 +570,115 @@ export default function VagasPage({ initialJobs = [] }) {
 
 export async function getServerSideProps(context) {
   try {
-    const { admin } = await import('../../lib/firebaseAdmin');
-    // Cache público no edge para reduzir latência de listagem de vagas.
-    // A lista não depende de autenticação (salvos são carregados no cliente).
-    context?.res?.setHeader?.('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=120');
-    
-    // Função auxiliar para serializar Timestamps
+    const { admin } = await import("../../lib/firebaseAdmin");
+    const { getEmpresaPlanSummary } =
+      await import("../../lib/empresaPlanFeatures");
+    const { getEffectiveJobStatus, syncExpiredJobStatus } =
+      await import("../../lib/jobExpiration");
+
+    context?.res?.setHeader?.(
+      "Cache-Control",
+      "public, s-maxage=30, stale-while-revalidate=120",
+    );
+
     const serializeTimestamp = (timestamp) => {
       if (!timestamp) return null;
-      if (timestamp.toDate) {
-        return timestamp.toDate().toISOString();
-      }
-      if (timestamp.toMillis) {
+      if (timestamp.toDate) return timestamp.toDate().toISOString();
+      if (timestamp.toMillis)
         return new Date(timestamp.toMillis()).toISOString();
-      }
-      if (typeof timestamp === 'string') {
-        return timestamp;
-      }
-      if (timestamp instanceof Date) {
-        return timestamp.toISOString();
-      }
+      if (typeof timestamp === "string") return timestamp;
+      if (timestamp instanceof Date) return timestamp.toISOString();
       return null;
     };
 
-    // Função auxiliar para serializar um objeto job
-    const serializeJob = (job) => {
-      const serialized = {
-        id: job.id,
-        ...Object.keys(job).reduce((acc, key) => {
-          const value = job[key];
-          // Se for um Timestamp, serializar
-          if (value && (value.toDate || value.toMillis)) {
-            acc[key] = serializeTimestamp(value);
-          } else if (value && typeof value === 'object' && !Array.isArray(value) && value.constructor === Object) {
-            // Se for um objeto aninhado, serializar recursivamente
-            acc[key] = Object.keys(value).reduce((nestedAcc, nestedKey) => {
-              const nestedValue = value[nestedKey];
-              if (nestedValue && (nestedValue.toDate || nestedValue.toMillis)) {
-                nestedAcc[nestedKey] = serializeTimestamp(nestedValue);
-              } else {
-                nestedAcc[nestedKey] = nestedValue;
-              }
-              return nestedAcc;
-            }, {});
-          } else {
-            acc[key] = value;
-          }
-          return acc;
-        }, {})
-      };
-      return serialized;
-    };
-    
-    // Buscar todas as vagas
-    const snapshot = await admin.firestore()
-      .collection('jobs')
-      .orderBy('createdAt', 'desc')
+    const serializeJob = (job) => ({
+      id: job.id,
+      ...Object.keys(job).reduce((acc, key) => {
+        const value = job[key];
+        if (value && (value.toDate || value.toMillis)) {
+          acc[key] = serializeTimestamp(value);
+        } else if (
+          value &&
+          typeof value === "object" &&
+          !Array.isArray(value) &&
+          value.constructor === Object
+        ) {
+          acc[key] = Object.keys(value).reduce((nestedAcc, nestedKey) => {
+            const nestedValue = value[nestedKey];
+            nestedAcc[nestedKey] =
+              nestedValue && (nestedValue.toDate || nestedValue.toMillis)
+                ? serializeTimestamp(nestedValue)
+                : nestedValue;
+            return nestedAcc;
+          }, {});
+        } else {
+          acc[key] = value;
+        }
+        return acc;
+      }, {}),
+    });
+
+    const snapshot = await admin
+      .firestore()
+      .collection("jobs")
+      .orderBy("createdAt", "desc")
       .get();
-    
-    const jobs = snapshot.docs.map(doc => serializeJob({ id: doc.id, ...doc.data() }));
-    
+
+    const normalizedDocs = await Promise.all(
+      snapshot.docs.map(async (doc) => {
+        const synced = await syncExpiredJobStatus(doc.ref, doc.data(), admin);
+        return {
+          id: doc.id,
+          ...synced.jobData,
+          status: getEffectiveJobStatus(synced.jobData),
+        };
+      }),
+    );
+
+    const companyIds = [
+      ...new Set(normalizedDocs.map((job) => job.companyId).filter(Boolean)),
+    ];
+    const companyRefs = companyIds.map((companyId) =>
+      admin.firestore().collection("users").doc(companyId),
+    );
+    const companyDocs = companyRefs.length
+      ? await admin.firestore().getAll(...companyRefs)
+      : [];
+    const companiesById = new Map();
+
+    companyDocs.forEach((companyDoc) => {
+      if (!companyDoc.exists) return;
+      const companyData = companyDoc.data() || {};
+      const planSummary = getEmpresaPlanSummary(companyData);
+      companiesById.set(companyDoc.id, {
+        name: companyData.name || companyData.fullName || "Empresa",
+        logo: planSummary.features?.logoOnJob ? companyData.logo || "" : "",
+        verified: Boolean(planSummary.features?.companyVerified),
+      });
+    });
+
+    const jobs = normalizedDocs
+      .map((job) => {
+        const company = companiesById.get(job.companyId) || {};
+        return serializeJob({
+          ...job,
+          empresaNome:
+            company.name || job.empresaNome || job.companyName || "Empresa",
+          companyName:
+            company.name || job.companyName || job.empresaNome || "Empresa",
+          empresaLogo: company.logo || job.empresaLogo || "",
+          companyVerified: company.verified || job.companyVerified || false,
+        });
+      })
+      .sort(compareRecentJobs);
+
     return {
-      props: { initialJobs: jobs }
+      props: { initialJobs: jobs },
     };
   } catch (error) {
-    console.error('Erro ao buscar vagas:', error);
+    console.error("Erro ao buscar vagas:", error);
     return {
-      props: { initialJobs: [] }
+      props: { initialJobs: [] },
     };
   }
 }

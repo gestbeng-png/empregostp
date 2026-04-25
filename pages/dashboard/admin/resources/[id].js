@@ -6,6 +6,7 @@ import nookies from 'nookies';
 import { admin } from '../../../../lib/firebaseAdmin';
 import LandingHeader from '../../../../components/LandingHeader';
 import { addDocument, setDocument } from '../../../../lib/db';
+import { getFirebaseStorageErrorMessage } from '../../../../lib/firebaseStorageError';
 
 const RESOURCE_TYPES = [
     { id: 'resources_templates', label: 'Modelos & Templates' },
@@ -244,7 +245,7 @@ export default function AdminResourceEdit({ itemData, isNew, type }) {
             setUploadStatus('Documento carregado com sucesso.');
         } catch (error) {
             console.error('Erro no upload de recurso:', error);
-            setUploadStatus(error.message || 'Erro ao carregar documento.');
+            setUploadStatus(getFirebaseStorageErrorMessage(error, 'Erro ao carregar documento.'));
         } finally {
             setUploadingFile(false);
             event.target.value = '';

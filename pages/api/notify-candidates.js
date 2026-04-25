@@ -1,6 +1,12 @@
 import { admin } from '../../lib/firebaseAdmin';
-import { getCandidatePlanFeatures } from '../../lib/candidatePlanFeatures';
+import { getPlanSummary } from '../../lib/candidatePlanFeatures';
+import { shouldNotifyCandidateForJob } from '../../lib/candidateProfileInsights';
 import { sendPushToUser } from '../../lib/serverNotifications';
+
+function canReceiveNewJobNotification(candidateData = {}) {
+  const planSummary = getPlanSummary(candidateData);
+  return planSummary.planId === 'unlimited_candidato' && planSummary.isActive;
+}
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -25,6 +31,23 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Dados incompletos' });
     }
 
+    const [companyDoc, jobDoc] = await Promise.all([
+      admin.firestore().collection('users').doc(companyUid).get(),
+      admin.firestore().collection('jobs').doc(jobId).get()
+    ]);
+
+    if (!companyDoc.exists || companyDoc.data()?.userType !== 'empresa') {
+      return res.status(403).json({ error: 'Apenas empresas podem notificar candidatos' });
+    }
+
+    const jobData = jobDoc.exists
+      ? { id: jobDoc.id, ...jobDoc.data() }
+      : {
+          id: jobId,
+          titulo: jobTitle,
+          localizacao: jobLocation || '',
+        };
+
     // Buscar candidatos (limitado para performance)
     const candidatesSnapshot = await admin.firestore()
       .collection('users')
@@ -34,56 +57,73 @@ export default async function handler(req, res) {
 
     console.log(`📬 Criando notificações para ${candidatesSnapshot.size} candidatos...`);
 
+    const candidateIds = candidatesSnapshot.docs.map((doc) => doc.id);
+    const profileDocs = candidateIds.length
+      ? await admin.firestore().getAll(...candidateIds.map((candidateId) => admin.firestore().collection('profiles').doc(candidateId)))
+      : [];
+    const profilesById = new Map();
+    profileDocs.forEach((doc) => {
+      if (doc.exists) {
+        profilesById.set(doc.id, doc.data() || {});
+      }
+    });
+
     // Criar notificações em batch
     const batch = admin.firestore().batch();
     let notificationCount = 0;
+    const notifiedCandidates = [];
 
     candidatesSnapshot.docs.forEach(doc => {
       const candidateId = doc.id;
       const candidateData = doc.data();
-      
-      // Verificar plano do candidato
-      const planId = candidateData.currentPlan || 'basic_candidato';
-      const planFeatures = getCandidatePlanFeatures(planId);
-      
-      // Apenas candidatos com planos PRO recebem notificações personalizadas
-      const shouldNotify = planFeatures.canReceivePersonalizedJobs || planFeatures.canReceiveNotifications;
-      
-      if (shouldNotify) {
-        const notificationRef = admin.firestore().collection('notifications').doc();
-        batch.set(notificationRef, {
-          userId: candidateId,
-          title: 'Nova vaga disponível',
-          message: `${jobTitle} em ${jobLocation || 'São Tomé e Príncipe'}`,
-          type: 'job',
-          icon: '💼',
-          read: false,
-          relatedId: jobId,
-          createdAt: admin.firestore.FieldValue.serverTimestamp()
-        });
-        notificationCount++;
+      const candidateProfile = profilesById.get(candidateId) || {};
+
+      // Apenas candidatos Premium com plano ativo recebem notificações de novas vagas.
+      const shouldNotify = canReceiveNewJobNotification(candidateData);
+      if (!shouldNotify) {
+        return;
       }
+
+      const match = shouldNotifyCandidateForJob(jobData, candidateData, candidateProfile, {
+        minScore: 28
+      });
+      
+      if (!match.shouldNotify) {
+        return;
+      }
+
+      const notificationRef = admin.firestore().collection('notifications').doc();
+      const primaryReason = match.reasons?.[0] || 'Compatível com o seu perfil';
+      batch.set(notificationRef, {
+        userId: candidateId,
+        title: 'Nova vaga compatível com o seu perfil',
+        message: `${jobTitle} em ${jobLocation || 'São Tomé e Príncipe'} • ${primaryReason}`,
+        type: 'job',
+        icon: '💼',
+        read: false,
+        relatedId: jobId,
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      });
+      notificationCount++;
+      notifiedCandidates.push({
+        candidateId,
+        reason: primaryReason
+      });
     });
 
     // Executar batch
     if (notificationCount > 0) {
       await batch.commit();
       await Promise.all(
-        candidatesSnapshot.docs.map((doc) => {
-          const candidateId = doc.id;
-          const candidateData = doc.data();
-          const planId = candidateData.currentPlan || 'basic_candidato';
-          const planFeatures = getCandidatePlanFeatures(planId);
-          const shouldNotify = planFeatures.canReceivePersonalizedJobs || planFeatures.canReceiveNotifications;
-          if (!shouldNotify) return Promise.resolve();
-          return sendPushToUser(admin, candidateId, {
-            title: 'Nova vaga disponível',
-            message: `${jobTitle} em ${jobLocation || 'São Tomé e Príncipe'}`,
+        notifiedCandidates.map(({ candidateId, reason }) =>
+          sendPushToUser(admin, candidateId, {
+            title: 'Nova vaga compatível com o seu perfil',
+            message: `${jobTitle} em ${jobLocation || 'São Tomé e Príncipe'} • ${reason}`,
             type: 'job',
             relatedId: jobId,
             actionUrl: `/vaga/${jobId}`
-          });
-        })
+          })
+        )
       );
       console.log(`✅ ${notificationCount} notificações criadas`);
     }
@@ -98,5 +138,3 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 }
-
-

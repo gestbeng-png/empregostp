@@ -4,6 +4,13 @@ import { AuthProvider } from '../context/AuthContext';
 import PwaInstallPrompt from '../components/PwaInstallPrompt';
 import WebPushManager from '../components/WebPushManager';
 import Head from 'next/head';
+import { Plus_Jakarta_Sans } from 'next/font/google';
+
+const appFont = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  display: 'swap',
+  fallback: ['Inter', 'system-ui', 'sans-serif']
+});
 
 function MyApp({ Component, pageProps }) {
   useEffect(() => {
@@ -47,19 +54,21 @@ function MyApp({ Component, pageProps }) {
 
   return (
     <AuthProvider>
-      <Head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="theme-color" content="#0a0a0f" />
-        <meta name="application-name" content="EmpregoSTP" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="EmpregoSTP" />
-        <link rel="manifest" href="/manifest.webmanifest" />
-        <link rel="apple-touch-icon" href="/assets/Emprego STP Logo.png" />
-      </Head>
-      <PwaInstallPrompt />
-      <WebPushManager />
-      <Component {...pageProps} />
+      <div className={appFont.className}>
+        <Head>
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <meta name="theme-color" content="#ffffff" />
+          <meta name="application-name" content="EmpregoSTP" />
+          <meta name="apple-mobile-web-app-capable" content="yes" />
+          <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+          <meta name="apple-mobile-web-app-title" content="EmpregoSTP" />
+          <link rel="manifest" href="/manifest.webmanifest" />
+          <link rel="apple-touch-icon" href="/assets/Emprego STP Logo 2.png" />
+        </Head>
+        <PwaInstallPrompt />
+        <WebPushManager />
+        <Component {...pageProps} />
+      </div>
     </AuthProvider>
   );
 }

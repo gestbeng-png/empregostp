@@ -7,6 +7,18 @@ const serializeTimestamp = (value) => {
   return value;
 };
 
+const serializeDeep = (value) => {
+  if (value === null || value === undefined) return value;
+  if (Array.isArray(value)) return value.map((item) => serializeDeep(item));
+  if (typeof value.toDate === 'function' || value instanceof Date) return serializeTimestamp(value);
+  if (typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, currentValue]) => [key, serializeDeep(currentValue)])
+    );
+  }
+  return value;
+};
+
 export default async function handler(req, res) {
   try {
     const authHeader = req.headers.authorization;
@@ -65,7 +77,10 @@ export default async function handler(req, res) {
       curriculoDestacado: Boolean(userData.curriculoDestacado),
       vagasLimit: userData.vagasLimit ?? null,
       destaque: Boolean(userData.destaque),
-      verificationStatus: userData.verificationStatus || profileData.verificationStatus || 'unverified'
+      verificationStatus: userData.verificationStatus || profileData.verificationStatus || 'unverified',
+      verificationSummary: serializeDeep(userData.verificationSummary || profileData.verificationSummary || null),
+      verificationItems: serializeDeep(userData.verificationItems || profileData.verificationItems || null),
+      verificationId: userData.verificationId || profileData.verificationId || null
     };
 
     let applications = [];
@@ -108,7 +123,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       profile: {
         id: uid,
-        data: mergedProfile
+        data: serializeDeep(mergedProfile)
       },
       applications
     });

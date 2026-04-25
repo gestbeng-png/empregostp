@@ -1,20 +1,5 @@
 import { admin } from '../../../lib/firebaseAdmin';
-
-const BASIC_PLAN_FALLBACKS = {
-  empresa: {
-    id: 'basic_empresa',
-    name: 'Básico',
-    features: ['1 vaga por mês', 'Visualização de candidatos', 'Suporte básico'],
-    vagasLimit: 1,
-    destaque: false
-  },
-  candidato: {
-    id: 'basic_candidato',
-    name: 'Básico',
-    features: ['3 candidaturas por mês', 'Cadastro de currículo', 'Candidatura a vagas básicas', 'Suporte básico'],
-    curriculoDestacado: false
-  }
-};
+import { getDefaultBasicPlanForUserType } from '../../../lib/defaultPlans';
 
 /**
  * Inicializa o documento Firestore do utilizador com o plano básico.
@@ -53,7 +38,7 @@ export default async function handler(req, res) {
 
     // Buscar plano básico do Firestore (fallback para constante se não existir)
     const basicPlanDoc = await admin.firestore().collection('plans').doc(basicPlanId).get();
-    const basicPlan = basicPlanDoc.exists ? basicPlanDoc.data() : BASIC_PLAN_FALLBACKS[normalizedUserType];
+    const basicPlan = basicPlanDoc.exists ? basicPlanDoc.data() : getDefaultBasicPlanForUserType(normalizedUserType);
 
     const now = admin.firestore.FieldValue.serverTimestamp();
 

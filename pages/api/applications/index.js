@@ -1,6 +1,18 @@
 import { admin as adminApp } from '../../../lib/firebaseAdmin';
 import * as firebaseAdmin from 'firebase-admin';
-import { canApplyToJob, canApplyToFeaturedJob, isPlanActive, getPlanSummary, getCandidatePlanFeatures } from '../../../lib/candidatePlanFeatures';
+import {
+  canApplyToFeaturedJob,
+  canApplyToJob,
+  canUseCoverLetter,
+  getCandidatePlanFeatures,
+  getPlanSummary,
+} from '../../../lib/candidatePlanFeatures';
+import {
+  evaluateCandidateJobAccess,
+  normalizeCoverLetter,
+} from '../../../lib/candidateApplicationPremium';
+import { getEffectiveJobStatus, syncExpiredJobStatus } from '../../../lib/jobExpiration';
+import { analyzeCandidateJobFit } from '../../../lib/candidateOptimizationInsights';
 import { calculateSkillsAssessmentResult, getPublicSkillsAssessment } from '../../../lib/skillsAssessment';
 import { createServerNotification } from '../../../lib/serverNotifications';
 
@@ -34,18 +46,21 @@ export default async function handler(req, res) {
 
     switch (method) {
       case 'POST': {
-        const { jobId, assessmentAnswers = [] } = req.body;
+        const { jobId, assessmentAnswers = [], coverLetter = '' } = req.body;
         if (!jobId) return res.status(400).json({ error: 'jobId é obrigatório' });
 
-        // Buscar vaga
+        // Buscar vaga e perfil do candidato
         const jobDocRef = adminApp.firestore().collection('jobs').doc(jobId);
-        const jobDoc = await jobDocRef.get();
+        const profileDocRef = adminApp.firestore().collection('profiles').doc(uid);
+        const [jobDoc, profileDoc] = await Promise.all([jobDocRef.get(), profileDocRef.get()]);
         if (!jobDoc.exists) {
           return res.status(404).json({ error: 'Vaga não encontrada' });
         }
-        const jobData = jobDoc.data();
+        const syncedJob = await syncExpiredJobStatus(jobDocRef, jobDoc.data(), adminApp);
+        const jobData = syncedJob.jobData;
+        const profileData = profileDoc.exists ? profileDoc.data() : {};
 
-        if (jobData.status !== 'active') {
+        if (getEffectiveJobStatus(jobData) !== 'active') {
           return res.status(400).json({ error: 'Esta vaga não está aberta para candidaturas' });
         }
 
@@ -78,6 +93,16 @@ export default async function handler(req, res) {
           } catch (updateError) {
             console.error('Erro ao atualizar plano expirado:', updateError);
           }
+        }
+
+        const premiumAccessCheck = evaluateCandidateJobAccess(jobData, planSummary);
+        if (!premiumAccessCheck.allowed) {
+          return res.status(403).json({
+            error: premiumAccessCheck.reason,
+            code: premiumAccessCheck.code,
+            upgradeMessage: premiumAccessCheck.upgradeMessage,
+            upgradeUrl: premiumAccessCheck.upgradeUrl,
+          });
         }
 
         // Verificar se pode se candidatar a vaga em destaque
@@ -118,6 +143,41 @@ export default async function handler(req, res) {
           skillsAssessmentResult = calculateSkillsAssessmentResult(jobData.skillsAssessment, assessmentAnswers);
         }
 
+        const normalizedCoverLetter = normalizeCoverLetter(coverLetter);
+        if (jobData.requireCoverLetter || normalizedCoverLetter) {
+          const coverLetterCheck = canUseCoverLetter(planId);
+          if (!coverLetterCheck.allowed) {
+            return res.status(403).json({
+              error: coverLetterCheck.reason,
+              code: 'PREMIUM_APPLICATION_TOOLS_ONLY',
+              upgradeMessage: coverLetterCheck.upgradeMessage,
+              upgradeUrl: coverLetterCheck.upgradeUrl,
+            });
+          }
+        }
+
+        if (jobData.requireCoverLetter && !normalizedCoverLetter) {
+          return res.status(400).json({
+            error: 'Esta vaga exige carta de apresentação personalizada.',
+            code: 'COVER_LETTER_REQUIRED',
+          });
+        }
+
+        const compatibility = analyzeCandidateJobFit(jobData, userData, profileData);
+        const premiumConfig = premiumAccessCheck.config;
+        const candidatePremiumAccess = premiumAccessCheck.candidateAccess;
+
+        const applicationDescriptionParts = [
+          `Você enviou sua candidatura para ${jobData.titulo || jobData.title || 'a vaga'}.`,
+        ];
+
+        if (candidatePremiumAccess.priorityApplied) {
+          applicationDescriptionParts.push('A candidatura entrou com prioridade do seu plano.');
+        }
+        if (normalizedCoverLetter) {
+          applicationDescriptionParts.push('Carta de apresentação incluída.');
+        }
+
         const applicationData = {
           jobId,
           companyId: jobData.companyId || null,
@@ -126,13 +186,33 @@ export default async function handler(req, res) {
           candidateEmail: userData.email,
           jobTitle: jobData.titulo || jobData.title || '',
           company: jobData.companyName || '',
+          jobLocation: jobData.localizacao || jobData.location || '',
+          jobType: jobData.tipoContrato || jobData.contractType || '',
           status: 'pending',
           skillsAssessmentResult,
+          coverLetter: normalizedCoverLetter,
+          priorityApplied: Boolean(candidatePremiumAccess.priorityApplied),
+          applicationHighlighted: Boolean(candidatePremiumAccess.highlighted),
+          priorityLevel: Number(candidatePremiumAccess.priorityLevel) || 0,
+          candidatePlanId: planId,
+          candidatePlanName: planSummary.planName || null,
+          premiumOnlyJob: Boolean(premiumConfig.premiumOnly),
+          accessedDuringEarlyWindow: Boolean(premiumConfig.isEarlyAccessActive),
+          earlyAccessUntil: premiumConfig.earlyAccessUntil || null,
+          requireCoverLetter: Boolean(premiumConfig.requireCoverLetter),
+          compatibilityScore: Number(compatibility.matchPercent) || 0,
+          compatibilityLabel: compatibility.matchLabel || '',
+          compatibilityReasons: Array.isArray(compatibility.reasons) ? compatibility.reasons.slice(0, 4) : [],
+          compatibilityMatchedSkills: Array.isArray(compatibility.matchedSkills) ? compatibility.matchedSkills.slice(0, 6) : [],
+          compatibilityMissingSkills: Array.isArray(compatibility.missingSkills) ? compatibility.missingSkills.slice(0, 6) : [],
+          compatibilityKeywords: Array.isArray(compatibility.candidateKeywords) ? compatibility.candidateKeywords.slice(0, 8) : [],
+          cvOptimizationTips: Array.isArray(compatibility.cvOptimizationTips) ? compatibility.cvOptimizationTips.slice(0, 4) : [],
+          applicationFeedback: compatibility.feedback || '',
           appliedAt: firebaseAdmin.firestore.FieldValue.serverTimestamp(),
           timeline: [
             {
               title: 'Candidatura enviada',
-              description: `Você enviou sua candidatura para ${jobData.titulo || jobData.title || 'a vaga'}.`,
+              description: applicationDescriptionParts.join(' '),
               icon: '📨',
               date: new Date().toISOString(),
               by: uid,
@@ -140,6 +220,7 @@ export default async function handler(req, res) {
             }
           ],
           createdAt: firebaseAdmin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: firebaseAdmin.firestore.FieldValue.serverTimestamp(),
         };
 
         const applRef = await adminApp.firestore().collection('applications').add(applicationData);
@@ -156,10 +237,11 @@ export default async function handler(req, res) {
         // Criar notificação para a empresa
         if (jobData.companyId) {
           try {
+            const notificationPrefix = candidatePremiumAccess.priorityApplied ? 'Nova candidatura prioritária recebida' : 'Nova candidatura recebida';
             await createServerNotification(adminApp, {
               userId: jobData.companyId,
-              title: 'Nova candidatura recebida',
-              message: `${userData.fullName || userData.name || 'Um candidato'} se candidatou para ${jobData.titulo}`,
+              title: notificationPrefix,
+              message: `${userData.fullName || userData.name || 'Um candidato'} se candidatou para ${jobData.titulo}${candidatePremiumAccess.priorityApplied ? ' com prioridade do plano' : ''}`,
               type: 'application',
               icon: '👤',
               relatedId: applRef.id,
@@ -179,7 +261,7 @@ export default async function handler(req, res) {
             await createServerNotification(adminApp, {
               userId: uid,
               title: 'Candidatura enviada com sucesso',
-              message: `Sua candidatura para ${jobData.titulo} foi enviada. Aguarde o retorno da empresa.`,
+              message: `Sua candidatura${candidatePremiumAccess.priorityApplied ? ' prioritária' : ''} para ${jobData.titulo} foi enviada. Aguarde o retorno da empresa.`,
               type: 'application',
               icon: '✅',
               relatedId: applRef.id,

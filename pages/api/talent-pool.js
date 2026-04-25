@@ -1,6 +1,7 @@
 import { admin } from '../../lib/firebaseAdmin';
 import { canAccessTalentPool, getEmpresaPlanSummary } from '../../lib/empresaPlanFeatures';
 import { normalizeUserType } from '../../lib/defaultPlans';
+import { buildCandidateVisibility, compareCandidatesByVisibility, isCandidateVerified } from '../../lib/candidateProfileInsights';
 
 /**
  * GET /api/talent-pool
@@ -116,20 +117,7 @@ export default async function handler(req, res) {
       // Double-check type in case legacy docs have wrong userType.
       if (normalizeUserType(u.userType) !== 'candidato') continue;
 
-      const userVerificationStatus = String(u.verificationStatus || '').toLowerCase();
-      const profileVerificationStatus = String(d.verificationStatus || '').toLowerCase();
-      const verified = Boolean(
-        u.verified ||
-          u.verificado ||
-          u.isVerified ||
-          userVerificationStatus === 'verified' ||
-          userVerificationStatus === 'approved' ||
-          d.verified ||
-          d.verificado ||
-          d.isVerified ||
-          profileVerificationStatus === 'verified' ||
-          profileVerificationStatus === 'approved'
-      );
+      const verified = isCandidateVerified(u, d);
       if (!verified) continue;
 
       if (available === 'true' && !d.availableForWork) continue;
@@ -147,6 +135,8 @@ export default async function handler(req, res) {
         if (!docSkills.includes(skillsLower)) continue;
       }
 
+      const visibility = buildCandidateVisibility(u, d);
+
       candidates.push({
         id: candidateId,
         fullName: d.fullName || d.name || u.fullName || u.name || 'Candidato',
@@ -158,12 +148,21 @@ export default async function handler(req, res) {
         photoUrl: d.photoUrl || u.photoUrl || null,
         cvUrl: d.cvUrl || u.cvUrl || null,
         verified: true,
+        highlighted: visibility.highlighted,
+        profileComplete: visibility.isProfileComplete,
+        completionScore: visibility.completionScore,
+        visibilityScore: visibility.visibilityScore,
+        priorityInSearch: visibility.priorityInSearch,
+        createdAtMillis: visibility.createdAtMillis,
       });
-
-      if (candidates.length >= limit) break;
     }
 
-    return res.status(200).json({ candidates, total: candidates.length });
+    candidates.sort(compareCandidatesByVisibility);
+
+    return res.status(200).json({
+      candidates: candidates.slice(0, limit),
+      total: candidates.length
+    });
   } catch (error) {
     console.error('Erro ao buscar banco de talentos:', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });

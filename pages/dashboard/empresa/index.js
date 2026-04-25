@@ -1,88 +1,192 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import Head from 'next/head';
-import Link from 'next/link';
-import { useRouter } from 'next/router';
-import dynamic from 'next/dynamic';
-import { useAuth } from '../../../context/AuthContext';
-import styles from '../../../styles/EmpresaDashboard.module.css';
-import nookies from 'nookies';
-import { getEmpresaPlanFeatures, normalizeEmpresaPlanId } from '../../../lib/empresaPlanFeatures';
-import { fetchActiveEmpresaPlans } from '../../../lib/empresaPlansCatalog';
-import { getInterviewStatusLabelPt } from '../../../lib/interviewClient';
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Head from "next/head";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import dynamic from "next/dynamic";
+import { useAuth } from "../../../context/AuthContext";
+import styles from "../../../styles/EmpresaDashboard.module.css";
+import nookies from "nookies";
+import VerificationBadge from "../../../components/VerificationBadge";
+import {
+  getEmpresaPlanFeatures,
+  normalizeEmpresaPlanId,
+} from "../../../lib/empresaPlanFeatures";
+import { fetchActiveEmpresaPlans } from "../../../lib/empresaPlansCatalog";
+import { getInterviewStatusLabelPt } from "../../../lib/interviewClient";
+import {
+  fetchVerifiedCandidates,
+  summarizeVerifiedCandidates,
+} from "../../../lib/publicCandidates";
 
-const EmpresaApplicationsChart = dynamic(() => import('../../../components/charts/EmpresaApplicationsChart'), {
-  ssr: false,
-  loading: () => <div className={styles.chartWrapper} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#a1a1aa' }}>Carregando gráfico...</div>
-});
+const EmpresaApplicationsChart = dynamic(
+  () => import("../../../components/charts/EmpresaApplicationsChart"),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        className={styles.chartWrapper}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "#607394",
+        }}
+      >
+        Carregando gráfico...
+      </div>
+    ),
+  },
+);
 
-const EmpresaWeeklyViewsAppsChart = dynamic(() => import('../../../components/charts/EmpresaWeeklyViewsAppsChart'), {
-  ssr: false,
-  loading: () => <div className={styles.analyticsChartWrapper} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#a1a1aa' }}>Carregando gráfico...</div>
-});
+const EmpresaWeeklyViewsAppsChart = dynamic(
+  () => import("../../../components/charts/EmpresaWeeklyViewsAppsChart"),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        className={styles.analyticsChartWrapper}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "#607394",
+        }}
+      >
+        Carregando gráfico...
+      </div>
+    ),
+  },
+);
 
-const EmpresaPlansCatalog = dynamic(() => import('../../../components/EmpresaPlansCatalog'), {
-  ssr: false,
-  loading: () => <div className={styles.sectionBlock} style={{ color: '#a1a1aa' }}>Carregando planos...</div>
-});
+const EmpresaPlansCatalog = dynamic(
+  () => import("../../../components/EmpresaPlansCatalog"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className={styles.sectionBlock} style={{ color: "#607394" }}>
+        Carregando planos...
+      </div>
+    ),
+  },
+);
 
 const MENU_ITEMS = [
-  { id: 'dashboard', label: 'Visão Geral', icon: 'dashboard' },
-  { id: 'jobs', label: 'Vagas', icon: 'briefcase' },
-  { id: 'candidates', label: 'Banco Talentos', icon: 'users' },
-  { id: 'applications', label: 'Candidaturas', icon: 'inbox' },
-  { id: 'messages', label: 'Mensagens', icon: 'messages' },
-  { id: 'analytics', label: 'Analytics', icon: 'chart' },
-  { id: 'company-profile', label: 'Perfil Empresa', icon: 'building' },
-  { id: 'plans', label: 'Planos', icon: 'crown' }
+  { id: "dashboard", label: "Visão Geral", icon: "dashboard" },
+  { id: "jobs", label: "Vagas", icon: "briefcase" },
+  { id: "candidates", label: "Candidatos Verificados", icon: "users" },
+  { id: "applications", label: "Candidaturas", icon: "inbox" },
+  { id: "messages", label: "Mensagens", icon: "messages" },
+  { id: "analytics", label: "Analytics", icon: "chart" },
+  { id: "company-profile", label: "Perfil Empresa", icon: "building" },
+  { id: "plans", label: "Planos", icon: "crown" },
 ];
 
 const formatInterviewDateTime = (value) => {
-  if (!value) return '';
+  if (!value) return "";
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '';
-  return date.toLocaleString('pt-PT', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleString("pt-PT", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 };
 
 const toDateTimeLocalValue = (value) => {
-  if (!value) return '';
+  if (!value) return "";
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '';
+  if (Number.isNaN(date.getTime())) return "";
   const offset = date.getTimezoneOffset();
   const localDate = new Date(date.getTime() - offset * 60000);
   return localDate.toISOString().slice(0, 16);
 };
 
 const TIP_LIBRARY = {
-  'Básico': [
-    { title: 'Marca ativa, candidatos atentos', content: 'Amplie sua presença com conteúdos de bastidores e torne-se referência local.', category: 'BRANDING' },
-    { title: 'Use testes de habilidades', content: 'Envie desafios curtos para separar candidatos engajados e reduzir entrevistas iniciais.', category: 'PROCESSO' },
-    { title: 'Explore o banco limitado', content: 'Filtre talentos por localidades próximas e convide-os diretamente via mensagem.', category: 'TALENTOS' }
+  Básico: [
+    {
+      title: "Marca ativa, candidatos atentos",
+      content:
+        "Amplie sua presença com conteúdos de bastidores e torne-se referência local.",
+      category: "BRANDING",
+    },
+    {
+      title: "Use testes de habilidades",
+      content:
+        "Envie desafios curtos para separar candidatos engajados e reduzir entrevistas iniciais.",
+      category: "PROCESSO",
+    },
+    {
+      title: "Explore o banco limitado",
+      content:
+        "Filtre talentos por localidades próximas e convide-os diretamente via mensagem.",
+      category: "TALENTOS",
+    },
   ],
-  'Profissional': [
-    { title: 'Aposte em histórias reais', content: 'Compartilhe cases de sucesso no feed de vagas para despertar identificação.', category: 'MARCA' },
-    { title: 'Automatize respostas', content: 'Use templates personalizados para informar candidatos sobre cada etapa.', category: 'PROCESSO' },
-    { title: 'Monitore canais locais', content: 'Inclua critérios como língua e experiência com projetos do arquipélago.', category: 'TALENTOS' }
+  Profissional: [
+    {
+      title: "Aposte em histórias reais",
+      content:
+        "Compartilhe cases de sucesso no feed de vagas para despertar identificação.",
+      category: "MARCA",
+    },
+    {
+      title: "Automatize respostas",
+      content:
+        "Use templates personalizados para informar candidatos sobre cada etapa.",
+      category: "PROCESSO",
+    },
+    {
+      title: "Monitore canais locais",
+      content:
+        "Inclua critérios como língua e experiência com projetos do arquipélago.",
+      category: "TALENTOS",
+    },
   ],
   PRO: [
-    { title: 'Equipe em sincronia', content: 'Integre o painel com CRM e mantenha feedbacks dos líderes de negócio.', category: 'GESTÃO' },
-    { title: 'Insights da IA', content: 'Analise os talentos que mais aplicam e direcione campanhas regionais.', category: 'INTELIGÊNCIA' },
-    { title: 'Retenção de talentos', content: 'Ofereça trilhas rápidas de desenvolvimento para os contratados.', category: 'CULTURA' }
+    {
+      title: "Equipe em sincronia",
+      content:
+        "Integre o painel com CRM e mantenha feedbacks dos líderes de negócio.",
+      category: "GESTÃO",
+    },
+    {
+      title: "Insights da IA",
+      content:
+        "Analise os talentos que mais aplicam e direcione campanhas regionais.",
+      category: "INTELIGÊNCIA",
+    },
+    {
+      title: "Retenção de talentos",
+      content:
+        "Ofereça trilhas rápidas de desenvolvimento para os contratados.",
+      category: "CULTURA",
+    },
   ],
   default: [
-    { title: 'Foque na experiência do candidato', content: 'Responda rápido e destaque benefícios claros para criar confiança.', category: 'CANDIDATO' }
-  ]
+    {
+      title: "Foque na experiência do candidato",
+      content:
+        "Responda rápido e destaque benefícios claros para criar confiança.",
+      category: "CANDIDATO",
+    },
+  ],
 };
 
 const icons = {
   badge: (
-    <svg viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" fill="none">
-      <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z" strokeLinecap="round" strokeLinejoin="round" />
+    <svg
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      fill="none"
+    >
+      <path
+        d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
       <path d="M12 3v18" strokeLinecap="round" />
     </svg>
   ),
@@ -186,17 +290,25 @@ const icons = {
       <line x1="18" y1="6" x2="6" y2="18" />
       <line x1="6" y1="6" x2="18" y2="18" />
     </svg>
-  )
+  ),
 };
 
 const normalizePlan = (plan) => {
   const normalizedPlanId = normalizeEmpresaPlanId(plan);
-  return getEmpresaPlanFeatures(normalizedPlanId).name || 'Básico';
+  return getEmpresaPlanFeatures(normalizedPlanId).name || "Básico";
 };
 
 const getHiringTips = (plan) => TIP_LIBRARY[plan] || TIP_LIBRARY.default;
 
-const Sidebar = ({ activeTab, setActiveTab, currentPlan, profile, onLogout, pendingApplicationsCount = 0, unreadMessages = 0 }) => (
+const Sidebar = ({
+  activeTab,
+  setActiveTab,
+  currentPlan,
+  profile,
+  onLogout,
+  pendingApplicationsCount = 0,
+  unreadMessages = 0,
+}) => (
   <aside className={styles.sidebar}>
     <div className={styles.sidebarLogo}>
       <Link href="/" className={styles.sidebarLogoLink}>
@@ -208,22 +320,21 @@ const Sidebar = ({ activeTab, setActiveTab, currentPlan, profile, onLogout, pend
       </Link>
     </div>
 
-
     <nav className={styles.sidebarNav}>
       <p className={styles.navSection}>Menu Principal</p>
       {MENU_ITEMS.map((item) => (
         <button
           key={item.id}
           type="button"
-          className={`${styles.navButton} ${activeTab === item.id ? styles.navActive : ''}`}
+          className={`${styles.navButton} ${activeTab === item.id ? styles.navActive : ""}`}
           onClick={() => setActiveTab(item.id)}
         >
           <span className={styles.navIcon}>{icons[item.icon]}</span>
           <span className={styles.navLabel}>{item.label}</span>
-          {item.id === 'applications' && pendingApplicationsCount > 0 && (
+          {item.id === "applications" && pendingApplicationsCount > 0 && (
             <span className={styles.navBadge}>{pendingApplicationsCount}</span>
           )}
-          {item.id === 'messages' && unreadMessages > 0 && (
+          {item.id === "messages" && unreadMessages > 0 && (
             <span className={styles.navBadge}>{unreadMessages}</span>
           )}
         </button>
@@ -233,13 +344,16 @@ const Sidebar = ({ activeTab, setActiveTab, currentPlan, profile, onLogout, pend
     <div className={styles.sidebarDivider} />
 
     <div className={styles.sidebarActions}>
-      <Link href="/dashboard/empresa/vaga/criar-vaga" className={styles.createJobBtn}>
+      <Link
+        href="/dashboard/empresa/vaga/criar-vaga"
+        className={styles.createJobBtn}
+      >
         <span className={styles.navIcon}>{icons.plus}</span>
         Criar Nova Vaga
       </Link>
       {onLogout && (
-        <button 
-          type="button" 
+        <button
+          type="button"
           className={`${styles.createJobBtn} ${styles.logoutBtn}`}
           onClick={onLogout}
         >
@@ -250,18 +364,26 @@ const Sidebar = ({ activeTab, setActiveTab, currentPlan, profile, onLogout, pend
     </div>
 
     <div className={styles.sidebarFooter}>
-      <div className={styles.planCard}>
-        <div className={styles.planCardHeader}>
-          <span className={styles.planCardIcon}>{icons.crown}</span>
+      <div className={styles.sidebarPlanCard}>
+        <div className={styles.sidebarPlanCardHeader}>
+          <span className={styles.sidebarPlanCardIcon}>{icons.crown}</span>
           <div>
-            <p className={styles.planCardTitle}>Plano {currentPlan}</p>
-            <p className={styles.planCardDesc}>
-              {currentPlan === 'Básico' ? 'Recursos limitados' : currentPlan === 'Profissional' ? 'Mais alcance e automação' : 'Acesso completo'}
+            <p className={styles.sidebarPlanCardTitle}>Plano {currentPlan}</p>
+            <p className={styles.sidebarPlanCardDesc}>
+              {currentPlan === "Básico"
+                ? "Recursos limitados"
+                : currentPlan === "Profissional"
+                  ? "Mais alcance e automação"
+                  : "Acesso completo"}
             </p>
           </div>
         </div>
-        {currentPlan === 'Básico' && (
-          <button type="button" className={styles.upgradeButton} onClick={() => setActiveTab('plans')}>
+        {currentPlan === "Básico" && (
+          <button
+            type="button"
+            className={styles.upgradeButton}
+            onClick={() => setActiveTab("plans")}
+          >
             Fazer Upgrade
           </button>
         )}
@@ -277,17 +399,17 @@ const TopBar = ({
   notifications = [],
   notificationsOpen = false,
   notificationsLoading = false,
-  notificationsError = '',
+  notificationsError = "",
   onToggleNotifications,
   onNotificationClick,
-  onMarkAllNotificationsRead
+  onMarkAllNotificationsRead,
 }) => {
   const today = new Date();
-  const formattedDate = today.toLocaleDateString('pt-PT', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
+  const formattedDate = today.toLocaleDateString("pt-PT", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
   });
 
   return (
@@ -298,11 +420,21 @@ const TopBar = ({
       </div>
       <div className={styles.topBarRight}>
         <div className={styles.searchBox}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={styles.searchIcon}>
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            className={styles.searchIcon}
+          >
             <circle cx="11" cy="11" r="8" />
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
-          <input type="text" placeholder="Pesquisar..." className={styles.searchInput} />
+          <input
+            type="text"
+            placeholder="Pesquisar..."
+            className={styles.searchInput}
+          />
         </div>
         <button
           type="button"
@@ -312,10 +444,16 @@ const TopBar = ({
           aria-label="Notificações"
         >
           {icons.bell}
-          {notificationsCount > 0 && <span className={styles.notificationDot}>{notificationsCount}</span>}
+          {notificationsCount > 0 && (
+            <span className={styles.notificationDot}>{notificationsCount}</span>
+          )}
         </button>
         {notificationsOpen && (
-          <div className={styles.notificationsPopover} role="dialog" aria-label="Notificações">
+          <div
+            className={styles.notificationsPopover}
+            role="dialog"
+            aria-label="Notificações"
+          >
             <div className={styles.notificationsHeader}>
               <span>Notificações</span>
               <button
@@ -328,30 +466,46 @@ const TopBar = ({
               </button>
             </div>
             {notificationsError ? (
-              <div className={styles.notificationsEmpty}>Erro: {notificationsError}</div>
+              <div className={styles.notificationsEmpty}>
+                Erro: {notificationsError}
+              </div>
             ) : notificationsLoading ? (
               <div className={styles.notificationsEmpty}>Carregando...</div>
             ) : notifications.length === 0 ? (
-              <div className={styles.notificationsEmpty}>Nenhuma notificação recente.</div>
+              <div className={styles.notificationsEmpty}>
+                Nenhuma notificação recente.
+              </div>
             ) : (
               <div className={styles.notificationsList}>
                 {notifications.slice(0, 10).map((notif) => (
                   <button
                     key={notif.id}
                     type="button"
-                    className={`${styles.notificationItem} ${notif.read ? '' : styles.notificationItemUnread}`}
+                    className={`${styles.notificationItem} ${notif.read ? "" : styles.notificationItemUnread}`}
                     onClick={() => onNotificationClick?.(notif)}
-                    title={notif.message || notif.title || 'Notificação'}
+                    title={notif.message || notif.title || "Notificação"}
                   >
-                    <span className={styles.notificationIcon}>{notif.icon || '🔔'}</span>
+                    <span className={styles.notificationIcon}>
+                      {notif.icon || "🔔"}
+                    </span>
                     <div className={styles.notificationBody}>
                       <div className={styles.notificationTitleRow}>
-                        <strong className={styles.notificationTitle}>{notif.title || 'Notificação'}</strong>
-                        {!notif.read && <span className={styles.notificationUnreadDot} />}
+                        <strong className={styles.notificationTitle}>
+                          {notif.title || "Notificação"}
+                        </strong>
+                        {!notif.read && (
+                          <span className={styles.notificationUnreadDot} />
+                        )}
                       </div>
-                      {notif.message && <p className={styles.notificationMessage}>{notif.message}</p>}
+                      {notif.message && (
+                        <p className={styles.notificationMessage}>
+                          {notif.message}
+                        </p>
+                      )}
                       <span className={styles.notificationTime}>
-                        {notif.createdAt ? new Date(notif.createdAt).toLocaleString('pt-PT') : ''}
+                        {notif.createdAt
+                          ? new Date(notif.createdAt).toLocaleString("pt-PT")
+                          : ""}
                       </span>
                     </div>
                   </button>
@@ -368,12 +522,12 @@ const TopBar = ({
   );
 };
 
-const StatisticCard = ({ label, value, trend, icon, color = '#6366f1' }) => (
+const StatisticCard = ({ label, value, trend, icon, color = "#2057d7" }) => (
   <div className={styles.statCard}>
     <div className={styles.statHeader}>
       <div
         className={`${styles.statIcon} ${styles.statIconAccent}`}
-        style={{ '--accent-bg': `${color}15`, '--accent-color': color }}
+        style={{ "--accent-bg": `${color}15`, "--accent-color": color }}
       >
         {icon || icons.badge}
       </div>
@@ -385,39 +539,55 @@ const StatisticCard = ({ label, value, trend, icon, color = '#6366f1' }) => (
 );
 
 const JobCard = ({ job }) => {
-  const isActive = job.status === 'active';
-  const daysLeft = job.dataFecho ? Math.ceil((new Date(job.dataFecho) - new Date()) / (1000 * 60 * 60 * 24)) : null;
+  const isActive = job.status === "active";
+  const daysLeft = job.dataFecho
+    ? Math.ceil((new Date(job.dataFecho) - new Date()) / (1000 * 60 * 60 * 24))
+    : null;
 
   return (
     <article className={styles.jobCard}>
       <div className={styles.jobCardHeader}>
         <h3 className={styles.jobTitle}>{job.titulo}</h3>
-        <span className={`${styles.jobStatus} ${isActive ? styles.jobStatusActive : styles.jobStatusClosed}`}>
-          {isActive ? 'Ativa' : 'Fechada'}
+        <span
+          className={`${styles.jobStatus} ${isActive ? styles.jobStatusActive : styles.jobStatusClosed}`}
+        >
+          {isActive ? "Ativa" : "Fechada"}
         </span>
       </div>
       <div className={styles.jobDetails}>
         <span className={styles.jobMeta}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={styles.jobMetaIcon}>
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            className={styles.jobMetaIcon}
+          >
             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
             <circle cx="12" cy="10" r="3" />
           </svg>
-          {job.localizacao || 'Local não informado'}
+          {job.localizacao || "Local não informado"}
         </span>
         <span className={styles.jobMeta}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={styles.jobMetaIcon}>
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            className={styles.jobMetaIcon}
+          >
             <rect x="2" y="7" width="20" height="14" rx="2" />
             <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" />
           </svg>
-          {job.tipoContrato || 'Tipo não informado'}
+          {job.tipoContrato || "Tipo não informado"}
         </span>
-        {job.remoto && (
-          <span className={styles.jobBadge}>Remoto</span>
-        )}
+        {job.remoto && <span className={styles.jobBadge}>Remoto</span>}
       </div>
       <div className={styles.jobStats}>
         <div className={styles.jobStat}>
-          <span className={styles.jobStatValue}>{job.applicationCount || 0}</span>
+          <span className={styles.jobStatValue}>
+            {job.applicationCount || 0}
+          </span>
           <span className={styles.jobStatLabel}>Candidaturas</span>
         </div>
         <div className={styles.jobStat}>
@@ -426,7 +596,9 @@ const JobCard = ({ job }) => {
         </div>
         {daysLeft !== null && isActive && (
           <div className={styles.jobStat}>
-            <span className={`${styles.jobStatValue} ${daysLeft <= 3 ? styles.jobStatUrgent : ''}`}>
+            <span
+              className={`${styles.jobStatValue} ${daysLeft <= 3 ? styles.jobStatUrgent : ""}`}
+            >
               {daysLeft > 0 ? daysLeft : 0}
             </span>
             <span className={styles.jobStatLabel}>Dias restantes</span>
@@ -434,7 +606,10 @@ const JobCard = ({ job }) => {
         )}
       </div>
       <div className={styles.jobFooter}>
-        <Link href={`/dashboard/empresa/vaga/${job.id}`} className={styles.jobActions}>
+        <Link
+          href={`/dashboard/empresa/vaga/${job.id}`}
+          className={styles.jobActions}
+        >
           Ver detalhes
         </Link>
       </div>
@@ -442,68 +617,121 @@ const JobCard = ({ job }) => {
   );
 };
 
-const ApplicationCard = ({ application, onStatusUpdate, onOpenInterviewScheduler }) => {
+const ApplicationCard = ({
+  application,
+  onStatusUpdate,
+  onOpenInterviewScheduler,
+}) => {
   const [updating, setUpdating] = useState(false);
 
   const statusColors = {
-    pending: { bg: 'rgba(245, 158, 11, 0.15)', text: '#fbbf24', border: 'rgba(245, 158, 11, 0.3)' },
-    analysis: { bg: 'rgba(59, 130, 246, 0.15)', text: '#60a5fa', border: 'rgba(59, 130, 246, 0.3)' },
-    interview: { bg: 'rgba(139, 92, 246, 0.15)', text: '#a78bfa', border: 'rgba(139, 92, 246, 0.3)' },
-    approved: { bg: 'rgba(16, 185, 129, 0.15)', text: '#34d399', border: 'rgba(16, 185, 129, 0.3)' },
-    rejected: { bg: 'rgba(239, 68, 68, 0.15)', text: '#f87171', border: 'rgba(239, 68, 68, 0.3)' }
+    pending: {
+      bg: "rgba(217, 255, 47, 0.2)",
+      text: "#1e2b4d",
+      border: "rgba(217, 255, 47, 0.35)",
+    },
+    analysis: {
+      bg: "rgba(32, 87, 215, 0.15)",
+      text: "#2057d7",
+      border: "rgba(32, 87, 215, 0.3)",
+    },
+    interview: {
+      bg: "rgba(95, 184, 245, 0.18)",
+      text: "#1e2b4d",
+      border: "rgba(95, 184, 245, 0.3)",
+    },
+    approved: {
+      bg: "rgba(217, 255, 47, 0.2)",
+      text: "#1e2b4d",
+      border: "rgba(217, 255, 47, 0.35)",
+    },
+    rejected: {
+      bg: "rgba(239, 68, 68, 0.15)",
+      text: "#f87171",
+      border: "rgba(239, 68, 68, 0.3)",
+    },
   };
 
   const statusLabels = {
-    pending: 'Pendente',
-    analysis: 'Em Analise',
-    interview: 'Entrevista',
-    approved: 'Aprovado',
-    rejected: 'Rejeitado'
+    pending: "Pendente",
+    analysis: "Em Analise",
+    interview: "Entrevista",
+    approved: "Aprovado",
+    rejected: "Rejeitado",
   };
 
-  const status = application.status || 'pending';
+  const status = application.status || "pending";
   const colors = statusColors[status] || statusColors.pending;
-  const statusLabel = statusLabels[status] || 'Pendente';
-  const interviewStatus = String(application.interviewDetails?.status || 'scheduled').toLowerCase();
+  const statusLabel = statusLabels[status] || "Pendente";
+  const interviewStatus = String(
+    application.interviewDetails?.status || "scheduled",
+  ).toLowerCase();
   const interviewStatusLabel = getInterviewStatusLabelPt(interviewStatus);
   const showRescheduleReason =
-    interviewStatus === 'reschedule_requested' && String(application.interviewDetails?.rescheduleReason || '').trim();
+    interviewStatus === "reschedule_requested" &&
+    String(application.interviewDetails?.rescheduleReason || "").trim();
+  const premiumBadges = [
+    application.priorityApplied
+      ? { key: "priority", label: "Prioritária", tone: "priority" }
+      : null,
+    application.applicationHighlighted
+      ? { key: "highlight", label: "Destaque", tone: "highlight" }
+      : null,
+    application.premiumOnlyJob
+      ? { key: "premium-job", label: "Vaga premium", tone: "premium" }
+      : null,
+    application.accessedDuringEarlyWindow
+      ? { key: "early-access", label: "Acesso antecipado", tone: "early" }
+      : null,
+    application.coverLetter
+      ? { key: "cover-letter", label: "Carta incluída", tone: "neutral" }
+      : null,
+  ].filter(Boolean);
+  const coverLetterPreview = application.coverLetter
+    ? `${String(application.coverLetter).trim().slice(0, 220)}${String(application.coverLetter).trim().length > 220 ? "..." : ""}`
+    : "";
 
   const handleStatusUpdate = async (newStatus) => {
     if (updating) return;
     setUpdating(true);
 
     try {
-      const { getAuth } = await import('firebase/auth');
+      const { getAuth } = await import("firebase/auth");
       const auth = getAuth();
       const token = await auth.currentUser?.getIdToken();
 
       if (!token) {
-        alert('Sessao expirada. Por favor, faca login novamente.');
+        alert("Sessao expirada. Por favor, faca login novamente.");
         return;
       }
 
-      const response = await fetch(`/api/applications/${application.id}/status`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+      const response = await fetch(
+        `/api/applications/${application.id}/status`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ status: newStatus }),
         },
-        body: JSON.stringify({ status: newStatus })
-      });
+      );
 
       const data = await response.json();
 
       if (response.ok) {
         if (onStatusUpdate) {
-          onStatusUpdate(application.id, data.application || { status: newStatus });
+          onStatusUpdate(
+            application.id,
+            data.application || { status: newStatus },
+          );
         }
       } else {
-        alert(data.error || 'Erro ao atualizar status');
+        alert(data.error || "Erro ao atualizar status");
       }
     } catch (error) {
-      console.error('Erro ao atualizar status:', error);
-      alert('Erro ao atualizar status. Tente novamente.');
+      console.error("Erro ao atualizar status:", error);
+      alert("Erro ao atualizar status. Tente novamente.");
     } finally {
       setUpdating(false);
     }
@@ -513,25 +741,46 @@ const ApplicationCard = ({ application, onStatusUpdate, onOpenInterviewScheduler
     <article className={styles.applicationCard}>
       <div className={styles.applicationHeader}>
         <div className={styles.applicationInfo}>
-          <Link href={`/dashboard/empresa/candidato/${application.candidateId}`} className={styles.applicationTitle}>
-            {application.candidateName || 'Candidato'}
+          <Link
+            href={`/dashboard/empresa/candidato/${application.candidateId}`}
+            className={styles.applicationTitle}
+          >
+            {application.candidateName || "Candidato"}
           </Link>
-          <p className={styles.applicationMeta}>{application.jobTitle || 'Vaga desconhecida'}</p>
-          <p className={styles.applicationMeta}>{application.candidateEmail || ''}</p>
+          <p className={styles.applicationMeta}>
+            {application.jobTitle || "Vaga desconhecida"}
+          </p>
+          <p className={styles.applicationMeta}>
+            {application.candidateEmail || ""}
+          </p>
+          {premiumBadges.length > 0 && (
+            <div className={styles.applicationBadgeRow}>
+              {premiumBadges.map((badge) => (
+                <span
+                  key={badge.key}
+                  className={`${styles.applicationBadgePill} ${styles[`applicationBadge${badge.tone.charAt(0).toUpperCase()}${badge.tone.slice(1)}`]}`}
+                >
+                  {badge.label}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
         <div className={styles.applicationRight}>
           <span
             className={`${styles.applicationStatus} ${styles.applicationStatusAccent}`}
             style={{
-              '--status-bg': colors.bg,
-              '--status-text': colors.text,
-              '--status-border': colors.border
+              "--status-bg": colors.bg,
+              "--status-text": colors.text,
+              "--status-border": colors.border,
             }}
           >
-            {updating ? 'Atualizando...' : statusLabel}
+            {updating ? "Atualizando..." : statusLabel}
           </span>
           <span className={styles.applicationDate}>
-            {new Date(application.appliedAt || application.createdAt || Date.now()).toLocaleDateString('pt-PT')}
+            {new Date(
+              application.appliedAt || application.createdAt || Date.now(),
+            ).toLocaleDateString("pt-PT")}
           </span>
         </div>
       </div>
@@ -539,20 +788,50 @@ const ApplicationCard = ({ application, onStatusUpdate, onOpenInterviewScheduler
       {application.interviewDetails?.scheduledAt && (
         <div className={styles.interviewSummaryBox}>
           <strong>Entrevista agendada</strong>
-          <p>{formatInterviewDateTime(application.interviewDetails.scheduledAt)}</p>
+          <p>
+            {formatInterviewDateTime(application.interviewDetails.scheduledAt)}
+          </p>
           <span>
-            {application.interviewDetails.mode === 'presencial'
-              ? application.interviewDetails.location || 'Local a confirmar'
-              : application.interviewDetails.link || 'Link a confirmar'}
+            {application.interviewDetails.mode === "presencial"
+              ? application.interviewDetails.location || "Local a confirmar"
+              : application.interviewDetails.link || "Link a confirmar"}
           </span>
           <p className={styles.interviewSummaryResponse}>
-            Resposta do candidato: <strong className={styles.interviewStatusHighlight}>{interviewStatusLabel}</strong>
+            Resposta do candidato:{" "}
+            <strong className={styles.interviewStatusHighlight}>
+              {interviewStatusLabel}
+            </strong>
           </p>
           {showRescheduleReason && (
             <p className={styles.interviewReason}>
-              Motivo: {String(application.interviewDetails.rescheduleReason || '').trim()}
+              Motivo:{" "}
+              {String(
+                application.interviewDetails.rescheduleReason || "",
+              ).trim()}
             </p>
           )}
+        </div>
+      )}
+
+      {(typeof application.compatibilityScore === "number" ||
+        application.compatibilityReasons?.length) && (
+        <div className={styles.applicationInsightBox}>
+          <strong>Compatibilidade com a vaga</strong>
+          {typeof application.compatibilityScore === "number" && (
+            <p>Score registado: {application.compatibilityScore}%</p>
+          )}
+          {application.compatibilityReasons?.length > 0 && (
+            <span>
+              {application.compatibilityReasons.slice(0, 2).join(" • ")}
+            </span>
+          )}
+        </div>
+      )}
+
+      {coverLetterPreview && (
+        <div className={styles.applicationInsightBox}>
+          <strong>Carta de apresentação</strong>
+          <p>{coverLetterPreview}</p>
         </div>
       )}
 
@@ -562,9 +841,9 @@ const ApplicationCard = ({ application, onStatusUpdate, onOpenInterviewScheduler
         <div className={styles.statusButtonsGroup}>
           <button
             type="button"
-            className={`${styles.statusBtn} ${styles.statusBtnAnalysis} ${status === 'analysis' ? styles.statusBtnActive : ''}`}
-            onClick={() => handleStatusUpdate('analysis')}
-            disabled={updating || status === 'analysis'}
+            className={`${styles.statusBtn} ${styles.statusBtnAnalysis} ${status === "analysis" ? styles.statusBtnActive : ""}`}
+            onClick={() => handleStatusUpdate("analysis")}
+            disabled={updating || status === "analysis"}
             title="Enviar para analise"
           >
             {icons.eye}
@@ -572,19 +851,19 @@ const ApplicationCard = ({ application, onStatusUpdate, onOpenInterviewScheduler
           </button>
           <button
             type="button"
-            className={`${styles.statusBtn} ${styles.statusBtnInterview} ${status === 'interview' ? styles.statusBtnActive : ''}`}
+            className={`${styles.statusBtn} ${styles.statusBtnInterview} ${status === "interview" ? styles.statusBtnActive : ""}`}
             onClick={() => onOpenInterviewScheduler?.(application)}
             disabled={updating}
             title="Marcar entrevista"
           >
             {icons.users}
-            <span>{status === 'interview' ? 'Reagendar' : 'Entrevista'}</span>
+            <span>{status === "interview" ? "Reagendar" : "Entrevista"}</span>
           </button>
           <button
             type="button"
-            className={`${styles.statusBtn} ${styles.statusBtnApproved} ${status === 'approved' ? styles.statusBtnActive : ''}`}
-            onClick={() => handleStatusUpdate('approved')}
-            disabled={updating || status === 'approved'}
+            className={`${styles.statusBtn} ${styles.statusBtnApproved} ${status === "approved" ? styles.statusBtnActive : ""}`}
+            onClick={() => handleStatusUpdate("approved")}
+            disabled={updating || status === "approved"}
             title="Aceitar candidato"
           >
             {icons.check}
@@ -592,9 +871,9 @@ const ApplicationCard = ({ application, onStatusUpdate, onOpenInterviewScheduler
           </button>
           <button
             type="button"
-            className={`${styles.statusBtn} ${styles.statusBtnRejected} ${status === 'rejected' ? styles.statusBtnActive : ''}`}
-            onClick={() => handleStatusUpdate('rejected')}
-            disabled={updating || status === 'rejected'}
+            className={`${styles.statusBtn} ${styles.statusBtnRejected} ${status === "rejected" ? styles.statusBtnActive : ""}`}
+            onClick={() => handleStatusUpdate("rejected")}
+            disabled={updating || status === "rejected"}
             title="Rejeitar candidato"
           >
             {icons.x}
@@ -604,16 +883,25 @@ const ApplicationCard = ({ application, onStatusUpdate, onOpenInterviewScheduler
       </div>
 
       <div className={styles.applicationActions}>
-        <Link href={`/dashboard/empresa/candidato/${application.candidateId}`} className={styles.applicationBtn}>
+        <Link
+          href={`/dashboard/empresa/candidato/${application.candidateId}`}
+          className={styles.applicationBtn}
+        >
           Ver Perfil Completo
         </Link>
         {application.candidateId && (
-          <Link href={`/dashboard/empresa?tab=messages&candidate=${application.candidateId}`} className={styles.applicationBtnOutline}>
+          <Link
+            href={`/dashboard/empresa?tab=messages&candidate=${application.candidateId}`}
+            className={styles.applicationBtnOutline}
+          >
             Enviar mensagem
           </Link>
         )}
         {application.jobId && (
-          <Link href={`/dashboard/empresa/vaga/${application.jobId}`} className={styles.applicationBtnOutline}>
+          <Link
+            href={`/dashboard/empresa/vaga/${application.jobId}`}
+            className={styles.applicationBtnOutline}
+          >
             Ver Vaga
           </Link>
         )}
@@ -624,30 +912,71 @@ const ApplicationCard = ({ application, onStatusUpdate, onOpenInterviewScheduler
 
 const TalentCard = ({ talent, locked }) => {
   return (
-    <article className={`${styles.talentCard} ${locked ? styles.talentLocked : ''}`}>
-      <div className={styles.talentAvatar}>
-        {talent.avatar ? (
-          <img src={talent.avatar} alt={talent.name} />
-        ) : (
-          <div className={styles.talentAvatarFallback}>
-            {(talent.name || '?').slice(0, 1).toUpperCase()}
-          </div>
-        )}
-      </div>
-      <div>
-        <h4>{talent.name}</h4>
-        <p className={styles.talentSubtitle}>{talent.headline}</p>
-        <p className={styles.talentMeta}>{talent.location} • {talent.experience}</p>
-        <div className={styles.talentSkills}>
-          {talent.skills.map((skill) => (<span key={skill}>{skill}</span>))}
+    <article
+      className={`${styles.talentCard} ${locked ? styles.talentLocked : ""}`}
+    >
+      {talent.verified && (
+        <div className={styles.talentVerifiedSeal}>
+          <VerificationBadge verified size="sm" />
         </div>
+      )}
+      <div className={styles.talentCardHeader}>
+        <div className={styles.talentAvatar}>
+          {talent.avatar ? (
+            <img src={talent.avatar} alt={talent.name} />
+          ) : (
+            <div className={styles.talentAvatarFallback}>
+              {(talent.name || "?").slice(0, 1).toUpperCase()}
+            </div>
+          )}
+        </div>
+        <div className={styles.talentIdentity}>
+          <div className={styles.talentNameRow}>
+            <h4>{talent.name}</h4>
+            {talent.verified && <span className={styles.talentVerifiedDot} />}
+          </div>
+          <p className={styles.talentSubtitle}>{talent.headline}</p>
+          <div className={styles.talentBadges}>
+            <span className={styles.talentStatus}>{talent.experience}</span>
+            {talent.highlighted && (
+              <span
+                className={`${styles.talentStatus} ${styles.talentStatusHighlight}`}
+              >
+                Em destaque
+              </span>
+            )}
+            {talent.profileComplete ? (
+              <span
+                className={`${styles.talentStatus} ${styles.talentStatusComplete}`}
+              >
+                Perfil completo
+              </span>
+            ) : talent.completionScore > 0 ? (
+              <span
+                className={`${styles.talentStatus} ${styles.talentStatusMuted}`}
+              >
+                {talent.completionScore}% completo
+              </span>
+            ) : null}
+          </div>
+        </div>
+      </div>
+      <p className={styles.talentMeta}>{talent.location}</p>
+      <div className={styles.talentSkills}>
+        {talent.skills.length > 0 ? (
+          talent.skills.map((skill) => <span key={skill}>{skill}</span>)
+        ) : (
+          <span className={styles.talentSkillMuted}>
+            Perfil pronto para análise
+          </span>
+        )}
       </div>
       {locked ? (
         <button type="button" className={styles.talentAction} disabled>
           Plano PRO necessário
         </button>
       ) : (
-        <Link href={talent.profileUrl || '#'} className={styles.talentAction}>
+        <Link href={talent.profileUrl || "#"} className={styles.talentAction}>
           Ver perfil
         </Link>
       )}
@@ -660,13 +989,16 @@ const AnalyticsCard = ({ title, value, subtitle, color, icon, change }) => (
     <div className={styles.analyticsCardHeader}>
       <div
         className={`${styles.analyticsCardIcon} ${styles.analyticsCardIconAccent}`}
-        style={{ '--accent-bg': `${color}15`, '--accent-color': color }}
+        style={{ "--accent-bg": `${color}15`, "--accent-color": color }}
       >
         {icon}
       </div>
       {change !== undefined && (
-        <span className={`${styles.analyticsChange} ${change >= 0 ? styles.analyticsChangeUp : styles.analyticsChangeDown}`}>
-          {change >= 0 ? '+' : ''}{change}%
+        <span
+          className={`${styles.analyticsChange} ${change >= 0 ? styles.analyticsChangeUp : styles.analyticsChangeDown}`}
+        >
+          {change >= 0 ? "+" : ""}
+          {change}%
         </span>
       )}
     </div>
@@ -685,87 +1017,127 @@ const EmptyState = ({ icon, title, message, action }) => (
   </div>
 );
 
-export default function EmpresaDashboard({ profile, jobs, totalApplications, recentApplications, stats, plans = [] }) {
+export default function EmpresaDashboard({
+  profile,
+  jobs,
+  totalApplications,
+  recentApplications,
+  stats,
+  plans = [],
+  publicCandidates = [],
+  publicCandidateSummary,
+  verifiedCandidateIds = [],
+}) {
   const { user, logout } = useAuth();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState("dashboard");
   const normalizedCompanyPlanId = useMemo(
     () =>
       normalizeEmpresaPlanId(
         profile.planTierId || profile.currentPlan || profile.planId,
         profile.planName,
-        profile
+        profile,
       ),
-    [profile]
+    [profile],
   );
-  const [planState, setPlanState] = useState(normalizePlan(normalizedCompanyPlanId));
+  const [planState, setPlanState] = useState(
+    normalizePlan(normalizedCompanyPlanId),
+  );
   const [hiringTips, setHiringTips] = useState(getHiringTips(planState));
   const [analytics, setAnalytics] = useState(null);
   const [loadingAnalytics, setLoadingAnalytics] = useState(false);
-  const [analyticsError, setAnalyticsError] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [applicationFilter, setApplicationFilter] = useState('all');
-  const [jobFilter, setJobFilter] = useState('all');
+  const [analyticsError, setAnalyticsError] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [applicationFilter, setApplicationFilter] = useState("all");
+  const [jobFilter, setJobFilter] = useState("all");
   const [applicationsData, setApplicationsData] = useState(recentApplications);
   const [talentPoolData, setTalentPoolData] = useState([]);
   const [loadingTalentPool, setLoadingTalentPool] = useState(false);
-  const [talentPoolError, setTalentPoolError] = useState('');
+  const [talentPoolError, setTalentPoolError] = useState("");
   const [exportingCsv, setExportingCsv] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [notificationsLoading, setNotificationsLoading] = useState(false);
-  const [notificationsError, setNotificationsError] = useState('');
+  const [notificationsError, setNotificationsError] = useState("");
   const [conversations, setConversations] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [messages, setMessages] = useState([]);
-  const [messageInput, setMessageInput] = useState('');
+  const [messageInput, setMessageInput] = useState("");
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [loadingConversations, setLoadingConversations] = useState(false);
   const [sendingMessage, setSendingMessage] = useState(false);
-  const [messagesError, setMessagesError] = useState('');
-  const [planLoadingId, setPlanLoadingId] = useState('');
-  const [planError, setPlanError] = useState('');
+  const [messagesError, setMessagesError] = useState("");
+  const [planLoadingId, setPlanLoadingId] = useState("");
+  const [planError, setPlanError] = useState("");
   const [planPaymentInstructions, setPlanPaymentInstructions] = useState(null);
   const [pendingPaymentRequest, setPendingPaymentRequest] = useState(null);
-  const [interviewModal, setInterviewModal] = useState({ open: false, application: null });
+  const [interviewModal, setInterviewModal] = useState({
+    open: false,
+    application: null,
+  });
   const [interviewForm, setInterviewForm] = useState({
-    interviewDate: '',
-    interviewMode: 'online',
-    interviewLocation: '',
-    interviewLink: '',
-    interviewNotes: ''
+    interviewDate: "",
+    interviewMode: "online",
+    interviewLocation: "",
+    interviewLink: "",
+    interviewNotes: "",
   });
   const [interviewSubmitting, setInterviewSubmitting] = useState(false);
-  const [interviewError, setInterviewError] = useState('');
+  const [interviewError, setInterviewError] = useState("");
   const messagesEndRef = useRef(null);
   const lastOpenedCandidateRef = useRef(null);
   const companyPlanFeatures = useMemo(
-    () => getEmpresaPlanFeatures(normalizedCompanyPlanId, profile.planName, profile),
-    [normalizedCompanyPlanId, profile]
+    () =>
+      getEmpresaPlanFeatures(
+        normalizedCompanyPlanId,
+        profile.planName,
+        profile,
+      ),
+    [normalizedCompanyPlanId, profile],
   );
   const highlightedJobsCount = useMemo(
-    () => jobs.filter((job) => job.destaque === true || job.featured === true || job.isFeatured === true).length,
-    [jobs]
+    () =>
+      jobs.filter(
+        (job) =>
+          job.destaque === true ||
+          job.featured === true ||
+          job.isFeatured === true,
+      ).length,
+    [jobs],
   );
   const unreadMessages = useMemo(
-    () => conversations.reduce((sum, conversation) => sum + (conversation.unreadCount || 0), 0),
-    [conversations]
+    () =>
+      conversations.reduce(
+        (sum, conversation) => sum + (conversation.unreadCount || 0),
+        0,
+      ),
+    [conversations],
   );
   const unreadNotifications = useMemo(
     () => notifications.filter((notification) => !notification.read).length,
-    [notifications]
+    [notifications],
+  );
+  const verifiedCandidateIdSet = useMemo(
+    () =>
+      new Set(Array.isArray(verifiedCandidateIds) ? verifiedCandidateIds : []),
+    [verifiedCandidateIds],
+  );
+  const publicCandidateStats = useMemo(
+    () =>
+      publicCandidateSummary || summarizeVerifiedCandidates(publicCandidates),
+    [publicCandidateSummary, publicCandidates],
   );
 
   const fetchPendingPaymentRequest = useCallback(async () => {
     if (!user) return;
     try {
-      const { getAuth } = await import('firebase/auth');
+      const { getAuth } = await import("firebase/auth");
       const auth = getAuth();
       const token = await auth.currentUser?.getIdToken();
       if (!token) return;
 
-      const response = await fetch('/api/subscription-requests/current', {
-        headers: { Authorization: `Bearer ${token}` }
+      const response = await fetch("/api/subscription-requests/current", {
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) return;
@@ -779,65 +1151,75 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
   const fetchNotifications = useCallback(async () => {
     if (!user) return;
     setNotificationsLoading(true);
-    setNotificationsError('');
+    setNotificationsError("");
     try {
-      const { getAuth } = await import('firebase/auth');
+      const { getAuth } = await import("firebase/auth");
       const auth = getAuth();
       const token = await auth.currentUser?.getIdToken();
-      if (!token) throw new Error('Sessão expirada');
+      if (!token) throw new Error("Sessão expirada");
 
-      const response = await fetch('/api/notifications', {
-        headers: { Authorization: `Bearer ${token}` }
+      const response = await fetch("/api/notifications", {
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.error || 'Erro ao buscar notificações');
-      setNotifications(Array.isArray(data.notifications) ? data.notifications : []);
+      if (!response.ok)
+        throw new Error(data.error || "Erro ao buscar notificações");
+      setNotifications(
+        Array.isArray(data.notifications) ? data.notifications : [],
+      );
     } catch (error) {
-      setNotificationsError(error?.message || 'Erro ao buscar notificações');
+      setNotificationsError(error?.message || "Erro ao buscar notificações");
     } finally {
       setNotificationsLoading(false);
     }
   }, [user]);
 
-  const markNotificationRead = useCallback(async (notificationId) => {
-    if (!notificationId || !user) return;
-    try {
-      const { getAuth } = await import('firebase/auth');
-      const auth = getAuth();
-      const token = await auth.currentUser?.getIdToken();
-      if (!token) return;
+  const markNotificationRead = useCallback(
+    async (notificationId) => {
+      if (!notificationId || !user) return;
+      try {
+        const { getAuth } = await import("firebase/auth");
+        const auth = getAuth();
+        const token = await auth.currentUser?.getIdToken();
+        if (!token) return;
 
-      const response = await fetch('/api/notifications', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ notificationId })
-      });
-      if (response.ok) {
-        setNotifications((prev) => prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n)));
+        const response = await fetch("/api/notifications", {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ notificationId }),
+        });
+        if (response.ok) {
+          setNotifications((prev) =>
+            prev.map((n) =>
+              n.id === notificationId ? { ...n, read: true } : n,
+            ),
+          );
+        }
+      } catch (error) {
+        // best effort
       }
-    } catch (error) {
-      // best effort
-    }
-  }, [user]);
+    },
+    [user],
+  );
 
   const markAllNotificationsRead = useCallback(async () => {
     if (!user) return;
     try {
-      const { getAuth } = await import('firebase/auth');
+      const { getAuth } = await import("firebase/auth");
       const auth = getAuth();
       const token = await auth.currentUser?.getIdToken();
       if (!token) return;
 
-      const response = await fetch('/api/notifications', {
-        method: 'PATCH',
+      const response = await fetch("/api/notifications", {
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ markAll: true })
+        body: JSON.stringify({ markAll: true }),
       });
       if (response.ok) {
         setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
@@ -847,17 +1229,20 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
     }
   }, [user]);
 
-  const handleNotificationClick = useCallback(async (notif) => {
-    if (!notif) return;
-    if (!notif.read && notif.id) {
-      await markNotificationRead(notif.id);
-    }
-    // Bring the company back to applications list for interview-related notifications.
-    if (notif.type === 'interview_response' || notif.type === 'application') {
-      setActiveTab('applications');
-    }
-    setNotificationsOpen(false);
-  }, [markNotificationRead]);
+  const handleNotificationClick = useCallback(
+    async (notif) => {
+      if (!notif) return;
+      if (!notif.read && notif.id) {
+        await markNotificationRead(notif.id);
+      }
+      // Bring the company back to applications list for interview-related notifications.
+      if (notif.type === "interview_response" || notif.type === "application") {
+        setActiveTab("applications");
+      }
+      setNotificationsOpen(false);
+    },
+    [markNotificationRead],
+  );
 
   useEffect(() => {
     fetchPendingPaymentRequest();
@@ -865,8 +1250,13 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
 
   useEffect(() => {
     if (!router.isReady) return;
-    const requestedTab = typeof router.query.tab === 'string' ? router.query.tab : '';
-    if (requestedTab && MENU_ITEMS.some((item) => item.id === requestedTab) && requestedTab !== activeTab) {
+    const requestedTab =
+      typeof router.query.tab === "string" ? router.query.tab : "";
+    if (
+      requestedTab &&
+      MENU_ITEMS.some((item) => item.id === requestedTab) &&
+      requestedTab !== activeTab
+    ) {
       setActiveTab(requestedTab);
     }
   }, [router.isReady, router.query.tab, activeTab]);
@@ -879,10 +1269,15 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
   }, [user, fetchNotifications]);
 
   const handleApplicationStatusUpdate = (applicationId, updates) => {
-    setApplicationsData(prev =>
-      prev.map(app =>
-        app.id === applicationId ? { ...app, ...(typeof updates === 'string' ? { status: updates } : updates) } : app
-      )
+    setApplicationsData((prev) =>
+      prev.map((app) =>
+        app.id === applicationId
+          ? {
+              ...app,
+              ...(typeof updates === "string" ? { status: updates } : updates),
+            }
+          : app,
+      ),
     );
   };
 
@@ -890,19 +1285,19 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
     const currentInterview = application?.interviewDetails || {};
     setInterviewForm({
       interviewDate: toDateTimeLocalValue(currentInterview.scheduledAt),
-      interviewMode: currentInterview.mode || 'online',
-      interviewLocation: currentInterview.location || '',
-      interviewLink: currentInterview.link || '',
-      interviewNotes: currentInterview.notes || ''
+      interviewMode: currentInterview.mode || "online",
+      interviewLocation: currentInterview.location || "",
+      interviewLink: currentInterview.link || "",
+      interviewNotes: currentInterview.notes || "",
     });
-    setInterviewError('');
+    setInterviewError("");
     setInterviewModal({ open: true, application });
   };
 
   const closeInterviewScheduler = () => {
     if (interviewSubmitting) return;
     setInterviewModal({ open: false, application: null });
-    setInterviewError('');
+    setInterviewError("");
   };
 
   const handleInterviewFieldChange = (field, value) => {
@@ -913,55 +1308,65 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
     if (!interviewModal.application || interviewSubmitting) return;
 
     setInterviewSubmitting(true);
-    setInterviewError('');
+    setInterviewError("");
 
     try {
-      const { getAuth } = await import('firebase/auth');
+      const { getAuth } = await import("firebase/auth");
       const auth = getAuth();
       const token = await auth.currentUser?.getIdToken();
 
       if (!token) {
-        setInterviewError('Sessão expirada. Faça login novamente.');
+        setInterviewError("Sessão expirada. Faça login novamente.");
         return;
       }
 
-      const response = await fetch(`/api/applications/${interviewModal.application.id}/status`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+      const response = await fetch(
+        `/api/applications/${interviewModal.application.id}/status`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            status: "interview",
+            interviewDate: interviewForm.interviewDate,
+            interviewMode: interviewForm.interviewMode,
+            interviewLocation: interviewForm.interviewLocation,
+            interviewLink: interviewForm.interviewLink,
+            interviewNotes: interviewForm.interviewNotes,
+          }),
         },
-        body: JSON.stringify({
-          status: 'interview',
-          interviewDate: interviewForm.interviewDate,
-          interviewMode: interviewForm.interviewMode,
-          interviewLocation: interviewForm.interviewLocation,
-          interviewLink: interviewForm.interviewLink,
-          interviewNotes: interviewForm.interviewNotes
-        })
-      });
+      );
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        setInterviewError(data.upgradeMessage || data.error || 'Não foi possível agendar a entrevista.');
+        setInterviewError(
+          data.upgradeMessage ||
+            data.error ||
+            "Não foi possível agendar a entrevista.",
+        );
         return;
       }
 
-      handleApplicationStatusUpdate(interviewModal.application.id, data.application || {
-        status: 'interview',
-        interviewDetails: {
-          scheduledAt: interviewForm.interviewDate,
-          mode: interviewForm.interviewMode,
-          location: interviewForm.interviewLocation,
-          link: interviewForm.interviewLink,
-          notes: interviewForm.interviewNotes
-        }
-      });
+      handleApplicationStatusUpdate(
+        interviewModal.application.id,
+        data.application || {
+          status: "interview",
+          interviewDetails: {
+            scheduledAt: interviewForm.interviewDate,
+            mode: interviewForm.interviewMode,
+            location: interviewForm.interviewLocation,
+            link: interviewForm.interviewLink,
+            notes: interviewForm.interviewNotes,
+          },
+        },
+      );
       setInterviewModal({ open: false, application: null });
-      setInterviewError('');
+      setInterviewError("");
     } catch (error) {
-      console.error('Erro ao agendar entrevista:', error);
-      setInterviewError('Não foi possível agendar a entrevista.');
+      console.error("Erro ao agendar entrevista:", error);
+      setInterviewError("Não foi possível agendar a entrevista.");
     } finally {
       setInterviewSubmitting(false);
     }
@@ -971,42 +1376,44 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
     try {
       const result = await logout();
       if (result.success) {
-        router.push('/login');
+        router.push("/login");
       } else {
-        alert('Erro ao fazer logout. Tente novamente.');
+        alert("Erro ao fazer logout. Tente novamente.");
       }
     } catch (error) {
-      console.error('Erro ao fazer logout:', error);
-      alert('Erro ao fazer logout.');
+      console.error("Erro ao fazer logout:", error);
+      alert("Erro ao fazer logout.");
     }
   };
 
   const fetchConversations = useCallback(async ({ silent = false } = {}) => {
     if (!silent) {
       setLoadingConversations(true);
-      setMessagesError('');
+      setMessagesError("");
     }
     try {
-      const { getAuth } = await import('firebase/auth');
+      const { getAuth } = await import("firebase/auth");
       const auth = getAuth();
       const token = await auth.currentUser?.getIdToken();
       if (!token) return;
 
-      const response = await fetch('/api/messages', {
-        headers: { Authorization: `Bearer ${token}` }
+      const response = await fetch("/api/messages", {
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        setMessagesError(data.error || 'Não foi possível carregar as conversas.');
+        setMessagesError(
+          data.error || "Não foi possível carregar as conversas.",
+        );
         return;
       }
 
       setConversations(data.conversations || []);
     } catch (error) {
-      console.error('Erro ao buscar conversas:', error);
+      console.error("Erro ao buscar conversas:", error);
       if (!silent) {
-        setMessagesError('Não foi possível carregar as conversas.');
+        setMessagesError("Não foi possível carregar as conversas.");
       }
     } finally {
       if (!silent) {
@@ -1016,58 +1423,72 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
   }, []);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
     const handleRealtimeEvent = async (event) => {
       fetchNotifications();
-      const payloadType = event?.detail?.payload?.data?.type || '';
-      if (payloadType === 'message' || payloadType === 'direct_message') {
+      const payloadType = event?.detail?.payload?.data?.type || "";
+      if (payloadType === "message" || payloadType === "direct_message") {
         fetchConversations({ silent: true });
       }
     };
 
-    window.addEventListener('app-notification-received', handleRealtimeEvent);
-    return () => window.removeEventListener('app-notification-received', handleRealtimeEvent);
+    window.addEventListener("app-notification-received", handleRealtimeEvent);
+    return () =>
+      window.removeEventListener(
+        "app-notification-received",
+        handleRealtimeEvent,
+      );
   }, [fetchNotifications, fetchConversations]);
 
-  const createOrOpenConversation = useCallback(async (participantId) => {
-    if (!participantId) return null;
-    try {
-      const { getAuth } = await import('firebase/auth');
-      const auth = getAuth();
-      const token = await auth.currentUser?.getIdToken();
-      if (!token) return null;
+  const createOrOpenConversation = useCallback(
+    async (participantId) => {
+      if (!participantId) return null;
+      try {
+        const { getAuth } = await import("firebase/auth");
+        const auth = getAuth();
+        const token = await auth.currentUser?.getIdToken();
+        if (!token) return null;
 
-      const response = await fetch('/api/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ participantId })
-      });
-      const data = await response.json().catch(() => ({}));
+        const response = await fetch("/api/messages", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ participantId }),
+        });
+        const data = await response.json().catch(() => ({}));
 
-      if (!response.ok) {
-        alert(data.upgradeMessage || data.error || 'Não foi possível abrir a conversa.');
-        if (data.upgradeUrl) {
-          router.push(data.upgradeUrl);
+        if (!response.ok) {
+          alert(
+            data.upgradeMessage ||
+              data.error ||
+              "Não foi possível abrir a conversa.",
+          );
+          if (data.upgradeUrl) {
+            router.push(data.upgradeUrl);
+          }
+          return null;
         }
-        return null;
-      }
 
-      if (data.conversationId) {
-        setSelectedConversation(data.conversationId);
-        return data.conversationId;
+        if (data.conversationId) {
+          setSelectedConversation(data.conversationId);
+          return data.conversationId;
+        }
+      } catch (error) {
+        console.error("Erro ao abrir conversa:", error);
+        alert("Não foi possível abrir a conversa.");
       }
-    } catch (error) {
-      console.error('Erro ao abrir conversa:', error);
-      alert('Não foi possível abrir a conversa.');
-    }
-    return null;
-  }, [router]);
+      return null;
+    },
+    [router],
+  );
 
-  const activeJobs = useMemo(() => jobs.filter((job) => job.status === 'active'), [jobs]);
+  const activeJobs = useMemo(
+    () => jobs.filter((job) => job.status === "active"),
+    [jobs],
+  );
 
   useEffect(() => {
     setPlanState(normalizePlan(normalizedCompanyPlanId));
@@ -1078,15 +1499,19 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
   }, [planState]);
 
   useEffect(() => {
-    if (activeTab !== 'messages') return;
+    if (activeTab !== "messages") return;
     fetchConversations();
   }, [activeTab, fetchConversations]);
 
   useEffect(() => {
-    if (activeTab !== 'messages') return undefined;
+    if (activeTab !== "messages") return undefined;
 
     const intervalId = setInterval(() => {
-      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
+      if (
+        typeof document !== "undefined" &&
+        document.visibilityState === "hidden"
+      )
+        return;
       fetchConversations({ silent: true });
     }, 12000);
 
@@ -1094,8 +1519,9 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
   }, [activeTab, fetchConversations]);
 
   useEffect(() => {
-    if (activeTab !== 'messages' || !router.isReady) return;
-    const candidateId = typeof router.query.candidate === 'string' ? router.query.candidate : '';
+    if (activeTab !== "messages" || !router.isReady) return;
+    const candidateId =
+      typeof router.query.candidate === "string" ? router.query.candidate : "";
     if (!candidateId || lastOpenedCandidateRef.current === candidateId) return;
 
     lastOpenedCandidateRef.current = candidateId;
@@ -1109,14 +1535,18 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
       const nextQuery = { ...router.query };
       delete nextQuery.candidate;
       lastOpenedCandidateRef.current = null;
-      router.replace({ pathname: router.pathname, query: nextQuery }, undefined, { shallow: true });
+      router.replace(
+        { pathname: router.pathname, query: nextQuery },
+        undefined,
+        { shallow: true },
+      );
     };
 
     openFromQuery();
   }, [activeTab, router, createOrOpenConversation, fetchConversations]);
 
   useEffect(() => {
-    if (activeTab !== 'messages') return undefined;
+    if (activeTab !== "messages") return undefined;
     if (!selectedConversation) {
       setMessages([]);
       return;
@@ -1125,22 +1555,24 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
     const fetchMessages = async ({ silent = false } = {}) => {
       if (!silent) {
         setLoadingMessages(true);
-        setMessagesError('');
+        setMessagesError("");
       }
       try {
-        const { getAuth } = await import('firebase/auth');
+        const { getAuth } = await import("firebase/auth");
         const auth = getAuth();
         const token = await auth.currentUser?.getIdToken();
         if (!token) return;
 
         const response = await fetch(`/api/messages/${selectedConversation}`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
         const data = await response.json().catch(() => ({}));
 
         if (!response.ok) {
           if (!silent) {
-            setMessagesError(data.error || 'Não foi possível carregar as mensagens.');
+            setMessagesError(
+              data.error || "Não foi possível carregar as mensagens.",
+            );
           }
           return;
         }
@@ -1150,13 +1582,13 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
           prev.map((conversation) =>
             conversation.id === selectedConversation
               ? { ...conversation, unreadCount: 0 }
-              : conversation
-          )
+              : conversation,
+          ),
         );
       } catch (error) {
-        console.error('Erro ao buscar mensagens:', error);
+        console.error("Erro ao buscar mensagens:", error);
         if (!silent) {
-          setMessagesError('Não foi possível carregar as mensagens.');
+          setMessagesError("Não foi possível carregar as mensagens.");
         }
       } finally {
         if (!silent) {
@@ -1168,7 +1600,11 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
     fetchMessages();
 
     const intervalId = setInterval(() => {
-      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
+      if (
+        typeof document !== "undefined" &&
+        document.visibilityState === "hidden"
+      )
+        return;
       fetchMessages({ silent: true });
     }, 5000);
 
@@ -1176,32 +1612,39 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
   }, [activeTab, selectedConversation]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   useEffect(() => {
     const fetchAnalytics = async () => {
-      if (activeTab !== 'analytics' || !user || !companyPlanFeatures.canAccessAnalytics) return;
+      if (
+        activeTab !== "analytics" ||
+        !user ||
+        !companyPlanFeatures.canAccessAnalytics
+      )
+        return;
       setLoadingAnalytics(true);
-      setAnalyticsError('');
+      setAnalyticsError("");
       try {
-        const { getAuth } = await import('firebase/auth');
+        const { getAuth } = await import("firebase/auth");
         const auth = getAuth();
         const token = await auth.currentUser?.getIdToken();
         if (!token) return;
-        const response = await fetch('/api/analytics', {
-          headers: { Authorization: `Bearer ${token}` }
+        const response = await fetch("/api/analytics", {
+          headers: { Authorization: `Bearer ${token}` },
         });
         const data = await response.json();
         if (!response.ok) {
           setAnalytics(null);
-          setAnalyticsError(data.error || 'Não foi possível carregar analytics');
+          setAnalyticsError(
+            data.error || "Não foi possível carregar analytics",
+          );
           return;
         }
         setAnalytics(data);
       } catch (error) {
-        console.error('Erro ao buscar analytics:', error);
-        setAnalyticsError('Não foi possível carregar analytics');
+        console.error("Erro ao buscar analytics:", error);
+        setAnalyticsError("Não foi possível carregar analytics");
       } finally {
         setLoadingAnalytics(false);
       }
@@ -1211,44 +1654,57 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
 
   useEffect(() => {
     const fetchTalentPool = async () => {
-      if (activeTab !== 'candidates' || !user || !companyPlanFeatures.accessTalentPool) return;
+      if (
+        activeTab !== "candidates" ||
+        !user ||
+        !companyPlanFeatures.accessTalentPool
+      )
+        return;
       setLoadingTalentPool(true);
-      setTalentPoolError('');
+      setTalentPoolError("");
       try {
-        const { getAuth } = await import('firebase/auth');
+        const { getAuth } = await import("firebase/auth");
         const auth = getAuth();
         const token = await auth.currentUser?.getIdToken();
         if (!token) return;
 
-        const response = await fetch('/api/talent-pool?limit=30', {
-          headers: { Authorization: `Bearer ${token}` }
+        const response = await fetch("/api/talent-pool?limit=30", {
+          headers: { Authorization: `Bearer ${token}` },
         });
         const data = await response.json();
         if (!response.ok) {
           setTalentPoolData([]);
-          setTalentPoolError(data.error || 'Não foi possível carregar o banco de talentos');
+          setTalentPoolError(
+            data.error || "Não foi possível carregar o banco de talentos",
+          );
           return;
         }
 
         const mappedTalents = (data.candidates || []).map((candidate) => ({
           id: candidate.id,
-          name: candidate.fullName || 'Candidato',
-          headline: candidate.headline || 'Perfil disponível',
-          skills: String(candidate.skillsHard || '')
-            .split(',')
+          name: candidate.fullName || "Candidato",
+          headline: candidate.headline || "Perfil disponível",
+          skills: String(candidate.skillsHard || "")
+            .split(",")
             .map((skill) => skill.trim())
             .filter(Boolean)
             .slice(0, 4),
-          experience: candidate.availableForWork ? 'Disponível para trabalho' : 'Perfil ativo',
-          location: candidate.location || 'São Tomé e Príncipe',
-          avatar: candidate.photoUrl || '',
-          profileUrl: `/dashboard/empresa/candidato/${candidate.id}`
+          experience: candidate.availableForWork
+            ? "Disponível para trabalho"
+            : "Perfil ativo",
+          location: candidate.location || "São Tomé e Príncipe",
+          avatar: candidate.photoUrl || "",
+          profileUrl: `/dashboard/empresa/candidato/${candidate.id}`,
+          verified: Boolean(candidate.verified),
+          highlighted: Boolean(candidate.highlighted),
+          profileComplete: Boolean(candidate.profileComplete),
+          completionScore: Number(candidate.completionScore) || 0,
         }));
 
         setTalentPoolData(mappedTalents);
       } catch (error) {
-        console.error('Erro ao buscar banco de talentos:', error);
-        setTalentPoolError('Não foi possível carregar o banco de talentos');
+        console.error("Erro ao buscar banco de talentos:", error);
+        setTalentPoolError("Não foi possível carregar o banco de talentos");
       } finally {
         setLoadingTalentPool(false);
       }
@@ -1257,126 +1713,208 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
     fetchTalentPool();
   }, [activeTab, user, companyPlanFeatures.accessTalentPool]);
 
-  const statsList = useMemo(() => [
-    { label: 'Vagas Ativas', value: activeJobs.length, trend: `+${jobs.length} total`, icon: icons.briefcase, color: '#6366f1' },
-    { label: 'Candidaturas', value: totalApplications, trend: `${stats?.pendingApplications || 0} novas`, icon: icons.inbox, color: '#10b981' },
-    {
-      label: 'Vagas Destacadas',
-      value: highlightedJobsCount,
-      trend: !companyPlanFeatures.canHighlightJobs
-        ? 'Upgrade para destacar vagas'
-        : companyPlanFeatures.maxHighlightedJobs === null
-          ? 'Plano com destaques ilimitados'
-          : `${highlightedJobsCount}/${companyPlanFeatures.maxHighlightedJobs || 0} utilizadas`,
-      icon: icons.crown,
-      color: '#f59e0b'
-    },
-    { label: 'Taxa Conversão', value: `${totalApplications > 0 ? ((totalApplications / Math.max(jobs.reduce((sum, job) => sum + (job.views || 0), 0), 1)) * 100).toFixed(1) : 0}%`, trend: 'Apps/Views', icon: icons.trending, color: '#ec4899' }
-  ], [activeJobs.length, jobs, totalApplications, stats, highlightedJobsCount, companyPlanFeatures.canHighlightJobs, companyPlanFeatures.maxHighlightedJobs]);
+  const statsList = useMemo(
+    () => [
+      {
+        label: "Vagas Ativas",
+        value: activeJobs.length,
+        trend: `+${jobs.length} total`,
+        icon: icons.briefcase,
+        color: "#2057d7",
+      },
+      {
+        label: "Candidaturas",
+        value: totalApplications,
+        trend: `${stats?.pendingApplications || 0} novas`,
+        icon: icons.inbox,
+        color: "#5fb8f5",
+      },
+      {
+        label: "Vagas Destacadas",
+        value: highlightedJobsCount,
+        trend: !companyPlanFeatures.canHighlightJobs
+          ? "Upgrade para destacar vagas"
+          : companyPlanFeatures.maxHighlightedJobs === null
+            ? "Plano com destaques ilimitados"
+            : `${highlightedJobsCount}/${companyPlanFeatures.maxHighlightedJobs || 0} utilizadas`,
+        icon: icons.crown,
+        color: "#5fb8f5",
+      },
+      {
+        label: "Taxa Conversão",
+        value: `${
+          totalApplications > 0
+            ? (
+                (totalApplications /
+                  Math.max(
+                    jobs.reduce((sum, job) => sum + (job.views || 0), 0),
+                    1,
+                  )) *
+                100
+              ).toFixed(1)
+            : 0
+        }%`,
+        trend: "Apps/Views",
+        icon: icons.trending,
+        color: "#2057d7",
+      },
+    ],
+    [
+      activeJobs.length,
+      jobs,
+      totalApplications,
+      stats,
+      highlightedJobsCount,
+      companyPlanFeatures.canHighlightJobs,
+      companyPlanFeatures.maxHighlightedJobs,
+    ],
+  );
 
   const chartData = useMemo(() => {
-    const dayLabels = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    const dayLabels = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
     const counts = {};
     recentApplications.forEach((app) => {
       const date = app.appliedAt ? new Date(app.appliedAt) : new Date();
       const key = date.getDay();
       counts[key] = (counts[key] || 0) + 1;
     });
-    return dayLabels.map((day, index) => ({ name: day, value: counts[index] || 0 }));
+    return dayLabels.map((day, index) => ({
+      name: day,
+      value: counts[index] || 0,
+    }));
   }, [recentApplications]);
 
   const fallbackTalentPool = useMemo(() => {
     const byCandidate = new Map();
     applicationsData.forEach((application) => {
-      if (!application.candidateId || byCandidate.has(application.candidateId)) return;
+      if (!application.candidateId || byCandidate.has(application.candidateId))
+        return;
       byCandidate.set(application.candidateId, {
         id: application.candidateId,
-        name: application.candidateName || 'Candidato',
-        headline: application.jobTitle ? `Interessado em ${application.jobTitle}` : 'Perfil disponível',
+        name: application.candidateName || "Candidato",
+        headline: application.jobTitle
+          ? `Interessado em ${application.jobTitle}`
+          : "Perfil disponível",
         skills: [],
-        experience: application.status === 'interview' ? 'Em entrevista' : 'Perfil ativo',
-        location: application.jobLocation || 'São Tomé e Príncipe',
-        avatar: '',
-        profileUrl: `/dashboard/empresa/candidato/${application.candidateId}`
+        experience:
+          application.status === "interview" ? "Em entrevista" : "Perfil ativo",
+        location: application.jobLocation || "São Tomé e Príncipe",
+        avatar: "",
+        profileUrl: `/dashboard/empresa/candidato/${application.candidateId}`,
+        verified: verifiedCandidateIdSet.has(application.candidateId),
+        highlighted: false,
+        profileComplete: false,
+        completionScore: 0,
       });
     });
     return Array.from(byCandidate.values());
-  }, [applicationsData]);
+  }, [applicationsData, verifiedCandidateIdSet]);
 
   const talentPool = useMemo(() => {
     if (companyPlanFeatures.accessTalentPool) {
       return talentPoolData;
     }
     return fallbackTalentPool;
-  }, [companyPlanFeatures.accessTalentPool, talentPoolData, fallbackTalentPool]);
+  }, [
+    companyPlanFeatures.accessTalentPool,
+    talentPoolData,
+    fallbackTalentPool,
+  ]);
 
-  const filteredTalents = useMemo(() => talentPool.filter((talent) => {
-    return talent.name.toLowerCase().includes(searchQuery.toLowerCase()) || talent.headline.toLowerCase().includes(searchQuery.toLowerCase());
-  }), [searchQuery, talentPool]);
+  const filteredTalents = useMemo(
+    () =>
+      talentPool.filter((talent) => {
+        return (
+          talent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          talent.headline.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      }),
+    [searchQuery, talentPool],
+  );
 
   const filteredApplications = useMemo(() => {
-    return applicationsData.filter(app => {
-      if (applicationFilter === 'all') return true;
-      if (applicationFilter === 'pending') return !app.status || app.status === 'pending';
-      return app.status === applicationFilter;
-    });
+    return applicationsData
+      .filter((app) => {
+        if (applicationFilter === "all") return true;
+        if (applicationFilter === "pending")
+          return !app.status || app.status === "pending";
+        return app.status === applicationFilter;
+      })
+      .sort((a, b) => {
+        const priorityDiff =
+          (Number(b.priorityLevel) || 0) - (Number(a.priorityLevel) || 0);
+        if (priorityDiff !== 0) return priorityDiff;
+        const dateA = a.appliedAt
+          ? new Date(a.appliedAt).getTime()
+          : a.createdAt
+            ? new Date(a.createdAt).getTime()
+            : 0;
+        const dateB = b.appliedAt
+          ? new Date(b.appliedAt).getTime()
+          : b.createdAt
+            ? new Date(b.createdAt).getTime()
+            : 0;
+        return dateB - dateA;
+      });
   }, [applicationsData, applicationFilter]);
 
   const filteredJobs = useMemo(() => {
-    if (jobFilter === 'all') return jobs;
-    return jobs.filter(job => job.status === jobFilter);
+    if (jobFilter === "all") return jobs;
+    return jobs.filter((job) => job.status === jobFilter);
   }, [jobs, jobFilter]);
 
   const handleSubscribePlan = async (planId) => {
     try {
       setPlanLoadingId(planId);
-      setPlanError('');
+      setPlanError("");
       setPlanPaymentInstructions(null);
 
-      const { getAuth } = await import('firebase/auth');
+      const { getAuth } = await import("firebase/auth");
       const auth = getAuth();
       const token = await auth.currentUser?.getIdToken();
       if (!token) {
-        router.push('/login');
+        router.push("/login");
         return;
       }
 
-      const response = await fetch('/api/subscribe-plan', {
-        method: 'POST',
+      const response = await fetch("/api/subscribe-plan", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ planId })
+        body: JSON.stringify({ planId }),
       });
 
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        setPlanError(data.message || data.error || 'Não foi possível processar o plano.');
+        setPlanError(
+          data.message || data.error || "Não foi possível processar o plano.",
+        );
         return;
       }
 
-      if (data.status === 'approved') {
+      if (data.status === "approved") {
         router.replace(router.asPath);
         return;
       }
 
-      if (data.status === 'awaiting_payment') {
+      if (data.status === "awaiting_payment") {
         setPlanPaymentInstructions(data.paymentInstructions || null);
         setPendingPaymentRequest({
           id: data.requestId,
           planId,
           planName: plans.find((plan) => plan.id === planId)?.name || planId,
           price: plans.find((plan) => plan.id === planId)?.price || 0,
-          status: 'pending',
-          paymentInstructions: data.paymentInstructions || null
+          status: "pending",
+          paymentInstructions: data.paymentInstructions || null,
         });
       }
     } catch (error) {
-      console.error('Erro ao assinar plano:', error);
-      setPlanError('Não foi possível processar o plano.');
+      console.error("Erro ao assinar plano:", error);
+      setPlanError("Não foi possível processar o plano.");
     } finally {
-      setPlanLoadingId('');
+      setPlanLoadingId("");
     }
   };
 
@@ -1384,31 +1922,38 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
     if (exportingCsv) return;
     setExportingCsv(true);
     try {
-      const { getAuth } = await import('firebase/auth');
+      const { getAuth } = await import("firebase/auth");
       const auth = getAuth();
       const token = await auth.currentUser?.getIdToken();
       if (!token) {
-        alert('Sessão expirada. Faça login novamente.');
+        alert("Sessão expirada. Faça login novamente.");
         return;
       }
 
-      const response = await fetch('/api/export/applications', {
-        headers: { Authorization: `Bearer ${token}` }
+      const response = await fetch("/api/export/applications", {
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        alert(errorData.upgradeMessage || errorData.error || 'Não foi possível exportar as candidaturas.');
+        alert(
+          errorData.upgradeMessage ||
+            errorData.error ||
+            "Não foi possível exportar as candidaturas.",
+        );
         return;
       }
 
       const blob = await response.blob();
-      const contentDisposition = response.headers.get('content-disposition') || '';
+      const contentDisposition =
+        response.headers.get("content-disposition") || "";
       const match = contentDisposition.match(/filename="(.+)"/);
-      const filename = match?.[1] || `candidaturas_${new Date().toISOString().slice(0, 10)}.csv`;
+      const filename =
+        match?.[1] ||
+        `candidaturas_${new Date().toISOString().slice(0, 10)}.csv`;
 
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = filename;
       document.body.appendChild(a);
@@ -1416,8 +1961,8 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
       a.remove();
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Erro ao exportar candidaturas:', error);
-      alert('Erro ao exportar candidaturas.');
+      console.error("Erro ao exportar candidaturas:", error);
+      alert("Erro ao exportar candidaturas.");
     } finally {
       setExportingCsv(false);
     }
@@ -1427,29 +1972,33 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
     if (!messageInput.trim() || !selectedConversation || sendingMessage) return;
 
     const text = messageInput.trim();
-    setMessageInput('');
+    setMessageInput("");
     setSendingMessage(true);
 
     try {
-      const { getAuth } = await import('firebase/auth');
+      const { getAuth } = await import("firebase/auth");
       const auth = getAuth();
       const currentUser = auth.currentUser;
       const token = await currentUser?.getIdToken();
       if (!token || !currentUser) return;
 
       const response = await fetch(`/api/messages/${selectedConversation}`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ text })
+        body: JSON.stringify({ text }),
       });
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
         setMessageInput(text);
-        alert(data.upgradeMessage || data.error || 'Não foi possível enviar a mensagem.');
+        alert(
+          data.upgradeMessage ||
+            data.error ||
+            "Não foi possível enviar a mensagem.",
+        );
         if (data.upgradeUrl) {
           router.push(data.upgradeUrl);
         }
@@ -1462,24 +2011,24 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
           id: data.messageId || `temp-${Date.now()}`,
           senderId: currentUser.uid,
           text,
-          createdAt: new Date().toISOString()
-        }
+          createdAt: new Date().toISOString(),
+        },
       ]);
       setConversations((prev) =>
         prev.map((conversation) =>
           conversation.id === selectedConversation
             ? {
-              ...conversation,
-              lastMessage: text.substring(0, 100),
-              lastMessageAt: new Date().toISOString()
-            }
-            : conversation
-        )
+                ...conversation,
+                lastMessage: text.substring(0, 100),
+                lastMessageAt: new Date().toISOString(),
+              }
+            : conversation,
+        ),
       );
     } catch (error) {
-      console.error('Erro ao enviar mensagem:', error);
+      console.error("Erro ao enviar mensagem:", error);
       setMessageInput(text);
-      alert('Não foi possível enviar a mensagem.');
+      alert("Não foi possível enviar a mensagem.");
     } finally {
       setSendingMessage(false);
     }
@@ -1487,7 +2036,7 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'dashboard':
+      case "dashboard":
         return (
           <section className={styles.sectionBlock}>
             <div className={styles.statsGrid}>
@@ -1523,33 +2072,44 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
             </div>
           </section>
         );
-      case 'jobs':
+      case "jobs":
         return (
           <section className={styles.sectionBlock}>
             <div className={styles.sectionHeading}>
               <div>
                 <h2>Vagas Publicadas</h2>
-                <p>{activeJobs.length} ativas de {jobs.length} total</p>
+                <p>
+                  {activeJobs.length} ativas de {jobs.length} total
+                </p>
               </div>
               <div className={styles.sectionActions}>
                 <div className={styles.filterTabs}>
                   <button
                     type="button"
-                    className={`${styles.filterTab} ${jobFilter === 'all' ? styles.filterTabActive : ''}`}
-                    onClick={() => setJobFilter('all')}
-                  >Todas</button>
+                    className={`${styles.filterTab} ${jobFilter === "all" ? styles.filterTabActive : ""}`}
+                    onClick={() => setJobFilter("all")}
+                  >
+                    Todas
+                  </button>
                   <button
                     type="button"
-                    className={`${styles.filterTab} ${jobFilter === 'active' ? styles.filterTabActive : ''}`}
-                    onClick={() => setJobFilter('active')}
-                  >Ativas</button>
+                    className={`${styles.filterTab} ${jobFilter === "active" ? styles.filterTabActive : ""}`}
+                    onClick={() => setJobFilter("active")}
+                  >
+                    Ativas
+                  </button>
                   <button
                     type="button"
-                    className={`${styles.filterTab} ${jobFilter === 'closed' ? styles.filterTabActive : ''}`}
-                    onClick={() => setJobFilter('closed')}
-                  >Fechadas</button>
+                    className={`${styles.filterTab} ${jobFilter === "closed" ? styles.filterTabActive : ""}`}
+                    onClick={() => setJobFilter("closed")}
+                  >
+                    Fechadas
+                  </button>
                 </div>
-                <Link href="/dashboard/empresa/vaga/criar-vaga" className={styles.createJobBtn}>
+                <Link
+                  href="/dashboard/empresa/vaga/criar-vaga"
+                  className={styles.createJobBtn}
+                >
                   <span className={styles.navIcon}>{icons.plus}</span>
                   Nova Vaga
                 </Link>
@@ -1571,15 +2131,62 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
                   icon={icons.briefcase}
                   title="Nenhuma vaga criada"
                   message="Publique sua primeira vaga para comecar a receber candidaturas"
-                  action={<Link href="/dashboard/empresa/vaga/criar-vaga" className={styles.actionLink}>Criar primeira vaga</Link>}
+                  action={
+                    <Link
+                      href="/dashboard/empresa/vaga/criar-vaga"
+                      className={styles.actionLink}
+                    >
+                      Criar primeira vaga
+                    </Link>
+                  }
                 />
               )}
             </div>
           </section>
         );
-      case 'candidates':
+      case "candidates":
         return (
-          <section className={`${styles.sectionBlock} ${styles.candidatesSection}`}>
+          <section
+            className={`${styles.sectionBlock} ${styles.candidatesSection}`}
+          >
+            <div className={styles.candidatesOverview}>
+              <div className={styles.candidatesOverviewHeader}>
+                <div>
+                  <span className={styles.candidatesOverviewEyebrow}>
+                    Banco validado
+                  </span>
+                  <h2 className={styles.candidatesOverviewTitle}>
+                    Candidatos Verificados
+                  </h2>
+                  <p className={styles.candidatesOverviewText}>
+                    Visão rápida dos perfis validados mais recentes, com acesso
+                    direto ao banco de talentos e aos perfis individuais.
+                  </p>
+                </div>
+              </div>
+
+              <div className={styles.candidatesSummaryGrid}>
+                <div className={styles.candidatesSummaryCard}>
+                  <span>Total verificados</span>
+                  <strong>{publicCandidateStats.totalCandidatos || 0}</strong>
+                </div>
+                <div className={styles.candidatesSummaryCard}>
+                  <span>Áreas mapeadas</span>
+                  <strong>{publicCandidateStats.uniqueAreasCount || 0}</strong>
+                </div>
+                <div className={styles.candidatesSummaryCard}>
+                  <span>Perfis destacados</span>
+                  <strong>
+                    {publicCandidateStats.featuredCandidatesCount || 0}
+                  </strong>
+                </div>
+                <div className={styles.candidatesSummaryCard}>
+                  <span>No banco atual</span>
+                  <strong>{talentPool.length}</strong>
+                </div>
+              </div>
+            </div>
+
             <div className={styles.candidatesToolbar}>
               <input
                 type="text"
@@ -1588,20 +2195,30 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
               />
-              <span className={styles.searchHint}>{filteredTalents.length} talentos encontrados</span>
+              <span className={styles.searchHint}>
+                {filteredTalents.length} talentos encontrados
+              </span>
             </div>
             {!companyPlanFeatures.accessTalentPool && (
-              <div className={`${styles.sectionNote} ${styles.sectionNoteWarning}`}>
-                Plano Básico: visualização limitada aos candidatos que já se candidataram às suas vagas.
-                {' '}
-                <Link href="/premium/empresa" className={styles.actionLink}>Desbloquear banco completo</Link>
+              <div
+                className={`${styles.sectionNote} ${styles.sectionNoteWarning}`}
+              >
+                Plano Básico: visualização limitada aos candidatos que já se
+                candidataram às suas vagas.{" "}
+                <Link href="/premium/empresa" className={styles.actionLink}>
+                  Desbloquear banco completo
+                </Link>
               </div>
             )}
             {companyPlanFeatures.accessTalentPool && loadingTalentPool && (
-              <p className={styles.sectionNote}>A carregar banco de talentos...</p>
+              <p className={styles.sectionNote}>
+                A carregar banco de talentos...
+              </p>
             )}
             {companyPlanFeatures.accessTalentPool && talentPoolError && (
-              <p className={`${styles.sectionNote} ${styles.sectionNoteError}`}>{talentPoolError}</p>
+              <p className={`${styles.sectionNote} ${styles.sectionNoteError}`}>
+                {talentPoolError}
+              </p>
             )}
             <div className={styles.talentsGrid}>
               {filteredTalents.map((talent, index) => (
@@ -1621,19 +2238,32 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
             )}
           </section>
         );
-      case 'applications':
-        const pendingCount = applicationsData.filter(a => !a.status || a.status === 'pending').length;
-        const analysisCount = applicationsData.filter(a => a.status === 'analysis').length;
-        const interviewCount = applicationsData.filter(a => a.status === 'interview').length;
-        const approvedCount = applicationsData.filter(a => a.status === 'approved').length;
-        const rejectedCount = applicationsData.filter(a => a.status === 'rejected').length;
+      case "applications":
+        const pendingCount = applicationsData.filter(
+          (a) => !a.status || a.status === "pending",
+        ).length;
+        const analysisCount = applicationsData.filter(
+          (a) => a.status === "analysis",
+        ).length;
+        const interviewCount = applicationsData.filter(
+          (a) => a.status === "interview",
+        ).length;
+        const approvedCount = applicationsData.filter(
+          (a) => a.status === "approved",
+        ).length;
+        const rejectedCount = applicationsData.filter(
+          (a) => a.status === "rejected",
+        ).length;
 
         return (
           <section className={styles.sectionBlock}>
             <div className={styles.sectionHeading}>
               <div>
                 <h2>Gestao de Candidaturas</h2>
-                <p>{applicationsData.length} total | {pendingCount} pendentes | {interviewCount} em entrevista</p>
+                <p>
+                  {applicationsData.length} total | {pendingCount} pendentes |{" "}
+                  {interviewCount} em entrevista
+                </p>
               </div>
               <button
                 type="button"
@@ -1641,7 +2271,7 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
                 disabled={exportingCsv}
                 className={`${styles.applicationBtnOutline} ${styles.buttonWide}`}
               >
-                {exportingCsv ? 'A exportar...' : 'Exportar CSV'}
+                {exportingCsv ? "A exportar..." : "Exportar CSV"}
               </button>
             </div>
 
@@ -1649,48 +2279,50 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
             <div className={styles.applicationSummary}>
               <button
                 type="button"
-                className={`${styles.summaryCard} ${applicationFilter === 'all' ? styles.summaryCardActive : ''}`}
-                onClick={() => setApplicationFilter('all')}
+                className={`${styles.summaryCard} ${applicationFilter === "all" ? styles.summaryCardActive : ""}`}
+                onClick={() => setApplicationFilter("all")}
               >
-                <span className={styles.summaryValue}>{applicationsData.length}</span>
+                <span className={styles.summaryValue}>
+                  {applicationsData.length}
+                </span>
                 <span className={styles.summaryLabel}>Todas</span>
               </button>
               <button
                 type="button"
-                className={`${styles.summaryCard} ${styles.summaryPending} ${applicationFilter === 'pending' ? styles.summaryCardActive : ''}`}
-                onClick={() => setApplicationFilter('pending')}
+                className={`${styles.summaryCard} ${styles.summaryPending} ${applicationFilter === "pending" ? styles.summaryCardActive : ""}`}
+                onClick={() => setApplicationFilter("pending")}
               >
                 <span className={styles.summaryValue}>{pendingCount}</span>
                 <span className={styles.summaryLabel}>Pendentes</span>
               </button>
               <button
                 type="button"
-                className={`${styles.summaryCard} ${styles.summaryAnalysis} ${applicationFilter === 'analysis' ? styles.summaryCardActive : ''}`}
-                onClick={() => setApplicationFilter('analysis')}
+                className={`${styles.summaryCard} ${styles.summaryAnalysis} ${applicationFilter === "analysis" ? styles.summaryCardActive : ""}`}
+                onClick={() => setApplicationFilter("analysis")}
               >
                 <span className={styles.summaryValue}>{analysisCount}</span>
                 <span className={styles.summaryLabel}>Em Analise</span>
               </button>
               <button
                 type="button"
-                className={`${styles.summaryCard} ${styles.summaryInterview} ${applicationFilter === 'interview' ? styles.summaryCardActive : ''}`}
-                onClick={() => setApplicationFilter('interview')}
+                className={`${styles.summaryCard} ${styles.summaryInterview} ${applicationFilter === "interview" ? styles.summaryCardActive : ""}`}
+                onClick={() => setApplicationFilter("interview")}
               >
                 <span className={styles.summaryValue}>{interviewCount}</span>
                 <span className={styles.summaryLabel}>Entrevista</span>
               </button>
               <button
                 type="button"
-                className={`${styles.summaryCard} ${styles.summaryApproved} ${applicationFilter === 'approved' ? styles.summaryCardActive : ''}`}
-                onClick={() => setApplicationFilter('approved')}
+                className={`${styles.summaryCard} ${styles.summaryApproved} ${applicationFilter === "approved" ? styles.summaryCardActive : ""}`}
+                onClick={() => setApplicationFilter("approved")}
               >
                 <span className={styles.summaryValue}>{approvedCount}</span>
                 <span className={styles.summaryLabel}>Aprovados</span>
               </button>
               <button
                 type="button"
-                className={`${styles.summaryCard} ${styles.summaryRejected} ${applicationFilter === 'rejected' ? styles.summaryCardActive : ''}`}
-                onClick={() => setApplicationFilter('rejected')}
+                className={`${styles.summaryCard} ${styles.summaryRejected} ${applicationFilter === "rejected" ? styles.summaryCardActive : ""}`}
+                onClick={() => setApplicationFilter("rejected")}
               >
                 <span className={styles.summaryValue}>{rejectedCount}</span>
                 <span className={styles.summaryLabel}>Rejeitados</span>
@@ -1723,19 +2355,25 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
             </div>
           </section>
         );
-      case 'messages':
-        const activeConversation = conversations.find((conversation) => conversation.id === selectedConversation);
+      case "messages":
+        const activeConversation = conversations.find(
+          (conversation) => conversation.id === selectedConversation,
+        );
 
         return (
           <section className={styles.sectionBlock}>
             <div className={styles.sectionHeading}>
               <div>
                 <h2>Mensagens</h2>
-                <p>Converse diretamente com candidatos elegíveis ao seu plano</p>
+                <p>
+                  Converse diretamente com candidatos elegíveis ao seu plano
+                </p>
               </div>
               {companyPlanFeatures.canSendDirectMessages ? (
                 <span className={styles.filterTab}>
-                  {unreadMessages > 0 ? `${unreadMessages} não lida(s)` : 'Caixa organizada'}
+                  {unreadMessages > 0
+                    ? `${unreadMessages} não lida(s)`
+                    : "Caixa organizada"}
                 </span>
               ) : (
                 <Link href="/premium/empresa" className={styles.actionLink}>
@@ -1749,48 +2387,85 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
                 icon={icons.messages}
                 title="Mensagens diretas disponíveis apenas no plano PRO"
                 message="Faça upgrade para o plano PRO para iniciar conversas com candidatos e acelerar o processo de recrutamento."
-                action={<Link href="/premium/empresa" className={styles.actionLink}>Ver planos</Link>}
+                action={
+                  <Link href="/premium/empresa" className={styles.actionLink}>
+                    Ver planos
+                  </Link>
+                }
               />
             ) : (
               <div className={styles.messagesLayout}>
                 <div className={styles.messagesList}>
                   {loadingConversations ? (
-                    <p className={`${styles.messagePlaceholder} ${styles.messagePlaceholderPadded}`}>A carregar conversas...</p>
+                    <p
+                      className={`${styles.messagePlaceholder} ${styles.messagePlaceholderPadded}`}
+                    >
+                      A carregar conversas...
+                    </p>
                   ) : messagesError ? (
-                    <p className={`${styles.messagePlaceholder} ${styles.messagePlaceholderPadded}`}>{messagesError}</p>
+                    <p
+                      className={`${styles.messagePlaceholder} ${styles.messagePlaceholderPadded}`}
+                    >
+                      {messagesError}
+                    </p>
                   ) : conversations.length === 0 ? (
-                    <p className={`${styles.messagePlaceholder} ${styles.messagePlaceholderPadded}`}>Nenhuma conversa ainda. Abra um perfil de candidato para iniciar.</p>
-                  ) : conversations.map((conversation) => {
-                    const initials = (conversation.participant.name || 'U').charAt(0).toUpperCase();
-                    const timeLabel = conversation.lastMessageAt
-                      ? new Date(conversation.lastMessageAt).toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit' })
-                      : '';
+                    <p
+                      className={`${styles.messagePlaceholder} ${styles.messagePlaceholderPadded}`}
+                    >
+                      Nenhuma conversa ainda. Abra um perfil de candidato para
+                      iniciar.
+                    </p>
+                  ) : (
+                    conversations.map((conversation) => {
+                      const initials = (conversation.participant.name || "U")
+                        .charAt(0)
+                        .toUpperCase();
+                      const timeLabel = conversation.lastMessageAt
+                        ? new Date(
+                            conversation.lastMessageAt,
+                          ).toLocaleDateString("pt-PT", {
+                            day: "2-digit",
+                            month: "2-digit",
+                          })
+                        : "";
 
-                    return (
-                      <button
-                        key={conversation.id}
-                        type="button"
-                        className={`${styles.messageItem} ${selectedConversation === conversation.id ? styles.selectedMessageItem : ''}`}
-                        onClick={() => setSelectedConversation(conversation.id)}
-                      >
-                        <div className={styles.messageAvatarWrapper}>
-                          {conversation.participant.avatar ? (
-                            <img src={conversation.participant.avatar} alt={conversation.participant.name} />
-                          ) : (
-                            <div className={styles.messageAvatarInitials}>{initials}</div>
-                          )}
-                          {conversation.unreadCount > 0 && (
-                            <span className={styles.messageBadge}>{conversation.unreadCount}</span>
-                          )}
-                        </div>
-                        <div className={styles.messageBody}>
-                          <strong>{conversation.participant.name}</strong>
-                          <p>{conversation.lastMessage || 'Sem mensagens'}</p>
-                        </div>
-                        <span className={styles.messageTime}>{timeLabel}</span>
-                      </button>
-                    );
-                  })}
+                      return (
+                        <button
+                          key={conversation.id}
+                          type="button"
+                          className={`${styles.messageItem} ${selectedConversation === conversation.id ? styles.selectedMessageItem : ""}`}
+                          onClick={() =>
+                            setSelectedConversation(conversation.id)
+                          }
+                        >
+                          <div className={styles.messageAvatarWrapper}>
+                            {conversation.participant.avatar ? (
+                              <img
+                                src={conversation.participant.avatar}
+                                alt={conversation.participant.name}
+                              />
+                            ) : (
+                              <div className={styles.messageAvatarInitials}>
+                                {initials}
+                              </div>
+                            )}
+                            {conversation.unreadCount > 0 && (
+                              <span className={styles.messageBadge}>
+                                {conversation.unreadCount}
+                              </span>
+                            )}
+                          </div>
+                          <div className={styles.messageBody}>
+                            <strong>{conversation.participant.name}</strong>
+                            <p>{conversation.lastMessage || "Sem mensagens"}</p>
+                          </div>
+                          <span className={styles.messageTime}>
+                            {timeLabel}
+                          </span>
+                        </button>
+                      );
+                    })
+                  )}
                 </div>
 
                 <div className={styles.messageDetail}>
@@ -1799,36 +2474,58 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
                       <div className={styles.messageDetailHeader}>
                         <h3>{activeConversation.participant.name}</h3>
                         {activeConversation.participant.role && (
-                          <p className={styles.pageDate}>{activeConversation.participant.role}</p>
+                          <p className={styles.pageDate}>
+                            {activeConversation.participant.role}
+                          </p>
                         )}
                       </div>
                       <div className={styles.messageThread}>
                         {loadingMessages ? (
-                          <p className={styles.messagePlaceholder}>A carregar mensagens...</p>
+                          <p className={styles.messagePlaceholder}>
+                            A carregar mensagens...
+                          </p>
                         ) : messages.length === 0 ? (
-                          <p className={styles.messagePlaceholder}>Ainda não há mensagens. Seja o primeiro a escrever.</p>
-                        ) : messages.map((message) => {
-                          const isOwn = message.senderId === user?.uid;
-                          return (
-                            <div key={message.id} className={isOwn ? styles.messageBubbleOwn : styles.messageBubble}>
-                              <span>{message.text}</span>
-                              <time className={styles.messageBubbleTime}>
-                                {message.createdAt
-                                  ? new Date(message.createdAt).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })
-                                  : ''}
-                              </time>
-                            </div>
-                          );
-                        })}
+                          <p className={styles.messagePlaceholder}>
+                            Ainda não há mensagens. Seja o primeiro a escrever.
+                          </p>
+                        ) : (
+                          messages.map((message) => {
+                            const isOwn = message.senderId === user?.uid;
+                            return (
+                              <div
+                                key={message.id}
+                                className={
+                                  isOwn
+                                    ? styles.messageBubbleOwn
+                                    : styles.messageBubble
+                                }
+                              >
+                                <span>{message.text}</span>
+                                <time className={styles.messageBubbleTime}>
+                                  {message.createdAt
+                                    ? new Date(
+                                        message.createdAt,
+                                      ).toLocaleTimeString("pt-PT", {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      })
+                                    : ""}
+                                </time>
+                              </div>
+                            );
+                          })
+                        )}
                         <div ref={messagesEndRef} />
                       </div>
                       <div className={styles.messageFooter}>
                         <input
                           type="text"
                           value={messageInput}
-                          onChange={(event) => setMessageInput(event.target.value)}
+                          onChange={(event) =>
+                            setMessageInput(event.target.value)
+                          }
                           onKeyDown={(event) => {
-                            if (event.key === 'Enter' && !event.shiftKey) {
+                            if (event.key === "Enter" && !event.shiftKey) {
                               event.preventDefault();
                               handleSendMessage();
                             }
@@ -1844,7 +2541,7 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
                           onClick={handleSendMessage}
                           disabled={sendingMessage || !messageInput.trim()}
                         >
-                          {sendingMessage ? '…' : 'Enviar'}
+                          {sendingMessage ? "…" : "Enviar"}
                         </button>
                       </div>
                     </>
@@ -1859,7 +2556,7 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
             )}
           </section>
         );
-      case 'analytics':
+      case "analytics":
         if (!companyPlanFeatures.canAccessAnalytics) {
           return (
             <section className={styles.sectionBlock}>
@@ -1867,16 +2564,25 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
                 icon={icons.chart}
                 title="Analytics disponível apenas no plano PRO"
                 message="Faça upgrade para o plano PRO para desbloquear métricas completas, tendências e ranking de performance das vagas."
-                action={<Link href="/premium/empresa" className={styles.actionLink}>Ver planos</Link>}
+                action={
+                  <Link href="/premium/empresa" className={styles.actionLink}>
+                    Ver planos
+                  </Link>
+                }
               />
             </section>
           );
         }
 
-        const totalViews = analytics?.totalViews || jobs.reduce((sum, job) => sum + (job.views || 0), 0);
-        const conversionRate = totalViews > 0 ? ((totalApplications / totalViews) * 100) : 0;
-        const avgAppsPerJob = jobs.length > 0 ? Math.round(totalApplications / jobs.length) : 0;
-        const avgViewsPerJob = jobs.length > 0 ? Math.round(totalViews / jobs.length) : 0;
+        const totalViews =
+          analytics?.totalViews ||
+          jobs.reduce((sum, job) => sum + (job.views || 0), 0);
+        const conversionRate =
+          totalViews > 0 ? (totalApplications / totalViews) * 100 : 0;
+        const avgAppsPerJob =
+          jobs.length > 0 ? Math.round(totalApplications / jobs.length) : 0;
+        const avgViewsPerJob =
+          jobs.length > 0 ? Math.round(totalViews / jobs.length) : 0;
         const lastSevenDays = Array.from({ length: 7 }, (_, index) => {
           const date = new Date();
           date.setDate(date.getDate() - (6 - index));
@@ -1901,22 +2607,44 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
         const weeklyData = lastSevenDays.map((date) => {
           const key = date.toISOString().slice(0, 10);
           return {
-            name: date.toLocaleDateString('pt-PT', { weekday: 'short' }),
+            name: date.toLocaleDateString("pt-PT", { weekday: "short" }),
             views: viewsByDate[key] || 0,
-            apps: appsByDate[key] || 0
+            apps: appsByDate[key] || 0,
           };
         });
 
         const statusBuckets = [
-          { name: 'Pendentes', value: applicationsData.filter((app) => !app.status || app.status === 'pending').length, color: '#f59e0b' },
-          { name: 'Em análise', value: applicationsData.filter((app) => app.status === 'analysis').length, color: '#6366f1' },
-          { name: 'Entrevista', value: applicationsData.filter((app) => app.status === 'interview').length, color: '#8b5cf6' },
-          { name: 'Aprovadas', value: applicationsData.filter((app) => app.status === 'approved').length, color: '#10b981' }
+          {
+            name: "Pendentes",
+            value: applicationsData.filter(
+              (app) => !app.status || app.status === "pending",
+            ).length,
+            color: "#6f84a6",
+          },
+          {
+            name: "Em análise",
+            value: applicationsData.filter((app) => app.status === "analysis")
+              .length,
+            color: "#2057d7",
+          },
+          {
+            name: "Entrevista",
+            value: applicationsData.filter((app) => app.status === "interview")
+              .length,
+            color: "#5fb8f5",
+          },
+          {
+            name: "Aprovadas",
+            value: applicationsData.filter((app) => app.status === "approved")
+              .length,
+            color: "#2f91d8",
+          },
         ];
-        const totalBucketValues = statusBuckets.reduce((sum, bucket) => sum + bucket.value, 0) || 1;
+        const totalBucketValues =
+          statusBuckets.reduce((sum, bucket) => sum + bucket.value, 0) || 1;
         const sourceData = statusBuckets.map((bucket) => ({
           ...bucket,
-          value: Math.round((bucket.value / totalBucketValues) * 100)
+          value: Math.round((bucket.value / totalBucketValues) * 100),
         }));
 
         return (
@@ -1927,14 +2655,29 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
                 <p>Performance e metricas das suas vagas</p>
               </div>
               <div className={styles.filterTabs}>
-                <button type="button" className={`${styles.filterTab} ${styles.filterTabActive}`}>7 dias</button>
-                <button type="button" className={styles.filterTab}>30 dias</button>
-                <button type="button" className={styles.filterTab}>90 dias</button>
+                <button
+                  type="button"
+                  className={`${styles.filterTab} ${styles.filterTabActive}`}
+                >
+                  7 dias
+                </button>
+                <button type="button" className={styles.filterTab}>
+                  30 dias
+                </button>
+                <button type="button" className={styles.filterTab}>
+                  90 dias
+                </button>
               </div>
             </div>
 
-            {loadingAnalytics && <div className={styles.spinner}>Carregando metricas...</div>}
-            {!loadingAnalytics && analyticsError && <div className={styles.emptyState}><p>{analyticsError}</p></div>}
+            {loadingAnalytics && (
+              <div className={styles.spinner}>Carregando metricas...</div>
+            )}
+            {!loadingAnalytics && analyticsError && (
+              <div className={styles.emptyState}>
+                <p>{analyticsError}</p>
+              </div>
+            )}
 
             {!loadingAnalytics && !analyticsError && (
               <>
@@ -1942,9 +2685,9 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
                 <div className={styles.analyticsKPIGrid}>
                   <AnalyticsCard
                     title="Visualizacoes Totais"
-                    value={totalViews.toLocaleString('pt-PT')}
+                    value={totalViews.toLocaleString("pt-PT")}
                     subtitle="Ultimos 30 dias"
-                    color="#6366f1"
+                    color="#2057d7"
                     icon={icons.eye}
                     change={12}
                   />
@@ -1952,7 +2695,7 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
                     title="Taxa de Conversao"
                     value={`${conversionRate.toFixed(1)}%`}
                     subtitle="Candidaturas / Views"
-                    color="#10b981"
+                    color="#5fb8f5"
                     icon={icons.trending}
                     change={5}
                   />
@@ -1960,7 +2703,7 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
                     title="Candidaturas"
                     value={totalApplications}
                     subtitle="Total recebidas"
-                    color="#f59e0b"
+                    color="#2057d7"
                     icon={icons.inbox}
                     change={-3}
                   />
@@ -1968,7 +2711,7 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
                     title="Vagas Ativas"
                     value={activeJobs.length}
                     subtitle={`de ${jobs.length} publicadas`}
-                    color="#ec4899"
+                    color="#2057d7"
                     icon={icons.briefcase}
                   />
                 </div>
@@ -1983,8 +2726,20 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
                         <p>Tendencia semanal</p>
                       </div>
                       <div className={styles.analyticsLegend}>
-                        <span><i className={styles.analyticsLegendDot} style={{ '--legend-color': '#6366f1' }}></i> Views</span>
-                        <span><i className={styles.analyticsLegendDot} style={{ '--legend-color': '#10b981' }}></i> Apps</span>
+                        <span>
+                          <i
+                            className={styles.analyticsLegendDot}
+                            style={{ "--legend-color": "#2057d7" }}
+                          ></i>{" "}
+                          Views
+                        </span>
+                        <span>
+                          <i
+                            className={styles.analyticsLegendDot}
+                            style={{ "--legend-color": "#5fb8f5" }}
+                          ></i>{" "}
+                          Apps
+                        </span>
                       </div>
                     </div>
                     <div className={styles.analyticsChartWrapper}>
@@ -2002,21 +2757,31 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
                     </div>
                     <div className={styles.analyticsSourceList}>
                       {sourceData.map((source) => (
-                        <div key={source.name} className={styles.analyticsSourceItem}>
+                        <div
+                          key={source.name}
+                          className={styles.analyticsSourceItem}
+                        >
                           <div className={styles.analyticsSourceInfo}>
                             <span
                               className={`${styles.analyticsSourceDot} ${styles.analyticsSourceAccent}`}
-                              style={{ '--accent-color': source.color }}
+                              style={{ "--accent-color": source.color }}
                             ></span>
-                            <span className={styles.analyticsSourceName}>{source.name}</span>
+                            <span className={styles.analyticsSourceName}>
+                              {source.name}
+                            </span>
                           </div>
                           <div className={styles.analyticsSourceBar}>
                             <div
                               className={`${styles.analyticsSourceProgress} ${styles.analyticsSourceAccent}`}
-                              style={{ width: `${source.value}%`, '--accent-color': source.color }}
+                              style={{
+                                width: `${source.value}%`,
+                                "--accent-color": source.color,
+                              }}
                             ></div>
                           </div>
-                          <span className={styles.analyticsSourceValue}>{source.value}%</span>
+                          <span className={styles.analyticsSourceValue}>
+                            {source.value}%
+                          </span>
                         </div>
                       ))}
                     </div>
@@ -2037,29 +2802,52 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
                       <span>Conversao</span>
                       <span>Status</span>
                     </div>
-                    {(analytics?.topJobs || jobs.slice(0, 5)).map((job, index) => {
-                      const jobViews = job.views || 0;
-                      const jobApps = job.applications ?? job.applicationCount ?? 0;
-                      const jobConversion = jobViews > 0 ? ((jobApps / jobViews) * 100).toFixed(1) : 0;
+                    {(analytics?.topJobs || jobs.slice(0, 5)).map(
+                      (job, index) => {
+                        const jobViews = job.views || 0;
+                        const jobApps =
+                          job.applications ?? job.applicationCount ?? 0;
+                        const jobConversion =
+                          jobViews > 0
+                            ? ((jobApps / jobViews) * 100).toFixed(1)
+                            : 0;
 
-                      return (
-                        <div key={job.id} className={styles.analyticsTableRow}>
-                          <div className={styles.analyticsTableJob}>
-                            <span className={styles.analyticsTableRank}>#{index + 1}</span>
-                            <div>
-                              <p className={styles.analyticsTableTitle}>{job.titulo}</p>
-                              <p className={styles.analyticsTableMeta}>{job.localizacao || 'Local nao informado'}</p>
+                        return (
+                          <div
+                            key={job.id}
+                            className={styles.analyticsTableRow}
+                          >
+                            <div className={styles.analyticsTableJob}>
+                              <span className={styles.analyticsTableRank}>
+                                #{index + 1}
+                              </span>
+                              <div>
+                                <p className={styles.analyticsTableTitle}>
+                                  {job.titulo}
+                                </p>
+                                <p className={styles.analyticsTableMeta}>
+                                  {job.localizacao || "Local nao informado"}
+                                </p>
+                              </div>
                             </div>
+                            <span className={styles.analyticsTableValue}>
+                              {jobViews.toLocaleString("pt-PT")}
+                            </span>
+                            <span className={styles.analyticsTableValue}>
+                              {jobApps}
+                            </span>
+                            <span className={styles.analyticsTableValue}>
+                              {jobConversion}%
+                            </span>
+                            <span
+                              className={`${styles.analyticsTableStatus} ${job.status === "active" ? styles.statusActive : styles.statusInactive}`}
+                            >
+                              {job.status === "active" ? "Ativa" : "Inativa"}
+                            </span>
                           </div>
-                          <span className={styles.analyticsTableValue}>{jobViews.toLocaleString('pt-PT')}</span>
-                          <span className={styles.analyticsTableValue}>{jobApps}</span>
-                          <span className={styles.analyticsTableValue}>{jobConversion}%</span>
-                          <span className={`${styles.analyticsTableStatus} ${job.status === 'active' ? styles.statusActive : styles.statusInactive}`}>
-                            {job.status === 'active' ? 'Ativa' : 'Inativa'}
-                          </span>
-                        </div>
-                      );
-                    })}
+                        );
+                      },
+                    )}
                     {jobs.length === 0 && (
                       <div className={styles.analyticsTableEmpty}>
                         Nenhuma vaga publicada ainda
@@ -2071,31 +2859,60 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
                 {/* Quick Stats Row */}
                 <div className={styles.analyticsQuickStats}>
                   <div className={styles.analyticsQuickStat}>
-                    <span className={styles.analyticsQuickIcon}>{icons.clock}</span>
+                    <span className={styles.analyticsQuickIcon}>
+                      {icons.clock}
+                    </span>
                     <div>
-                      <p className={styles.analyticsQuickValue}>{avgViewsPerJob}</p>
-                      <p className={styles.analyticsQuickLabel}>Media views/vaga</p>
+                      <p className={styles.analyticsQuickValue}>
+                        {avgViewsPerJob}
+                      </p>
+                      <p className={styles.analyticsQuickLabel}>
+                        Media views/vaga
+                      </p>
                     </div>
                   </div>
                   <div className={styles.analyticsQuickStat}>
-                    <span className={styles.analyticsQuickIcon}>{icons.users}</span>
+                    <span className={styles.analyticsQuickIcon}>
+                      {icons.users}
+                    </span>
                     <div>
-                      <p className={styles.analyticsQuickValue}>{avgAppsPerJob}</p>
-                      <p className={styles.analyticsQuickLabel}>Media apps/vaga</p>
+                      <p className={styles.analyticsQuickValue}>
+                        {avgAppsPerJob}
+                      </p>
+                      <p className={styles.analyticsQuickLabel}>
+                        Media apps/vaga
+                      </p>
                     </div>
                   </div>
                   <div className={styles.analyticsQuickStat}>
-                    <span className={styles.analyticsQuickIcon}>{icons.trending}</span>
+                    <span className={styles.analyticsQuickIcon}>
+                      {icons.trending}
+                    </span>
                     <div>
-                      <p className={styles.analyticsQuickValue}>{jobs.length > 0 ? Math.round((activeJobs.length / jobs.length) * 100) : 0}%</p>
+                      <p className={styles.analyticsQuickValue}>
+                        {jobs.length > 0
+                          ? Math.round((activeJobs.length / jobs.length) * 100)
+                          : 0}
+                        %
+                      </p>
                       <p className={styles.analyticsQuickLabel}>Vagas ativas</p>
                     </div>
                   </div>
                   <div className={styles.analyticsQuickStat}>
-                    <span className={styles.analyticsQuickIcon}>{icons.bell}</span>
+                    <span className={styles.analyticsQuickIcon}>
+                      {icons.bell}
+                    </span>
                     <div>
-                      <p className={styles.analyticsQuickValue}>{recentApplications.filter(a => !a.status || a.status === 'pending').length}</p>
-                      <p className={styles.analyticsQuickLabel}>Apps pendentes</p>
+                      <p className={styles.analyticsQuickValue}>
+                        {
+                          recentApplications.filter(
+                            (a) => !a.status || a.status === "pending",
+                          ).length
+                        }
+                      </p>
+                      <p className={styles.analyticsQuickLabel}>
+                        Apps pendentes
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -2103,39 +2920,57 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
             )}
           </section>
         );
-      case 'company-profile':
+      case "company-profile":
         return (
           <section className={styles.sectionBlock}>
             <div className={styles.profileSection}>
               {profile.coverUrl || profile.cover ? (
                 <div
                   className={styles.profileCover}
-                  style={{ backgroundImage: `url(${profile.coverUrl || profile.cover})` }}
+                  style={{
+                    backgroundImage: `url(${profile.coverUrl || profile.cover})`,
+                  }}
                 />
               ) : null}
               <div className={styles.profileDetails}>
                 <div className={styles.profileHeaderRow}>
-                  <h2>{profile.name || profile.fullName || 'Sua empresa'}</h2>
-                  <Link href="/dashboard/empresa/profile" className={styles.actionLink}>
+                  <h2>{profile.name || profile.fullName || "Sua empresa"}</h2>
+                  <Link
+                    href="/dashboard/empresa/profile"
+                    className={styles.actionLink}
+                  >
                     Editar informações
                   </Link>
                 </div>
                 <div className={styles.profileSummary}>
                   <h3>Resumo da empresa</h3>
-                  <p>{profile.description || 'Complete o perfil para ganhar destaque com um resumo claro da missão, cultura e principais serviços da empresa.'}</p>
+                  <p>
+                    {profile.description ||
+                      "Complete o perfil para ganhar destaque com um resumo claro da missão, cultura e principais serviços da empresa."}
+                  </p>
                 </div>
                 <div className={styles.profileStatsGrid}>
                   <div className={styles.profileStat}>
                     <span>Localização</span>
-                    <strong>{profile.location || 'São Tomé, STP'}</strong>
+                    <strong>{profile.location || "São Tomé, STP"}</strong>
                   </div>
                   <div className={styles.profileStat}>
                     <span>Setor de atuação</span>
-                    <strong>{profile.industry || profile.segment || profile.area || 'Não informado'}</strong>
+                    <strong>
+                      {profile.industry ||
+                        profile.segment ||
+                        profile.area ||
+                        "Não informado"}
+                    </strong>
                   </div>
                   <div className={styles.profileStat}>
                     <span>Contacto</span>
-                    <strong>{profile.contact || profile.phone || profile.email || 'Não informado'}</strong>
+                    <strong>
+                      {profile.contact ||
+                        profile.phone ||
+                        profile.email ||
+                        "Não informado"}
+                    </strong>
                   </div>
                   <div className={styles.profileStat}>
                     <span>Plano atual</span>
@@ -2143,18 +2978,25 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
                   </div>
                   <div className={styles.profileStat}>
                     <span>Tamanho da empresa</span>
-                    <strong>{profile.employees || profile.companySize || profile.size || 'Não informado'}</strong>
+                    <strong>
+                      {profile.employees ||
+                        profile.companySize ||
+                        profile.size ||
+                        "Não informado"}
+                    </strong>
                   </div>
                   <div className={styles.profileStat}>
                     <span>Candidaturas totais</span>
-                    <strong>{stats?.totalApplications || totalApplications}</strong>
+                    <strong>
+                      {stats?.totalApplications || totalApplications}
+                    </strong>
                   </div>
                 </div>
               </div>
             </div>
           </section>
         );
-      case 'plans':
+      case "plans":
         return (
           <section className={styles.sectionBlock}>
             <EmpresaPlansCatalog
@@ -2175,13 +3017,17 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
     }
   };
 
-  const activeLabel = MENU_ITEMS.find((item) => item.id === activeTab)?.label || activeTab;
+  const activeLabel =
+    MENU_ITEMS.find((item) => item.id === activeTab)?.label || activeTab;
 
   return (
     <>
       <Head>
         <title>Dashboard Empresa | EmpregoSTP</title>
-        <meta name="description" content="Gerencie suas vagas e candidatos no painel empresarial do EmpregoSTP" />
+        <meta
+          name="description"
+          content="Gerencie suas vagas e candidatos no painel empresarial do EmpregoSTP"
+        />
       </Head>
       <div className={styles.pageLayout}>
         <Sidebar
@@ -2190,40 +3036,54 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
           currentPlan={planState}
           profile={profile}
           onLogout={handleLogout}
-          pendingApplicationsCount={applicationsData.filter(a => a.status === 'pending').length}
+          pendingApplicationsCount={
+            applicationsData.filter((a) => a.status === "pending").length
+          }
           unreadMessages={unreadMessages}
-	        />
-	        <main className={styles.mainContent}>
-	          <TopBar
-              profile={profile}
-              activeLabel={activeLabel}
-              notificationsCount={unreadNotifications}
-              notifications={notifications}
-              notificationsOpen={notificationsOpen}
-              notificationsLoading={notificationsLoading}
-              notificationsError={notificationsError}
-              onToggleNotifications={() => {
-                setNotificationsOpen((prev) => {
-                  const next = !prev;
-                  if (!prev && next) fetchNotifications();
-                  return next;
-                });
-              }}
-              onNotificationClick={handleNotificationClick}
-              onMarkAllNotificationsRead={markAllNotificationsRead}
-            />
-	          <div className={styles.contentArea}>{renderContent()}</div>
-	        </main>
-	      </div>
+        />
+        <main className={styles.mainContent}>
+          <TopBar
+            profile={profile}
+            activeLabel={activeLabel}
+            notificationsCount={unreadNotifications}
+            notifications={notifications}
+            notificationsOpen={notificationsOpen}
+            notificationsLoading={notificationsLoading}
+            notificationsError={notificationsError}
+            onToggleNotifications={() => {
+              setNotificationsOpen((prev) => {
+                const next = !prev;
+                if (!prev && next) fetchNotifications();
+                return next;
+              });
+            }}
+            onNotificationClick={handleNotificationClick}
+            onMarkAllNotificationsRead={markAllNotificationsRead}
+          />
+          <div className={styles.contentArea}>{renderContent()}</div>
+        </main>
+      </div>
       {interviewModal.open && (
         <div className={styles.modalOverlay} onClick={closeInterviewScheduler}>
-          <div className={styles.modalCard} onClick={(event) => event.stopPropagation()}>
+          <div
+            className={styles.modalCard}
+            onClick={(event) => event.stopPropagation()}
+          >
             <div className={styles.modalHeader}>
               <div>
                 <h3>Agendar entrevista</h3>
-                <p>{interviewModal.application?.candidateName || 'Candidato'} • {interviewModal.application?.jobTitle || 'Vaga'}</p>
+                <p>
+                  {interviewModal.application?.candidateName || "Candidato"} •{" "}
+                  {interviewModal.application?.jobTitle || "Vaga"}
+                </p>
               </div>
-              <button type="button" className={styles.modalCloseButton} onClick={closeInterviewScheduler}>Fechar</button>
+              <button
+                type="button"
+                className={styles.modalCloseButton}
+                onClick={closeInterviewScheduler}
+              >
+                Fechar
+              </button>
             </div>
 
             <div className={styles.modalGrid}>
@@ -2232,7 +3092,12 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
                 <input
                   type="datetime-local"
                   value={interviewForm.interviewDate}
-                  onChange={(event) => handleInterviewFieldChange('interviewDate', event.target.value)}
+                  onChange={(event) =>
+                    handleInterviewFieldChange(
+                      "interviewDate",
+                      event.target.value,
+                    )
+                  }
                 />
               </label>
 
@@ -2240,42 +3105,68 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
                 <span>Formato</span>
                 <select
                   value={interviewForm.interviewMode}
-                  onChange={(event) => handleInterviewFieldChange('interviewMode', event.target.value)}
+                  onChange={(event) =>
+                    handleInterviewFieldChange(
+                      "interviewMode",
+                      event.target.value,
+                    )
+                  }
                 >
                   <option value="online">Online</option>
                   <option value="presencial">Presencial</option>
                 </select>
               </label>
 
-              {interviewForm.interviewMode === 'online' ? (
-                <label className={`${styles.modalField} ${styles.modalFieldFull}`}>
+              {interviewForm.interviewMode === "online" ? (
+                <label
+                  className={`${styles.modalField} ${styles.modalFieldFull}`}
+                >
                   <span>Link da entrevista</span>
                   <input
                     type="url"
                     placeholder="https://meet.google.com/..."
                     value={interviewForm.interviewLink}
-                    onChange={(event) => handleInterviewFieldChange('interviewLink', event.target.value)}
+                    onChange={(event) =>
+                      handleInterviewFieldChange(
+                        "interviewLink",
+                        event.target.value,
+                      )
+                    }
                   />
                 </label>
               ) : (
-                <label className={`${styles.modalField} ${styles.modalFieldFull}`}>
+                <label
+                  className={`${styles.modalField} ${styles.modalFieldFull}`}
+                >
                   <span>Local da entrevista</span>
                   <input
                     type="text"
                     placeholder="Endereço ou referência"
                     value={interviewForm.interviewLocation}
-                    onChange={(event) => handleInterviewFieldChange('interviewLocation', event.target.value)}
+                    onChange={(event) =>
+                      handleInterviewFieldChange(
+                        "interviewLocation",
+                        event.target.value,
+                      )
+                    }
                   />
                 </label>
               )}
 
-              <label className={`${styles.modalField} ${styles.modalFieldFull}`}>
+              <label
+                className={`${styles.modalField} ${styles.modalFieldFull}`}
+              >
                 <span>Notas para o candidato</span>
                 <textarea
                   rows="4"
                   placeholder="Ex.: leve documento de identificação e chegue 10 minutos antes."
                   value={interviewForm.interviewNotes}
-                  onChange={(event) => handleInterviewFieldChange('interviewNotes', event.target.value)}
+                  onChange={(event) =>
+                    handleInterviewFieldChange(
+                      "interviewNotes",
+                      event.target.value,
+                    )
+                  }
                 />
               </label>
             </div>
@@ -2283,18 +3174,29 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
             {interviewError && (
               <div className={styles.modalErrorBox}>
                 <p>{interviewError}</p>
-                {interviewError.toLowerCase().includes('upgrade') && (
-                  <Link href="/premium/empresa" className={styles.actionLink}>Ver planos</Link>
+                {interviewError.toLowerCase().includes("upgrade") && (
+                  <Link href="/premium/empresa" className={styles.actionLink}>
+                    Ver planos
+                  </Link>
                 )}
               </div>
             )}
 
             <div className={styles.modalActions}>
-              <button type="button" className={styles.applicationBtnOutline} onClick={closeInterviewScheduler}>
+              <button
+                type="button"
+                className={styles.applicationBtnOutline}
+                onClick={closeInterviewScheduler}
+              >
                 Cancelar
               </button>
-              <button type="button" className={styles.applicationBtn} onClick={handleScheduleInterview} disabled={interviewSubmitting}>
-                {interviewSubmitting ? 'A guardar...' : 'Confirmar entrevista'}
+              <button
+                type="button"
+                className={styles.applicationBtn}
+                onClick={handleScheduleInterview}
+                disabled={interviewSubmitting}
+              >
+                {interviewSubmitting ? "A guardar..." : "Confirmar entrevista"}
               </button>
             </div>
           </div>
@@ -2306,21 +3208,21 @@ export default function EmpresaDashboard({ profile, jobs, totalApplications, rec
 
 function safeTimestampToMillis(timestamp) {
   if (!timestamp) return null;
-  if (typeof timestamp.toMillis === 'function') return timestamp.toMillis();
-  if (typeof timestamp === 'number') return timestamp;
-  if (typeof timestamp === 'string') return new Date(timestamp).getTime();
+  if (typeof timestamp.toMillis === "function") return timestamp.toMillis();
+  if (typeof timestamp === "number") return timestamp;
+  if (typeof timestamp === "string") return new Date(timestamp).getTime();
   return null;
 }
 
 function sanitizeFirestoreValue(value) {
   if (!value) return value;
-  if (typeof value.toMillis === 'function') {
+  if (typeof value.toMillis === "function") {
     return value.toMillis();
   }
   if (Array.isArray(value)) {
     return value.map((item) => sanitizeFirestoreValue(item));
   }
-  if (value && typeof value === 'object') {
+  if (value && typeof value === "object") {
     const sanitized = {};
     Object.keys(value).forEach((key) => {
       sanitized[key] = sanitizeFirestoreValue(value[key]);
@@ -2337,49 +3239,79 @@ function normalizeJobDates(job) {
     updatedAt: safeTimestampToMillis(job.updatedAt),
     deadline: safeTimestampToMillis(job.deadline),
     lastViewedAt: safeTimestampToMillis(job.lastViewedAt),
-    publicadoEm: safeTimestampToMillis(job.publicadoEm)
+    publicadoEm: safeTimestampToMillis(job.publicadoEm),
   };
 }
 
 export async function getServerSideProps(context) {
-  const { admin } = await import('../../../lib/firebaseAdmin');
+  const { admin } = await import("../../../lib/firebaseAdmin");
   try {
     const cookies = nookies.get(context);
     if (!cookies.token) {
-      return { redirect: { destination: '/login', permanent: false } };
+      return { redirect: { destination: "/login", permanent: false } };
     }
     const token = await admin.auth().verifyIdToken(cookies.token);
     const { uid } = token;
 
-    const userDoc = await admin.firestore().collection('users').doc(uid).get();
+    const userDoc = await admin.firestore().collection("users").doc(uid).get();
     if (!userDoc.exists) {
-      return { redirect: { destination: '/login', permanent: false } };
+      return { redirect: { destination: "/login", permanent: false } };
     }
     const userData = userDoc.data();
-    if (userData.userType !== 'empresa') {
-      return { redirect: { destination: '/dashboard', permanent: false } };
+    if (userData.userType !== "empresa") {
+      return { redirect: { destination: "/dashboard", permanent: false } };
     }
 
     const profile = {
       ...userData,
       planEndDate: safeTimestampToMillis(userData.planEndDate),
       planStartDate: safeTimestampToMillis(userData.planStartDate),
-      monthlyJobsResetDate: safeTimestampToMillis(userData.monthlyJobsResetDate),
+      monthlyJobsResetDate: safeTimestampToMillis(
+        userData.monthlyJobsResetDate,
+      ),
       updatedAt: safeTimestampToMillis(userData.updatedAt),
-      createdAt: safeTimestampToMillis(userData.createdAt)
+      createdAt: safeTimestampToMillis(userData.createdAt),
+    };
+    const companyPlanFeatures = getEmpresaPlanFeatures(
+      normalizeEmpresaPlanId(
+        userData.planTierId || userData.currentPlan || userData.planId,
+        userData.planName,
+        userData,
+      ),
+      userData.planName,
+      userData,
+    );
+    const publicViewerAccess = {
+      canViewDetailedInfo: Boolean(companyPlanFeatures.accessTalentPool),
+      canContactCandidate: Boolean(
+        companyPlanFeatures.canViewCandidateContact ||
+        companyPlanFeatures.canSendDirectMessages,
+      ),
     };
 
-    const jobsSnapshot = await admin.firestore().collection('jobs').where('companyId', '==', uid).get();
+    const [jobsSnapshot, appsSnap, plans, publicCandidatesData] =
+      await Promise.all([
+        admin
+          .firestore()
+          .collection("jobs")
+          .where("companyId", "==", uid)
+          .get(),
+        admin
+          .firestore()
+          .collection("applications")
+          .where("companyId", "==", uid)
+          .get(),
+        fetchActiveEmpresaPlans(admin),
+        fetchVerifiedCandidates(admin, publicViewerAccess),
+      ]);
     const jobs = jobsSnapshot.docs.map((doc) => {
       const data = sanitizeFirestoreValue(doc.data());
       const jobPayload = {
         id: doc.id,
-        ...data
+        ...data,
       };
       return normalizeJobDates(jobPayload);
     });
-
-    const appsSnap = await admin.firestore().collection('applications').where('companyId', '==', uid).get();
     const appCounts = {};
     const recentApplications = [];
 
@@ -2398,28 +3330,59 @@ export async function getServerSideProps(context) {
         candidateEmail: data.candidateEmail || null,
         jobTitle: data.jobTitle || null,
         company: data.company || null,
-        status: data.status || 'pending',
+        status: data.status || "pending",
         interviewDetails: data.interviewDetails
           ? {
               ...sanitizeFirestoreValue(data.interviewDetails),
-              scheduledAt: safeTimestampToMillis(data.interviewDetails.scheduledAt)
-                ? new Date(safeTimestampToMillis(data.interviewDetails.scheduledAt)).toISOString()
+              scheduledAt: safeTimestampToMillis(
+                data.interviewDetails.scheduledAt,
+              )
+                ? new Date(
+                    safeTimestampToMillis(data.interviewDetails.scheduledAt),
+                  ).toISOString()
                 : data.interviewDetails.scheduledAt || null,
               updatedAt: safeTimestampToMillis(data.interviewDetails.updatedAt)
-                ? new Date(safeTimestampToMillis(data.interviewDetails.updatedAt)).toISOString()
-                : data.interviewDetails.updatedAt || null
+                ? new Date(
+                    safeTimestampToMillis(data.interviewDetails.updatedAt),
+                  ).toISOString()
+                : data.interviewDetails.updatedAt || null,
             }
           : null,
         statusNotes: data.statusNotes || null,
         jobLocation: data.jobLocation || null,
-        jobType: data.jobType || null
+        jobType: data.jobType || null,
+        coverLetter: data.coverLetter || "",
+        priorityApplied: Boolean(data.priorityApplied),
+        applicationHighlighted: Boolean(data.applicationHighlighted),
+        priorityLevel: Number(data.priorityLevel) || 0,
+        premiumOnlyJob: Boolean(data.premiumOnlyJob),
+        accessedDuringEarlyWindow: Boolean(data.accessedDuringEarlyWindow),
+        earlyAccessUntil: data.earlyAccessUntil || null,
+        requireCoverLetter: Boolean(data.requireCoverLetter),
+        compatibilityScore: Number.isFinite(Number(data.compatibilityScore))
+          ? Number(data.compatibilityScore)
+          : null,
+        compatibilityReasons: Array.isArray(data.compatibilityReasons)
+          ? data.compatibilityReasons
+          : [],
+        candidatePlanId: data.candidatePlanId || null,
+        candidatePlanName: data.candidatePlanName || null,
+        skillsAssessmentResult: data.skillsAssessmentResult || null,
       };
-      const appliedAtValue = safeTimestampToMillis(data.appliedAt || data.createdAt);
-      applicationData.appliedAt = appliedAtValue ? new Date(appliedAtValue).toISOString() : null;
+      const appliedAtValue = safeTimestampToMillis(
+        data.appliedAt || data.createdAt,
+      );
+      applicationData.appliedAt = appliedAtValue
+        ? new Date(appliedAtValue).toISOString()
+        : null;
       const createdAtValue = safeTimestampToMillis(data.createdAt);
-      applicationData.createdAt = createdAtValue ? new Date(createdAtValue).toISOString() : null;
+      applicationData.createdAt = createdAtValue
+        ? new Date(createdAtValue).toISOString()
+        : null;
       const updatedAtValue = safeTimestampToMillis(data.updatedAt);
-      applicationData.updatedAt = updatedAtValue ? new Date(updatedAtValue).toISOString() : null;
+      applicationData.updatedAt = updatedAtValue
+        ? new Date(updatedAtValue).toISOString()
+        : null;
       recentApplications.push(applicationData);
     });
 
@@ -2429,14 +3392,22 @@ export async function getServerSideProps(context) {
       return dateB - dateA;
     });
 
-    const jobsWithCounts = jobs.map((job) => ({ ...job, applicationCount: appCounts[job.id] || 0 }));
+    const jobsWithCounts = jobs.map((job) => ({
+      ...job,
+      applicationCount: appCounts[job.id] || 0,
+    }));
 
     const stats = {
       totalApplications: appsSnap.size,
-      pendingApplications: recentApplications.filter((a) => a.status === 'pending' || !a.status).length,
-      approvedApplications: recentApplications.filter((a) => a.status === 'approved').length
+      pendingApplications: recentApplications.filter(
+        (a) => a.status === "pending" || !a.status,
+      ).length,
+      approvedApplications: recentApplications.filter(
+        (a) => a.status === "approved",
+      ).length,
     };
-    const plans = await fetchActiveEmpresaPlans(admin);
+    const publicCandidateSummary =
+      summarizeVerifiedCandidates(publicCandidatesData);
 
     return {
       props: {
@@ -2445,11 +3416,16 @@ export async function getServerSideProps(context) {
         totalApplications: appsSnap.size,
         recentApplications: recentApplications.slice(0, 10),
         stats,
-        plans
-      }
+        plans,
+        publicCandidates: publicCandidatesData.slice(0, 6),
+        publicCandidateSummary,
+        verifiedCandidateIds: publicCandidatesData.map(
+          (candidate) => candidate.id,
+        ),
+      },
     };
   } catch (error) {
-    console.error('Erro no getServerSideProps:', error);
-    return { redirect: { destination: '/login', permanent: false } };
+    console.error("Erro no getServerSideProps:", error);
+    return { redirect: { destination: "/login", permanent: false } };
   }
 }

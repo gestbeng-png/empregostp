@@ -15,6 +15,19 @@ const mapPlanInfo = (userData) => ({
   vagasLimit: userData.vagasLimit
 });
 
+const serializeValue = (value) => {
+  if (value === null || value === undefined) return value;
+  if (Array.isArray(value)) return value.map((item) => serializeValue(item));
+  if (typeof value?.toDate === 'function') return value.toDate().toISOString();
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, currentValue]) => [key, serializeValue(currentValue)])
+    );
+  }
+  return value;
+};
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Método não permitido' });
@@ -39,7 +52,7 @@ export default async function handler(req, res) {
     const profileRef = admin.firestore().collection('profiles').doc(uid);
 
     await userRef.update({ cvUrl, cvName, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
-    await profileRef.set({ cvUrl, cvName }, { merge: true });
+    await profileRef.set({ cvUrl, cvName, updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
 
     const [userSnap, profileSnap] = await Promise.all([userRef.get(), profileRef.get()]);
     const userData = userSnap.data() || {};
@@ -52,6 +65,10 @@ export default async function handler(req, res) {
       userType: userData.userType,
       cvUrl: userData.cvUrl || profileData.cvUrl || '',
       cvName: userData.cvName || profileData.cvName || '',
+      verificationStatus: userData.verificationStatus || profileData.verificationStatus || 'unverified',
+      verificationSummary: serializeValue(userData.verificationSummary || profileData.verificationSummary || null),
+      verificationItems: serializeValue(userData.verificationItems || profileData.verificationItems || null),
+      verificationId: userData.verificationId || profileData.verificationId || null,
       ...mapPlanInfo(userData)
     };
 

@@ -1,230 +1,211 @@
-import { useState } from 'react';
-import { useRouter } from 'next/router';
-import Link from 'next/link';
-import Head from 'next/head';
-import { admin } from '../../../lib/firebaseAdmin';
-import nookies from 'nookies';
-import LandingHeader from '../../../components/LandingHeader';
+import { useMemo, useState } from "react";
+import Link from "next/link";
+import Head from "next/head";
+import nookies from "nookies";
+import LandingHeader from "../../../components/LandingHeader";
+import { admin } from "../../../lib/firebaseAdmin";
+import styles from "../../../styles/AdminPanel.module.css";
 
 export default function AdminUsers({ users = [] }) {
-  const router = useRouter();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('all');
-  
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = 
-      user.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      user.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.phone?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesType = 
-      filterType === 'all' || 
-      user.userType === filterType;
-    
-    return matchesSearch && matchesType;
-  });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState("all");
+
+  const filteredUsers = useMemo(() => {
+    return users.filter((user) => {
+      const query = searchTerm.trim().toLowerCase();
+      const matchesSearch =
+        !query ||
+        user.name?.toLowerCase().includes(query) ||
+        user.fullName?.toLowerCase().includes(query) ||
+        user.email?.toLowerCase().includes(query) ||
+        user.phone?.toLowerCase().includes(query);
+
+      const matchesType = filterType === "all" || user.userType === filterType;
+      return matchesSearch && matchesType;
+    });
+  }, [users, searchTerm, filterType]);
 
   const stats = {
     total: users.length,
-    candidatos: users.filter(u => u.userType === 'candidato').length,
-    empresas: users.filter(u => u.userType === 'empresa').length,
-    admins: users.filter(u => u.userType === 'admin').length
+    candidatos: users.filter((user) => user.userType === "candidato").length,
+    empresas: users.filter((user) => user.userType === "empresa").length,
+    admins: users.filter((user) => user.userType === "admin").length,
   };
 
   return (
     <>
       <Head>
-        <title>Gerenciar Usuários - Admin</title>
-        <style>{`
-          body {
-            background: linear-gradient(180deg, #0a0e1a 0%, #1a1f35 100%);
-            min-height: 100vh;
-          }
-        `}</style>
+        <title>Gerenciar Utilizadores - Admin</title>
       </Head>
       <LandingHeader />
-      
-      <main style={{ maxWidth: '1400px', margin: '0 auto', padding: '2rem', minHeight: '100vh' }}>
-        
-        {/* Header */}
-        <div style={{ marginBottom: '2rem' }}>
-          <Link href="/dashboard/admin" style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            color: '#60a5fa',
-            textDecoration: 'none',
-            fontWeight: '600',
-            marginBottom: '1rem'
-          }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M19 12H5M12 19l-7-7 7-7"/>
-            </svg>
-            Voltar ao Dashboard
-          </Link>
-          <h1 style={{ margin: '0', fontSize: '2.5rem', color: 'white', fontWeight: '900' }}>
-            Gerenciar Usuários
-          </h1>
-          <p style={{ margin: '0.5rem 0 0 0', color: 'rgba(255, 255, 255, 0.7)', fontSize: '1.05rem' }}>
-            {filteredUsers.length} de {users.length} usuários
-          </p>
-        </div>
-        
-        {/* Estatísticas */}
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-          gap: '1.5rem',
-          marginBottom: '2rem'
-        }}>
-          <StatCard title="Total" value={stats.total} color="#3b82f6" active={filterType === 'all'} onClick={() => setFilterType('all')} />
-          <StatCard title="Candidatos" value={stats.candidatos} color="#10b981" active={filterType === 'candidato'} onClick={() => setFilterType('candidato')} />
-          <StatCard title="Empresas" value={stats.empresas} color="#f59e0b" active={filterType === 'empresa'} onClick={() => setFilterType('empresa')} />
-          <StatCard title="Admins" value={stats.admins} color="#8b5cf6" active={filterType === 'admin'} onClick={() => setFilterType('admin')} />
-        </div>
-        
-        {/* Barra de Pesquisa */}
-        <div style={{ 
-          background: 'rgba(255, 255, 255, 0.05)',
-          backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          borderRadius: '16px',
-          padding: '2rem',
-          marginBottom: '2rem'
-        }}>
-          <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
-            <div style={{ flex: '1 1 300px' }}>
-              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'rgba(255, 255, 255, 0.9)', fontWeight: '600' }}>
+
+      <main className={styles.page}>
+        <section className={styles.headerCard}>
+          <div className={styles.headerCopy}>
+            <Link
+              href="/dashboard/admin"
+              className={`${styles.linkButton} ${styles.buttonGhost} ${styles.buttonSmall}`}
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+              </svg>
+              Voltar ao dashboard
+            </Link>
+            <h1 className={styles.headerTitle}>Gerenciar utilizadores</h1>
+            <p className={styles.headerSubtitle}>
+              {filteredUsers.length} de {users.length} utilizadores encontrados.
+            </p>
+          </div>
+        </section>
+
+        <section className={`${styles.section} ${styles.gridStats}`}>
+          <StatCard
+            title="Total"
+            value={stats.total}
+            active={filterType === "all"}
+            accent="#2057d7"
+            onClick={() => setFilterType("all")}
+          />
+          <StatCard
+            title="Candidatos"
+            value={stats.candidatos}
+            active={filterType === "candidato"}
+            accent="#5fb8f5"
+            onClick={() => setFilterType("candidato")}
+          />
+          <StatCard
+            title="Empresas"
+            value={stats.empresas}
+            active={filterType === "empresa"}
+            accent="#d9ff2f"
+            onClick={() => setFilterType("empresa")}
+          />
+          <StatCard
+            title="Admins"
+            value={stats.admins}
+            active={filterType === "admin"}
+            accent="#1e2b4d"
+            onClick={() => setFilterType("admin")}
+          />
+        </section>
+
+        <section
+          className={`${styles.surface} ${styles.panel} ${styles.section}`}
+        >
+          <div className={styles.inlineControls}>
+            <div style={{ flex: "1 1 320px" }}>
+              <label className={styles.chartTitle} htmlFor="admin-users-search">
                 Pesquisar
               </label>
               <input
+                id="admin-users-search"
                 type="text"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder="Nome, email ou telefone..."
-                style={{
-                  width: '100%',
-                  padding: '0.75rem 1rem',
-                  borderRadius: '12px',
-                  border: '2px solid rgba(255, 255, 255, 0.1)',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  color: 'white',
-                  fontSize: '0.95rem',
-                  transition: 'all 0.3s ease'
-                }}
-                onFocus={(e) => {
-                  e.currentTarget.style.borderColor = '#60a5fa';
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
-                }}
-                onBlur={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-                }}
+                className={styles.inputControl}
               />
             </div>
-            
-            {searchTerm && (
+            {searchTerm ? (
               <button
-                onClick={() => setSearchTerm('')}
-                style={{
-                  alignSelf: 'flex-end',
-                  padding: '0.75rem 1.5rem',
-                  background: 'rgba(239, 68, 68, 0.2)',
-                  border: '2px solid rgba(239, 68, 68, 0.3)',
-                  borderRadius: '12px',
-                  color: '#fca5a5',
-                  fontWeight: '700',
-                  cursor: 'pointer'
-                }}
+                type="button"
+                onClick={() => setSearchTerm("")}
+                className={`${styles.buttonBase} ${styles.buttonGhost}`}
               >
                 Limpar
               </button>
-            )}
+            ) : null}
           </div>
-        </div>
-        
-        {/* Tabela de Usuários */}
-        <div style={{ 
-          background: 'rgba(255, 255, 255, 0.05)',
-          backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          borderRadius: '16px',
-          overflow: 'hidden'
-        }}>
-          {filteredUsers.length === 0 ? (
-            <div style={{ padding: '4rem 2rem', textAlign: 'center' }}>
-              <h3 style={{ margin: '0 0 0.5rem 0', color: 'white', fontSize: '1.3rem' }}>
-                Nenhum usuário encontrado
-              </h3>
-              <p style={{ margin: 0, color: 'rgba(255, 255, 255, 0.7)' }}>
-                Tente ajustar os filtros de pesquisa
-              </p>
-            </div>
-          ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        </section>
+
+        {filteredUsers.length === 0 ? (
+          <section className={styles.emptyState}>
+            <p className={styles.emptyText}>
+              Nenhum utilizador encontrado para os filtros atuais.
+            </p>
+          </section>
+        ) : (
+          <section className={styles.tableShell}>
+            <div className={`${styles.tableWrap} ${styles.tableWrapMin}`}>
+              <table className={styles.table}>
                 <thead>
-                  <tr style={{ background: 'rgba(255, 255, 255, 0.05)', borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
-                    <th style={{ padding: '1rem', textAlign: 'left', color: 'white', fontWeight: '700' }}>Nome</th>
-                    <th style={{ padding: '1rem', textAlign: 'left', color: 'white', fontWeight: '700' }}>Email</th>
-                    <th style={{ padding: '1rem', textAlign: 'left', color: 'white', fontWeight: '700' }}>Telefone</th>
-                    <th style={{ padding: '1rem', textAlign: 'center', color: 'white', fontWeight: '700' }}>Tipo</th>
-                    <th style={{ padding: '1rem', textAlign: 'left', color: 'white', fontWeight: '700' }}>Localização</th>
-                    <th style={{ padding: '1rem', textAlign: 'left', color: 'white', fontWeight: '700' }}>Data</th>
-                    <th style={{ padding: '1rem', textAlign: 'right', color: 'white', fontWeight: '700' }}>Ações</th>
+                  <tr className={styles.tableHeadRow}>
+                    <th className={styles.tableHeadCell}>Nome</th>
+                    <th className={styles.tableHeadCell}>Email</th>
+                    <th className={styles.tableHeadCell}>Telefone</th>
+                    <th
+                      className={`${styles.tableHeadCell} ${styles.alignCenter}`}
+                    >
+                      Tipo
+                    </th>
+                    <th className={styles.tableHeadCell}>Localização</th>
+                    <th className={styles.tableHeadCell}>Data</th>
+                    <th
+                      className={`${styles.tableHeadCell} ${styles.alignRight}`}
+                    >
+                      Ações
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredUsers.map((user) => (
-                    <tr key={user.id} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
-                      <td style={{ padding: '1rem', color: 'white', fontWeight: '600' }}>
-                        {user.name || user.fullName || 'Não informado'}
+                    <tr className={styles.tableRow} key={user.id}>
+                      <td
+                        className={`${styles.tableCell} ${styles.tableCellStrong}`}
+                      >
+                        {user.name || user.fullName || "Não informado"}
                       </td>
-                      <td style={{ padding: '1rem', color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.9rem' }}>
-                        {user.email}
+                      <td
+                        className={`${styles.tableCell} ${styles.tableCellMuted}`}
+                      >
+                        {user.email || "—"}
                       </td>
-                      <td style={{ padding: '1rem', color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.9rem' }}>
-                        {user.phone || '—'}
+                      <td
+                        className={`${styles.tableCell} ${styles.tableCellSoft}`}
+                      >
+                        {user.phone || "—"}
                       </td>
-                      <td style={{ padding: '1rem', textAlign: 'center' }}>
+                      <td
+                        className={`${styles.tableCell} ${styles.alignCenter}`}
+                      >
                         <UserTypeBadge type={user.userType} />
                       </td>
-                      <td style={{ padding: '1rem', color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.9rem' }}>
-                        {user.location || user.cidade || '—'}
+                      <td
+                        className={`${styles.tableCell} ${styles.tableCellSoft}`}
+                      >
+                        {user.location || "—"}
                       </td>
-                      <td style={{ padding: '1rem', color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.85rem' }}>
-                        {user.createdAt ? new Date(user.createdAt).toLocaleString('pt-PT', {
-                          day: '2-digit',
-                          month: 'short',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        }) : <span style={{ color: 'rgba(255, 255, 255, 0.4)', fontStyle: 'italic' }}>Não disponível</span>}
+                      <td
+                        className={`${styles.tableCell} ${styles.tableCellSoft} ${styles.nowrap}`}
+                      >
+                        {formatDateTime(user.createdAt)}
                       </td>
-                      <td style={{ padding: '1rem', textAlign: 'right' }}>
-                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                          <Link href={`/dashboard/admin/users/${user.id}`} style={{
-                            padding: '0.5rem 1rem',
-                            background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-                            color: 'white',
-                            borderRadius: '8px',
-                            textDecoration: 'none',
-                            fontSize: '0.85rem',
-                            fontWeight: '600'
-                          }}>
+                      <td
+                        className={`${styles.tableCell} ${styles.alignRight}`}
+                      >
+                        <div className={styles.buttonGroup}>
+                          <Link
+                            href={`/dashboard/admin/users/${user.id}`}
+                            className={`${styles.linkButton} ${styles.buttonPrimary} ${styles.buttonSmall}`}
+                          >
                             Ver
                           </Link>
-                          <Link href={`/dashboard/admin/users/${user.id}/edit`} style={{
-                            padding: '0.5rem 1rem',
-                            background: 'rgba(16, 185, 129, 0.2)',
-                            border: '1px solid rgba(16, 185, 129, 0.3)',
-                            color: '#34d399',
-                            borderRadius: '8px',
-                            textDecoration: 'none',
-                            fontSize: '0.85rem',
-                            fontWeight: '600'
-                          }}>
+                          <Link
+                            href={`/dashboard/admin/users/${user.id}/edit`}
+                            className={`${styles.linkButton} ${styles.buttonAccent} ${styles.buttonSmall}`}
+                            style={{
+                              "--button-bg": "rgba(95, 184, 245, 0.14)",
+                              "--button-border": "rgba(95, 184, 245, 0.28)",
+                              "--button-color": "#2057d7",
+                            }}
+                          >
                             Editar
                           </Link>
                         </div>
@@ -234,178 +215,182 @@ export default function AdminUsers({ users = [] }) {
                 </tbody>
               </table>
             </div>
-          )}
-        </div>
+          </section>
+        )}
       </main>
     </>
   );
 }
 
-function StatCard({ title, value, color, active, onClick }) {
+function StatCard({ title, value, active, accent, onClick }) {
   return (
-    <div
+    <button
+      type="button"
       onClick={onClick}
+      className={styles.statCard}
       style={{
-        background: active ? `${color}30` : 'rgba(255, 255, 255, 0.05)',
-        backdropFilter: 'blur(10px)',
-        border: active ? `2px solid ${color}` : '1px solid rgba(255, 255, 255, 0.1)',
-        borderRadius: '12px',
-        padding: '1.5rem',
-        textAlign: 'center',
-        cursor: 'pointer',
-        transition: 'all 0.3s ease'
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'translateY(-4px)';
-        e.currentTarget.style.boxShadow = `0 10px 30px ${color}40`;
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = 'translateY(0)';
-        e.currentTarget.style.boxShadow = 'none';
+        "--accent-color": accent,
+        borderColor: active ? accent : undefined,
+        background: active
+          ? `linear-gradient(180deg, #ffffff, color-mix(in srgb, ${accent} 14%, #f8fbff))`
+          : undefined,
       }}
     >
-      <div style={{ fontSize: '2.5rem', fontWeight: '900', color: color, marginBottom: '0.5rem' }}>
-        {value}
-      </div>
-      <div style={{ fontSize: '0.95rem', color: 'white', fontWeight: '700' }}>
-        {title}
-      </div>
-    </div>
+      <p className={styles.statValue}>{value}</p>
+      <p className={styles.statLabel}>{title}</p>
+    </button>
   );
 }
 
 function UserTypeBadge({ type }) {
-  let color, bgColor, borderColor, label;
-  
-  if (type === 'candidato') {
-    color = '#34d399';
-    bgColor = 'rgba(16, 185, 129, 0.2)';
-    borderColor = 'rgba(16, 185, 129, 0.3)';
-    label = 'Candidato';
-  } else if (type === 'empresa') {
-    color = '#fbbf24';
-    bgColor = 'rgba(251, 191, 36, 0.2)';
-    borderColor = 'rgba(251, 191, 36, 0.3)';
-    label = 'Empresa';
-  } else if (type === 'admin') {
-    color = '#a78bfa';
-    bgColor = 'rgba(139, 92, 246, 0.2)';
-    borderColor = 'rgba(139, 92, 246, 0.3)';
-    label = 'Admin';
-  } else {
-    color = '#94a3b8';
-    bgColor = 'rgba(100, 116, 139, 0.2)';
-    borderColor = 'rgba(100, 116, 139, 0.3)';
-    label = 'Desconhecido';
-  }
-  
+  const palette = {
+    candidato: {
+      label: "Candidato",
+      style: {
+        "--badge-bg": "rgba(95, 184, 245, 0.14)",
+        "--badge-color": "#2057d7",
+        "--badge-border": "1px solid rgba(95, 184, 245, 0.24)",
+      },
+    },
+    empresa: {
+      label: "Empresa",
+      style: {
+        "--badge-bg": "rgba(217, 255, 47, 0.22)",
+        "--badge-color": "#1e2b4d",
+        "--badge-border": "1px solid rgba(217, 255, 47, 0.3)",
+      },
+    },
+    admin: {
+      label: "Admin",
+      style: {
+        "--badge-bg": "rgba(30, 43, 77, 0.12)",
+        "--badge-color": "#1e2b4d",
+        "--badge-border": "1px solid rgba(30, 43, 77, 0.16)",
+      },
+    },
+  };
+
+  const current = palette[type] || {
+    label: "Desconhecido",
+    style: {
+      "--badge-bg": "rgba(123, 141, 168, 0.12)",
+      "--badge-color": "#607394",
+      "--badge-border": "1px solid rgba(123, 141, 168, 0.18)",
+    },
+  };
+
   return (
-    <span style={{ 
-      display: 'inline-block',
-      padding: '0.4rem 0.9rem',
-      borderRadius: '12px',
-      fontSize: '0.85rem',
-      fontWeight: '700',
-      backgroundColor: bgColor,
-      color: color,
-      border: `1px solid ${borderColor}`
-    }}>
-      {label}
+    <span
+      className={`${styles.badge} ${styles.badgeSmall}`}
+      style={current.style}
+    >
+      {current.label}
     </span>
   );
+}
+
+function formatDateTime(value) {
+  if (!value) return "Não disponível";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Não disponível";
+  return date.toLocaleString("pt-PT", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 export async function getServerSideProps(context) {
   try {
     const cookies = nookies.get(context);
-    
+
     if (!cookies.token) {
-      return { redirect: { destination: '/login', permanent: false } };
+      return { redirect: { destination: "/login", permanent: false } };
     }
 
     const token = await admin.auth().verifyIdToken(cookies.token);
     const { uid } = token;
 
-    const userDoc = await admin.firestore().collection('users').doc(uid).get();
+    const userDoc = await admin.firestore().collection("users").doc(uid).get();
     if (!userDoc.exists) {
-      return { redirect: { destination: '/login', permanent: false } };
+      return { redirect: { destination: "/login", permanent: false } };
     }
-    
+
     const userData = userDoc.data();
-    
-    if (userData.userType !== 'admin') {
-      return { redirect: { destination: '/dashboard', permanent: false } };
+
+    if (userData.userType !== "admin") {
+      return { redirect: { destination: "/dashboard", permanent: false } };
     }
 
-    console.log('📊 Buscando todos os usuários...');
-
-    // Buscar todos os usuários
-    const usersSnapshot = await admin.firestore()
-      .collection('users')
-      .orderBy('createdAt', 'desc')
+    const usersSnapshot = await admin
+      .firestore()
+      .collection("users")
+      .orderBy("createdAt", "desc")
       .get();
 
-    console.log(`✅ ${usersSnapshot.size} usuários encontrados`);
-
-    // Buscar perfis detalhados (profiles)
-    const profilesSnapshot = await admin.firestore()
-      .collection('profiles')
+    const profilesSnapshot = await admin
+      .firestore()
+      .collection("profiles")
       .get();
-
     const profilesMap = {};
-    profilesSnapshot.docs.forEach(doc => {
+    profilesSnapshot.docs.forEach((doc) => {
       profilesMap[doc.id] = doc.data();
     });
 
-    console.log(`✅ ${profilesSnapshot.size} perfis encontrados`);
-
-    const serializeTs = (v) => {
-      if (!v) return null;
-      if (typeof v.toMillis === 'function') return v.toMillis();
-      if (typeof v.toDate === 'function') return v.toDate().getTime();
-      if (typeof v === 'number') return v;
+    const serializeTs = (value) => {
+      if (!value) return null;
+      if (typeof value.toMillis === "function") return value.toMillis();
+      if (typeof value.toDate === "function") return value.toDate().getTime();
+      if (typeof value === "number") return value;
       return null;
     };
 
-    const users = usersSnapshot.docs.map(doc => {
-      const userData = doc.data();
+    const users = usersSnapshot.docs.map((doc) => {
+      const firestoreUser = doc.data();
       const profileData = profilesMap[doc.id] || {};
-      
-      // Debug para o primeiro usuário
-      if (doc.id === usersSnapshot.docs[0]?.id) {
-        console.log('📋 Exemplo de usuário:', {
-          id: doc.id,
-          createdAt: userData.createdAt,
-          createdAtType: typeof userData.createdAt,
-          serialized: serializeTs(userData.createdAt)
-        });
-      }
-      
+
       return {
         id: doc.id,
-        name: userData.name || userData.fullName || profileData.fullName || '',
-        fullName: userData.fullName || userData.name || profileData.fullName || '',
-        email: userData.email || '',
-        phone: profileData.phone || userData.phone || '',
-        location: profileData.location || userData.location || userData.cidade || '',
-        userType: userData.userType || '',
-        photoUrl: profileData.photoUrl || userData.photoUrl || '',
-        createdAt: serializeTs(userData.createdAt) || serializeTs(profileData.createdAt) || null,
-        updatedAt: serializeTs(userData.updatedAt) || serializeTs(profileData.updatedAt) || null,
-        planEndDate: serializeTs(userData.planEndDate) || null,
-        currentPlan: userData.currentPlan || '',
-        provider: userData.provider || 'email'
+        name:
+          firestoreUser.name ||
+          firestoreUser.fullName ||
+          profileData.fullName ||
+          "",
+        fullName:
+          firestoreUser.fullName ||
+          firestoreUser.name ||
+          profileData.fullName ||
+          "",
+        email: firestoreUser.email || "",
+        phone: profileData.phone || firestoreUser.phone || "",
+        location:
+          profileData.location ||
+          firestoreUser.location ||
+          firestoreUser.cidade ||
+          "",
+        userType: firestoreUser.userType || "",
+        photoUrl: profileData.photoUrl || firestoreUser.photoUrl || "",
+        createdAt:
+          serializeTs(firestoreUser.createdAt) ||
+          serializeTs(profileData.createdAt) ||
+          null,
+        updatedAt:
+          serializeTs(firestoreUser.updatedAt) ||
+          serializeTs(profileData.updatedAt) ||
+          null,
+        planEndDate: serializeTs(firestoreUser.planEndDate) || null,
+        currentPlan: firestoreUser.currentPlan || "",
+        provider: firestoreUser.provider || "email",
       };
     });
 
-    console.log('✅ Dados dos usuários serializados');
-    console.log(`📅 Exemplo de data serializada: ${users[0]?.createdAt}`);
-
     return {
-      props: { users }
+      props: { users },
     };
   } catch (error) {
-    console.error('❌ Erro no getServerSideProps:', error);
-    return { redirect: { destination: '/login', permanent: false } };
+    console.error("Erro no getServerSideProps de admin/users:", error);
+    return { redirect: { destination: "/login", permanent: false } };
   }
 }

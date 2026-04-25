@@ -1,4 +1,5 @@
 import { admin } from '../../../../lib/firebaseAdmin';
+import { getEffectiveJobStatus, parseJobCloseDate, syncExpiredJobStatus } from '../../../../lib/jobExpiration';
 
 const serializeTimestamp = (value) => {
   if (!value) return null;
@@ -12,7 +13,7 @@ const mapJobForResponse = (id, data) => ({
   companyId: data.companyId || data.empresaId || '',
   companyName: data.companyName || data.empresaNome || '',
   empresaNome: data.companyName || data.empresaNome || '',
-  status: data.status || 'active',
+  status: getEffectiveJobStatus(data),
   localizacao: data.localizacao || data.location || '',
   location: data.localizacao || data.location || '',
   tipoContrato: data.tipoContrato || '',
@@ -69,7 +70,17 @@ export default async function handler(req, res) {
       }
 
       const snapshot = await q.get();
-      let jobs = snapshot.docs.map(doc => mapJobForResponse(doc.id, doc.data()));
+      let jobs = await Promise.all(
+        snapshot.docs.map(async (doc) => {
+          const synced = await syncExpiredJobStatus(doc.ref, doc.data(), admin);
+          return mapJobForResponse(doc.id, synced.jobData);
+        })
+      );
+
+      if (status && status !== 'all') {
+        const normalizedStatus = String(status).toLowerCase();
+        jobs = jobs.filter((job) => job.status === normalizedStatus);
+      }
 
       if (search) {
         const s = search.toLowerCase();
@@ -128,6 +139,11 @@ export default async function handler(req, res) {
       const normalizedKeywords = Array.isArray(palavrasChave)
         ? palavrasChave
         : `${palavrasChave}`.split(',').map((value) => value.trim()).filter(Boolean);
+      const parsedCloseDate = parseJobCloseDate(dataFecho);
+
+      if (!parsedCloseDate) {
+        return res.status(400).json({ message: 'Data de fecho inválida' });
+      }
 
       const jobData = {
         companyId,
@@ -145,7 +161,7 @@ export default async function handler(req, res) {
         salarioAte: salarioAte || '',
         beneficios,
         dataAbertura: dataAbertura || new Date().toISOString().split('T')[0],
-        dataFecho,
+        dataFecho: parsedCloseDate.toISOString().split('T')[0],
         remoto: Boolean(remoto),
         destaque: Boolean(destaque),
         vagasDisponiveis: Number(vagasDisponiveis) || 1,
@@ -158,6 +174,8 @@ export default async function handler(req, res) {
         applicationCount: 0,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        publishedAt: admin.firestore.FieldValue.serverTimestamp(),
+        expiresAt: admin.firestore.Timestamp.fromDate(parsedCloseDate),
         createdBy: decodedToken.uid,
         createdByRole: 'admin'
       };

@@ -1,21 +1,6 @@
 import { admin } from '../../../lib/firebaseAdmin';
+import { getDefaultBasicPlanForUserType } from '../../../lib/defaultPlans';
 import { createServerNotification } from '../../../lib/serverNotifications';
-
-const BASIC_PLAN_FALLBACKS = {
-  empresa: {
-    id: 'basic_empresa',
-    name: 'Básico',
-    features: ['1 vaga por mês', 'Visualização de candidatos', 'Suporte básico'],
-    vagasLimit: 1,
-    destaque: false
-  },
-  candidato: {
-    id: 'basic_candidato',
-    name: 'Básico',
-    features: ['3 candidaturas por mês', 'Cadastro de currículo', 'Candidatura a vagas básicas', 'Suporte básico'],
-    curriculoDestacado: false
-  }
-};
 
 /**
  * Cron job to check and update expired plans
@@ -74,7 +59,7 @@ export default async function handler(req, res) {
 
         // Buscar o plano básico
         const basicPlanDoc = await admin.firestore().collection('plans').doc(basicPlanId).get();
-        const basicPlan = basicPlanDoc.exists ? basicPlanDoc.data() : BASIC_PLAN_FALLBACKS[userType];
+        const basicPlan = basicPlanDoc.exists ? basicPlanDoc.data() : getDefaultBasicPlanForUserType(userType);
 
         // Atualizar usuário para o plano básico
         const userUpdate = {

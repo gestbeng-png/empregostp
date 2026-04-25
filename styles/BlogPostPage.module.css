@@ -1,0 +1,225 @@
+.page {
+  padding-bottom: 4.5rem;
+}
+
+.loadingState,
+.notFound {
+  width: min(860px, calc(100% - 2rem));
+  margin: 2rem auto 4rem;
+  padding: 2rem;
+  border-radius: 28px;
+  border: 1px solid var(--app-border-subtle);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  box-shadow: var(--app-shadow-card);
+  text-align: center;
+}
+
+.notFoundLink {
+  display: inline-flex;
+  margin-top: 1rem;
+  font-weight: 800;
+}
+
+.hero {
+  position: relative;
+  width: min(var(--app-public-width), calc(100% - 2rem));
+  min-height: 480px;
+  margin: 1.1rem auto 0;
+  padding: clamp(2rem, 5vw, 3rem);
+  display: flex;
+  align-items: end;
+  border-radius: 32px;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+}
+
+.heroOverlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(30, 43, 77, 0.08), rgba(30, 43, 77, 0.82)),
+    linear-gradient(90deg, rgba(30, 43, 77, 0.34), transparent 48%);
+}
+
+.heroInner {
+  position: relative;
+  z-index: 1;
+  max-width: 860px;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 38px;
+  padding: 0.6rem 0.95rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  color: #ffffff;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.backLink:hover {
+  color: #ffffff;
+}
+
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem 0.9rem;
+  margin-top: 1.25rem;
+}
+
+.categoryPill {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 30px;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  background: var(--category-bg);
+  border: 1px solid var(--category-border);
+  color: var(--category-color);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.metaText {
+  display: inline-flex;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.title {
+  margin-top: 1rem;
+  color: #ffffff;
+  font-size: clamp(2.4rem, 5vw, 4rem);
+  font-weight: 900;
+  line-height: 1.02;
+  letter-spacing: -0.06em;
+  text-wrap: balance;
+}
+
+.author {
+  margin-top: 0.85rem;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.articleShell {
+  width: min(920px, calc(100% - 2rem));
+  margin: -3.8rem auto 0;
+  padding: clamp(1.6rem, 4vw, 2.2rem);
+  border-radius: 30px;
+  border: 1px solid var(--app-border-subtle);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  box-shadow: var(--app-shadow-lg);
+  position: relative;
+  z-index: 2;
+}
+
+.articleContent {
+  color: var(--app-text-secondary);
+  font-size: 1.02rem;
+  line-height: 1.85;
+}
+
+.articleContent :global(h2) {
+  margin: 2.2rem 0 1rem;
+  color: var(--app-text-primary);
+  font-size: 1.8rem;
+  font-weight: 900;
+  line-height: 1.15;
+  letter-spacing: -0.04em;
+}
+
+.articleContent :global(h3) {
+  margin: 1.8rem 0 0.85rem;
+  color: var(--app-text-primary);
+  font-size: 1.38rem;
+  font-weight: 900;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+}
+
+.articleContent :global(p) {
+  margin-bottom: 1.35rem;
+}
+
+.articleContent :global(ul),
+.articleContent :global(ol) {
+  margin-bottom: 1.35rem;
+  padding-left: 1.4rem;
+}
+
+.articleContent :global(li) {
+  margin-bottom: 0.55rem;
+}
+
+.articleContent :global(a) {
+  color: var(--app-brand-primary);
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
+}
+
+.articleContent :global(blockquote) {
+  margin: 1.8rem 0;
+  padding: 1rem 0 1rem 1.1rem;
+  border-left: 4px solid var(--app-brand-primary);
+  border-radius: 0 18px 18px 0;
+  background: rgba(95, 184, 245, 0.08);
+  color: var(--app-text-secondary);
+  font-style: italic;
+}
+
+.articleContent :global(img) {
+  max-width: 100%;
+  margin: 1.8rem 0;
+  border-radius: 20px;
+  box-shadow: var(--app-shadow-card);
+}
+
+.articleContent :global(hr) {
+  margin: 1.8rem 0;
+  border: 0;
+  border-top: 1px solid rgba(30, 43, 77, 0.08);
+}
+
+.articleContent :global(pre) {
+  margin: 1.5rem 0;
+  padding: 1rem 1.1rem;
+  border-radius: 18px;
+  background: #f1f7ff;
+  border: 1px solid rgba(30, 43, 77, 0.08);
+  overflow-x: auto;
+}
+
+.articleContent :global(code) {
+  font-size: 0.94em;
+}
+
+@media (max-width: 768px) {
+  .hero,
+  .articleShell,
+  .notFound,
+  .loadingState {
+    width: calc(100% - 1rem);
+  }
+
+  .hero {
+    min-height: 360px;
+    padding: 1.3rem;
+  }
+
+  .articleShell {
+    margin-top: -2rem;
+  }
+}

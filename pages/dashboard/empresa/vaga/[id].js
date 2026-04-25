@@ -1,60 +1,65 @@
-import { admin } from '../../../../lib/firebaseAdmin';
-import nookies from 'nookies';
-import Link from 'next/link';
-import Head from 'next/head';
-import { useState } from 'react';
-import { useRouter } from 'next/router';
-import styles from '../../../../styles/EmpresaJobDetail.module.css';
+import { admin } from "../../../../lib/firebaseAdmin";
+import nookies from "nookies";
+import Link from "next/link";
+import Head from "next/head";
+import { useState } from "react";
+import { useRouter } from "next/router";
+import styles from "../../../../styles/EmpresaJobDetail.module.css";
 
 function safeTimestampToMillis(timestamp) {
   if (!timestamp) return null;
-  if (typeof timestamp.toMillis === 'function') return timestamp.toMillis();
-  if (typeof timestamp === 'number') return timestamp;
-  if (typeof timestamp === 'string') return new Date(timestamp).getTime();
+  if (typeof timestamp.toMillis === "function") return timestamp.toMillis();
+  if (typeof timestamp === "number") return timestamp;
+  if (typeof timestamp === "string") return new Date(timestamp).getTime();
   return null;
 }
 
 const JOB_STATUS_LABELS = {
-  active: 'Ativa',
-  closed: 'Fechada',
-  disabled: 'Desativada',
+  active: "Ativa",
+  closed: "Fechada",
+  disabled: "Desativada",
 };
 
 const APPLICATION_STATUS_LABELS = {
-  pending: 'Pendente',
-  approved: 'Aprovada',
-  analysis: 'Em analise',
-  interview: 'Entrevista',
-  rejected: 'Rejeitada',
+  pending: "Pendente",
+  approved: "Aprovada",
+  analysis: "Em analise",
+  interview: "Entrevista",
+  rejected: "Rejeitada",
 };
 
 function splitCsv(value) {
   if (!value) return [];
   return String(value)
-    .split(',')
+    .split(",")
     .map((item) => item.trim())
     .filter(Boolean);
 }
 
 function formatDate(value) {
-  if (!value) return 'Nao informado';
+  if (!value) return "Nao informado";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString('pt-PT', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
+  return date.toLocaleDateString("pt-PT", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
   });
 }
 
 function formatCurrency(value) {
-  if (!value) return 'Nao informado';
-  return Number(value).toLocaleString('pt-ST', { style: 'currency', currency: 'STN' });
+  if (!value) return "Nao informado";
+  return Number(value).toLocaleString("pt-ST", {
+    style: "currency",
+    currency: "STN",
+  });
 }
 
-function StatCard({ title, value, tone = 'default' }) {
+function StatCard({ title, value, tone = "default" }) {
   return (
-    <article className={`${styles.statCard} ${styles[`stat${tone.charAt(0).toUpperCase()}${tone.slice(1)}`] || ''}`.trim()}>
+    <article
+      className={`${styles.statCard} ${styles[`stat${tone.charAt(0).toUpperCase()}${tone.slice(1)}`] || ""}`.trim()}
+    >
       <span className={styles.statLabel}>{title}</span>
       <strong className={styles.statValue}>{value}</strong>
     </article>
@@ -64,64 +69,77 @@ function StatCard({ title, value, tone = 'default' }) {
 export default function DetalheVaga({ vaga, candidaturas }) {
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [statusFeedback, setStatusFeedback] = useState("");
 
   const getAuthToken = async () => {
-    const { getAuth } = await import('firebase/auth');
+    const { getAuth } = await import("firebase/auth");
     return getAuth().currentUser?.getIdToken();
   };
 
   const alterarStatus = async (novoStatus) => {
     try {
       setIsProcessing(true);
+      setStatusFeedback("");
       const token = await getAuthToken();
-      if (!token) throw new Error('Sessao expirada');
+      if (!token) {
+        setStatusFeedback("Sessao expirada. Faça login novamente.");
+        return;
+      }
 
       const response = await fetch(`/api/jobs/${vaga.id}`, {
-        method: 'PATCH',
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ status: novoStatus })
+        body: JSON.stringify({ status: novoStatus }),
       });
 
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || 'Erro ao atualizar status');
+        setStatusFeedback(data.error || "Erro ao atualizar status");
+        return;
       }
 
       router.reload();
     } catch (error) {
-      console.error('Erro ao atualizar status:', error);
-      alert(error.message || 'Erro ao atualizar status. Tente novamente.');
+      console.error("Erro ao atualizar status:", error);
+      setStatusFeedback(
+        error.message || "Erro ao atualizar status. Tente novamente.",
+      );
     } finally {
       setIsProcessing(false);
     }
   };
 
   const eliminarVaga = async () => {
-    if (!confirm('Tem certeza que deseja eliminar esta vaga? Esta acao e irreversivel.')) return;
+    if (
+      !confirm(
+        "Tem certeza que deseja eliminar esta vaga? Esta acao e irreversivel.",
+      )
+    )
+      return;
     try {
       setIsProcessing(true);
       const token = await getAuthToken();
-      if (!token) throw new Error('Sessao expirada');
+      if (!token) throw new Error("Sessao expirada");
 
       const response = await fetch(`/api/jobs/${vaga.id}`, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: {
-          Authorization: `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || 'Erro ao eliminar vaga');
+        throw new Error(data.error || "Erro ao eliminar vaga");
       }
 
-      router.push('/dashboard/empresa');
+      router.push("/dashboard/empresa");
     } catch (error) {
-      console.error('Erro ao eliminar vaga:', error);
-      alert(error.message || 'Erro ao eliminar vaga. Tente novamente.');
+      console.error("Erro ao eliminar vaga:", error);
+      alert(error.message || "Erro ao eliminar vaga. Tente novamente.");
     } finally {
       setIsProcessing(false);
     }
@@ -131,26 +149,31 @@ export default function DetalheVaga({ vaga, candidaturas }) {
     try {
       setIsProcessing(true);
       const token = await getAuthToken();
-      if (!token) throw new Error('Sessao expirada');
+      if (!token) throw new Error("Sessao expirada");
 
-      const response = await fetch(`/api/applications/${candidaturaId}/status`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+      const response = await fetch(
+        `/api/applications/${candidaturaId}/status`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ status: novoStatus }),
         },
-        body: JSON.stringify({ status: novoStatus })
-      });
+      );
 
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || 'Erro ao atualizar status da candidatura');
+        throw new Error(
+          data.error || "Erro ao atualizar status da candidatura",
+        );
       }
 
       router.reload();
     } catch (error) {
-      console.error('Erro ao atualizar status da candidatura:', error);
-      alert(error.message || 'Erro ao atualizar status. Tente novamente.');
+      console.error("Erro ao atualizar status da candidatura:", error);
+      alert(error.message || "Erro ao atualizar status. Tente novamente.");
     } finally {
       setIsProcessing(false);
     }
@@ -191,15 +214,25 @@ export default function DetalheVaga({ vaga, candidaturas }) {
 
   const requisitosList = splitCsv(requisitos);
   const beneficiosList = splitCsv(beneficios);
-  const statusLabel = JOB_STATUS_LABELS[status] || status || 'Desconhecido';
+  const statusLabel = JOB_STATUS_LABELS[status] || status || "Desconhecido";
+  const closingDateMillis = safeTimestampToMillis(dataFecho);
+  const canReopenExpiredJob =
+    status === "closed" && closingDateMillis && closingDateMillis < Date.now();
 
-  const pendingCount = candidaturas.filter((c) => c.status === 'pending' || !c.status).length;
-  const approvedCount = candidaturas.filter((c) => c.status === 'approved').length;
-  const rejectedCount = candidaturas.filter((c) => c.status === 'rejected').length;
+  const pendingCount = candidaturas.filter(
+    (c) => c.status === "pending" || !c.status,
+  ).length;
+  const approvedCount = candidaturas.filter(
+    (c) => c.status === "approved",
+  ).length;
+  const rejectedCount = candidaturas.filter(
+    (c) => c.status === "rejected",
+  ).length;
 
-  const salaryRange = salarioDe || salarioAte
-    ? `${formatCurrency(salarioDe)} - ${formatCurrency(salarioAte)}`
-    : 'Nao informado';
+  const salaryRange =
+    salarioDe || salarioAte
+      ? `${formatCurrency(salarioDe)} - ${formatCurrency(salarioAte)}`
+      : "Nao informado";
 
   return (
     <>
@@ -209,7 +242,14 @@ export default function DetalheVaga({ vaga, candidaturas }) {
 
       <main className={styles.page}>
         <Link href="/dashboard/empresa" className={styles.backLink}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
           Voltar ao Dashboard
@@ -220,23 +260,37 @@ export default function DetalheVaga({ vaga, candidaturas }) {
             <div className={styles.heroHeading}>
               <div className={styles.heroBadgeRow}>
                 <span className={styles.heroBadge}>Detalhe da vaga</span>
-                {isPrivada ? <span className={`${styles.heroBadge} ${styles.heroBadgeMuted}`}>Privada</span> : null}
+                {isPrivada ? (
+                  <span
+                    className={`${styles.heroBadge} ${styles.heroBadgeMuted}`}
+                  >
+                    Privada
+                  </span>
+                ) : null}
               </div>
               <h1 className={styles.heroTitle}>{titulo}</h1>
               <div className={styles.heroMeta}>
                 {localizacao ? <span>{localizacao}</span> : null}
                 {tipoContrato ? <span>{tipoContrato}</span> : null}
-                <span>Publicada em {formatDate(createdAt || dataAbertura)}</span>
+                <span>
+                  Publicada em {formatDate(createdAt || dataAbertura)}
+                </span>
               </div>
             </div>
 
-            <div className={`${styles.statusBadge} ${styles[`status${status.charAt(0).toUpperCase()}${status.slice(1)}`] || styles.statusDefault}`}>
+            <div
+              className={`${styles.statusBadge} ${styles[`status${status.charAt(0).toUpperCase()}${status.slice(1)}`] || styles.statusDefault}`}
+            >
               {statusLabel}
             </div>
           </div>
 
           <div className={styles.heroStats}>
-            <StatCard title="Candidaturas" value={candidaturas.length} tone="blue" />
+            <StatCard
+              title="Candidaturas"
+              value={candidaturas.length}
+              tone="blue"
+            />
             <StatCard title="Pendentes" value={pendingCount} tone="amber" />
             <StatCard title="Aprovadas" value={approvedCount} tone="green" />
             <StatCard title="Rejeitadas" value={rejectedCount} tone="red" />
@@ -249,7 +303,7 @@ export default function DetalheVaga({ vaga, candidaturas }) {
               <div className={styles.sectionHeader}>
                 <h2 className={styles.sectionTitle}>Descricao</h2>
               </div>
-              <p className={styles.bodyCopy}>{descricao || 'Nao informado'}</p>
+              <p className={styles.bodyCopy}>{descricao || "Nao informado"}</p>
             </article>
 
             {requisitosList.length > 0 ? (
@@ -265,21 +319,35 @@ export default function DetalheVaga({ vaga, candidaturas }) {
               </article>
             ) : null}
 
-            {skillsAssessment?.enabled && skillsAssessment.questions?.length > 0 ? (
+            {skillsAssessment?.enabled &&
+            skillsAssessment.questions?.length > 0 ? (
               <article className={styles.panel}>
                 <div className={styles.sectionHeader}>
                   <h2 className={styles.sectionTitle}>Teste de Habilidades</h2>
-                  <span className={styles.sectionMeta}>{skillsAssessment.questions.length} pergunta(s)</span>
+                  <span className={styles.sectionMeta}>
+                    {skillsAssessment.questions.length} pergunta(s)
+                  </span>
                 </div>
                 <div className={styles.assessmentCard}>
                   <p className={styles.assessmentSummary}>
-                    Nota minima: <strong>{skillsAssessment.passingScore || 70}%</strong>
+                    Nota minima:{" "}
+                    <strong>{skillsAssessment.passingScore || 70}%</strong>
                   </p>
                   <div className={styles.assessmentList}>
                     {skillsAssessment.questions.map((question, index) => (
-                      <div key={question.id || index} className={styles.assessmentItem}>
-                        <strong>{index + 1}. {question.prompt}</strong>
-                        <span>{Array.isArray(question.options) ? question.options.length : 0} opcoes</span>
+                      <div
+                        key={question.id || index}
+                        className={styles.assessmentItem}
+                      >
+                        <strong>
+                          {index + 1}. {question.prompt}
+                        </strong>
+                        <span>
+                          {Array.isArray(question.options)
+                            ? question.options.length
+                            : 0}{" "}
+                          opcoes
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -313,19 +381,21 @@ export default function DetalheVaga({ vaga, candidaturas }) {
                 </div>
                 <div className={styles.summaryItem}>
                   <dt>Periodo</dt>
-                  <dd>{formatDate(dataAbertura)} ate {formatDate(dataFecho)}</dd>
+                  <dd>
+                    {formatDate(dataAbertura)} ate {formatDate(dataFecho)}
+                  </dd>
                 </div>
                 <div className={styles.summaryItem}>
                   <dt>Contrato</dt>
-                  <dd>{tipoContrato || 'Nao informado'}</dd>
+                  <dd>{tipoContrato || "Nao informado"}</dd>
                 </div>
                 <div className={styles.summaryItem}>
                   <dt>Localizacao</dt>
-                  <dd>{localizacao || 'Nao informado'}</dd>
+                  <dd>{localizacao || "Nao informado"}</dd>
                 </div>
                 <div className={styles.summaryItem}>
                   <dt>Privacidade</dt>
-                  <dd>{isPrivada ? 'Privada' : 'Publica'}</dd>
+                  <dd>{isPrivada ? "Privada" : "Publica"}</dd>
                 </div>
               </dl>
             </article>
@@ -337,7 +407,14 @@ export default function DetalheVaga({ vaga, candidaturas }) {
                 </div>
                 <div className={styles.docCard}>
                   <div className={styles.docIcon}>
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <svg
+                      width="22"
+                      height="22"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                       <polyline points="14 2 14 8 20 8" />
                       <line x1="16" y1="13" x2="8" y2="13" />
@@ -350,7 +427,12 @@ export default function DetalheVaga({ vaga, candidaturas }) {
                     <span>Ficheiro PDF/Documento associado a esta vaga.</span>
                   </div>
                 </div>
-                <a href={vaga.tdrUrl} target="_blank" rel="noopener noreferrer" className={styles.docButton}>
+                <a
+                  href={vaga.tdrUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.docButton}
+                >
                   Visualizar TDR
                 </a>
               </article>
@@ -360,29 +442,46 @@ export default function DetalheVaga({ vaga, candidaturas }) {
               <div className={styles.sectionHeader}>
                 <h2 className={styles.sectionTitle}>Acoes</h2>
               </div>
+              {statusFeedback ? (
+                <div className={styles.inlineNotice}>
+                  <p>{statusFeedback}</p>
+                </div>
+              ) : null}
+              {canReopenExpiredJob && !statusFeedback ? (
+                <div className={styles.inlineNotice}>
+                  <p>
+                    Esta vaga já expirou. Atualize a data de fecho antes de a
+                    reabrir.
+                  </p>
+                </div>
+              ) : null}
               <div className={styles.actionsGrid}>
-                {vaga.status === 'active' ? (
+                {vaga.status === "active" ? (
                   <button
-                    onClick={() => alterarStatus('closed')}
+                    onClick={() => alterarStatus("closed")}
                     disabled={isProcessing}
                     className={`${styles.actionButton} ${styles.actionWarning}`}
                   >
-                    {isProcessing ? 'Processando...' : 'Fechar Vaga'}
+                    {isProcessing ? "Processando..." : "Fechar Vaga"}
                   </button>
                 ) : null}
 
-                {vaga.status === 'closed' ? (
+                {vaga.status === "closed" ? (
                   <button
-                    onClick={() => alterarStatus('active')}
+                    onClick={() => alterarStatus("active")}
                     disabled={isProcessing}
                     className={`${styles.actionButton} ${styles.actionSuccess}`}
                   >
-                    {isProcessing ? 'Processando...' : 'Reabrir Vaga'}
+                    {isProcessing ? "Processando..." : "Reabrir Vaga"}
                   </button>
                 ) : null}
 
                 <button
-                  onClick={() => router.push(`/dashboard/admin/jobs/${vaga.id}/edit`)}
+                  onClick={() =>
+                    router.push(
+                      `/dashboard/empresa/vaga/criar-vaga?edit=${vaga.id}`,
+                    )
+                  }
                   disabled={isProcessing}
                   className={`${styles.actionButton} ${styles.actionPrimary}`}
                 >
@@ -394,7 +493,7 @@ export default function DetalheVaga({ vaga, candidaturas }) {
                   disabled={isProcessing}
                   className={`${styles.actionButton} ${styles.actionDanger}`}
                 >
-                  {isProcessing ? 'Eliminando...' : 'Eliminar Vaga'}
+                  {isProcessing ? "Eliminando..." : "Eliminar Vaga"}
                 </button>
               </div>
             </article>
@@ -404,63 +503,162 @@ export default function DetalheVaga({ vaga, candidaturas }) {
         <section className={styles.applicationsPanel}>
           <div className={styles.sectionHeader}>
             <h2 className={styles.sectionTitle}>Candidaturas</h2>
-            <span className={styles.sectionMeta}>{candidaturas.length} no total</span>
+            <span className={styles.sectionMeta}>
+              {candidaturas.length} no total
+            </span>
           </div>
 
           {candidaturas.length === 0 ? (
             <div className={styles.emptyApplications}>
               <h3>Nenhuma candidatura ainda</h3>
-              <p>As candidaturas aparecerao aqui quando candidatos se inscreverem.</p>
+              <p>
+                As candidaturas aparecerao aqui quando candidatos se
+                inscreverem.
+              </p>
             </div>
           ) : (
             <div className={styles.applicationList}>
               {candidaturas.map((candidatura) => {
-                const applicationStatus = candidatura.status || 'pending';
-                const applicationStatusLabel = APPLICATION_STATUS_LABELS[applicationStatus] || applicationStatus;
+                const applicationStatus = candidatura.status || "pending";
+                const applicationStatusLabel =
+                  APPLICATION_STATUS_LABELS[applicationStatus] ||
+                  applicationStatus;
                 const result = candidatura.skillsAssessmentResult;
+                const premiumBadges = [
+                  candidatura.priorityApplied
+                    ? {
+                        key: "priority",
+                        label: "Prioritária",
+                        className: styles.applicationBadgePriority,
+                      }
+                    : null,
+                  candidatura.applicationHighlighted
+                    ? {
+                        key: "highlight",
+                        label: "Destaque",
+                        className: styles.applicationBadgeHighlight,
+                      }
+                    : null,
+                  candidatura.premiumOnlyJob
+                    ? {
+                        key: "premium",
+                        label: "Vaga premium",
+                        className: styles.applicationBadgePremium,
+                      }
+                    : null,
+                  candidatura.accessedDuringEarlyWindow
+                    ? {
+                        key: "early",
+                        label: "Acesso antecipado",
+                        className: styles.applicationBadgeEarly,
+                      }
+                    : null,
+                ].filter(Boolean);
                 return (
-                  <article key={candidatura.id} className={styles.applicationCard}>
+                  <article
+                    key={candidatura.id}
+                    className={styles.applicationCard}
+                  >
                     <div className={styles.applicationMain}>
                       <div className={styles.applicationIdentity}>
-                        <Link href={`/dashboard/empresa/candidato/${candidatura.candidateId}`} className={styles.applicationName}>
-                          {candidatura.candidateName || 'Candidato'}
+                        <Link
+                          href={`/dashboard/empresa/candidato/${candidatura.candidateId}`}
+                          className={styles.applicationName}
+                        >
+                          {candidatura.candidateName || "Candidato"}
                         </Link>
                         {candidatura.candidateEmail ? (
-                          <p className={styles.applicationEmail}>{candidatura.candidateEmail}</p>
+                          <p className={styles.applicationEmail}>
+                            {candidatura.candidateEmail}
+                          </p>
                         ) : null}
                         {candidatura.createdAt ? (
                           <p className={styles.applicationDate}>
                             Candidatou-se em {formatDate(candidatura.createdAt)}
                           </p>
                         ) : null}
+                        {premiumBadges.length > 0 ? (
+                          <div className={styles.applicationBadgeRow}>
+                            {premiumBadges.map((badge) => (
+                              <span
+                                key={badge.key}
+                                className={`${styles.applicationBadge} ${badge.className}`}
+                              >
+                                {badge.label}
+                              </span>
+                            ))}
+                          </div>
+                        ) : null}
                         {result ? (
                           <div className={styles.applicationMetrics}>
-                            <span className={`${styles.assessmentBadge} ${result.passed ? styles.assessmentPassed : styles.assessmentReview}`}>
+                            <span
+                              className={`${styles.assessmentBadge} ${result.passed ? styles.assessmentPassed : styles.assessmentReview}`}
+                            >
                               Teste: {result.score}%
                             </span>
                             <span className={styles.assessmentMeta}>
-                              {result.correctAnswers}/{result.totalQuestions} corretas
+                              {result.correctAnswers}/{result.totalQuestions}{" "}
+                              corretas
                             </span>
+                          </div>
+                        ) : null}
+                        {typeof candidatura.compatibilityScore === "number" ||
+                        candidatura.compatibilityReasons?.length ? (
+                          <div className={styles.applicationInsight}>
+                            <strong>Compatibilidade</strong>
+                            {typeof candidatura.compatibilityScore ===
+                            "number" ? (
+                              <p>
+                                Score registado:{" "}
+                                {candidatura.compatibilityScore}%
+                              </p>
+                            ) : null}
+                            {candidatura.compatibilityReasons?.length ? (
+                              <span>
+                                {candidatura.compatibilityReasons
+                                  .slice(0, 2)
+                                  .join(" • ")}
+                              </span>
+                            ) : null}
+                          </div>
+                        ) : null}
+                        {candidatura.coverLetter ? (
+                          <div className={styles.applicationInsight}>
+                            <strong>Carta de apresentação</strong>
+                            <p>{candidatura.coverLetter}</p>
                           </div>
                         ) : null}
                       </div>
 
                       <div className={styles.applicationAside}>
-                        <span className={`${styles.applicationStatus} ${styles[`application${applicationStatus.charAt(0).toUpperCase()}${applicationStatus.slice(1)}`] || styles.applicationPending}`}>
+                        <span
+                          className={`${styles.applicationStatus} ${styles[`application${applicationStatus.charAt(0).toUpperCase()}${applicationStatus.slice(1)}`] || styles.applicationPending}`}
+                        >
                           {applicationStatusLabel}
                         </span>
 
-                        {(applicationStatus === 'pending' || !applicationStatus) ? (
+                        {applicationStatus === "pending" ||
+                        !applicationStatus ? (
                           <div className={styles.applicationActions}>
                             <button
-                              onClick={() => alterarStatusCandidatura(candidatura.id, 'approved')}
+                              onClick={() =>
+                                alterarStatusCandidatura(
+                                  candidatura.id,
+                                  "approved",
+                                )
+                              }
                               disabled={isProcessing}
                               className={`${styles.smallActionButton} ${styles.smallActionApprove}`}
                             >
                               Aprovar
                             </button>
                             <button
-                              onClick={() => alterarStatusCandidatura(candidatura.id, 'rejected')}
+                              onClick={() =>
+                                alterarStatusCandidatura(
+                                  candidatura.id,
+                                  "rejected",
+                                )
+                              }
                               disabled={isProcessing}
                               className={`${styles.smallActionButton} ${styles.smallActionReject}`}
                             >
@@ -469,9 +667,14 @@ export default function DetalheVaga({ vaga, candidaturas }) {
                           </div>
                         ) : null}
 
-                        {applicationStatus === 'approved' ? (
+                        {applicationStatus === "approved" ? (
                           <button
-                            onClick={() => alterarStatusCandidatura(candidatura.id, 'rejected')}
+                            onClick={() =>
+                              alterarStatusCandidatura(
+                                candidatura.id,
+                                "rejected",
+                              )
+                            }
                             disabled={isProcessing}
                             className={`${styles.smallActionButton} ${styles.smallActionNeutral}`}
                           >
@@ -479,9 +682,14 @@ export default function DetalheVaga({ vaga, candidaturas }) {
                           </button>
                         ) : null}
 
-                        {applicationStatus === 'rejected' ? (
+                        {applicationStatus === "rejected" ? (
                           <button
-                            onClick={() => alterarStatusCandidatura(candidatura.id, 'approved')}
+                            onClick={() =>
+                              alterarStatusCandidatura(
+                                candidatura.id,
+                                "approved",
+                              )
+                            }
                             disabled={isProcessing}
                             className={`${styles.smallActionButton} ${styles.smallActionNeutral}`}
                           >
@@ -507,18 +715,18 @@ export async function getServerSideProps(context) {
     const cookies = nookies.get(context);
 
     if (!cookies.token) {
-      return { redirect: { destination: '/login', permanent: false } };
+      return { redirect: { destination: "/login", permanent: false } };
     }
 
     const token = await admin.auth().verifyIdToken(cookies.token);
     const uid = token.uid;
 
-    const userDoc = await admin.firestore().collection('users').doc(uid).get();
-    if (!userDoc.exists || userDoc.data().userType !== 'empresa') {
-      return { redirect: { destination: '/login', permanent: false } };
+    const userDoc = await admin.firestore().collection("users").doc(uid).get();
+    if (!userDoc.exists || userDoc.data().userType !== "empresa") {
+      return { redirect: { destination: "/login", permanent: false } };
     }
 
-    const vagaDoc = await admin.firestore().collection('jobs').doc(id).get();
+    const vagaDoc = await admin.firestore().collection("jobs").doc(id).get();
     if (!vagaDoc.exists) {
       return { notFound: true };
     }
@@ -526,49 +734,78 @@ export async function getServerSideProps(context) {
     const vagaData = vagaDoc.data();
 
     if (vagaData.companyId !== uid) {
-      return { redirect: { destination: '/dashboard/empresa', permanent: false } };
+      return {
+        redirect: { destination: "/dashboard/empresa", permanent: false },
+      };
     }
 
     const vaga = {
       id: vagaDoc.id,
-      titulo: vagaData.titulo || '',
-      descricao: vagaData.descricao || '',
-      requisitos: vagaData.requisitos || '',
-      localizacao: vagaData.localizacao || '',
-      tipoContrato: vagaData.tipoContrato || '',
-      salarioDe: vagaData.salarioDe || '',
-      salarioAte: vagaData.salarioAte || '',
-      beneficios: vagaData.beneficios || '',
-      dataAbertura: vagaData.dataAbertura || '',
-      dataFecho: vagaData.dataFecho || '',
+      titulo: vagaData.titulo || "",
+      descricao: vagaData.descricao || "",
+      requisitos: vagaData.requisitos || "",
+      localizacao: vagaData.localizacao || "",
+      tipoContrato: vagaData.tipoContrato || "",
+      salarioDe: vagaData.salarioDe || "",
+      salarioAte: vagaData.salarioAte || "",
+      beneficios: vagaData.beneficios || "",
+      dataAbertura: vagaData.dataAbertura || "",
+      dataFecho: vagaData.dataFecho || "",
       isPrivada: vagaData.isPrivada || false,
-      status: vagaData.status || 'active',
+      status: vagaData.status || "active",
       skillsAssessment: vagaData.skillsAssessment || null,
-      companyId: vagaData.companyId || '',
-      tdrUrl: vagaData.tdrUrl || vagaData.tdr || vagaData.tdrLink || vagaData.tdrPdf || '',
-      createdAt: safeTimestampToMillis(vagaData.createdAt) ? new Date(safeTimestampToMillis(vagaData.createdAt)).toISOString() : null
+      companyId: vagaData.companyId || "",
+      tdrUrl:
+        vagaData.tdrUrl ||
+        vagaData.tdr ||
+        vagaData.tdrLink ||
+        vagaData.tdrPdf ||
+        "",
+      createdAt: safeTimestampToMillis(vagaData.createdAt)
+        ? new Date(safeTimestampToMillis(vagaData.createdAt)).toISOString()
+        : null,
     };
 
-    const candidaturasSnap = await admin.firestore()
-      .collection('applications')
-      .where('jobId', '==', id)
+    const candidaturasSnap = await admin
+      .firestore()
+      .collection("applications")
+      .where("jobId", "==", id)
       .get();
 
     const candidaturas = candidaturasSnap.docs.map((doc) => {
       const data = doc.data();
       return {
         id: doc.id,
-        candidateId: data.candidateId || '',
-        candidateName: data.candidateName || '',
-        candidateEmail: data.candidateEmail || '',
-        status: data.status || 'pending',
+        candidateId: data.candidateId || "",
+        candidateName: data.candidateName || "",
+        candidateEmail: data.candidateEmail || "",
+        status: data.status || "pending",
         skillsAssessmentResult: data.skillsAssessmentResult || null,
-        createdAt: safeTimestampToMillis(data.createdAt) ? new Date(safeTimestampToMillis(data.createdAt)).toISOString() : null,
-        updatedAt: safeTimestampToMillis(data.updatedAt) ? new Date(safeTimestampToMillis(data.updatedAt)).toISOString() : null
+        coverLetter: data.coverLetter || "",
+        priorityApplied: Boolean(data.priorityApplied),
+        applicationHighlighted: Boolean(data.applicationHighlighted),
+        priorityLevel: Number(data.priorityLevel) || 0,
+        premiumOnlyJob: Boolean(data.premiumOnlyJob),
+        accessedDuringEarlyWindow: Boolean(data.accessedDuringEarlyWindow),
+        compatibilityScore: Number.isFinite(Number(data.compatibilityScore))
+          ? Number(data.compatibilityScore)
+          : null,
+        compatibilityReasons: Array.isArray(data.compatibilityReasons)
+          ? data.compatibilityReasons
+          : [],
+        createdAt: safeTimestampToMillis(data.createdAt)
+          ? new Date(safeTimestampToMillis(data.createdAt)).toISOString()
+          : null,
+        updatedAt: safeTimestampToMillis(data.updatedAt)
+          ? new Date(safeTimestampToMillis(data.updatedAt)).toISOString()
+          : null,
       };
     });
 
     candidaturas.sort((a, b) => {
+      const priorityDiff =
+        (Number(b.priorityLevel) || 0) - (Number(a.priorityLevel) || 0);
+      if (priorityDiff !== 0) return priorityDiff;
       if (!a.createdAt) return 1;
       if (!b.createdAt) return -1;
       return new Date(b.createdAt) - new Date(a.createdAt);
@@ -578,7 +815,7 @@ export async function getServerSideProps(context) {
       props: { vaga, candidaturas },
     };
   } catch (error) {
-    console.error('Erro no getServerSideProps:', error);
-    return { redirect: { destination: '/login', permanent: false } };
+    console.error("Erro no getServerSideProps:", error);
+    return { redirect: { destination: "/login", permanent: false } };
   }
 }

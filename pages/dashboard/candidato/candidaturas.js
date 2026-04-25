@@ -1,30 +1,38 @@
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
-import Link from 'next/link';
-import Head from 'next/head';
-import LandingHeader from '../../../components/LandingHeader';
-import { downloadInterviewICS, formatMaybeDateTimePt, getInterviewStatusLabelPt, isLikelyUrl } from '../../../lib/interviewClient';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import Link from "next/link";
+import Head from "next/head";
+import LandingHeader from "../../../components/LandingHeader";
+import {
+  downloadInterviewICS,
+  formatMaybeDateTimePt,
+  getInterviewStatusLabelPt,
+  isLikelyUrl,
+} from "../../../lib/interviewClient";
+import styles from "../../../styles/CandidaturasPage.module.css";
 
 export default function CandidaturasPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [applications, setApplications] = useState([]);
-  const [filter, setFilter] = useState('all'); // all, pending, approved, rejected
+  const [filter, setFilter] = useState("all");
 
   const setFilterAndSyncUrl = (nextFilter) => {
     setFilter(nextFilter);
     if (!router.isReady) return;
     const query = { ...router.query };
-    if (nextFilter && nextFilter !== 'all') query.filter = nextFilter;
+    if (nextFilter && nextFilter !== "all") query.filter = nextFilter;
     else delete query.filter;
-    router.replace({ pathname: router.pathname, query }, undefined, { shallow: true });
+    router.replace({ pathname: router.pathname, query }, undefined, {
+      shallow: true,
+    });
   };
 
   useEffect(() => {
     if (!router.isReady) return;
     const q = router.query.filter;
-    if (typeof q !== 'string') return;
-    const allowed = ['all', 'pending', 'interview', 'approved', 'rejected'];
+    if (typeof q !== "string") return;
+    const allowed = ["all", "pending", "interview", "approved", "rejected"];
     if (allowed.includes(q)) {
       setFilter(q);
     }
@@ -33,32 +41,32 @@ export default function CandidaturasPage() {
   useEffect(() => {
     async function fetchApplications() {
       try {
-        const { getAuth } = await import('firebase/auth');
+        const { getAuth } = await import("firebase/auth");
         const auth = getAuth();
         const currentUser = auth.currentUser;
         const uid = currentUser?.uid;
-        
+
         if (!uid) {
-          router.push('/login');
+          router.push("/login");
           return;
         }
-        
+
         const token = await currentUser.getIdToken();
         const res = await fetch(`/api/profile?uid=${uid}`, {
           headers: {
-            Authorization: `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         });
         if (res.status === 401) {
-          router.push('/login');
+          router.push("/login");
           return;
         }
-        
+
         const json = await res.json();
         setApplications(json.applications || []);
         setLoading(false);
       } catch (err) {
-        console.error('Erro ao carregar candidaturas:', err);
+        console.error("Erro ao carregar candidaturas:", err);
         setLoading(false);
       }
     }
@@ -73,57 +81,46 @@ export default function CandidaturasPage() {
   };
 
   const sortedApplications = [...applications].sort((a, b) => {
-    const ta = a?.appliedAt ? new Date(a.appliedAt).getTime() : (a?.createdAt ? new Date(a.createdAt).getTime() : 0);
-    const tb = b?.appliedAt ? new Date(b.appliedAt).getTime() : (b?.createdAt ? new Date(b.createdAt).getTime() : 0);
+    const ta = a?.appliedAt
+      ? new Date(a.appliedAt).getTime()
+      : a?.createdAt
+        ? new Date(a.createdAt).getTime()
+        : 0;
+    const tb = b?.appliedAt
+      ? new Date(b.appliedAt).getTime()
+      : b?.createdAt
+        ? new Date(b.createdAt).getTime()
+        : 0;
     return tb - ta;
   });
 
   const filteredApplications = sortedApplications.filter((app) => {
-    if (filter === 'all') return true;
-    if (filter === 'interview') return hasValidScheduledInterview(app);
-    if (filter === 'pending') return app.status === 'pending' || !app.status;
+    if (filter === "all") return true;
+    if (filter === "interview") return hasValidScheduledInterview(app);
+    if (filter === "pending") return app.status === "pending" || !app.status;
     return app.status === filter;
   });
 
   const stats = {
     total: applications.length,
-    pending: applications.filter(a => a.status === 'pending' || !a.status).length,
+    pending: applications.filter((a) => a.status === "pending" || !a.status)
+      .length,
     interview: applications.filter((a) => hasValidScheduledInterview(a)).length,
-    approved: applications.filter(a => a.status === 'approved').length,
-    rejected: applications.filter(a => a.status === 'rejected').length
+    approved: applications.filter((a) => a.status === "approved").length,
+    rejected: applications.filter((a) => a.status === "rejected").length,
   };
 
   if (loading) {
-	  return (
-	    <>
+    return (
+      <>
         <Head>
           <title>Minhas Candidaturas - EmpregoSTP</title>
-          <style>{`
-            body {
-              background: linear-gradient(180deg, #0a0e1a 0%, #1a1f35 100%);
-              min-height: 100vh;
-            }
-          `}</style>
         </Head>
         <LandingHeader />
-        <div style={{ padding: '4rem 2rem', textAlign: 'center' }}>
-          <div style={{ 
-            width: '50px', 
-            height: '50px', 
-            margin: '0 auto 1.5rem', 
-            border: '4px solid rgba(255, 255, 255, 0.1)',
-            borderTop: '4px solid #60a5fa',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite'
-          }}></div>
-          <style jsx>{`
-            @keyframes spin {
-              0% { transform: rotate(0deg); }
-              100% { transform: rotate(360deg); }
-            }
-          `}</style>
-          <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '1.1rem' }}>Carregando candidaturas...</p>
-        </div>
+        <main className={styles.loadingPage}>
+          <div className={styles.loadingSpinner} aria-hidden="true" />
+          <p className={styles.loadingText}>Carregando candidaturas...</p>
+        </main>
       </>
     );
   }
@@ -132,299 +129,297 @@ export default function CandidaturasPage() {
     <>
       <Head>
         <title>Minhas Candidaturas - EmpregoSTP</title>
-        <style>{`
-          body {
-            background: linear-gradient(180deg, #0a0e1a 0%, #1a1f35 100%);
-            min-height: 100vh;
-          }
-        `}</style>
       </Head>
-	      <LandingHeader />
+      <LandingHeader />
 
-	      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem', minHeight: '100vh' }}>
-	        {/*
-	          Special-case: when user opens `?filter=interview`, treat it as a dedicated
-	          "interviews view" (hide other status summary cards).
-	        */}
-	        {(() => {
-	          const isInterviewView = filter === 'interview';
-	          return (
-	            <>
-	        
-	        {/* Header */}
-	        <div style={{ marginBottom: '2rem' }}>
-	          <Link href="/dashboard/candidato" style={{
-	            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            color: '#60a5fa',
-            textDecoration: 'none',
-            fontWeight: '600',
-            marginBottom: '1rem'
-          }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M19 12H5M12 19l-7-7 7-7"/>
-	            </svg>
-	            Voltar ao Dashboard
-	          </Link>
-	          <h1 style={{ margin: '0 0 0.5rem 0', fontSize: '2.5rem', color: 'white', fontWeight: '900' }}>
-	            {isInterviewView ? 'Minhas Entrevistas' : 'Minhas Candidaturas'}
-	          </h1>
-	          <p style={{ margin: 0, color: 'rgba(255, 255, 255, 0.7)', fontSize: '1.05rem' }}>
-	            {isInterviewView
-	              ? 'Veja data, local e link das entrevistas agendadas.'
-	              : 'Acompanhe todas as suas inscrições e status'}
-	          </p>
-	        </div>
+      <main className={styles.page}>
+        <div className={styles.container}>
+          {(() => {
+            const isInterviewView = filter === "interview";
+            return (
+              <>
+                <header className={styles.hero}>
+                  <Link href="/dashboard/candidato" className={styles.backLink}>
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      aria-hidden="true"
+                    >
+                      <path d="M19 12H5M12 19l-7-7 7-7" />
+                    </svg>
+                    <span>Voltar ao Dashboard</span>
+                  </Link>
 
-	        {!isInterviewView ? (
-	          <div style={{
-	            display: 'grid',
-	            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-	            gap: '1.5rem',
-	            marginBottom: '2rem'
-	          }}>
-	            <StatCard
-	              value={stats.total}
-	              label="Total"
-	              color="#3b82f6"
-	              active={filter === 'all'}
-	              onClick={() => setFilterAndSyncUrl('all')}
-	            />
-	            <StatCard
-	              value={stats.pending}
-	              label="Pendentes"
-	              color="#f59e0b"
-	              active={filter === 'pending'}
-	              onClick={() => setFilterAndSyncUrl('pending')}
-	            />
-	            <StatCard
-	              value={stats.interview}
-	              label="Entrevistas"
-	              color="#8b5cf6"
-	              active={filter === 'interview'}
-	              onClick={() => setFilterAndSyncUrl('interview')}
-	            />
-	            <StatCard
-	              value={stats.approved}
-	              label="Aprovadas"
-	              color="#10b981"
-	              active={filter === 'approved'}
-	              onClick={() => setFilterAndSyncUrl('approved')}
-	            />
-	            <StatCard
-	              value={stats.rejected}
-	              label="Rejeitadas"
-	              color="#ef4444"
-	              active={filter === 'rejected'}
-	              onClick={() => setFilterAndSyncUrl('rejected')}
-	            />
-	          </div>
-	        ) : (
-	          <div style={{
-	            display: 'flex',
-	            alignItems: 'center',
-	            justifyContent: 'space-between',
-	            flexWrap: 'wrap',
-	            gap: '1rem',
-	            marginBottom: '2rem',
-	            padding: '1rem 1.25rem',
-	            background: 'rgba(255, 255, 255, 0.05)',
-	            border: '1px solid rgba(255, 255, 255, 0.10)',
-	            borderRadius: '16px'
-	          }}>
-	            <div style={{ color: 'rgba(255,255,255,0.85)', fontWeight: 800 }}>
-	              Entrevistas agendadas: <span style={{ color: '#a78bfa' }}>{stats.interview}</span>
-	            </div>
-	            <Link href="/dashboard/candidato/candidaturas" style={{
-	              padding: '0.65rem 0.95rem',
-	              borderRadius: '12px',
-	              border: '1px solid rgba(196, 181, 253, 0.25)',
-	              background: 'rgba(196, 181, 253, 0.10)',
-	              color: '#ddd6fe',
-	              textDecoration: 'none',
-	              fontWeight: 800
-	            }}>
-	              Ver todas as candidaturas
-	            </Link>
-	          </div>
-	        )}
+                  <div className={styles.heroCopy}>
+                    <span className={styles.heroEyebrow}>
+                      {isInterviewView
+                        ? "Agenda de entrevistas"
+                        : "Painel de candidaturas"}
+                    </span>
+                    <h1 className={styles.heroTitle}>
+                      {isInterviewView
+                        ? "Minhas Entrevistas"
+                        : "Minhas Candidaturas"}
+                    </h1>
+                    <p className={styles.heroDescription}>
+                      {isInterviewView
+                        ? "Veja data, local e link das entrevistas agendadas."
+                        : "Acompanhe todas as suas inscrições e status"}
+                    </p>
+                  </div>
+                </header>
 
-	        {/* Lista de Candidaturas */}
-	        {filteredApplications.length > 0 ? (
-	          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-	            {filteredApplications.map((application, index) => (
-	              <ApplicationDetailCard key={application.id || index} application={application} />
-	            ))}
-	          </div>
-	        ) : (
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.05)',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '20px',
-            padding: '4rem 2rem',
-            textAlign: 'center'
-          }}>
-            <h3 style={{ margin: '0 0 0.75rem 0', color: 'white', fontSize: '1.5rem', fontWeight: '700' }}>
-              {filter === 'all'
-                ? 'Nenhuma candidatura ainda'
-                : `Nenhuma candidatura ${
-                    filter === 'pending'
-                      ? 'pendente'
-                      : filter === 'interview'
-                        ? 'com entrevista'
-                        : filter === 'approved'
-                          ? 'aprovada'
-                          : filter === 'rejected'
-                            ? 'rejeitada'
-                            : ''
-                  }`}
-            </h3>
-            <p style={{ margin: '0 0 2rem 0', color: 'rgba(255, 255, 255, 0.7)', fontSize: '1rem' }}>
-              {filter === 'all' 
-                ? 'Comece a se candidatar para vagas que combinam com você' 
-                : 'Tente mudar o filtro para ver outras candidaturas'}
-            </p>
-            {filter === 'all' && (
-              <Link href="/vagas" style={{
-                display: 'inline-block',
-                padding: '1rem 2rem',
-                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                color: 'white',
-                textDecoration: 'none',
-                borderRadius: '12px',
-                fontWeight: '700',
-                boxShadow: '0 4px 20px rgba(16, 185, 129, 0.4)'
-              }}>
-                Buscar Vagas
-              </Link>
-            )}
-          </div>
-	        )}
+                {!isInterviewView ? (
+                  <section className={styles.statsGrid}>
+                    <StatCard
+                      value={stats.total}
+                      label="Total"
+                      color="#2057d7"
+                      active={filter === "all"}
+                      onClick={() => setFilterAndSyncUrl("all")}
+                    />
+                    <StatCard
+                      value={stats.pending}
+                      label="Pendentes"
+                      color="#1e2b4d"
+                      active={filter === "pending"}
+                      onClick={() => setFilterAndSyncUrl("pending")}
+                    />
+                    <StatCard
+                      value={stats.interview}
+                      label="Entrevistas"
+                      color="#5fb8f5"
+                      active={filter === "interview"}
+                      onClick={() => setFilterAndSyncUrl("interview")}
+                    />
+                    <StatCard
+                      value={stats.approved}
+                      label="Aprovadas"
+                      color="#8ea800"
+                      active={filter === "approved"}
+                      onClick={() => setFilterAndSyncUrl("approved")}
+                    />
+                    <StatCard
+                      value={stats.rejected}
+                      label="Rejeitadas"
+                      color="#ef4444"
+                      active={filter === "rejected"}
+                      onClick={() => setFilterAndSyncUrl("rejected")}
+                    />
+                  </section>
+                ) : (
+                  <section className={styles.interviewBanner}>
+                    <div className={styles.interviewBannerText}>
+                      Entrevistas agendadas: <strong>{stats.interview}</strong>
+                    </div>
+                    <Link
+                      href="/dashboard/candidato/candidaturas"
+                      className={styles.interviewBannerLink}
+                    >
+                      Ver todas as candidaturas
+                    </Link>
+                  </section>
+                )}
 
-	            </>
-	          );
-	        })()}
-	      </div>
-	    </>
-	  );
-	}
+                {filteredApplications.length > 0 ? (
+                  <section className={styles.cards}>
+                    {filteredApplications.map((application, index) => (
+                      <ApplicationDetailCard
+                        key={application.id || index}
+                        application={application}
+                      />
+                    ))}
+                  </section>
+                ) : (
+                  <section className={styles.emptyState}>
+                    <h3 className={styles.emptyTitle}>
+                      {filter === "all"
+                        ? "Nenhuma candidatura ainda"
+                        : `Nenhuma candidatura ${
+                            filter === "pending"
+                              ? "pendente"
+                              : filter === "interview"
+                                ? "com entrevista"
+                                : filter === "approved"
+                                  ? "aprovada"
+                                  : filter === "rejected"
+                                    ? "rejeitada"
+                                    : ""
+                          }`}
+                    </h3>
+                    <p className={styles.emptyDescription}>
+                      {filter === "all"
+                        ? "Comece a se candidatar para vagas que combinam com você"
+                        : "Tente mudar o filtro para ver outras candidaturas"}
+                    </p>
+                    {filter === "all" ? (
+                      <Link href="/vagas" className={styles.emptyAction}>
+                        Buscar Vagas
+                      </Link>
+                    ) : null}
+                  </section>
+                )}
+              </>
+            );
+          })()}
+        </div>
+      </main>
+    </>
+  );
+}
 
 function StatCard({ value, label, color, active, onClick }) {
   return (
-    <div
+    <button
+      type="button"
       onClick={onClick}
-      style={{
-        background: active ? `${color}20` : 'rgba(255, 255, 255, 0.05)',
-        backdropFilter: 'blur(10px)',
-        border: active ? `2px solid ${color}` : '1px solid rgba(255, 255, 255, 0.1)',
-        borderRadius: '16px',
-        padding: '1.5rem',
-        textAlign: 'center',
-        cursor: 'pointer',
-        transition: 'all 0.3s ease'
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'translateY(-4px)';
-        e.currentTarget.style.boxShadow = `0 10px 30px ${color}40`;
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = 'translateY(0)';
-        e.currentTarget.style.boxShadow = 'none';
-      }}
+      className={`${styles.statCard} ${active ? styles.statCardActive : ""}`}
+      style={{ "--stat-accent": color }}
     >
-      <div style={{ fontSize: '2rem', fontWeight: '900', color: color, marginBottom: '0.25rem' }}>
-        {value}
-      </div>
-      <div style={{ fontSize: '0.9rem', color: 'white', fontWeight: '600' }}>
-        {label}
-      </div>
-    </div>
+      <span className={styles.statValue}>{value}</span>
+      <span className={styles.statLabel}>{label}</span>
+    </button>
   );
 }
 
 function ApplicationDetailCard({ application }) {
   const getStatusInfo = (status) => {
     switch (status) {
-      case 'approved':
-        return { 
-          bg: 'rgba(16, 185, 129, 0.15)', 
-          border: 'rgba(16, 185, 129, 0.3)',
-          color: '#10b981', 
-          text: 'Aprovada'
-        };
-      case 'analysis':
+      case "approved":
         return {
-          bg: 'rgba(59, 130, 246, 0.15)',
-          border: 'rgba(59, 130, 246, 0.3)',
-          color: '#60a5fa',
-          text: 'Em análise'
+          bg: "rgba(217, 255, 47, 0.18)",
+          border: "rgba(217, 255, 47, 0.28)",
+          color: "#1e2b4d",
+          text: "Aprovada",
         };
-      case 'interview':
+      case "analysis":
         return {
-          bg: 'rgba(139, 92, 246, 0.15)',
-          border: 'rgba(139, 92, 246, 0.3)',
-          color: '#a78bfa',
-          text: 'Entrevista'
+          bg: "rgba(95, 184, 245, 0.16)",
+          border: "rgba(32, 87, 215, 0.24)",
+          color: "#2057d7",
+          text: "Em análise",
         };
-      case 'rejected':
-        return { 
-          bg: 'rgba(239, 68, 68, 0.15)', 
-          border: 'rgba(239, 68, 68, 0.3)',
-          color: '#ef4444', 
-          text: 'Rejeitada'
+      case "interview":
+        return {
+          bg: "rgba(95, 184, 245, 0.18)",
+          border: "rgba(32, 87, 215, 0.24)",
+          color: "#2057d7",
+          text: "Entrevista",
+        };
+      case "rejected":
+        return {
+          bg: "rgba(239, 68, 68, 0.15)",
+          border: "rgba(239, 68, 68, 0.3)",
+          color: "#ef4444",
+          text: "Rejeitada",
         };
       default:
-        return { 
-          bg: 'rgba(245, 158, 11, 0.15)', 
-          border: 'rgba(245, 158, 11, 0.3)',
-          color: '#f59e0b', 
-          text: 'Pendente'
+        return {
+          bg: "rgba(30, 43, 77, 0.08)",
+          border: "rgba(30, 43, 77, 0.18)",
+          color: "#1e2b4d",
+          text: "Pendente",
         };
     }
   };
 
   const statusInfo = getStatusInfo(application.status);
   const assessment = application.skillsAssessmentResult;
+  const premiumBadges = [
+    application.priorityApplied
+      ? {
+          key: "priority",
+          label: "Prioritária",
+          bg: "rgba(217, 255, 47, 0.16)",
+          border: "rgba(217, 255, 47, 0.28)",
+          color: "#1e2b4d",
+        }
+      : null,
+    application.applicationHighlighted
+      ? {
+          key: "highlight",
+          label: "Em destaque",
+          bg: "rgba(95, 184, 245, 0.14)",
+          border: "rgba(32, 87, 215, 0.24)",
+          color: "#2057d7",
+        }
+      : null,
+    application.premiumOnlyJob
+      ? {
+          key: "premium-job",
+          label: "Vaga premium",
+          bg: "rgba(30, 43, 77, 0.08)",
+          border: "rgba(32, 87, 215, 0.18)",
+          color: "#1e2b4d",
+        }
+      : null,
+    application.accessedDuringEarlyWindow
+      ? {
+          key: "early",
+          label: "Acesso antecipado",
+          bg: "rgba(95, 184, 245, 0.14)",
+          border: "rgba(32, 87, 215, 0.24)",
+          color: "#2057d7",
+        }
+      : null,
+    application.coverLetter
+      ? {
+          key: "cover-letter",
+          label: "Carta incluída",
+          bg: "rgba(217, 255, 47, 0.14)",
+          border: "rgba(217, 255, 47, 0.24)",
+          color: "#1e2b4d",
+        }
+      : null,
+  ].filter(Boolean);
   const [interviewActionLoading, setInterviewActionLoading] = useState(false);
-  const [interviewError, setInterviewError] = useState('');
+  const [interviewError, setInterviewError] = useState("");
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
-  const [rescheduleReason, setRescheduleReason] = useState('');
-  const [localInterview, setLocalInterview] = useState(application.interviewDetails || null);
+  const [rescheduleReason, setRescheduleReason] = useState("");
+  const [localInterview, setLocalInterview] = useState(
+    application.interviewDetails || null,
+  );
 
   useEffect(() => {
     setLocalInterview(application.interviewDetails || null);
   }, [application.interviewDetails]);
 
-  const interviewStatus = String(localInterview?.status || 'scheduled').toLowerCase();
+  const interviewStatus = String(
+    localInterview?.status || "scheduled",
+  ).toLowerCase();
   const hasInterview = Boolean(localInterview?.scheduledAt);
-
   const interviewStatusLabel = getInterviewStatusLabelPt(interviewStatus);
 
   const handleConfirmInterview = async () => {
     if (!application.id || !hasInterview || interviewActionLoading) return;
-    setInterviewError('');
+    setInterviewError("");
     setInterviewActionLoading(true);
     try {
-      const { getAuth } = await import('firebase/auth');
+      const { getAuth } = await import("firebase/auth");
       const auth = getAuth();
       const token = await auth.currentUser?.getIdToken();
-      if (!token) throw new Error('Não autenticado');
+      if (!token) throw new Error("Não autenticado");
 
-      const res = await fetch(`/api/applications/${application.id}/interview-response`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+      const res = await fetch(
+        `/api/applications/${application.id}/interview-response`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ action: "confirm" }),
         },
-        body: JSON.stringify({ action: 'confirm' })
-      });
+      );
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || 'Não foi possível confirmar.');
+      if (!res.ok) throw new Error(data.error || "Não foi possível confirmar.");
       setLocalInterview(data.interviewDetails || localInterview);
     } catch (err) {
-      setInterviewError(err.message || 'Erro ao confirmar.');
+      setInterviewError(err.message || "Erro ao confirmar.");
     } finally {
       setInterviewActionLoading(false);
     }
@@ -432,34 +427,43 @@ function ApplicationDetailCard({ application }) {
 
   const handleRequestReschedule = async () => {
     if (!application.id || !hasInterview || interviewActionLoading) return;
-    const trimmed = String(rescheduleReason || '').trim();
+    const trimmed = String(rescheduleReason || "").trim();
     if (trimmed.length < 5) {
-      setInterviewError('Informe um motivo curto (mín. 5 caracteres).');
+      setInterviewError("Informe um motivo curto (mín. 5 caracteres).");
       return;
     }
-    setInterviewError('');
+    setInterviewError("");
     setInterviewActionLoading(true);
     try {
-      const { getAuth } = await import('firebase/auth');
+      const { getAuth } = await import("firebase/auth");
       const auth = getAuth();
       const token = await auth.currentUser?.getIdToken();
-      if (!token) throw new Error('Não autenticado');
+      if (!token) throw new Error("Não autenticado");
 
-      const res = await fetch(`/api/applications/${application.id}/interview-response`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+      const res = await fetch(
+        `/api/applications/${application.id}/interview-response`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            action: "request_reschedule",
+            reason: trimmed,
+          }),
         },
-        body: JSON.stringify({ action: 'request_reschedule', reason: trimmed })
-      });
+      );
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || 'Não foi possível solicitar reagendamento.');
+      if (!res.ok)
+        throw new Error(
+          data.error || "Não foi possível solicitar reagendamento.",
+        );
       setLocalInterview(data.interviewDetails || localInterview);
       setRescheduleOpen(false);
-      setRescheduleReason('');
+      setRescheduleReason("");
     } catch (err) {
-      setInterviewError(err.message || 'Erro ao solicitar.');
+      setInterviewError(err.message || "Erro ao solicitar.");
     } finally {
       setInterviewActionLoading(false);
     }
@@ -467,377 +471,355 @@ function ApplicationDetailCard({ application }) {
 
   const handleDownloadICS = async () => {
     if (!application.id || !hasInterview) return;
-    setInterviewError('');
+    setInterviewError("");
     try {
       await downloadInterviewICS(application.id);
     } catch (err) {
-      setInterviewError(err.message || 'Erro ao baixar calendário.');
+      setInterviewError(err.message || "Erro ao baixar calendário.");
     }
   };
 
   return (
-    <div style={{
-      background: 'rgba(255, 255, 255, 0.05)',
-      backdropFilter: 'blur(10px)',
-      border: '1px solid rgba(255, 255, 255, 0.1)',
-      borderRadius: '16px',
-      padding: '2rem',
-      transition: 'all 0.3s ease'
-    }}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.borderColor = statusInfo.color;
-      e.currentTarget.style.boxShadow = `0 10px 30px ${statusInfo.color}30`;
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-      e.currentTarget.style.boxShadow = 'none';
-    }}>
-      
-      {/* Header da Candidatura */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-        <div style={{ flex: 1 }}>
-          <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.5rem', color: 'white', fontWeight: '800' }}>
-            {application.jobTitle}
-          </h3>
-          {application.company && (
-            <p style={{ margin: '0', color: 'rgba(255, 255, 255, 0.8)', fontSize: '1rem' }}>
-              {application.company}
-            </p>
-          )}
+    <article
+      className={styles.applicationCard}
+      style={{
+        "--card-accent": statusInfo.color,
+        "--card-accent-bg": statusInfo.bg,
+        "--card-accent-border": statusInfo.border,
+      }}
+    >
+      <div className={styles.cardHeader}>
+        <div className={styles.cardIdentity}>
+          <h3 className={styles.cardTitle}>{application.jobTitle}</h3>
+          {application.company ? (
+            <p className={styles.cardCompany}>{application.company}</p>
+          ) : null}
         </div>
-        <div style={{
-          padding: '0.75rem 1.5rem',
-          background: statusInfo.bg,
-          border: `2px solid ${statusInfo.border}`,
-          borderRadius: '12px',
-          color: statusInfo.color,
-          fontWeight: '700',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          whiteSpace: 'nowrap'
-        }}>
-          <span>{statusInfo.text}</span>
-        </div>
+
+        <div className={styles.statusPill}>{statusInfo.text}</div>
       </div>
 
-      {/* Informações da Candidatura */}
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-        gap: '1.5rem',
-        marginBottom: '1.5rem'
-      }}>
-        {application.appliedAt && (
-          <InfoItem 
+      <div className={styles.infoGrid}>
+        {application.appliedAt ? (
+          <InfoItem
             label="Data de Candidatura"
-            value={new Date(application.appliedAt).toLocaleDateString('pt-PT', {
-              day: '2-digit',
-              month: 'long',
-              year: 'numeric'
+            value={new Date(application.appliedAt).toLocaleDateString("pt-PT", {
+              day: "2-digit",
+              month: "long",
+              year: "numeric",
             })}
           />
-        )}
-        {application.jobLocation && (
-          <InfoItem 
-            label="Localização"
-            value={application.jobLocation}
-          />
-        )}
-        {application.jobType && (
-          <InfoItem 
-            label="Tipo de Contrato"
-            value={application.jobType}
-          />
-        )}
+        ) : null}
+        {application.jobLocation ? (
+          <InfoItem label="Localização" value={application.jobLocation} />
+        ) : null}
+        {application.jobType ? (
+          <InfoItem label="Tipo de Contrato" value={application.jobType} />
+        ) : null}
       </div>
 
-      {assessment && typeof assessment.score === 'number' && (
-        <div style={{
-          marginBottom: '1.5rem',
-          padding: '1rem 1.25rem',
-          background: 'rgba(59, 130, 246, 0.10)',
-          border: '1px solid rgba(59, 130, 246, 0.25)',
-          borderRadius: '14px'
-        }}>
-          <h4 style={{ margin: '0 0 1rem 0', color: '#bfdbfe', fontSize: '1rem', fontWeight: '700' }}>
-            Teste de habilidades
-          </h4>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-            gap: '1rem'
-          }}>
-            <InfoItem
-              label="Pontuação"
-              value={`${assessment.score}%`}
-            />
+      {premiumBadges.length > 0 ? (
+        <div className={styles.badgesRow}>
+          {premiumBadges.map((badge) => (
+            <span
+              key={badge.key}
+              className={styles.featureBadge}
+              style={{
+                "--badge-bg": badge.bg,
+                "--badge-border": badge.border,
+                "--badge-color": badge.color,
+              }}
+            >
+              {badge.label}
+            </span>
+          ))}
+        </div>
+      ) : null}
+
+      {typeof application.compatibilityScore === "number" ||
+      application.compatibilityReasons?.length ? (
+        <section
+          className={styles.insightBox}
+          style={{
+            "--panel-accent": "rgba(6, 182, 212, 0.24)",
+            "--panel-bg": "rgba(6, 182, 212, 0.08)",
+          }}
+        >
+          <h4 className={styles.sectionTitle}>Compatibilidade registada</h4>
+          <div className={styles.sectionGrid}>
+            {typeof application.compatibilityScore === "number" ? (
+              <InfoItem
+                label="Score"
+                value={`${application.compatibilityScore}%`}
+              />
+            ) : null}
+            {application.compatibilityLabel ? (
+              <InfoItem
+                label="Leitura"
+                value={application.compatibilityLabel}
+              />
+            ) : null}
+          </div>
+
+          {application.compatibilityReasons?.length ? (
+            <p className={styles.sectionText}>
+              {application.compatibilityReasons.slice(0, 3).join(" • ")}
+            </p>
+          ) : null}
+
+          {application.compatibilityMatchedSkills?.length ? (
+            <div className={styles.skillBlock}>
+              <div className={styles.skillLabelPositive}>
+                Competencias alinhadas
+              </div>
+              <div className={styles.skillList}>
+                {application.compatibilityMatchedSkills
+                  .slice(0, 5)
+                  .map((skill) => (
+                    <span
+                      key={skill}
+                      className={`${styles.skillChip} ${styles.skillChipPositive}`}
+                    >
+                      {skill}
+                    </span>
+                  ))}
+              </div>
+            </div>
+          ) : null}
+
+          {application.compatibilityMissingSkills?.length ? (
+            <div className={styles.skillBlock}>
+              <div className={styles.skillLabelNegative}>
+                Lacunas a reforcar
+              </div>
+              <div className={styles.skillList}>
+                {application.compatibilityMissingSkills
+                  .slice(0, 5)
+                  .map((skill) => (
+                    <span
+                      key={skill}
+                      className={`${styles.skillChip} ${styles.skillChipNegative}`}
+                    >
+                      {skill}
+                    </span>
+                  ))}
+              </div>
+            </div>
+          ) : null}
+
+          {application.applicationFeedback ? (
+            <div className={styles.feedbackBox}>
+              {application.applicationFeedback}
+            </div>
+          ) : null}
+
+          {application.cvOptimizationTips?.length ? (
+            <div className={styles.tipsBlock}>
+              <div className={styles.skillLabelNeutral}>Como melhorar</div>
+              <ul className={styles.tipList}>
+                {application.cvOptimizationTips.slice(0, 3).map((tip) => (
+                  <li key={tip}>{tip}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </section>
+      ) : null}
+
+      {assessment && typeof assessment.score === "number" ? (
+        <section
+          className={styles.insightBox}
+          style={{
+            "--panel-accent": "rgba(59, 130, 246, 0.24)",
+            "--panel-bg": "rgba(59, 130, 246, 0.10)",
+          }}
+        >
+          <h4 className={styles.sectionTitle}>Teste de habilidades</h4>
+          <div className={styles.sectionGrid}>
+            <InfoItem label="Pontuação" value={`${assessment.score}%`} />
             <InfoItem
               label="Resultado"
-              value={`${assessment.correctAnswers ?? 0}/${assessment.totalQuestions ?? 0} ${assessment.passed ? '(Aprovado)' : '(Não aprovado)'}`}
+              value={`${assessment.correctAnswers ?? 0}/${assessment.totalQuestions ?? 0} ${assessment.passed ? "(Aprovado)" : "(Não aprovado)"}`}
             />
           </div>
-        </div>
-      )}
+        </section>
+      ) : null}
 
-      {hasInterview && (
-        <div style={{
-          marginBottom: '1.5rem',
-          padding: '1rem 1.25rem',
-          background: 'rgba(139, 92, 246, 0.12)',
-          border: '1px solid rgba(139, 92, 246, 0.28)',
-          borderRadius: '14px'
-        }}>
-          <h4 style={{ margin: '0 0 1rem 0', color: '#e9d5ff', fontSize: '1rem', fontWeight: '700' }}>
-            Detalhes da entrevista
-          </h4>
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center', marginBottom: '1rem' }}>
-            <span style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              padding: '0.35rem 0.75rem',
-              borderRadius: '999px',
-              border: '1px solid rgba(233, 213, 255, 0.25)',
-              background: 'rgba(233, 213, 255, 0.10)',
-              color: '#e9d5ff',
-              fontSize: '0.85rem',
-              fontWeight: 700
-            }}>
+      {application.coverLetter ? (
+        <section
+          className={styles.insightBox}
+          style={{
+            "--panel-accent": "rgba(34, 197, 94, 0.22)",
+            "--panel-bg": "rgba(34, 197, 94, 0.08)",
+          }}
+        >
+          <h4 className={styles.sectionTitle}>Carta de apresentação enviada</h4>
+          <div className={styles.coverLetter}>{application.coverLetter}</div>
+        </section>
+      ) : null}
+
+      {hasInterview ? (
+        <section
+          className={styles.insightBox}
+          style={{
+            "--panel-accent": "rgba(139, 92, 246, 0.28)",
+            "--panel-bg": "rgba(139, 92, 246, 0.12)",
+          }}
+        >
+          <h4 className={styles.sectionTitle}>Detalhes da entrevista</h4>
+
+          <div className={styles.interviewTop}>
+            <span className={styles.interviewStatus}>
               {interviewStatusLabel}
             </span>
             <button
               type="button"
               onClick={handleDownloadICS}
-              style={{
-                padding: '0.45rem 0.85rem',
-                borderRadius: '10px',
-                border: '1px solid rgba(196, 181, 253, 0.35)',
-                background: 'rgba(196, 181, 253, 0.12)',
-                color: '#ddd6fe',
-                cursor: 'pointer',
-                fontWeight: 700,
-                fontSize: '0.85rem'
-              }}
+              className={styles.ghostButton}
             >
               Adicionar ao calendário
             </button>
           </div>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-            gap: '1rem'
-          }}>
+
+          <div className={styles.sectionGrid}>
             <InfoItem
               label="Data e hora"
               value={formatMaybeDateTimePt(localInterview.scheduledAt)}
             />
             <InfoItem
-              label={localInterview.mode === 'presencial' ? 'Local' : 'Link'}
+              label={localInterview.mode === "presencial" ? "Local" : "Link"}
               value={
-                localInterview.mode === 'presencial'
-                  ? localInterview.location || 'Local a confirmar'
-                  : localInterview.link
-                    ? (isLikelyUrl(localInterview.link)
-                        ? (
-                            <a
-                              href={localInterview.link}
-                              target="_blank"
-                              rel="noreferrer"
-                              style={{ color: '#c4b5fd', textDecoration: 'underline' }}
-                            >
-                              {localInterview.link}
-                            </a>
-                          )
-                        : localInterview.link)
-                    : 'Link a confirmar'
+                localInterview.mode === "presencial" ? (
+                  localInterview.location || "Local a confirmar"
+                ) : localInterview.link ? (
+                  isLikelyUrl(localInterview.link) ? (
+                    <a
+                      href={localInterview.link}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={styles.inlineLink}
+                    >
+                      {localInterview.link}
+                    </a>
+                  ) : (
+                    localInterview.link
+                  )
+                ) : (
+                  "Link a confirmar"
+                )
               }
             />
           </div>
-          {localInterview.notes && (
-            <div style={{
-              marginTop: '1rem',
-              color: 'rgba(255, 255, 255, 0.82)',
-              fontSize: '0.95rem',
-              lineHeight: 1.6
-            }}>
-              {localInterview.notes}
-            </div>
-          )}
 
-          {interviewError && (
-            <div style={{ marginTop: '1rem', color: '#fecaca', fontWeight: 700, fontSize: '0.9rem' }}>
-              {interviewError}
-            </div>
-          )}
+          {localInterview.notes ? (
+            <p className={styles.sectionText}>{localInterview.notes}</p>
+          ) : null}
+          {interviewError ? (
+            <div className={styles.errorText}>{interviewError}</div>
+          ) : null}
 
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1rem' }}>
+          <div className={styles.actionRow}>
             <button
               type="button"
               onClick={handleConfirmInterview}
-              disabled={interviewActionLoading || interviewStatus === 'confirmed'}
-              style={{
-                padding: '0.7rem 1rem',
-                borderRadius: '12px',
-                border: '1px solid rgba(16, 185, 129, 0.35)',
-                background: interviewStatus === 'confirmed' ? 'rgba(148, 163, 184, 0.18)' : 'rgba(16, 185, 129, 0.12)',
-                color: interviewStatus === 'confirmed' ? '#cbd5e1' : '#6ee7b7',
-                cursor: interviewStatus === 'confirmed' ? 'not-allowed' : 'pointer',
-                fontWeight: 800
-              }}
+              disabled={
+                interviewActionLoading || interviewStatus === "confirmed"
+              }
+              className={`${styles.actionButton} ${styles.actionButtonPositive}`}
             >
-              {interviewActionLoading ? 'A processar...' : interviewStatus === 'confirmed' ? 'Presença confirmada' : 'Confirmar presença'}
+              {interviewActionLoading
+                ? "A processar..."
+                : interviewStatus === "confirmed"
+                  ? "Presença confirmada"
+                  : "Confirmar presença"}
             </button>
             <button
               type="button"
               onClick={() => setRescheduleOpen((v) => !v)}
               disabled={interviewActionLoading}
-              style={{
-                padding: '0.7rem 1rem',
-                borderRadius: '12px',
-                border: '1px solid rgba(251, 191, 36, 0.35)',
-                background: 'rgba(251, 191, 36, 0.10)',
-                color: '#fde68a',
-                cursor: 'pointer',
-                fontWeight: 800
-              }}
+              className={`${styles.actionButton} ${styles.actionButtonWarning}`}
             >
               Pedir reagendamento
             </button>
           </div>
 
-          {rescheduleOpen && (
-            <div style={{ marginTop: '1rem' }}>
+          {rescheduleOpen ? (
+            <div className={styles.rescheduleBox}>
               <textarea
                 value={rescheduleReason}
                 onChange={(e) => setRescheduleReason(e.target.value)}
                 placeholder="Explique o motivo e sugira horários alternativos (opcional)."
                 rows={3}
-                style={{
-                  width: '100%',
-                  padding: '0.9rem',
-                  borderRadius: '12px',
-                  border: '1px solid rgba(255,255,255,0.15)',
-                  background: 'rgba(255,255,255,0.06)',
-                  color: 'white',
-                  resize: 'vertical'
-                }}
+                className={styles.textarea}
               />
-              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.75rem', flexWrap: 'wrap' }}>
+              <div className={styles.actionRow}>
                 <button
                   type="button"
                   onClick={handleRequestReschedule}
                   disabled={interviewActionLoading}
-                  style={{
-                    padding: '0.7rem 1rem',
-                    borderRadius: '12px',
-                    border: '1px solid rgba(139, 92, 246, 0.35)',
-                    background: 'rgba(139, 92, 246, 0.16)',
-                    color: '#ddd6fe',
-                    cursor: 'pointer',
-                    fontWeight: 800
-                  }}
+                  className={`${styles.actionButton} ${styles.actionButtonAccent}`}
                 >
-                  {interviewActionLoading ? 'A enviar...' : 'Enviar pedido'}
+                  {interviewActionLoading ? "A enviar..." : "Enviar pedido"}
                 </button>
                 <button
                   type="button"
-                  onClick={() => { setRescheduleOpen(false); setRescheduleReason(''); setInterviewError(''); }}
-                  disabled={interviewActionLoading}
-                  style={{
-                    padding: '0.7rem 1rem',
-                    borderRadius: '12px',
-                    border: '1px solid rgba(148,163,184,0.25)',
-                    background: 'rgba(148,163,184,0.10)',
-                    color: '#cbd5e1',
-                    cursor: 'pointer',
-                    fontWeight: 800
+                  onClick={() => {
+                    setRescheduleOpen(false);
+                    setRescheduleReason("");
+                    setInterviewError("");
                   }}
+                  disabled={interviewActionLoading}
+                  className={`${styles.actionButton} ${styles.actionButtonNeutral}`}
                 >
                   Cancelar
                 </button>
               </div>
             </div>
-          )}
-        </div>
-      )}
+          ) : null}
+        </section>
+      ) : null}
 
-      {/* Timeline */}
-      {application.timeline && application.timeline.length > 0 && (
-        <div style={{ marginBottom: '1.5rem' }}>
-          <h4 style={{ margin: '0 0 1rem 0', color: 'white', fontSize: '1.1rem', fontWeight: '700' }}>
-            Histórico
-          </h4>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+      {application.timeline && application.timeline.length > 0 ? (
+        <section className={styles.timelineSection}>
+          <h4 className={styles.sectionTitlePlain}>Histórico</h4>
+          <div className={styles.timelineList}>
             {application.timeline.map((event, index) => (
-              <div key={index} style={{
-                display: 'flex',
-                gap: '1rem',
-                padding: '1rem',
-                background: 'rgba(255, 255, 255, 0.05)',
-                borderRadius: '10px',
-                borderLeft: `3px solid ${statusInfo.color}`
-              }}>
-                <div style={{ width: '10px', marginTop: '0.3rem' }}>
-                  <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '999px', background: statusInfo.color, opacity: 0.9 }} />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ color: 'white', fontWeight: '600', marginBottom: '0.25rem' }}>
-                    {event.title}
-                  </div>
-                  <div style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.9rem' }}>
+              <div key={index} className={styles.timelineItem}>
+                <span className={styles.timelineDot} />
+                <div className={styles.timelineContent}>
+                  <div className={styles.timelineTitle}>{event.title}</div>
+                  <div className={styles.timelineDescription}>
                     {event.description}
                   </div>
-                  <div style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.8rem', marginTop: '0.25rem' }}>
-                    {new Date(event.date).toLocaleString('pt-PT')}
+                  <div className={styles.timelineDate}>
+                    {new Date(event.date).toLocaleString("pt-PT")}
                   </div>
                 </div>
               </div>
             ))}
           </div>
-        </div>
-      )}
+        </section>
+      ) : null}
 
-      {/* Ações */}
-      <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', paddingTop: '1.5rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
-        {application.jobId && (
-          <Link href={`/vaga/${application.jobId}`} style={{
-            padding: '0.75rem 1.5rem',
-            background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-            border: 'none',
-            borderRadius: '12px',
-            color: 'white',
-            textDecoration: 'none',
-            fontWeight: '700',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            boxShadow: '0 4px 15px rgba(59, 130, 246, 0.4)'
-          }}>
+      <div className={styles.footerActions}>
+        {application.jobId ? (
+          <Link
+            href={`/vaga/${application.jobId}`}
+            className={styles.primaryLink}
+          >
             Ver Vaga
           </Link>
-        )}
+        ) : null}
       </div>
-    </div>
+    </article>
   );
 }
 
 function InfoItem({ label, value }) {
   return (
-    <div>
-      <div style={{ 
-        color: 'rgba(255, 255, 255, 0.6)', 
-        fontSize: '0.85rem', 
-        marginBottom: '0.25rem',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.5rem'
-      }}>
-        <span>{label}</span>
-      </div>
-      <div style={{ color: 'white', fontSize: '1rem', fontWeight: '600' }}>
-        {value}
-      </div>
+    <div className={styles.infoItem}>
+      <div className={styles.infoLabel}>{label}</div>
+      <div className={styles.infoValue}>{value}</div>
     </div>
   );
 }

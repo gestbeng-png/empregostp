@@ -1,10 +1,10 @@
-import Head from 'next/head';
-import { useMemo, useState } from 'react';
-import Link from 'next/link';
-import PublicPageShell from '../components/PublicPageShell';
-import { admin } from '../lib/firebaseAdmin';
-import { resolveProfessionalResourceAccess } from '../lib/resourcePremiumAccess';
-import pageStyles from '../styles/RecursosPage.module.css';
+import Head from "next/head";
+import { useMemo, useState } from "react";
+import Link from "next/link";
+import PublicPageShell from "../components/PublicPageShell";
+import { admin } from "../lib/firebaseAdmin";
+import { resolveProfessionalResourceAccess } from "../lib/resourcePremiumAccess";
+import pageStyles from "../styles/RecursosPage.module.css";
 import {
   DEFAULT_GUIDES,
   DEFAULT_TEMPLATES,
@@ -12,8 +12,8 @@ import {
   RESOURCE_AUDIENCE,
   normalizeAudience,
   resolveGuideContentId,
-  slugifyFilename
-} from '../lib/resourcesCatalog';
+  slugifyFilename,
+} from "../lib/resourcesCatalog";
 
 const icons = {
   document: (
@@ -117,11 +117,11 @@ const icons = {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" />
     </svg>
-  )
+  ),
 };
 
 const normalizeCategory = (category) => {
-  return category ? category.trim() : 'Outros';
+  return category ? category.trim() : "Outros";
 };
 
 const serializeDoc = (doc) => {
@@ -130,14 +130,15 @@ const serializeDoc = (doc) => {
     id: doc.id,
     ...data,
     createdAt: data.createdAt?.toDate?.()?.toISOString() || null,
-    updatedAt: data.updatedAt?.toDate?.()?.toISOString() || null
+    updatedAt: data.updatedAt?.toDate?.()?.toISOString() || null,
   };
 };
 
 const fetchCollection = async (collectionName, limit = 6) => {
-  const query = admin.firestore()
+  const query = admin
+    .firestore()
     .collection(collectionName)
-    .orderBy('createdAt', 'desc')
+    .orderBy("createdAt", "desc")
     .limit(limit);
   const snapshot = await query.get();
   return snapshot.docs.map(serializeDoc);
@@ -145,112 +146,139 @@ const fetchCollection = async (collectionName, limit = 6) => {
 
 const FAQS = [
   {
-    id: 'faq1',
-    question: 'Como me candidatar a uma vaga no EmpregoSTP?',
-    answer: 'Crie uma conta gratuita, complete seu perfil e CV, navegue pelas vagas disponiveis e clique em "Candidatar-me" nas oportunidades que lhe interessam. O empregador recebera sua candidatura automaticamente.'
+    id: "faq1",
+    question: "Como me candidatar a uma vaga no EmpregoSTP?",
+    answer:
+      'Crie uma conta gratuita, complete seu perfil e CV, navegue pelas vagas disponiveis e clique em "Candidatar-me" nas oportunidades que lhe interessam. O empregador recebera sua candidatura automaticamente.',
   },
   {
-    id: 'faq2',
-    question: 'Quanto custa usar a plataforma?',
-    answer: 'Para candidatos, a plataforma e 100% gratuita. Voce pode criar perfil, candidatar-se a vagas e usar recursos basicos sem qualquer custo. Oferecemos planos premium com recursos adicionais para quem deseja mais visibilidade.'
+    id: "faq2",
+    question: "Quanto custa usar a plataforma?",
+    answer:
+      "Para candidatos, a plataforma e 100% gratuita. Voce pode criar perfil, candidatar-se a vagas e usar recursos basicos sem qualquer custo. Oferecemos planos premium com recursos adicionais para quem deseja mais visibilidade.",
   },
   {
-    id: 'faq3',
-    question: 'Como sei se minha candidatura foi vista?',
-    answer: 'No seu dashboard, voce pode acompanhar o status de todas as suas candidaturas. Quando um empregador visualiza seu perfil ou altera o status, voce recebe uma notificacao automatica.'
+    id: "faq3",
+    question: "Como sei se minha candidatura foi vista?",
+    answer:
+      "No seu dashboard, voce pode acompanhar o status de todas as suas candidaturas. Quando um empregador visualiza seu perfil ou altera o status, voce recebe uma notificacao automatica.",
   },
   {
-    id: 'faq4',
-    question: 'Posso editar minha candidatura depois de enviar?',
-    answer: 'Voce pode atualizar seu CV e perfil a qualquer momento. As alteracoes ficam disponiveis para todos os empregadores. No entanto, mensagens enviadas junto com candidaturas nao podem ser editadas.'
+    id: "faq4",
+    question: "Posso editar minha candidatura depois de enviar?",
+    answer:
+      "Voce pode atualizar seu CV e perfil a qualquer momento. As alteracoes ficam disponiveis para todos os empregadores. No entanto, mensagens enviadas junto com candidaturas nao podem ser editadas.",
   },
   {
-    id: 'faq5',
-    question: 'Como funciona a verificacao de perfil?',
-    answer: 'A verificacao confirma sua identidade e aumenta sua credibilidade. Voce pode verificar seu email, telefone e documentos. Perfis verificados tem ate 3x mais visualizacoes de empregadores.'
+    id: "faq5",
+    question: "Como funciona a verificacao de perfil?",
+    answer:
+      "A verificacao confirma sua identidade e aumenta sua credibilidade. Voce pode verificar seu email, telefone e documentos. Perfis verificados tem ate 3x mais visualizacoes de empregadores.",
   },
   {
-    id: 'faq6',
-    question: 'Quanto tempo as vagas ficam ativas?',
-    answer: 'As vagas ficam ativas por 30 dias por padrao, mas os empregadores podem estender ou encerrar antes. Recomendamos candidatar-se o mais rapido possivel as oportunidades interessantes.'
-  }
+    id: "faq6",
+    question: "Quanto tempo as vagas ficam ativas?",
+    answer:
+      "As vagas ficam ativas por 30 dias por padrao, mas os empregadores podem estender ou encerrar antes. Recomendamos candidatar-se o mais rapido possivel as oportunidades interessantes.",
+  },
 ];
 
 const LINKS = [
   {
-    id: 'l1',
-    title: 'Ministerio do Trabalho STP',
-    description: 'Portal oficial com informacoes sobre legislacao e servicos publicos.',
-    url: 'https://governo.st',
-    category: 'Governo'
+    id: "l1",
+    title: "Ministerio do Trabalho STP",
+    description:
+      "Portal oficial com informacoes sobre legislacao e servicos publicos.",
+    url: "https://governo.st",
+    category: "Governo",
   },
   {
-    id: 'l2',
-    title: 'Camara de Comercio STP',
-    description: 'Informacoes sobre empresas, negocios e oportunidades comerciais.',
-    url: 'https://ccistp.st',
-    category: 'Negocios'
+    id: "l2",
+    title: "Camara de Comercio STP",
+    description:
+      "Informacoes sobre empresas, negocios e oportunidades comerciais.",
+    url: "https://ccistp.st",
+    category: "Negocios",
   },
   {
-    id: 'l3',
-    title: 'Instituto de Seguranca Social',
-    description: 'Informacoes sobre contribuicoes, beneficios e pensoes.',
-    url: 'https://inss.st',
-    category: 'Governo'
-  }
+    id: "l3",
+    title: "Instituto de Seguranca Social",
+    description: "Informacoes sobre contribuicoes, beneficios e pensoes.",
+    url: "https://inss.st",
+    category: "Governo",
+  },
 ];
 
 const AUDIENCE_FILTERS = [
-  { id: RESOURCE_AUDIENCE.all, label: 'Todos' },
-  { id: RESOURCE_AUDIENCE.candidato, label: 'Candidatos' },
-  { id: RESOURCE_AUDIENCE.empresa, label: 'Empresas' }
+  { id: RESOURCE_AUDIENCE.all, label: "Todos" },
+  { id: RESOURCE_AUDIENCE.candidato, label: "Candidatos" },
+  { id: RESOURCE_AUDIENCE.empresa, label: "Empresas" },
 ];
 
-const DEFAULT_TEMPLATE_CATEGORIES = ['CV', 'Carta', 'Contrato', 'Freelancer'];
+const DEFAULT_TEMPLATE_CATEGORIES = ["CV", "Carta", "Contrato", "Freelancer"];
 
 const inferAudienceByContent = (item, fallback = RESOURCE_AUDIENCE.all) => {
-  const category = String(item?.category || '').toLowerCase();
-  const title = String(item?.title || '').toLowerCase();
-  if (category.includes('contrato') || category.includes('freelancer') || title.includes('empresa')) {
+  const category = String(item?.category || "").toLowerCase();
+  const title = String(item?.title || "").toLowerCase();
+  if (
+    category.includes("contrato") ||
+    category.includes("freelancer") ||
+    title.includes("empresa")
+  ) {
     return RESOURCE_AUDIENCE.empresa;
   }
-  if (category.includes('cv') || category.includes('carta') || title.includes('candidato')) {
+  if (
+    category.includes("cv") ||
+    category.includes("carta") ||
+    title.includes("candidato")
+  ) {
     return RESOURCE_AUDIENCE.candidato;
   }
   return fallback;
 };
 
 const normalizeLinkValue = (value) => {
-  const current = String(value || '').trim();
-  if (!current || current === '#') {
+  const current = String(value || "").trim();
+  if (!current || current === "#") {
     return null;
   }
   return current;
 };
 
 const normalizeBoolean = (value, fallback = false) => {
-  if (typeof value === 'boolean') return value;
-  if (typeof value === 'string') {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "string") {
     const normalized = value.trim().toLowerCase();
-    if (normalized === 'true' || normalized === '1' || normalized === 'sim') return true;
-    if (normalized === 'false' || normalized === '0' || normalized === 'nao' || normalized === 'não') return false;
+    if (normalized === "true" || normalized === "1" || normalized === "sim")
+      return true;
+    if (
+      normalized === "false" ||
+      normalized === "0" ||
+      normalized === "nao" ||
+      normalized === "não"
+    )
+      return false;
   }
   return fallback;
 };
 
 const isRemovedTool = (tool) => {
-  const id = String(tool?.id || '').trim().toLowerCase();
+  const id = String(tool?.id || "")
+    .trim()
+    .toLowerCase();
   // Mantemos apenas o filtro de itens antigos/duplicados do Firestore.
   // O Criador de CV /recursos/gerador-cv deve aparecer nesta rota.
-  return id === 'tool2' || id === 'tool-cv';
+  return id === "tool2" || id === "tool-cv";
 };
 
 const getResourceKey = (item, index = 0) => {
-  const titleKey = slugifyFilename(item?.title || item?.name || item?.question || '');
+  const titleKey = slugifyFilename(
+    item?.title || item?.name || item?.question || "",
+  );
   if (titleKey) {
     return titleKey;
   }
-  const idKey = slugifyFilename(item?.id || '');
+  const idKey = slugifyFilename(item?.id || "");
   if (idKey) {
     return idKey;
   }
@@ -290,32 +318,41 @@ export default function RecursosPage({
   tools = [],
   faqs = [],
   userAudience = RESOURCE_AUDIENCE.all,
-  professionalAccess = {}
+  professionalAccess = {},
 }) {
-  const [activeCategory, setActiveCategory] = useState('todos');
-  const [activeAudience, setActiveAudience] = useState(normalizeAudience(userAudience));
-  const [searchQuery, setSearchQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState("todos");
+  const [activeAudience, setActiveAudience] = useState(
+    normalizeAudience(userAudience),
+  );
+  const [searchQuery, setSearchQuery] = useState("");
   const [expandedFaq, setExpandedFaq] = useState(null);
   const hasProfessionalAccess = Boolean(professionalAccess?.allowed);
-  const premiumCtaUrl = professionalAccess?.ctaUrl || '/premium/candidatos';
+  const premiumCtaUrl = professionalAccess?.ctaUrl || "/premium/candidatos";
 
   const normalizedTemplates = useMemo(() => {
     return (templates || []).map((template) => ({
       ...template,
       category: normalizeCategory(template.category),
-      audience: normalizeAudience(template.audience, inferAudienceByContent(template, RESOURCE_AUDIENCE.all)),
+      audience: normalizeAudience(
+        template.audience,
+        inferAudienceByContent(template, RESOURCE_AUDIENCE.all),
+      ),
       downloadUrl:
         normalizeLinkValue(template.fileUrl) ||
-        normalizeLinkValue(template.url)
+        normalizeLinkValue(template.url),
     }));
   }, [templates]);
 
   const normalizedGuides = useMemo(() => {
     return (guides || []).map((guide) => ({
       ...guide,
-      audience: normalizeAudience(guide.audience, inferAudienceByContent(guide, RESOURCE_AUDIENCE.all)),
+      audience: normalizeAudience(
+        guide.audience,
+        inferAudienceByContent(guide, RESOURCE_AUDIENCE.all),
+      ),
       readUrl:
-        (String(guide.content || '').trim() || resolveGuideContentId(guide)) && guide.id
+        (String(guide.content || "").trim() || resolveGuideContentId(guide)) &&
+        guide.id
           ? `/recursos/guia/${encodeURIComponent(guide.id)}`
           : null,
       downloadUrl:
@@ -323,9 +360,9 @@ export default function RecursosPage({
         normalizeLinkValue(guide.url) ||
         (resolveGuideContentId(guide)
           ? `/api/resources/download?kind=guide&id=${encodeURIComponent(resolveGuideContentId(guide))}&title=${encodeURIComponent(
-              guide.title || 'guia'
+              guide.title || "guia",
             )}`
-          : null)
+          : null),
     }));
   }, [guides]);
 
@@ -335,8 +372,12 @@ export default function RecursosPage({
       .map((tool) => ({
         ...tool,
         audience: normalizeAudience(tool.audience, RESOURCE_AUDIENCE.all),
-        requiresProfessional: normalizeBoolean(tool.requiresProfessional, false),
-        actionUrl: normalizeLinkValue(tool.url) || normalizeLinkValue(tool.link)
+        requiresProfessional: normalizeBoolean(
+          tool.requiresProfessional,
+          false,
+        ),
+        actionUrl:
+          normalizeLinkValue(tool.url) || normalizeLinkValue(tool.link),
       }));
   }, [tools]);
 
@@ -348,18 +389,23 @@ export default function RecursosPage({
         template.audience === activeAudience
       );
     });
-    const uniqueCategories = new Set(templatePool.map((template) => template.category || 'Outros'));
-    const extras = Array.from(uniqueCategories).filter((cat) => cat && !DEFAULT_TEMPLATE_CATEGORIES.includes(cat));
+    const uniqueCategories = new Set(
+      templatePool.map((template) => template.category || "Outros"),
+    );
+    const extras = Array.from(uniqueCategories).filter(
+      (cat) => cat && !DEFAULT_TEMPLATE_CATEGORIES.includes(cat),
+    );
     return [
-      { id: 'todos', label: 'Todos' },
+      { id: "todos", label: "Todos" },
       ...DEFAULT_TEMPLATE_CATEGORIES.map((label) => ({ id: label, label })),
-      ...extras.map((label) => ({ id: label, label }))
+      ...extras.map((label) => ({ id: label, label })),
     ];
   }, [normalizedTemplates, activeAudience]);
 
   const filteredTemplates = useMemo(() => {
     const base = normalizedTemplates.filter((template) => {
-      const categoryMatch = activeCategory === 'todos' || template.category === activeCategory;
+      const categoryMatch =
+        activeCategory === "todos" || template.category === activeCategory;
       const audienceMatch =
         activeAudience === RESOURCE_AUDIENCE.all ||
         template.audience === RESOURCE_AUDIENCE.all ||
@@ -367,14 +413,18 @@ export default function RecursosPage({
       return categoryMatch && audienceMatch;
     });
 
-    const query = (searchQuery || '').trim().toLowerCase();
+    const query = (searchQuery || "").trim().toLowerCase();
     if (!query) return base;
 
     return base.filter((template) => {
-      const title = (template.title || '').toLowerCase();
-      const description = (template.description || '').toLowerCase();
-      const category = (template.category || '').toLowerCase();
-      return title.includes(query) || description.includes(query) || category.includes(query);
+      const title = (template.title || "").toLowerCase();
+      const description = (template.description || "").toLowerCase();
+      const category = (template.category || "").toLowerCase();
+      return (
+        title.includes(query) ||
+        description.includes(query) ||
+        category.includes(query)
+      );
     });
   }, [normalizedTemplates, activeCategory, activeAudience, searchQuery]);
 
@@ -388,15 +438,19 @@ export default function RecursosPage({
       return audienceMatch;
     });
 
-    const query = (searchQuery || '').trim().toLowerCase();
+    const query = (searchQuery || "").trim().toLowerCase();
     if (!query) return base.slice(0, 4);
 
     return base
       .filter((guide) => {
-        const title = (guide.title || '').toLowerCase();
-        const description = (guide.description || '').toLowerCase();
-        const category = (guide.category || '').toLowerCase();
-        return title.includes(query) || description.includes(query) || category.includes(query);
+        const title = (guide.title || "").toLowerCase();
+        const description = (guide.description || "").toLowerCase();
+        const category = (guide.category || "").toLowerCase();
+        return (
+          title.includes(query) ||
+          description.includes(query) ||
+          category.includes(query)
+        );
       })
       .slice(0, 4);
   }, [normalizedGuides, activeAudience, searchQuery]);
@@ -410,13 +464,13 @@ export default function RecursosPage({
       return audienceMatch;
     });
 
-    const query = (searchQuery || '').trim().toLowerCase();
+    const query = (searchQuery || "").trim().toLowerCase();
     if (!query) return base.slice(0, 4);
 
     return base
       .filter((tool) => {
-        const title = (tool.title || '').toLowerCase();
-        const description = (tool.description || '').toLowerCase();
+        const title = (tool.title || "").toLowerCase();
+        const description = (tool.description || "").toLowerCase();
         return title.includes(query) || description.includes(query);
       })
       .slice(0, 4);
@@ -424,362 +478,492 @@ export default function RecursosPage({
 
   const faqItems = faqs.length ? faqs : FAQS;
 
-
   return (
     <>
       <Head>
-        <title>Recursos Gratuitos | EmpregoSTP - Templates, Guias e Ferramentas</title>
-        <meta name="description" content="Recursos gratuitos para sua carreira: modelos de CV, guias de entrevista, ferramentas uteis e respostas para suas duvidas sobre emprego em Sao Tome e Principe." />
+        <title>
+          Recursos Gratuitos | EmpregoSTP - Templates, Guias e Ferramentas
+        </title>
+        <meta
+          name="description"
+          content="Recursos gratuitos para sua carreira: modelos de CV, guias de entrevista, ferramentas uteis e respostas para suas duvidas sobre emprego em Sao Tome e Principe."
+        />
       </Head>
 
       <PublicPageShell>
         <div className={pageStyles.page}>
+          {/* Hero */}
+          <section className={pageStyles.hero}>
+            <div className={pageStyles.heroGlowPrimary} />
+            <div className={pageStyles.heroGlowSecondary} />
 
-        {/* Hero */}
-        <section className={pageStyles.hero}>
-          <div className={pageStyles.heroGlowPrimary} />
-          <div className={pageStyles.heroGlowSecondary} />
-          
-          <div className={pageStyles.container}>
-            <div className={pageStyles.heroContent}>
-              <div className={pageStyles.badge}>
-                <span className={pageStyles.badgeIcon}>{icons.folder}</span>
-                <span className={pageStyles.badgeText}>Centro de Recursos</span>
-              </div>
-              
-              <h1 className={pageStyles.title}>Recursos Gratuitos para sua Carreira</h1>
-              <p className={pageStyles.subtitle}>
-                Templates de CV, guias praticos, ferramentas uteis e tudo que voce precisa
-                para se preparar e conquistar sua proxima oportunidade.
-              </p>
+            <div className={pageStyles.container}>
+              <div className={pageStyles.heroContent}>
+                <div className={pageStyles.badge}>
+                  <span className={pageStyles.badgeIcon}>{icons.folder}</span>
+                  <span className={pageStyles.badgeText}>
+                    Centro de Recursos
+                  </span>
+                </div>
 
-              <div className={pageStyles.searchBar}>
-                <span className={pageStyles.searchIcon}>{icons.search}</span>
-                <input
-                  type="text"
-                  placeholder="Pesquisar recursos..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className={pageStyles.searchInput}
-                />
-              </div>
+                <h1 className={pageStyles.title}>
+                  Recursos Gratuitos para sua Carreira
+                </h1>
+                <p className={pageStyles.subtitle}>
+                  Templates de CV, guias praticos, ferramentas uteis e tudo que
+                  voce precisa para se preparar e conquistar sua proxima
+                  oportunidade.
+                </p>
 
-              <div className={pageStyles.audienceFilters}>
-                {AUDIENCE_FILTERS.map((audience) => (
-                  <button
-                    key={audience.id}
-                    type="button"
-                    onClick={() => setActiveAudience(audience.id)}
-                    className={[
-                      pageStyles.audienceButton,
-                      activeAudience === audience.id ? pageStyles.audienceButtonActive : '',
-                    ].filter(Boolean).join(' ')}
-                  >
-                    {audience.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
+                <div className={pageStyles.searchBar}>
+                  <span className={pageStyles.searchIcon}>{icons.search}</span>
+                  <input
+                    type="text"
+                    placeholder="Pesquisar recursos..."
+                    aria-label="Pesquisar recursos"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className={pageStyles.searchInput}
+                  />
+                </div>
 
-        {/* Templates */}
-        <section className={pageStyles.section}>
-          <div className={pageStyles.container}>
-            <div className={pageStyles.sectionHeader}>
-              <h2 className={pageStyles.sectionTitle}>
-                <span className={pageStyles.sectionIcon}>{icons.document}</span>
-                Templates e Modelos
-              </h2>
-              <div className={pageStyles.categories}>
-                {categories.map(cat => (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    onClick={() => setActiveCategory(cat.id)}
-                    className={[
-                      pageStyles.categoryButton,
-                      activeCategory === cat.id ? pageStyles.categoryButtonActive : '',
-                    ].filter(Boolean).join(' ')}
-                  >
-                    {cat.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className={pageStyles.templatesGrid}>
-              {displayedTemplates.length === 0 ? (
-                <p className={pageStyles.emptyMessage}>Nenhum recurso disponível para esta categoria.</p>
-              ) : (
-                displayedTemplates.map((template) => {
-                  const downloads = Number(template.downloads) || 0;
-                  const fileUrl = template.downloadUrl;
-                  return (
-                    <div key={template.id || template.title} className={pageStyles.templateCard}>
-                      <div className={pageStyles.templateHeader}>
-                        <span
-                          className={pageStyles.templateCategory}
-                          style={{
-                            '--resource-accent': template.color || '#10b981',
-                            '--resource-accent-soft': `${template.color || '#10b981'}15`
-                          }}
-                        >
-                          {template.category || 'Recursos'}
-                        </span>
-                        <span className={pageStyles.templateFormat}>{template.format || 'Documento'}</span>
-                      </div>
-                      <h3 className={pageStyles.templateTitle}>{template.title}</h3>
-                      <p className={pageStyles.templateDescription}>{template.description}</p>
-                      <div className={pageStyles.templateFooter}>
-                        <span className={pageStyles.templateDownloads}>
-                          <span className={pageStyles.templateDownloadIcon}>{icons.download}</span>
-                          {downloads.toLocaleString('pt-PT')} downloads
-                        </span>
-                        {fileUrl ? (
-                          <a href={fileUrl} className={pageStyles.templateButton}>
-                            <span className={pageStyles.templateDownloadIcon}>{icons.download}</span>
-                            Baixar
-                          </a>
-                        ) : (
-                          <span className={pageStyles.disabledButton}>Em breve</span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
-        </section>
-
-        {/* Guides */}
-        <section className={`${pageStyles.section} ${pageStyles.sectionAlt}`}>
-          <div className={pageStyles.container}>
-            <div className={pageStyles.sectionHeader}>
-              <h2 className={pageStyles.sectionTitle}>
-                <span className={pageStyles.sectionIcon}>{icons.book}</span>
-                Guias e Manuais
-              </h2>
-            </div>
-
-            <div className={pageStyles.guidesGrid}>
-              {guidesToShow.length === 0 ? (
-                <p className={pageStyles.emptyMessage}>Sem guias cadastradas no momento.</p>
-              ) : (
-                guidesToShow.map((guide) => (
-                  <div key={guide.id || guide.title} className={pageStyles.guideCard}>
-                    <div
-                      className={pageStyles.guideIcon}
-                      style={{
-                        '--resource-accent': guide.color || '#6366f1',
-                        '--resource-accent-soft': `${guide.color || '#6366f1'}15`
-                      }}
+                <div className={pageStyles.audienceFilters}>
+                  {AUDIENCE_FILTERS.map((audience) => (
+                    <button
+                      key={audience.id}
+                      type="button"
+                      onClick={() => setActiveAudience(audience.id)}
+                      className={[
+                        pageStyles.audienceButton,
+                        activeAudience === audience.id
+                          ? pageStyles.audienceButtonActive
+                          : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
                     >
-                      <span className={pageStyles.guideIconSvg}>{icons.book}</span>
-                    </div>
-                    <div className={pageStyles.guideContent}>
-                      <div className={pageStyles.guideHeader}>
-                        <span className={pageStyles.guideCategory}>{guide.category || 'Orientação'}</span>
-                        {guide.popular && <span className={pageStyles.guidePopular}>Popular</span>}
-                      </div>
-                      <h3 className={pageStyles.guideTitle}>{guide.title}</h3>
-                      <p className={pageStyles.guideDescription}>{guide.description}</p>
-                      <div className={pageStyles.guideFooter}>
-                        <div className={pageStyles.guideMeta}>
-                          <span className={pageStyles.guideMetaItem}>
-                            <span className={pageStyles.guideMetaIcon}>{icons.clock}</span>
-                            {guide.readTime || '—'}
-                          </span>
-                          <span className={pageStyles.guideMetaItem}>
-                            <span className={pageStyles.guideMetaIcon}>{icons.file}</span>
-                            {guide.pages ? `${guide.pages} páginas` : '—'}
-                          </span>
-                        </div>
-                        <div className={pageStyles.guideButtons}>
-                          {guide.readUrl ? (
-                            <Link href={guide.readUrl} className={pageStyles.guideButton}>
-                              Ler guia
-                            </Link>
-                          ) : null}
-                          {guide.downloadUrl ? (
-                            <a href={guide.downloadUrl} className={pageStyles.guideButton}>
-                              <span className={pageStyles.templateDownloadIcon}>{icons.download}</span>
-                              Baixar anexo
-                            </a>
-                          ) : null}
-                          {!guide.readUrl && !guide.downloadUrl ? (
-                            <span className={pageStyles.disabledButton}>Em breve</span>
-                          ) : null}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
+                      {audience.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* Tools */}
-        <section className={pageStyles.section}>
-          <div className={pageStyles.container}>
-            <div className={pageStyles.sectionHeader}>
-              <h2 className={pageStyles.sectionTitle}>
-                <span className={pageStyles.sectionIcon}>{icons.calculator}</span>
-                Ferramentas Online
-              </h2>
-            </div>
+          {/* Templates */}
+          <section className={pageStyles.section}>
+            <div className={pageStyles.container}>
+              <div className={pageStyles.sectionHeader}>
+                <h2 className={pageStyles.sectionTitle}>
+                  <span className={pageStyles.sectionIcon}>
+                    {icons.document}
+                  </span>
+                  Templates e Modelos
+                </h2>
+                <div className={pageStyles.categories}>
+                  {categories.map((cat) => (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => setActiveCategory(cat.id)}
+                      className={[
+                        pageStyles.categoryButton,
+                        activeCategory === cat.id
+                          ? pageStyles.categoryButtonActive
+                          : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                    >
+                      {cat.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-            <div className={pageStyles.toolsGrid}>
-              {toolsToShow.length === 0 ? (
-                <p className={pageStyles.emptyMessage}>Ferramentas em processo de disponibilidade.</p>
-              ) : (
-                toolsToShow.map((tool) => {
-                  const icon = icons[tool.icon] || icons.document;
-                  const isLocked = tool.requiresProfessional && !hasProfessionalAccess;
-                  const actionUrl = isLocked ? premiumCtaUrl : tool.actionUrl;
-                  const isInternalAction = actionUrl?.startsWith('/');
-                  const actionLabel = isLocked ? 'Desbloquear recurso' : 'Usar Ferramenta';
-                  return (
-                    <div key={tool.id || tool.title} className={pageStyles.toolCard}>
+              <div className={pageStyles.templatesGrid}>
+                {displayedTemplates.length === 0 ? (
+                  <p className={pageStyles.emptyMessage}>
+                    Nenhum recurso disponível para esta categoria.
+                  </p>
+                ) : (
+                  displayedTemplates.map((template) => {
+                    const downloads = Number(template.downloads) || 0;
+                    const fileUrl = template.downloadUrl;
+                    return (
                       <div
-                        className={pageStyles.toolIcon}
+                        key={template.id || template.title}
+                        className={pageStyles.templateCard}
+                      >
+                        <div className={pageStyles.templateHeader}>
+                          <span
+                            className={pageStyles.templateCategory}
+                            style={{
+                              "--resource-accent": template.color || "#2057d7",
+                              "--resource-accent-soft": `${template.color || "#2057d7"}15`,
+                            }}
+                          >
+                            {template.category || "Recursos"}
+                          </span>
+                          <span className={pageStyles.templateFormat}>
+                            {template.format || "Documento"}
+                          </span>
+                        </div>
+                        <h3 className={pageStyles.templateTitle}>
+                          {template.title}
+                        </h3>
+                        <p className={pageStyles.templateDescription}>
+                          {template.description}
+                        </p>
+                        <div className={pageStyles.templateFooter}>
+                          <span className={pageStyles.templateDownloads}>
+                            <span className={pageStyles.templateDownloadIcon}>
+                              {icons.download}
+                            </span>
+                            {downloads.toLocaleString("pt-PT")} downloads
+                          </span>
+                          {fileUrl ? (
+                            <a
+                              href={fileUrl}
+                              className={pageStyles.templateButton}
+                            >
+                              <span className={pageStyles.templateDownloadIcon}>
+                                {icons.download}
+                              </span>
+                              Baixar
+                            </a>
+                          ) : (
+                            <span className={pageStyles.disabledButton}>
+                              Em breve
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          </section>
+
+          {/* Guides */}
+          <section className={`${pageStyles.section} ${pageStyles.sectionAlt}`}>
+            <div className={pageStyles.container}>
+              <div className={pageStyles.sectionHeader}>
+                <h2 className={pageStyles.sectionTitle}>
+                  <span className={pageStyles.sectionIcon}>{icons.book}</span>
+                  Guias e Manuais
+                </h2>
+              </div>
+
+              <div className={pageStyles.guidesGrid}>
+                {guidesToShow.length === 0 ? (
+                  <p className={pageStyles.emptyMessage}>
+                    Sem guias cadastradas no momento.
+                  </p>
+                ) : (
+                  guidesToShow.map((guide) => (
+                    <div
+                      key={guide.id || guide.title}
+                      className={pageStyles.guideCard}
+                    >
+                      <div
+                        className={pageStyles.guideIcon}
                         style={{
-                          '--resource-accent': tool.color || '#10b981',
-                          '--resource-accent-soft': `${tool.color || '#10b981'}15`
+                          "--resource-accent": guide.color || "#6366f1",
+                          "--resource-accent-soft": `${guide.color || "#6366f1"}15`,
                         }}
                       >
-                        <span className={pageStyles.toolIconSvg}>{icon}</span>
+                        <span className={pageStyles.guideIconSvg}>
+                          {icons.book}
+                        </span>
                       </div>
-                      <h3 className={pageStyles.toolTitle}>{tool.title}</h3>
-                      <p className={pageStyles.toolDescription}>{tool.description}</p>
-                      {actionUrl ? (
-                        isInternalAction ? (
-                          <Link href={actionUrl} className={pageStyles.toolButton}>
-                            {actionLabel}
-                            <span style={{ width: '14px', height: '14px' }}>{icons.chevronRight}</span>
-                          </Link>
-                        ) : (
-                          <a href={actionUrl} target="_blank" rel="noreferrer" className={pageStyles.toolButton}>
-                            {actionLabel}
-                            <span style={{ width: '14px', height: '14px' }}>{icons.chevronRight}</span>
-                          </a>
-                        )
-                      ) : (
-                        <span className={pageStyles.disabledButton}>Em breve</span>
-                      )}
-                      {isLocked && (
-                        <p className={pageStyles.toolLocked}>
-                          Disponivel apenas para plano Profissional.
+                      <div className={pageStyles.guideContent}>
+                        <div className={pageStyles.guideHeader}>
+                          <span className={pageStyles.guideCategory}>
+                            {guide.category || "Orientação"}
+                          </span>
+                          {guide.popular && (
+                            <span className={pageStyles.guidePopular}>
+                              Popular
+                            </span>
+                          )}
+                        </div>
+                        <h3 className={pageStyles.guideTitle}>{guide.title}</h3>
+                        <p className={pageStyles.guideDescription}>
+                          {guide.description}
                         </p>
+                        <div className={pageStyles.guideFooter}>
+                          <div className={pageStyles.guideMeta}>
+                            <span className={pageStyles.guideMetaItem}>
+                              <span className={pageStyles.guideMetaIcon}>
+                                {icons.clock}
+                              </span>
+                              {guide.readTime || "—"}
+                            </span>
+                            <span className={pageStyles.guideMetaItem}>
+                              <span className={pageStyles.guideMetaIcon}>
+                                {icons.file}
+                              </span>
+                              {guide.pages ? `${guide.pages} páginas` : "—"}
+                            </span>
+                          </div>
+                          <div className={pageStyles.guideButtons}>
+                            {guide.readUrl ? (
+                              <Link
+                                href={guide.readUrl}
+                                className={pageStyles.guideButton}
+                              >
+                                Ler guia
+                              </Link>
+                            ) : null}
+                            {guide.downloadUrl ? (
+                              <a
+                                href={guide.downloadUrl}
+                                className={pageStyles.guideButton}
+                              >
+                                <span
+                                  className={pageStyles.templateDownloadIcon}
+                                >
+                                  {icons.download}
+                                </span>
+                                Baixar anexo
+                              </a>
+                            ) : null}
+                            {!guide.readUrl && !guide.downloadUrl ? (
+                              <span className={pageStyles.disabledButton}>
+                                Em breve
+                              </span>
+                            ) : null}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </section>
+
+          {/* Tools */}
+          <section id="servicos" className={pageStyles.section}>
+            <div className={pageStyles.container}>
+              <div className={pageStyles.sectionHeader}>
+                <h2 className={pageStyles.sectionTitle}>
+                  <span className={pageStyles.sectionIcon}>
+                    {icons.calculator}
+                  </span>
+                  Ferramentas Online
+                </h2>
+              </div>
+
+              <div className={pageStyles.toolsGrid}>
+                {toolsToShow.length === 0 ? (
+                  <p className={pageStyles.emptyMessage}>
+                    Ferramentas em processo de disponibilidade.
+                  </p>
+                ) : (
+                  toolsToShow.map((tool) => {
+                    const icon = icons[tool.icon] || icons.document;
+                    const isLocked =
+                      tool.requiresProfessional && !hasProfessionalAccess;
+                    const actionUrl = isLocked ? premiumCtaUrl : tool.actionUrl;
+                    const isInternalAction = actionUrl?.startsWith("/");
+                    const actionLabel = isLocked
+                      ? "Desbloquear recurso"
+                      : "Usar Ferramenta";
+                    return (
+                      <div
+                        key={tool.id || tool.title}
+                        className={pageStyles.toolCard}
+                      >
+                        <div
+                          className={pageStyles.toolIcon}
+                          style={{
+                            "--resource-accent": tool.color || "#2057d7",
+                            "--resource-accent-soft": `${tool.color || "#2057d7"}15`,
+                          }}
+                        >
+                          <span className={pageStyles.toolIconSvg}>{icon}</span>
+                        </div>
+                        <h3 className={pageStyles.toolTitle}>{tool.title}</h3>
+                        <p className={pageStyles.toolDescription}>
+                          {tool.description}
+                        </p>
+                        {actionUrl ? (
+                          isInternalAction ? (
+                            <Link
+                              href={actionUrl}
+                              className={pageStyles.toolButton}
+                            >
+                              {actionLabel}
+                              <span style={{ width: "14px", height: "14px" }}>
+                                {icons.chevronRight}
+                              </span>
+                            </Link>
+                          ) : (
+                            <a
+                              href={actionUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className={pageStyles.toolButton}
+                            >
+                              {actionLabel}
+                              <span style={{ width: "14px", height: "14px" }}>
+                                {icons.chevronRight}
+                              </span>
+                            </a>
+                          )
+                        ) : (
+                          <span className={pageStyles.disabledButton}>
+                            Em breve
+                          </span>
+                        )}
+                        {isLocked && (
+                          <p className={pageStyles.toolLocked}>
+                            Disponivel apenas para plano Profissional.
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          </section>
+
+          {/* FAQ */}
+          <section
+            id="faq"
+            className={`${pageStyles.section} ${pageStyles.sectionAlt}`}
+          >
+            <div className={pageStyles.container}>
+              <div
+                className={`${pageStyles.sectionHeader} ${pageStyles.sectionHeaderCompact}`}
+              >
+                <h2 className={pageStyles.sectionTitle}>
+                  <span className={pageStyles.sectionIcon}>{icons.help}</span>
+                  Perguntas Frequentes
+                </h2>
+              </div>
+
+              <div className={pageStyles.faqSection}>
+                <div className={pageStyles.faqList}>
+                  {faqItems.map((faq) => (
+                    <div
+                      key={faq.id || faq.question}
+                      className={pageStyles.faqItem}
+                    >
+                      <div
+                        className={pageStyles.faqQuestion}
+                        onClick={() => {
+                          const currentId = faq.id || faq.question;
+                          setExpandedFaq(
+                            expandedFaq === currentId ? null : currentId,
+                          );
+                        }}
+                      >
+                        <p className={pageStyles.faqQuestionText}>
+                          {faq.question}
+                        </p>
+                        <span
+                          className={[
+                            pageStyles.faqIcon,
+                            expandedFaq === (faq.id || faq.question)
+                              ? pageStyles.faqIconOpen
+                              : "",
+                          ]
+                            .filter(Boolean)
+                            .join(" ")}
+                        >
+                          {icons.chevronDown}
+                        </span>
+                      </div>
+                      {expandedFaq === (faq.id || faq.question) && (
+                        <div className={pageStyles.faqAnswer}>{faq.answer}</div>
                       )}
                     </div>
-                  );
-                })
-              )}
+                  ))}
+                </div>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* FAQ */}
-        <section className={`${pageStyles.section} ${pageStyles.sectionAlt}`}>
-          <div className={pageStyles.container}>
-            <div className={`${pageStyles.sectionHeader} ${pageStyles.sectionHeaderCompact}`}>
-              <h2 className={pageStyles.sectionTitle}>
-                <span className={pageStyles.sectionIcon}>{icons.help}</span>
-                Perguntas Frequentes
-              </h2>
-            </div>
+          {/* External Links */}
+          <section className={pageStyles.section}>
+            <div className={pageStyles.container}>
+              <div className={pageStyles.sectionHeader}>
+                <h2 className={pageStyles.sectionTitle}>
+                  <span className={pageStyles.sectionIcon}>{icons.link}</span>
+                  Links Uteis
+                </h2>
+              </div>
 
-            <div className={pageStyles.faqSection}>
-              <div className={pageStyles.faqList}>
-                {faqItems.map(faq => (
-                  <div key={faq.id || faq.question} className={pageStyles.faqItem}>
-                    <div 
-                      className={pageStyles.faqQuestion}
-                      onClick={() => {
-                        const currentId = faq.id || faq.question;
-                        setExpandedFaq(expandedFaq === currentId ? null : currentId);
-                      }}
+              <div className={pageStyles.linksSection}>
+                {LINKS.map((link) => (
+                  <div key={link.id} className={pageStyles.linkCard}>
+                    <span className={pageStyles.linkCategory}>
+                      {link.category}
+                    </span>
+                    <h3 className={pageStyles.linkTitle}>{link.title}</h3>
+                    <p className={pageStyles.linkDescription}>
+                      {link.description}
+                    </p>
+                    <a
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={pageStyles.linkAnchor}
                     >
-                      <p className={pageStyles.faqQuestionText}>{faq.question}</p>
-                      <span className={[
-                        pageStyles.faqIcon,
-                        expandedFaq === (faq.id || faq.question) ? pageStyles.faqIconOpen : '',
-                      ].filter(Boolean).join(' ')}>
-                        {icons.chevronDown}
+                      Visitar site
+                      <span className={pageStyles.linkIcon}>
+                        {icons.chevronRight}
                       </span>
-                    </div>
-                    {expandedFaq === (faq.id || faq.question) && (
-                      <div className={pageStyles.faqAnswer}>{faq.answer}</div>
-                    )}
+                    </a>
                   </div>
                 ))}
               </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        {/* External Links */}
-        <section className={pageStyles.section}>
-          <div className={pageStyles.container}>
-            <div className={pageStyles.sectionHeader}>
-              <h2 className={pageStyles.sectionTitle}>
-                <span className={pageStyles.sectionIcon}>{icons.link}</span>
-                Links Uteis
-              </h2>
-            </div>
-
-            <div className={pageStyles.linksSection}>
-              {LINKS.map(link => (
-                <div key={link.id} className={pageStyles.linkCard}>
-                  <span className={pageStyles.linkCategory}>{link.category}</span>
-                  <h3 className={pageStyles.linkTitle}>{link.title}</h3>
-                  <p className={pageStyles.linkDescription}>{link.description}</p>
-                  <a href={link.url} target="_blank" rel="noopener noreferrer" className={pageStyles.linkAnchor}>
-                    Visitar site
-                    <span className={pageStyles.linkIcon}>{icons.chevronRight}</span>
-                  </a>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Contact */}
-        <section className={pageStyles.section}>
-          <div className={pageStyles.container}>
-            <div className={pageStyles.contactSection}>
-              <h2 className={pageStyles.contactTitle}>Precisa de ajuda?</h2>
-              <p className={pageStyles.contactText}>
-                Nao encontrou o que procura? Nossa equipa esta pronta para ajudar
-                com suas duvidas sobre emprego e carreira.
-              </p>
-              <div className={pageStyles.contactMethods}>
-                <div className={pageStyles.contactMethod}>
-                  <div className={pageStyles.contactIcon}>
-                    <span className={pageStyles.contactIconSvg}>{icons.mail}</span>
+          {/* Contact */}
+          <section className={pageStyles.section}>
+            <div className={pageStyles.container}>
+              <div className={pageStyles.contactSection}>
+                <h2 className={pageStyles.contactTitle}>Precisa de ajuda?</h2>
+                <p className={pageStyles.contactText}>
+                  Nao encontrou o que procura? Nossa equipa esta pronta para
+                  ajudar com suas duvidas sobre emprego e carreira.
+                </p>
+                <div className={pageStyles.contactMethods}>
+                  <div className={pageStyles.contactMethod}>
+                    <div className={pageStyles.contactIcon}>
+                      <span className={pageStyles.contactIconSvg}>
+                        {icons.mail}
+                      </span>
+                    </div>
+                    <div>
+                      <p className={pageStyles.contactLabel}>Email</p>
+                      <p className={pageStyles.contactValue}>
+                        suporte@empregostp.st
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className={pageStyles.contactLabel}>Email</p>
-                    <p className={pageStyles.contactValue}>suporte@empregostp.st</p>
-                  </div>
-                </div>
-                <div className={pageStyles.contactMethod}>
-                  <div className={pageStyles.contactIcon}>
-                    <span className={pageStyles.contactIconSvg}>{icons.phone}</span>
-                  </div>
-                  <div>
-                    <p className={pageStyles.contactLabel}>Telefone</p>
-                    <p className={pageStyles.contactValue}>+239 222 1234</p>
+                  <div className={pageStyles.contactMethod}>
+                    <div className={pageStyles.contactIcon}>
+                      <span className={pageStyles.contactIconSvg}>
+                        {icons.phone}
+                      </span>
+                    </div>
+                    <div>
+                      <p className={pageStyles.contactLabel}>Telefone</p>
+                      <p className={pageStyles.contactValue}>+239 222 1234</p>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
-
+          </section>
         </div>
       </PublicPageShell>
     </>
@@ -797,14 +981,18 @@ const safeFetchCollection = async (collectionName, limit) => {
 
 export async function getServerSideProps(context) {
   const professionalAccess = await resolveProfessionalResourceAccess(context);
-  const userAudience = normalizeAudience(professionalAccess.userType, RESOURCE_AUDIENCE.all);
+  const userAudience = normalizeAudience(
+    professionalAccess.userType,
+    RESOURCE_AUDIENCE.all,
+  );
 
-  const [templatesFromDb, guidesFromDb, toolsFromDb, faqsFromDb] = await Promise.all([
-    safeFetchCollection('resources_templates', 12),
-    safeFetchCollection('resources_guides', 12),
-    safeFetchCollection('resources_tools', 8),
-    safeFetchCollection('resources_faqs', 12)
-  ]);
+  const [templatesFromDb, guidesFromDb, toolsFromDb, faqsFromDb] =
+    await Promise.all([
+      safeFetchCollection("resources_templates", 12),
+      safeFetchCollection("resources_guides", 12),
+      safeFetchCollection("resources_tools", 8),
+      safeFetchCollection("resources_faqs", 12),
+    ]);
 
   const templates = mergeResourceList(DEFAULT_TEMPLATES, templatesFromDb);
   const guides = mergeResourceList(DEFAULT_GUIDES, guidesFromDb);
@@ -818,7 +1006,7 @@ export async function getServerSideProps(context) {
       tools,
       faqs,
       userAudience,
-      professionalAccess
-    }
+      professionalAccess,
+    },
   };
 }
