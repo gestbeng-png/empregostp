@@ -40,12 +40,16 @@
   align-items: center;
   width: clamp(176px, 17vw, 218px);
   flex-shrink: 0;
+  border: none;
+  outline: none;
 }
 
 .logoImage {
   width: 100%;
   height: auto;
   object-fit: contain;
+  border: none;
+  outline: none;
 }
 
 .desktopNav {

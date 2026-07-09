@@ -174,26 +174,26 @@ const CATEGORY_CONFIGS = {
 const HOW_IT_WORKS_STEPS = [
   {
     number: "01",
-    title: "Crie uma Conta",
-    desc: "Registe-se gratuitamente e entre no ecossistema da plataforma.",
+    title: "Crie a sua conta",
+    desc: "Registe-se gratuitamente e aceda ao ecossistema da plataforma.",
     icon: "fa-user-plus",
   },
   {
     number: "02",
-    title: "Carregue seu CV",
-    desc: "Organize o seu perfil, CV e informações principais numa só conta.",
+    title: "Carregue o seu CV",
+    desc: "Organize o seu perfil, currículo e informações principais numa única conta.",
     icon: "fa-file-arrow-up",
   },
   {
     number: "03",
-    title: "Explore as Vagas",
-    desc: "Descubra vagas novas, guarde oportunidades e acompanhe prazos.",
+    title: "Explore as oportunidades",
+    desc: "Descubra novas vagas, guarde oportunidades e acompanhe prazos com maior facilidade.",
     icon: "fa-magnifying-glass",
   },
   {
     number: "04",
-    title: "Candidata",
-    desc: "Envie a sua candidatura e acompanhe o processo com mais clareza.",
+    title: "Candidate-se",
+    desc: "Submeta a sua candidatura e acompanhe o processo com mais clareza e confiança.",
     icon: "fa-paper-plane",
   },
 ];
@@ -656,14 +656,6 @@ export default function HomePage({
     { label: "Empresas ativas", value: `${stats.activeCompanies}+` },
     { label: "Talentos registados", value: `${stats.activeCandidates}+` },
   ];
-  const heroSuggestions = [
-    "Gestão",
-    "Venda",
-    "Marketing Digital",
-    "Programação",
-    "Design",
-  ];
-
   const candidateFeatures = [
     "Criar perfil profissional",
     "Guardar vagas favoritas",
@@ -779,12 +771,6 @@ export default function HomePage({
                     </button>
                   </form>
 
-                  <div className={styles.heroSuggestions}>
-                    <strong>Sugestão</strong>
-                    {heroSuggestions.map((item) => (
-                      <span key={item}>{item}</span>
-                    ))}
-                  </div>
                 </div>
               </div>
             </div>
@@ -992,11 +978,11 @@ export default function HomePage({
             <div className={styles.sectionContainer}>
               <div className={styles.processPanel}>
                 <h2 className={styles.processTitle}>
-                  Como a plataforma funciona!
+                  Como funciona a plataforma
                 </h2>
                 <p className={styles.processText}>
-                  Um fluxo claro para descobrir oportunidades, preparar o perfil
-                  e candidatar-se com mais confiança.
+                  Um percurso simples e estruturado para encontrar oportunidades,
+                  preparar o seu perfil e candidatar-se com mais confiança.
                 </p>
 
                 <div className={styles.processGrid}>
@@ -1213,36 +1199,42 @@ export default function HomePage({
                 <article
                   className={`${styles.dualCard} ${styles.dualCardCandidate}`}
                 >
-                  <p className={styles.dualEyebrow}>Ser um Candidato</p>
+                  <div className={styles.dualCardHeader}>
+                    <span className={styles.dualBadge}>Candidato</span>
+                  </div>
                   <h2 className={styles.dualTitle}>
                     Organize o seu perfil e encontre melhores oportunidades
                   </h2>
                   <p className={styles.dualText}>
-                    {candidateFeatures.join(" • ")}
+                    Crie um perfil profissional, guarde vagas favoritas e acompanhe
+                    as suas candidaturas com mais clareza.
                   </p>
                   <Link
                     href="/register?type=candidato"
                     className={styles.dualLink}
                   >
-                    INSCRIÇÃO
+                    Criar conta
                   </Link>
                 </article>
 
                 <article
                   className={`${styles.dualCard} ${styles.dualCardEmployer}`}
                 >
-                  <p className={styles.dualEyebrow}>Ser um Empregador</p>
+                  <div className={styles.dualCardHeader}>
+                    <span className={styles.dualBadge}>Empregador</span>
+                  </div>
                   <h2 className={styles.dualTitle}>
                     Publique vagas e encontre talentos com mais eficiência
                   </h2>
                   <p className={styles.dualText}>
-                    {companyFeatures.join(" • ")}
+                    Publique vagas com visibilidade, receba candidaturas
+                    organizadas e aceda ao banco de talentos.
                   </p>
                   <Link
                     href="/register?type=empresa"
                     className={styles.dualLink}
                   >
-                    REGISTAR
+                    Registar
                   </Link>
                 </article>
               </div>

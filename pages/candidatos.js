@@ -1,8 +1,165 @@
 import Head from "next/head";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import PublicPageShell from "../components/PublicPageShell";
 import { getCandidateServiceGroups } from "../lib/candidateCatalog";
 import styles from "../styles/CandidatosPage.module.css";
+
+const NATIONAL_OFFERS = [
+  {
+    id: "perfil-profissional-local",
+    category: "Nacional",
+    title: "Perfil profissional local",
+    description:
+      "Crie um perfil forte para empresas locais, com experiência, formação e competências claras.",
+    highlights: ["Visibilidade local", "Perfil estruturado", "Mais confiança"],
+    plans: ["Básico", "Profissional", "Premium"],
+    href: "/register?type=candidate",
+    cta: "Criar perfil",
+    featured: true,
+    statusLabel: "Disponível",
+    statusTone: "implemented",
+    verifiedRelated: false,
+  },
+  {
+    id: "vagas-nacionais",
+    category: "Nacional",
+    title: "Candidatura a vagas nacionais",
+    description:
+      "Aplique a oportunidades em São Tomé e Príncipe e acompanhe cada estado da candidatura.",
+    highlights: ["Candidaturas simples", "Acompanhamento claro", "Mais oportunidades"],
+    plans: ["Básico", "Profissional", "Premium"],
+    href: "/vagas",
+    cta: "Ver vagas",
+    featured: false,
+    statusLabel: "Disponível",
+    statusTone: "implemented",
+    verifiedRelated: false,
+  },
+  {
+    id: "verificacao-local",
+    category: "Confiança",
+    title: "Verificação para empregadores locais",
+    description:
+      "Aumente a confiança junto a empresas nacionais com verificação de perfil e documentos.",
+    highlights: ["Mais credibilidade", "Mais respostas", "Perfil mais sólido"],
+    plans: ["Verificação", "Premium"],
+    href: "/dashboard/candidato?tab=verification",
+    cta: "Verificar perfil",
+    featured: true,
+    statusLabel: "Disponível",
+    statusTone: "implemented",
+    verifiedRelated: true,
+  },
+  {
+    id: "cv-e-carta-local",
+    category: "Posicionamento",
+    title: "CV e carta de motivação para o mercado local",
+    description:
+      "Crie materiais profissionais adaptados ao contexto de recrutamento nacional.",
+    highlights: ["CV pronto", "Carta personalizada", "Mais alinhamento"],
+    plans: ["Profissional", "Premium"],
+    href: "/recursos/gerador-cv",
+    cta: "Abrir criador",
+    featured: false,
+    statusLabel: "Disponível",
+    statusTone: "implemented",
+    verifiedRelated: false,
+  },
+  {
+    id: "alertas-regiao",
+    category: "Inteligência",
+    title: "Alertas por região e área",
+    description:
+      "Receba oportunidades com base na sua localização, setor e tipo de função.",
+    highlights: ["Alertas por área", "Mais relevância", "Menos ruído"],
+    plans: ["Premium"],
+    href: "/dashboard/candidato",
+    cta: "Ativar alertas",
+    featured: false,
+    statusLabel: "Parcial",
+    statusTone: "partial",
+    verifiedRelated: false,
+  },
+];
+
+const INTERNATIONAL_OFFERS = [
+  {
+    id: "expatriados",
+    category: "Internacional",
+    title: "Apoio para expatriados",
+    description:
+      "Receba orientação prática para quem quer trabalhar fora de São Tomé e Príncipe.",
+    highlights: ["Orientação internacional", "Preparação profissional", "Mais confiança"],
+    plans: ["Profissional", "Premium"],
+    href: "/recursos",
+    cta: "Explorar recursos",
+    featured: true,
+    statusLabel: "Disponível",
+    statusTone: "implemented",
+    verifiedRelated: false,
+  },
+  {
+    id: "assistencia-residencia",
+    category: "Internacional",
+    title: "Auxílio para residência e visto",
+    description:
+      "Apoio para preparar documentos, informação e próximos passos de residência ou trabalho.",
+    highlights: ["Documentos organizados", "Orientação útil", "Mais segurança"],
+    plans: ["Premium"],
+    href: "/recursos",
+    cta: "Ver apoio",
+    featured: false,
+    statusLabel: "Parcial",
+    statusTone: "partial",
+    verifiedRelated: false,
+  },
+  {
+    id: "creches-e-familia",
+    category: "Integração",
+    title: "Informação sobre creches e apoio à família",
+    description:
+      "Ajuda a compreender opções de creche, apoio familiar e necessidades de integração.",
+    highlights: ["Suporte familiar", "Mais estabilidade", "Planeamento melhor"],
+    plans: ["Premium"],
+    href: "/recursos",
+    cta: "Consultar apoio",
+    featured: false,
+    statusLabel: "Parcial",
+    statusTone: "partial",
+    verifiedRelated: false,
+  },
+  {
+    id: "perfil-multilingue",
+    category: "Internacional",
+    title: "Perfil multilíngue e preparado para o mercado externo",
+    description:
+      "Prepare um perfil com linguagem adequada para empregadores internacionais e processos externos.",
+    highlights: ["Perfil adaptado", "Mais alcance", "Mais oportunidades"],
+    plans: ["Profissional", "Premium"],
+    href: "/recursos/gerador-cv",
+    cta: "Melhorar perfil",
+    featured: true,
+    statusLabel: "Disponível",
+    statusTone: "implemented",
+    verifiedRelated: false,
+  },
+  {
+    id: "recrutamento-internacional",
+    category: "Internacional",
+    title: "Recrutamento internacional e oportunidades externas",
+    description:
+      "Acesso a oportunidades em mercados externos e orientação sobre candidatura internacional.",
+    highlights: ["Oportunidades externas", "Preparação para candidaturas", "Mais alcance"],
+    plans: ["Profissional", "Premium"],
+    href: "/vagas",
+    cta: "Explorar vagas",
+    featured: false,
+    statusLabel: "Disponível",
+    statusTone: "implemented",
+    verifiedRelated: false,
+  },
+];
 
 const IMPLEMENTED_SERVICES = getCandidateServiceGroups()
   .flatMap((group) => group.services)
@@ -121,6 +278,14 @@ function CandidateServiceCard({ service }) {
 }
 
 export default function Candidatos() {
+  const router = useRouter();
+  const isInternational = router.query?.internacional !== undefined;
+  const offers = isInternational ? INTERNATIONAL_OFFERS : NATIONAL_OFFERS;
+  const pageTitle = isInternational
+    ? "O que oferecemos para candidatos internacionais"
+    : "O que oferecemos para candidatos nacionais";
+  const pageEyebrow = isInternational ? "Internacional" : "Nacional";
+
   return (
     <>
       <Head>
@@ -143,17 +308,13 @@ export default function Candidatos() {
               <div className={styles.servicesSection}>
                 <div className={styles.sectionHeading}>
                   <div>
-                    <span className={styles.sectionEyebrow}>
-                      Já implementado
-                    </span>
-                    <h2 className={styles.sectionHeadingTitle}>
-                      Recursos disponíveis agora
-                    </h2>
+                    <span className={styles.sectionEyebrow}>{pageEyebrow}</span>
+                    <h2 className={styles.sectionHeadingTitle}>{pageTitle}</h2>
                   </div>
                 </div>
 
                 <div className={styles.servicesGrid}>
-                  {IMPLEMENTED_SERVICES.map((service) => (
+                  {offers.map((service) => (
                     <CandidateServiceCard key={service.id} service={service} />
                   ))}
                 </div>

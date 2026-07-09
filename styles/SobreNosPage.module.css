@@ -8,185 +8,410 @@
   padding: 2rem 0 1.4rem;
 }
 
-.heroPanel {
-  max-width: 860px;
-  padding: 2.35rem 2.2rem;
-  border: 1px solid var(--app-border-subtle);
-  border-radius: 28px;
-  background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
-  box-shadow: var(--app-shadow-card);
+.container {
+  width: min(100%, var(--app-public-width));
+  margin: 0 auto;
 }
 
-.heroKicker {
-  margin: 0 0 0.8rem;
+.eyebrow {
+  margin: 0 0 1rem;
   color: var(--app-brand-primary);
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   font-weight: 900;
   letter-spacing: 0.18em;
   text-transform: uppercase;
 }
 
 .heroTitle {
-  margin: 0 0 1rem;
-  font-size: clamp(2.2rem, 4.8vw, 3.8rem);
-  line-height: 1;
+  margin: 0;
+  font-size: clamp(2.4rem, 5vw, 4rem);
+  line-height: 1.1;
+  max-width: 860px;
 }
 
 .heroText {
-  max-width: 720px;
+  max-width: 760px;
+  margin: 1rem 0 0;
   color: var(--app-text-secondary);
   font-size: 1rem;
-  line-height: 1.8;
+  line-height: 1.75;
 }
 
-.sectionGrid,
-.bottomGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.1rem;
-}
-
-.section,
-.motto,
-.contact {
-  position: relative;
-  padding: 1.5rem;
-  border: 1px solid var(--app-border-subtle);
-  border-radius: 24px;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-  box-shadow: var(--app-shadow-card);
-  overflow: hidden;
-}
-
-.section::after,
-.motto::after,
-.contact::after {
-  content: "";
-  position: absolute;
-  right: -34px;
-  top: -30px;
-  width: 120px;
-  height: 120px;
-  border-radius: 999px;
-  background: radial-gradient(
-    circle,
-    rgba(95, 184, 245, 0.18),
-    transparent 70%
-  );
-  pointer-events: none;
-}
-
-.sectionHeader {
+.heroActions {
   display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  margin-top: 2rem;
+}
+
+.button {
+  display: inline-flex;
   align-items: center;
-  gap: 0.8rem;
-  margin-bottom: 0.85rem;
-}
-
-.sectionAccent {
-  width: 40px;
-  height: 3px;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 1.6rem;
   border-radius: 999px;
-  background: linear-gradient(90deg, #5fb8f5, #d9ff2f);
-  flex-shrink: 0;
+  border: 1px solid transparent;
+  font-size: 0.95rem;
+  font-weight: 700;
+  transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+  text-decoration: none;
 }
 
-.sectionTitle {
-  margin: 0;
-  font-size: 1.2rem;
-  font-weight: 900;
+.button:hover {
+  transform: translateY(-1px);
 }
 
-.sectionText {
-  color: var(--app-text-secondary);
-  font-size: 0.98rem;
-  line-height: 1.76;
+.buttonPrimary {
+  background: var(--app-brand-primary);
+  color: #ffffff;
+  box-shadow: 0 16px 28px rgba(32, 87, 215, 0.18);
 }
 
-.valuesSection {
-  margin-top: 1.1rem;
-}
-
-.valuesGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 0.9rem;
-  margin-top: 1rem;
-}
-
-.valueCard {
-  padding: 1rem 1.05rem;
-  border: 1px solid var(--app-border-subtle);
-  border-radius: 18px;
-  background: #ffffff;
-  box-shadow: var(--app-shadow-sm);
-}
-
-.valueCard h3 {
-  margin-bottom: 0.4rem;
-  font-size: 1rem;
-  font-weight: 800;
-}
-
-.valueCard p {
-  color: var(--app-text-secondary);
-  font-size: 0.9rem;
-  line-height: 1.65;
-}
-
-.bottomGrid {
-  margin-top: 1.1rem;
-}
-
-.mottoKicker {
-  margin-bottom: 0.65rem;
+.buttonLight {
+  background: rgba(95, 184, 245, 0.12);
   color: var(--app-brand-primary);
-  font-size: 0.76rem;
+}
+
+.buttonSoft {
+  background: #f1f8ff;
+  color: var(--app-brand-primary);
+}
+
+.mottoSection,
+.teamSection,
+.communitySection {
+  margin-top: 2rem;
+}
+
+.centerTitle {
+  margin: 0;
+  font-size: clamp(1.9rem, 3vw, 2.6rem);
   font-weight: 900;
-  letter-spacing: 0.16em;
+  line-height: 1.08;
+  text-align: center;
+}
+
+.leftIntro {
+  max-width: 640px;
+}
+
+.leftIntro p {
+  margin: 1rem 0 0;
+  color: var(--app-text-secondary);
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.mottoSection .container {
+  max-width: 900px;
+}
+
+.mottoCopy {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(2.75rem, 6vw, 4rem) clamp(1.75rem, 5vw, 3rem);
+  border-radius: 32px;
+  text-align: center;
+  background:
+    radial-gradient(480px 240px at 12% -10%, rgba(217, 255, 47, 0.16), transparent 60%),
+    linear-gradient(160deg, #123a1f 0%, #0d2b17 60%, #0a2112 100%);
+  box-shadow: 0 34px 66px -30px rgba(10, 33, 18, 0.55);
+}
+
+.mottoEyebrow {
+  margin: 0 0 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #cdf27c;
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
 }
 
-.motto h2,
-.contact h2 {
-  margin-bottom: 0.75rem;
-  font-size: 1.45rem;
+.mottoEyebrow::before {
+  content: "";
+  width: 24px;
+  height: 2px;
+  border-radius: 2px;
+  background: #d9ff2f;
+}
+
+.mottoCopy h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(2rem, 4vw, 3rem);
   font-weight: 900;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
 }
 
-.motto p,
-.contact p {
+.mottoCopy p {
+  max-width: 640px;
+  margin: 1.1rem auto 0;
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.75;
+}
+
+.teamHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.blueEyebrow {
+  margin: 0 0 0.8rem;
+  color: #0f5cbf;
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.teamGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1.4rem;
+}
+
+.teamCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.teamAvatar {
+  position: relative;
+  width: 176px;
+  height: 176px;
+  margin-bottom: 1.4rem;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #f4f8ff;
+  border: 4px solid var(--app-surface-2);
+  box-shadow: 0 18px 34px -18px rgba(15, 23, 42, 0.32);
+}
+
+.teamAvatar :global(img) {
+  object-fit: cover;
+}
+
+.teamBody h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.teamBody strong {
+  display: block;
+  margin-bottom: 0.85rem;
+  color: #2057d7;
+  font-size: 0.9rem;
+}
+
+.teamBody p {
+  margin: 0;
+  max-width: 320px;
   color: var(--app-text-secondary);
-  line-height: 1.72;
+  line-height: 1.75;
+  font-size: 0.94rem;
 }
 
-.contact span {
-  color: var(--app-brand-primary);
-  font-weight: 700;
+.communityList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-top: 1.4rem;
 }
 
-@media (max-width: 800px) {
-  .sectionGrid,
-  .bottomGrid {
+.communityRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.1rem 1.3rem;
+  border-radius: 18px;
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.07);
+  box-shadow: 0 12px 26px -18px rgba(15, 23, 42, 0.18);
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.communityRow:hover {
+  transform: translateX(4px);
+  border-color: rgba(32, 87, 215, 0.18);
+  box-shadow: 0 16px 32px -18px rgba(32, 87, 215, 0.2);
+}
+
+.communityIcon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  font-size: 1.1rem;
+  color: #2057d7;
+  background: linear-gradient(140deg, #eaf2ff, #d8e7ff);
+}
+
+.communityRow h3 {
+  margin: 0 0 0.2rem;
+  font-size: 1.02rem;
+  font-weight: 800;
+}
+
+.communityRow p {
+  margin: 0;
+  color: var(--app-text-secondary);
+  line-height: 1.6;
+  font-size: 0.94rem;
+}
+
+@media (max-width: 980px) {
+  .teamGrid {
     grid-template-columns: 1fr;
   }
 }
 
-@media (max-width: 640px) {
-  .page {
-    width: min(100% - 24px, 100%);
-    padding-bottom: 3.5rem;
+@media (max-width: 760px) {
+  .heroActions {
+    justify-content: stretch;
   }
 
-  .heroPanel,
-  .section,
-  .motto,
-  .contact {
-    padding: 1.4rem;
-    border-radius: 20px;
+  .button {
+    width: 100%;
   }
 
   .heroTitle {
-    font-size: clamp(2rem, 9vw, 2.8rem);
+    font-size: clamp(2rem, 9vw, 2.6rem);
   }
+
+  .container {
+    padding: 0 1rem;
+  }
+}
+
+/* ============================================================
+   PREMIUM REFINEMENTS (appended, additive overrides)
+   ============================================================ */
+
+/* Section rhythm — more breathing room */
+.mottoSection,
+.teamSection,
+.communitySection {
+  margin-top: clamp(3.25rem, 6vw, 5rem);
+}
+
+/* Hero → light, airy statement panel, centered */
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(3.25rem, 7vw, 5.25rem) clamp(1.5rem, 5vw, 3rem);
+  border-radius: 32px;
+  background:
+    radial-gradient(620px 320px at 12% -8%, rgba(217, 255, 47, 0.16), transparent 60%),
+    radial-gradient(560px 300px at 92% 108%, rgba(95, 184, 245, 0.22), transparent 62%),
+    linear-gradient(180deg, #ffffff 0%, #f6faff 100%);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow: 0 34px 66px -34px rgba(15, 23, 42, 0.18);
+}
+.hero::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #2057d7 28%,
+    #d9ff2f 60%,
+    transparent
+  );
+  opacity: 0.5;
+}
+.hero .container {
+  position: relative;
+  z-index: 1;
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.hero .heroTitle {
+  letter-spacing: -0.04em;
+}
+.hero .heroText {
+  max-width: 560px;
+}
+.hero .heroActions {
+  justify-content: center;
+}
+
+/* Eyebrows → signature lime accent bar */
+.eyebrow,
+.blueEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.eyebrow::before,
+.blueEyebrow::before {
+  content: "";
+  width: 24px;
+  height: 2px;
+  border-radius: 2px;
+  background: #d9ff2f;
+}
+/* Buttons → gradient, inset highlight, lift */
+.button {
+  min-height: 50px;
+  letter-spacing: -0.005em;
+}
+.buttonPrimary {
+  background: linear-gradient(135deg, #2057d7 0%, #5fb8f5 100%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.2) inset,
+    0 18px 30px -12px rgba(32, 87, 215, 0.5);
+}
+.buttonPrimary:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.2) inset,
+    0 26px 42px -14px rgba(32, 87, 215, 0.55);
+}
+.buttonLight:hover {
+  background: rgba(95, 184, 245, 0.2);
+}
+.buttonSoft:hover {
+  background: #e7f2ff;
+}
+
+/* Team avatars → ring highlight + image zoom on hover */
+.teamAvatar {
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.teamCard:hover .teamAvatar {
+  border-color: rgba(32, 87, 215, 0.32);
+  box-shadow: 0 22px 40px -18px rgba(32, 87, 215, 0.4);
+}
+.teamAvatar :global(img) {
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.teamCard:hover .teamAvatar :global(img) {
+  transform: scale(1.08);
 }

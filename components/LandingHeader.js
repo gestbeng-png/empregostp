@@ -17,9 +17,20 @@ const RESOURCES_SUBMENU = [
   { href: "/recursos", label: "Recursos" },
 ];
 
+const CANDIDATES_SUBMENU = [
+  { href: "/candidatos?nacional", label: "Nacional" },
+  { href: "/candidatos?internacional", label: "Internacional" },
+];
+
 const DEFAULT_NAV_ITEMS = [
   { href: "/vagas", label: "Vagas" },
-  { href: "/candidatos", label: "Candidatos" },
+  {
+    href: "/candidatos",
+    label: "Candidatos",
+    hasCaret: true,
+    submenu: CANDIDATES_SUBMENU,
+    submenuKey: "candidates",
+  },
   { href: "/empresas", label: "Empresas" },
   {
     href: "/recursos",
@@ -29,26 +40,20 @@ const DEFAULT_NAV_ITEMS = [
     submenuKey: "resources",
   },
   { href: "/blog", label: "Blog" },
-  {
-    href: "/sobre-nos",
-    label: "Sobre nós",
-    hasCaret: true,
-    submenu: ABOUT_SUBMENU,
-    submenuKey: "about",
-  },
+  { href: "/sobre-nos", label: "Sobre nós" },
 ];
 
 const LIGHT_NAV_ITEMS = [
-  {
-    href: "/sobre-nos",
-    label: "Sobre nós",
-    hasCaret: true,
-    submenu: ABOUT_SUBMENU,
-    submenuKey: "about",
-  },
+  { href: "/sobre-nos", label: "Sobre nós" },
   { href: "/vagas", label: "Vagas" },
-  { href: "/candidatos", label: "Candidatos", hasCaret: true },
-  { href: "/empresas", label: "Empresas", hasCaret: true },
+  {
+    href: "/candidatos",
+    label: "Candidatos",
+    hasCaret: true,
+    submenu: CANDIDATES_SUBMENU,
+    submenuKey: "candidates",
+  },
+  { href: "/empresas", label: "Empresas" },
   {
     href: "/recursos",
     label: "Recursos",

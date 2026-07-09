@@ -1,4 +1,5 @@
 import '../styles/globals.css';
+import '../styles/dashboard-shell.css';
 import { useEffect } from 'react';
 import { AuthProvider } from '../context/AuthContext';
 import PwaInstallPrompt from '../components/PwaInstallPrompt';

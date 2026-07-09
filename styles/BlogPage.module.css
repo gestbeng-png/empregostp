@@ -14,8 +14,16 @@
       transparent 28%
     ),
     linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-  border: 1px solid var(--app-border-subtle);
-  box-shadow: var(--app-shadow-card);
+  border: 1px solid rgba(21, 37, 79, 0.08);
+  box-shadow: 0 24px 56px rgba(15, 23, 42, 0.08);
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(95, 184, 245, 0.12), transparent 60%);
+  pointer-events: none;
 }
 
 .heroInner {
@@ -265,16 +273,17 @@
   gap: 1rem;
 }
 
-.postCard {
+.postCard,
+.featuredCard {
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
   min-height: 100%;
   padding: 1.35rem;
   border-radius: 24px;
-  border: 1px solid var(--app-border-subtle);
+  border: 1px solid rgba(21, 37, 79, 0.08);
   background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-  box-shadow: var(--app-shadow-card);
+  box-shadow: 0 24px 56px rgba(15, 23, 42, 0.08);
 }
 
 .postTitle {
@@ -528,4 +537,39 @@
   .postMeta {
     justify-content: flex-start;
   }
+}
+
+/* ============================================================
+   Design polish (appended) — signature touches to match the
+   refreshed dashboards. Additive overrides only.
+   ============================================================ */
+.postCard {
+  transition:
+    transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.2s ease,
+    border-color 0.18s ease;
+}
+.postCard:hover {
+  transform: translateY(-3px);
+  border-color: rgba(32, 87, 215, 0.22);
+  box-shadow: 0 22px 44px rgba(32, 87, 215, 0.12);
+}
+.sectionEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #2057d7;
+}
+.sectionEyebrow::before {
+  content: "";
+  width: 22px;
+  height: 2px;
+  background: #d9ff2f;
+  border-radius: 2px;
+}
+.categoryTabActive {
+  border-color: transparent;
+  background: linear-gradient(135deg, #2057d7, #5fb8f5);
+  color: #ffffff;
+  box-shadow: 0 10px 22px rgba(32, 87, 215, 0.2);
 }

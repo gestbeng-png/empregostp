@@ -70,11 +70,10 @@
 .brandMark {
   display: block;
   width: min(246px, 100%);
-  padding: 0.95rem 1.05rem;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(8px);
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  border: none;
 }
 
 .brandLogo {

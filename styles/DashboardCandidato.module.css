@@ -1,17 +1,23 @@
 /* Page Layout */
 .pageLayout {
+  --candidate-primary: #2057d7;
+  --dashboard-surface: rgba(255, 255, 255, 0.96);
+  --dashboard-surface-soft: rgba(248, 251, 255, 0.95);
+  --dashboard-border: rgba(21, 37, 79, 0.08);
+  --dashboard-shadow: 0 22px 56px rgba(15, 23, 42, 0.08);
   display: flex;
   min-height: 100vh;
+  position: relative;
+  isolation: isolate;
   background:
-    radial-gradient(circle at 0% 0%, rgba(95, 184, 245, 0.14), transparent 24%),
+    radial-gradient(circle at 0% 0%, rgba(95, 184, 245, 0.16), transparent 24%),
     radial-gradient(
       circle at 100% 18%,
-      rgba(217, 255, 47, 0.1),
+      rgba(217, 255, 47, 0.14),
       transparent 22%
     ),
     linear-gradient(180deg, #ffffff 0%, #f8fbff 42%, #eef7ff 100%);
   color: #162a55;
-  --candidate-primary: #2057d7;
   --candidate-primary-strong: #1e2b4d;
   --candidate-secondary: #5fb8f5;
   --candidate-accent: #d9ff2f;
@@ -21,11 +27,20 @@
   --candidate-muted-soft: #5a6f92;
 }
 
+.pageLayout::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent 62%);
+  pointer-events: none;
+  z-index: -1;
+}
+
 /* Sidebar */
 .sidebar {
   width: 292px;
   background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-  border-right: 1px solid rgba(21, 37, 79, 0.08);
+  border-right: 1px solid var(--dashboard-border);
   display: flex;
   flex-direction: column;
   position: sticky;
@@ -184,7 +199,8 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.78rem 0.95rem;
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(8px);
   border: none;
   border-radius: 14px;
   color: var(--candidate-muted);
@@ -3551,4 +3567,617 @@
   .verificationOverviewStats {
     grid-template-columns: 1fr 1fr;
   }
+}
+
+
+/* ============================================================
+   DARK MODE (append-only, generated)
+   Scoped to .dashShell[data-theme="dark"]; light mode untouched.
+   ============================================================ */
+:global(.dashShell[data-theme="dark"]) .pageLayout {
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .sidebar {
+  background: var(--surface-2);
+}
+
+:global(.dashShell[data-theme="dark"]) .sidebarLogo {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .logoText {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .sidebarProfile {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .profileName {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .navButton {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .navButton:hover {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .navActive {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .sidebarFooter {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .planCard {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .planCardTitle {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .topBar {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .pageTitle {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .searchBox {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .searchInput {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .iconButton {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .iconButton:hover {
+  background: var(--surface);
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .statCard {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .statCard:hover {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .statValue {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .chartCard,
+:global(.dashShell[data-theme="dark"]) .tipsCard {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .sectionTitle span {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .tipItem {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .tipItem:hover {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .tipTitle {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .sectionBlock {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .profileCompletionValue {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .profileInsightBadge,
+:global(.dashShell[data-theme="dark"]) .profileHeaderBadge {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .profileInsightBadgeMuted,
+:global(.dashShell[data-theme="dark"]) .profileHeaderBadgeMuted {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .profileChecklistItem {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .profileChecklistItem strong {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .viewerItem {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .viewerContent strong {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .viewerEmptyState,
+:global(.dashShell[data-theme="dark"]) .viewerUpgradeBox {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .optimizationScoreValue {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .optimizationScoreMeta h3 {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .optimizationSectionLabel {
+  color: var(--text-4);
+}
+
+:global(.dashShell[data-theme="dark"]) .insightChip {
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .optimizationActionItem {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .optimizationActionItem strong {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .topMatchItem {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .topMatchItem strong {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .topMatchItem p {
+  color: var(--text-4);
+}
+
+:global(.dashShell[data-theme="dark"]) .applicationTable th {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .applicationTable td {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .jobCard {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .jobCard:hover {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .jobTitle {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .savedCard {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .savedCard:hover {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .savedCard h3 {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .profileHeader {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .profileCover {
+  background: var(--surface-2);
+}
+
+:global(.dashShell[data-theme="dark"]) .profileCoverEmpty {
+  background: var(--surface-2);
+}
+
+:global(.dashShell[data-theme="dark"]) .coverOverlaySoft {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .profileInfo .profileAvatar {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .profileAvatarFallback {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .profileHeaderContent h1 {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .secondaryButton {
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .secondaryButton:hover {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .profileCard {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .profileCard h3 {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .profileInput {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .profileInput:focus {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .profileTextarea {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .profileTextarea:focus {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .cvName {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .profileCardWide {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .profileCardWideHeader h3 {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .timelineList article h4 {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .experienceItem {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .messagesList {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .messageItem:hover {
+  background: var(--surface-2);
+}
+
+:global(.dashShell[data-theme="dark"]) .messageBody strong {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .messageTime {
+  color: var(--text-3);
+}
+
+:global(.dashShell[data-theme="dark"]) .messageDetail {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .messageDetailHeader h3 {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .messageBubble {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .messageBubble span {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .messageBubbleOwn span {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .messageTextInput {
+  background: var(--surface);
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .messageSendBtn {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .messageEmptyState {
+  color: var(--text-3);
+}
+
+:global(.dashShell[data-theme="dark"]) .notificationsWrapper {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .notificationItem {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .notificationItem:hover {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .notificationTime {
+  color: var(--text-3);
+}
+
+:global(.dashShell[data-theme="dark"]) .planDetails,
+:global(.dashShell[data-theme="dark"]) .planResources {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .planDetails h2 {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .planPrice {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .planResources h3 {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .resourceItem {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .resourceValue {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .planCatalogHeader h3 {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .planCatalogCard {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .planCatalogCard:hover {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .planCatalogName {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .verificationGrid {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .mobileMenuButton {
+  background: var(--surface);
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .mobileMenuButton:hover {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .editCoverBtn {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .formSection {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .formSectionTitle {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .fieldLabel {
+  color: var(--text-4);
+}
+
+:global(.dashShell[data-theme="dark"]) .profileObjective {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .profileObjectiveValue span {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .verificationPanel {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .verificationState h3 {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .verificationStateText {
+  color: var(--text-4);
+}
+
+:global(.dashShell[data-theme="dark"]) .verificationChecklistItem {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .verificationStepLabel {
+  color: var(--text-4);
+}
+
+:global(.dashShell[data-theme="dark"]) .verificationStepTitle {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .verificationStepDescription {
+  color: var(--text-4);
+}
+
+:global(.dashShell[data-theme="dark"]) .verificationFieldLabel {
+  color: var(--text-4);
+}
+
+:global(.dashShell[data-theme="dark"]) .verificationExistingCv {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .verificationExistingCvName {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .verificationOverview {
+  background: var(--surface-2);
+}
+
+:global(.dashShell[data-theme="dark"]) .verificationStatusMuted {
+  border-color: var(--border);
+  color: var(--text-4);
+}
+
+:global(.dashShell[data-theme="dark"]) .verificationOverviewTitle {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .verificationOverviewText {
+  color: var(--text-4);
+}
+
+:global(.dashShell[data-theme="dark"]) .verificationOverviewMeta {
+  color: var(--text-4);
+}
+
+:global(.dashShell[data-theme="dark"]) .verificationOverviewStat {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .verificationOverviewStat strong {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .verificationOverviewStat span {
+  color: var(--text-4);
+}
+
+:global(.dashShell[data-theme="dark"]) .verificationTypeCard {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .verificationTypeTitle {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .verificationTypeMetaRow {
+  color: var(--text-4);
+}
+
+:global(.dashShell[data-theme="dark"]) .verificationTypeMetaRow span {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .verificationChecklistCompactItem {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .verificationMiniCheckPending {
+  color: var(--text-4);
+}
+
+:global(.dashShell[data-theme="dark"]) .verificationTypeHint {
+  color: var(--text-4);
+}
+
+:global(.dashShell[data-theme="dark"]) .verificationLockedTitle {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .verificationComposer {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .verificationComposerTitle {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .verificationTypeToggle {
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .verificationEmptySelection {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text-4);
+}
+
+:global(.dashShell[data-theme="dark"]) .verificationFormCard {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .verificationFormCardHeader h4 {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .verificationFileChip {
+  background: var(--surface);
+  color: var(--text-1);
 }

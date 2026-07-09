@@ -350,3 +350,63 @@
     width: 100%;
   }
 }
+
+
+/* ============================================================
+   DARK MODE (append-only, generated)
+   Scoped to .dashShell[data-theme="dark"]; light mode untouched.
+   ============================================================ */
+:global(.dashShell[data-theme="dark"]) .loadingSpinner {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .hero {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .eyebrow {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .bannerSuccess {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .section {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .uploadCard {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .uploadPreview,
+:global(.dashShell[data-theme="dark"]) .uploadPlaceholder {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .uploadButtonGreen {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .input {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .sectorChip {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .sectorChipActive {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .secondaryAction {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .primaryAction {
+  background: var(--surface);
+}

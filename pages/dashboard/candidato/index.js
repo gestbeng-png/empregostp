@@ -12,6 +12,8 @@ import {
 } from "../../../lib/interviewClient";
 import { VERIFICATION_TYPE_CONFIG } from "../../../lib/candidateVerification";
 import { getFirebaseStorageErrorMessage } from "../../../lib/firebaseStorageError";
+import { FiSearch, FiStar, FiFileText, FiBell } from "react-icons/fi";
+import DashboardShell from "../../../components/dashboard/DashboardShell";
 import styles from "../../../styles/DashboardCandidato.module.css";
 
 const CandidateApplicationsChart = dynamic(
@@ -131,6 +133,13 @@ const icons = {
       <line x1="21" y1="21" x2="16.65" y2="16.65" />
     </svg>
   ),
+  calendar: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <path d="M16 2v4M8 2v4M3 10h18" />
+      <path d="M9 16l2 2 4-4" />
+    </svg>
+  ),
   logout: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
@@ -156,6 +165,30 @@ const getInitials = (value = "") =>
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase() || "")
     .join("") || "U";
+
+const AVATAR_PALETTE = [
+  { background: "rgba(32,87,215,0.14)", color: "#2057d7" },
+  { background: "rgba(30,43,77,0.12)", color: "#1e2b4d" },
+  { background: "rgba(139,92,246,0.14)", color: "#7c3aed" },
+  { background: "rgba(217,255,47,0.22)", color: "#7a9000" },
+  { background: "rgba(61,187,122,0.16)", color: "#15803d" },
+];
+
+const getAvatarColor = (seed = "") => {
+  const str = String(seed || "");
+  let hash = 0;
+  for (let i = 0; i < str.length; i += 1) {
+    hash = (hash * 31 + str.charCodeAt(i)) % 997;
+  }
+  return AVATAR_PALETTE[Math.abs(hash) % AVATAR_PALETTE.length];
+};
+
+const getCompletionHeadline = (score) => {
+  if (score >= 90) return "Perfil completo!";
+  if (score >= 65) return "Bom progresso!";
+  if (score >= 40) return "A continuar bem!";
+  return "Vamos começar!";
+};
 
 const VERIFICATION_TYPE_ORDER = [
   "identity",
@@ -247,14 +280,15 @@ const formatInterviewDate = (value) => {
 };
 
 const NAV_MENU = [
-  { id: "dashboard", label: "Visao Geral", icon: "dashboard" },
-  { id: "profile", label: "Meu Perfil", icon: "profile" },
-  { id: "verification", label: "Ser Verificado", icon: "verification" },
+  { id: "dashboard", label: "Visão geral", icon: "dashboard" },
+  { id: "profile", label: "Meu perfil", icon: "profile" },
   { id: "applications", label: "Candidaturas", icon: "applications" },
-  { id: "saved", label: "Vagas Salvas", icon: "saved" },
+  { id: "saved", label: "Vagas guardadas", icon: "saved" },
+  { id: "interviews", label: "Entrevistas", icon: "mic" },
   { id: "messages", label: "Mensagens", icon: "messages" },
-  { id: "notifications", label: "Notificacoes", icon: "notifications" },
-  { id: "plans", label: "Planos", icon: "plans" },
+  { id: "notifications", label: "Notificações", icon: "notifications" },
+  { id: "verification", label: "Verificação", icon: "verification" },
+  { id: "plans", label: "Planos premium", icon: "plans" },
 ];
 
 const getPlanFeatureList = (features) => {
@@ -345,6 +379,12 @@ const buildProfileForm = (profileData, userState) => {
   };
 };
 
+const SUBLABEL_TONE_STYLES = {
+  positive: { background: "rgba(34,197,94,0.14)", color: "#16a34a" },
+  neutral: { background: "rgba(95,184,245,0.12)", color: "#2057d7" },
+  warning: { background: "rgba(239,68,68,0.15)", color: "#f87171" },
+};
+
 const StatCard = ({
   label,
   value,
@@ -354,44 +394,76 @@ const StatCard = ({
   color = "#2057d7",
   sublabel,
   sublabelWarning,
-}) => (
-  <div className={styles.statCard}>
-    <div className={styles.statHeader}>
-      <div
-        className={styles.statIcon}
-        style={{ background: `${color}15`, color: color }}
-      >
-        {icon}
+  sublabelTone,
+}) => {
+  const tone = sublabelWarning ? "warning" : sublabelTone || "neutral";
+  const toneStyle = SUBLABEL_TONE_STYLES[tone] || SUBLABEL_TONE_STYLES.neutral;
+
+  return (
+    <div className={styles.statCard}>
+      <div className={styles.statHeader}>
+        <div
+          className={styles.statIcon}
+          style={{ background: `${color}15`, color: color }}
+        >
+          {icon}
+        </div>
+        {change !== undefined && (
+          <span
+            className={`${styles.statTrend} ${trend === "up" ? styles.up : trend === "down" ? styles.down : ""}`}
+          >
+            {trend === "up" ? "+" : trend === "down" ? "-" : ""}
+            {change}%
+          </span>
+        )}
+        {sublabel !== undefined && (
+          <span
+            style={{
+              fontSize: "0.7rem",
+              padding: "2px 7px",
+              borderRadius: "6px",
+              fontWeight: 600,
+              background: toneStyle.background,
+              color: toneStyle.color,
+            }}
+          >
+            {sublabel}
+          </span>
+        )}
       </div>
-      {change !== undefined && (
-        <span
-          className={`${styles.statTrend} ${trend === "up" ? styles.up : trend === "down" ? styles.down : ""}`}
-        >
-          {trend === "up" ? "+" : trend === "down" ? "-" : ""}
-          {change}%
-        </span>
-      )}
-      {sublabel !== undefined && (
-        <span
-          style={{
-            fontSize: "0.7rem",
-            padding: "2px 7px",
-            borderRadius: "6px",
-            fontWeight: 600,
-            background: sublabelWarning
-              ? "rgba(239,68,68,0.15)"
-              : "rgba(95,184,245,0.12)",
-            color: sublabelWarning ? "#f87171" : "#2057d7",
-          }}
-        >
-          {sublabel}
-        </span>
-      )}
+      <p className={styles.statValue}>{value}</p>
+      <p className={styles.statLabel}>{label}</p>
     </div>
-    <p className={styles.statValue}>{value}</p>
-    <p className={styles.statLabel}>{label}</p>
-  </div>
-);
+  );
+};
+
+const ProgressRing = ({ value = 0, size = 92 }) => {
+  const strokeWidth = 8;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const clamped = Math.max(0, Math.min(100, Math.round(value) || 0));
+  const offset = circumference * (1 - clamped / 100);
+
+  return (
+    <div className="progress-ring" style={{ width: size, height: size }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        <circle className="track" cx={size / 2} cy={size / 2} r={radius} />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="#2057d7"
+          fill="none"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          style={{ transition: "stroke-dashoffset 1s cubic-bezier(0.22,1,0.36,1)" }}
+        />
+      </svg>
+      <div className="progress-ring-val">{clamped}%</div>
+    </div>
+  );
+};
 
 const ApplicationTable = ({ applications }) => (
   <div className={styles.tableContainer}>
@@ -470,136 +542,11 @@ function InterviewPlaceOrLink({ interviewDetails }) {
   );
 }
 
-const Sidebar = ({
-  activeTab,
-  setActiveTab,
-  unreadMessages,
-  unreadNotifications,
-  savedJobsCount,
-  user,
-  profile,
-  planName = "Gratuito",
-  mobileMenuOpen,
-  setMobileMenuOpen,
-  onLogout,
-}) => {
-  return (
-    <aside
-      className={`${styles.sidebar} ${mobileMenuOpen ? styles.sidebarMobileOpen : ""}`}
-    >
-      <div className={styles.sidebarLogo}>
-        <Link href="/">
-          <img
-            src="/assets/Emprego STP Logo (2) 1.png"
-            alt="EmpregoSTP"
-            style={{ height: "40px", objectFit: "contain", cursor: "pointer" }}
-          />
-        </Link>
-      </div>
-
-      <div className={styles.sidebarProfile}>
-        <div className={styles.profileAvatar}>
-          {profile?.photoUrl || user?.avatar ? (
-            <img
-              src={profile?.photoUrl || user?.avatar || ""}
-              alt={profile?.fullName || user?.name || "User"}
-            />
-          ) : (
-            <span>{(user?.name || "U")[0].toUpperCase()}</span>
-          )}
-        </div>
-        <div className={styles.profileInfo}>
-          <p className={styles.profileName}>{user?.name || "Candidato"}</p>
-        </div>
-      </div>
-
-      <div className={styles.sidebarDivider} />
-
-      <nav className={styles.sidebarNav}>
-        <p className={styles.navSection}>Menu Principal</p>
-        {NAV_MENU.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            onClick={() => {
-              setActiveTab(item.id);
-              setMobileMenuOpen(false);
-            }}
-            className={`${styles.navButton} ${activeTab === item.id ? styles.navActive : ""}`}
-          >
-            <span className={styles.navIcon}>{icons[item.icon]}</span>
-            <span className={styles.navLabel}>{item.label}</span>
-            {item.id === "messages" && unreadMessages > 0 && (
-              <span className={styles.navBadge}>{unreadMessages}</span>
-            )}
-            {item.id === "notifications" && unreadNotifications > 0 && (
-              <span className={styles.navBadge}>{unreadNotifications}</span>
-            )}
-            {item.id === "saved" && savedJobsCount > 0 && (
-              <span className={styles.navBadge}>{savedJobsCount}</span>
-            )}
-          </button>
-        ))}
-      </nav>
-
-      <div className={styles.sidebarDivider} />
-
-      <div className={styles.sidebarActions}>
-        <Link href="/vagas" className={styles.searchJobsBtn}>
-          <span className={styles.navIcon}>{icons.search}</span>
-          Procurar Vagas
-        </Link>
-        {onLogout && (
-          <button
-            type="button"
-            className={styles.searchJobsBtn}
-            onClick={onLogout}
-            style={{
-              marginTop: "0.5rem",
-              background: "rgba(239, 68, 68, 0.1)",
-              color: "#ef4444",
-              borderColor: "rgba(239, 68, 68, 0.2)",
-            }}
-          >
-            <span className={styles.navIcon}>{icons.logout}</span>
-            Sair
-          </button>
-        )}
-      </div>
-
-      <div className={styles.sidebarFooter}>
-        <div className={styles.planCard}>
-          <div className={styles.planCardHeader}>
-            <span className={styles.planCardIcon}>{icons.plans}</span>
-            <div>
-              <p className={styles.planCardTitle}>Plano {planName}</p>
-              <p className={styles.planCardDesc}>
-                {planName === "Gratuito"
-                  ? "Recursos limitados"
-                  : "Acesso completo"}
-              </p>
-            </div>
-          </div>
-          {planName === "Gratuito" && (
-            <button
-              type="button"
-              className={styles.upgradeButton}
-              onClick={() => setActiveTab("plans")}
-            >
-              Fazer Upgrade
-            </button>
-          )}
-        </div>
-      </div>
-    </aside>
-  );
-};
 
 const CandidateDashboard = () => {
   const router = useRouter();
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
   const [applications, setApplications] = useState([]);
@@ -640,6 +587,7 @@ const CandidateDashboard = () => {
   );
   const [verificationLoading, setVerificationLoading] = useState(false);
   const [verificationMessage, setVerificationMessage] = useState(null);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -676,7 +624,11 @@ const CandidateDashboard = () => {
     () => getInitials(profileDisplayName),
     [profileDisplayName],
   );
-  const upcomingInterviews = useMemo(
+  const firstName = useMemo(
+    () => String(profileDisplayName || "Candidato").trim().split(/\s+/)[0] || "Candidato",
+    [profileDisplayName],
+  );
+  const allInterviews = useMemo(
     () =>
       applications
         .filter((application) =>
@@ -686,8 +638,28 @@ const CandidateDashboard = () => {
           (a, b) =>
             new Date(a.interviewDetails.scheduledAt).getTime() -
             new Date(b.interviewDetails.scheduledAt).getTime(),
-        )
-        .slice(0, 3),
+        ),
+    [applications],
+  );
+  const upcomingInterviews = useMemo(
+    () => allInterviews.slice(0, 3),
+    [allInterviews],
+  );
+  const recentApplications = useMemo(
+    () =>
+      [...applications]
+        .sort((a, b) => {
+          const rawA = a.appliedAt || a.appliedDate || a.createdAt;
+          const rawB = b.appliedAt || b.appliedDate || b.createdAt;
+          const timeA = rawA?.toDate
+            ? rawA.toDate().getTime()
+            : new Date(rawA || 0).getTime();
+          const timeB = rawB?.toDate
+            ? rawB.toDate().getTime()
+            : new Date(rawB || 0).getTime();
+          return (Number.isNaN(timeB) ? 0 : timeB) - (Number.isNaN(timeA) ? 0 : timeA);
+        })
+        .slice(0, 5),
     [applications],
   );
 
@@ -1292,59 +1264,6 @@ const CandidateDashboard = () => {
     return dayLabels.map((name) => ({ name, value: counts[name] || 0 }));
   }, [applications]);
 
-  const stats = useMemo(() => {
-    const interviews = applications.filter(
-      (app) =>
-        app.status?.toLowerCase() === "interview" ||
-        app.interviewDetails?.scheduledAt,
-    ).length;
-    const offers = applications.filter(
-      (app) => app.status?.toLowerCase() === "offered",
-    ).length;
-    const views = planStatus?.plan?.views || 0;
-    const appResource = planStatus?.resources?.applications;
-    const appLimit = appResource?.limit ?? 3;
-    const appUsed = appResource?.current ?? 0;
-    const appRemaining =
-      appLimit !== null ? Math.max(0, appLimit - appUsed) : null;
-    const appLabel =
-      appLimit !== null ? `${appUsed}/${appLimit} este mês` : "Ilimitadas";
-    return [
-      {
-        label: "Candidaturas",
-        value: applications.length,
-        sublabel: appLabel,
-        sublabelWarning: appRemaining !== null && appRemaining <= 1,
-        icon: icons.applications,
-        color: "#2057d7",
-      },
-      {
-        label: "Entrevistas",
-        value: interviews,
-        change: 4,
-        trend: "up",
-        icon: icons.mic,
-        color: "#5fb8f5",
-      },
-      {
-        label: "Visualizacoes",
-        value: views,
-        change: 5,
-        trend: "neutral",
-        icon: icons.eye,
-        color: "#1e2b4d",
-      },
-      {
-        label: "Ofertas",
-        value: offers,
-        change: 100,
-        trend: "up",
-        icon: icons.trophy,
-        color: "#8ea800",
-      },
-    ];
-  }, [applications, planStatus]);
-
   const activePlan = planStatus?.plan || {
     planId: "basic_candidato",
     planName: "Básico",
@@ -1401,6 +1320,106 @@ const CandidateDashboard = () => {
     topMatches: [],
     activeJobsAnalyzed: 0,
   };
+
+  const stats = useMemo(() => {
+    const now = new Date();
+    const appliedThisMonth = applications.filter((app) => {
+      const raw = app.appliedAt || app.appliedDate || app.createdAt;
+      if (!raw) return false;
+      const date = raw?.toDate ? raw.toDate() : new Date(raw);
+      return (
+        !Number.isNaN(date.getTime()) &&
+        date.getMonth() === now.getMonth() &&
+        date.getFullYear() === now.getFullYear()
+      );
+    }).length;
+
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const viewsThisWeek = profileViewers.filter((viewer) => {
+      if (!viewer.viewedAt) return false;
+      const date = new Date(viewer.viewedAt);
+      return !Number.isNaN(date.getTime()) && date >= sevenDaysAgo;
+    }).length;
+
+    const totalViews = profileViewsSummary?.total ?? planStatus?.plan?.views ?? 0;
+
+    return [
+      {
+        label: "Candidaturas activas",
+        value: applications.length,
+        icon: icons.applications,
+        color: "#2057d7",
+        sublabel:
+          appliedThisMonth > 0 ? `+${appliedThisMonth} este mês` : "Sem novas este mês",
+        sublabelTone: appliedThisMonth > 0 ? "positive" : "neutral",
+      },
+      {
+        label: "Vagas guardadas",
+        value: savedJobs.length,
+        icon: icons.saved,
+        color: "#5fb8f5",
+        sublabel: "Sem alteração",
+        sublabelTone: "neutral",
+      },
+      {
+        label: "Entrevistas agendadas",
+        value: allInterviews.length,
+        icon: icons.calendar,
+        color: "#eab308",
+        sublabel: "Esta semana",
+        sublabelTone: "neutral",
+      },
+      {
+        label: "Vistas ao perfil",
+        value: totalViews,
+        icon: icons.eye,
+        color: "#16a34a",
+        sublabel: viewsThisWeek > 0 ? `+${viewsThisWeek} esta semana` : "Esta semana",
+        sublabelTone: viewsThisWeek > 0 ? "positive" : "neutral",
+      },
+    ];
+  }, [applications, savedJobs, allInterviews, profileViewers, profileViewsSummary, planStatus]);
+
+  const profileCategoryBreakdown = useMemo(() => {
+    const checklist = profileCompletion.checklist || [];
+    const groups = [
+      {
+        id: "basic",
+        label: "Informações básicas",
+        ids: ["name", "headline", "location", "contact", "photo", "bio"],
+      },
+      {
+        id: "experience",
+        label: "Experiência profissional",
+        ids: ["objective", "experience", "cv"],
+      },
+      { id: "skills", label: "Competências", ids: ["skills"] },
+    ];
+
+    return groups.map((group) => {
+      const items = checklist.filter((item) => group.ids.includes(item.id));
+      const totalWeight = items.reduce((sum, item) => sum + (item.weight || 0), 0);
+      const completedWeight = items.reduce(
+        (sum, item) => sum + (item.completed ? item.weight || 0 : 0),
+        0,
+      );
+      const percent =
+        totalWeight > 0 ? Math.round((completedWeight / totalWeight) * 100) : 0;
+      return { id: group.id, label: group.label, percent };
+    });
+  }, [profileCompletion.checklist]);
+
+  const completionHintText = useMemo(() => {
+    const missing = profileCompletion.nextSteps || [];
+    if (!missing.length) {
+      return "O seu perfil está completo. Continue a mantê-lo atualizado.";
+    }
+    const labels = missing
+      .slice(0, 2)
+      .map((item) => String(item.label || "").replace(/^./, (c) => c.toLowerCase()));
+    return `Adicione ${labels.join(" e ")}.`;
+  }, [profileCompletion.nextSteps]);
 
   const verificationSummary = useMemo(
     () =>
@@ -2231,10 +2250,161 @@ const CandidateDashboard = () => {
       case "dashboard":
         return (
           <div className={styles.contentArea}>
+            <div className="header-card">
+              <div>
+                <p className="header-eyebrow">Candidato · Dashboard</p>
+                <h1 className="header-title">Olá, {firstName}! 👋</h1>
+                <p className="header-sub">
+                  Tens {allInterviews.length}{" "}
+                  {allInterviews.length === 1
+                    ? "entrevista agendada"
+                    : "entrevistas agendadas"}{" "}
+                  e {applications.length}{" "}
+                  {applications.length === 1
+                    ? "candidatura em curso"
+                    : "candidaturas em curso"}
+                  .
+                </p>
+              </div>
+              <div className="header-actions">
+                <Link href="/vagas" className="btn btn-lime btn-lg">
+                  <FiSearch /> Explorar vagas
+                </Link>
+                <Link
+                  href="/recursos/gerador-cv"
+                  className="btn btn-primary btn-lg"
+                >
+                  <FiFileText /> Gerador de CV
+                </Link>
+              </div>
+            </div>
+
             <div className={styles.statsGrid}>
               {stats.map((stat) => (
                 <StatCard key={stat.label} {...stat} />
               ))}
+            </div>
+
+            <div className={styles.gridTwoCols}>
+              <section className={styles.sectionBlock}>
+                <div className={styles.sectionTitle}>
+                  <span>Candidaturas recentes</span>
+                  <small>{applications.length}</small>
+                </div>
+                {recentApplications.length ? (
+                  <div className={styles.viewerList}>
+                    {recentApplications.map((app) => {
+                      const avatarColor = getAvatarColor(
+                        app.company || app.jobTitle,
+                      );
+                      return (
+                        <div
+                          key={app.id}
+                          className={styles.viewerItem}
+                          style={{ justifyContent: "space-between" }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "0.8rem",
+                              minWidth: 0,
+                            }}
+                          >
+                            <div
+                              className={styles.viewerAvatar}
+                              style={{
+                                background: avatarColor.background,
+                                color: avatarColor.color,
+                              }}
+                            >
+                              {getInitials(app.company || app.jobTitle)}
+                            </div>
+                            <div className={styles.viewerContent}>
+                              <strong>{app.jobTitle || "Vaga"}</strong>
+                              <span>{app.company || "Empresa"}</span>
+                            </div>
+                          </div>
+                          <span
+                            className={`${styles.statusPill} ${styles[app.status?.toLowerCase()] || ""}`}
+                          >
+                            {STATUS_LABELS[app.status?.toLowerCase()] ||
+                              "Pendente"}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className={styles.tipFallback}>
+                    Ainda não enviou nenhuma candidatura.
+                  </p>
+                )}
+                <button
+                  type="button"
+                  className={styles.secondaryButton}
+                  style={{ marginTop: "0.9rem" }}
+                  onClick={() => setActiveTab("applications")}
+                >
+                  Ver todas
+                </button>
+              </section>
+
+              <section className={styles.sectionBlock}>
+                <div className={styles.sectionTitle}>
+                  <span>Perfil completo</span>
+                </div>
+                <div
+                  style={{ display: "flex", gap: "1.1rem", alignItems: "center" }}
+                >
+                  <ProgressRing value={profileCompletion.score} />
+                  <div>
+                    <p className={styles.insightEyebrow}>Completude</p>
+                    <h3
+                      style={{
+                        margin: "0 0 0.3rem",
+                        fontSize: "1.05rem",
+                        fontWeight: 800,
+                        color: "#162a55",
+                      }}
+                    >
+                      {getCompletionHeadline(profileCompletion.score)}
+                    </h3>
+                    <p className={styles.insightDescription}>
+                      {completionHintText}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className={styles.primaryButton}
+                  style={{ marginTop: "1rem" }}
+                  onClick={() => setActiveTab("profile")}
+                >
+                  Completar perfil
+                </button>
+                <div
+                  style={{
+                    marginTop: "1.1rem",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0.7rem",
+                  }}
+                >
+                  {profileCategoryBreakdown.map((cat) => (
+                    <div className="metric-row" key={cat.id}>
+                      <span className="metric-label">{cat.label}</span>
+                      <div className="metric-track">
+                        <div
+                          className="metric-fill"
+                          style={{ width: `${cat.percent}%` }}
+                        />
+                      </div>
+                      <span className="metric-val">{cat.percent}%</span>
+                    </div>
+                  ))}
+                </div>
+              </section>
             </div>
 
             <div className={styles.insightsGrid}>
@@ -3771,6 +3941,75 @@ const CandidateDashboard = () => {
           </div>
         );
 
+      case "interviews":
+        return (
+          <div className={styles.contentArea}>
+            <div className={styles.sectionTitle}>
+              <span>Entrevistas</span>
+              <small>{allInterviews.length} agendada(s)</small>
+            </div>
+            {allInterviews.length ? (
+              <div className={`${styles.jobList} ${styles.jobListSpaced}`}>
+                {allInterviews.map((application) => (
+                  <div key={application.id} className={styles.jobCard}>
+                    <div>
+                      <p className={styles.jobTitle}>
+                        {application.jobTitle || "Vaga"}
+                      </p>
+                      <p className={styles.jobMeta}>
+                        {application.company || "Empresa"} •{" "}
+                        {formatInterviewDate(
+                          application.interviewDetails?.scheduledAt,
+                        )}
+                      </p>
+                      <p
+                        className={`${styles.jobMeta} ${styles.jobMetaAccent}`}
+                      >
+                        <InterviewPlaceOrLink
+                          interviewDetails={application.interviewDetails}
+                        />
+                      </p>
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "0.5rem",
+                          flexWrap: "wrap",
+                          marginTop: "0.75rem",
+                        }}
+                      >
+                        <Link
+                          href="/dashboard/candidato/candidaturas?filter=interview"
+                          className={styles.secondaryButton}
+                          style={{ padding: "0.45rem 0.75rem" }}
+                        >
+                          Ver detalhes
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            downloadInterviewICS(application.id).catch((err) =>
+                              console.error(err),
+                            )
+                          }
+                          className={styles.secondaryButton}
+                          style={{ padding: "0.45rem 0.75rem" }}
+                        >
+                          📆 Calendário
+                        </button>
+                      </div>
+                    </div>
+                    <div className={styles.jobBadge}>Entrevista</div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className={styles.tipFallback}>
+                Ainda não tem entrevistas agendadas.
+              </p>
+            )}
+          </div>
+        );
+
       case "saved":
         return (
           <div className={styles.contentArea}>
@@ -4536,6 +4775,64 @@ const CandidateDashboard = () => {
     year: "numeric",
   });
 
+  const topbarSubtitle =
+    activeTab === "dashboard" ? `Bem-vindo de volta, ${firstName}` : formattedDate;
+
+  const planName = activePlan.planName || "Gratuito";
+  const candidatoNav = [
+    {
+      label: "Menu Principal",
+      items: [
+        { key: "dashboard", label: "Visão geral", icon: "home", onClick: () => setActiveTab("dashboard") },
+        { key: "profile", label: "Meu perfil", icon: "user", onClick: () => setActiveTab("profile") },
+        {
+          key: "applications",
+          label: "Candidaturas",
+          icon: "send",
+          onClick: () => setActiveTab("applications"),
+          badge: applications.length || undefined,
+        },
+        {
+          key: "saved",
+          label: "Vagas guardadas",
+          icon: "bookmark",
+          onClick: () => setActiveTab("saved"),
+          badge: savedJobs.length || undefined,
+        },
+        {
+          key: "interviews",
+          label: "Entrevistas",
+          icon: "calendar",
+          onClick: () => setActiveTab("interviews"),
+          badge: allInterviews.length || undefined,
+          badgeStyle: "lime",
+        },
+        {
+          key: "messages",
+          label: "Mensagens",
+          icon: "messages",
+          onClick: () => setActiveTab("messages"),
+          badge: unreadMessages || undefined,
+        },
+        {
+          key: "notifications",
+          label: "Notificações",
+          icon: "bell",
+          onClick: () => setActiveTab("notifications"),
+          badge: unreadNotifications || undefined,
+        },
+      ],
+    },
+    {
+      label: "Ferramentas",
+      items: [
+        { key: "cv-generator", label: "Gerador de CV", icon: "fileText", href: "/recursos/gerador-cv" },
+        { key: "verification", label: "Verificação", icon: "verification", onClick: () => setActiveTab("verification") },
+        { key: "plans", label: "Planos premium", icon: "star", onClick: () => setActiveTab("plans") },
+      ],
+    },
+  ];
+
   return (
     <>
       <Head>
@@ -4545,70 +4842,131 @@ const CandidateDashboard = () => {
           content="Gerencie suas candidaturas e perfil no EmpregoSTP"
         />
       </Head>
-      <div className={styles.pageLayout}>
-        <Sidebar
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          unreadMessages={unreadMessages}
-          unreadNotifications={unreadNotifications}
-          savedJobsCount={savedJobs.length}
-          user={user}
-          profile={profile}
-          planName={activePlan.planName || "Gratuito"}
-          mobileMenuOpen={mobileMenuOpen}
-          setMobileMenuOpen={setMobileMenuOpen}
-          onLogout={handleLogout}
-        />
-        <main className={styles.mainContent}>
-          <header className={styles.topBar}>
+      <DashboardShell
+        role="candidato"
+        active={activeTab}
+        title={activeLabel}
+        subtitle={topbarSubtitle}
+        searchPlaceholder="Pesquisar vagas..."
+        nav={candidatoNav}
+        onLogout={handleLogout}
+        topbarActions={
+          <div className="dash-notif-wrap">
             <button
-              className={styles.mobileMenuButton}
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label="Toggle menu"
+              type="button"
+              className="dash-icon-btn"
+              onClick={() => {
+                setNotificationsOpen((prev) => {
+                  const next = !prev;
+                  if (!prev && next) fetchNotificationsRealtime();
+                  return next;
+                });
+              }}
+              aria-expanded={notificationsOpen}
+              aria-label="Notificações"
             >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <line x1="3" y1="6" x2="21" y2="6" />
-                <line x1="3" y1="12" x2="21" y2="12" />
-                <line x1="3" y1="18" x2="21" y2="18" />
-              </svg>
+              <FiBell />
+              {unreadNotifications > 0 && <span className="dash-notif-dot" />}
             </button>
-            <div className={styles.topBarLeft}>
-              <h1 className={styles.pageTitle}>{activeLabel}</h1>
-              <p className={styles.pageDate}>{formattedDate}</p>
-            </div>
-            <div className={styles.topBarRight}>
-              <button type="button" className={styles.iconButton}>
-                {icons.notifications}
-                {unreadNotifications > 0 && (
-                  <span className={styles.notificationDot}>
-                    {unreadNotifications}
-                  </span>
-                )}
-              </button>
+            {notificationsOpen && (
+              <div className="dash-notif-panel" role="dialog" aria-label="Notificações">
+                <div className="dash-notif-head">
+                  <strong>Notificações</strong>
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    onClick={markAllNotificationsAsRead}
+                    disabled={!unreadNotifications}
+                  >
+                    Marcar todas
+                  </button>
+                </div>
+                <div className="dash-notif-list">
+                  {notifications.length === 0 ? (
+                    <div className="dash-notif-empty">
+                      Nenhuma notificação recente.
+                    </div>
+                  ) : (
+                    notifications.slice(0, 8).map((notif) => (
+                      <button
+                        key={notif.id}
+                        type="button"
+                        className={`dash-notif-row${notif.read ? "" : " unread"}`}
+                        onClick={() => {
+                          markNotificationAsRead(notif.id);
+                          setNotificationsOpen(false);
+                        }}
+                        title={notif.message || notif.title || "Notificação"}
+                      >
+                        <span className="dash-notif-ic">🔔</span>
+                        <div className="dash-notif-txt">
+                          <div className="dash-notif-row-title">
+                            {notif.title || "Notificação"}
+                          </div>
+                          {notif.message && (
+                            <p className="dash-notif-row-msg">{notif.message}</p>
+                          )}
+                          <span className="dash-notif-time">
+                            {notif.createdAt
+                              ? new Date(notif.createdAt).toLocaleString("pt-PT")
+                              : ""}
+                          </span>
+                        </div>
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        }
+        profile={{
+          name: profileDisplayName,
+          role: "Candidato",
+          plan: planName === "Gratuito" ? "Free" : planName,
+          avatarUrl: profile?.photoUrl || user?.avatar || undefined,
+        }}
+        sidebarTop={
+          <div style={{ padding: "0 12px 6px" }}>
+            <Link href="/vagas" className="btn btn-primary btn-sm" style={{ width: "100%" }}>
+              <FiSearch /> Procurar vagas
+            </Link>
+          </div>
+        }
+        sidebarFooter={
+          planName === "Gratuito" ? (
+            <div
+              style={{
+                margin: "0 0 12px",
+                padding: 14,
+                borderRadius: 16,
+                background: "var(--surface-2)",
+                border: "1px solid var(--border)",
+              }}
+            >
+              <div className="dash-flex" style={{ marginBottom: 10 }}>
+                <FiStar style={{ color: "#bae619" }} />
+                <div>
+                  <div style={{ fontSize: "0.82rem", fontWeight: 800, color: "var(--text-1)" }}>
+                    Plano Gratuito
+                  </div>
+                  <div style={{ fontSize: "0.7rem", color: "var(--text-3)" }}>Recursos limitados</div>
+                </div>
+              </div>
               <button
-                onClick={() => setActiveTab("profile")}
-                className={styles.iconButton}
+                type="button"
+                className="btn btn-lime btn-sm"
+                style={{ width: "100%" }}
+                onClick={() => setActiveTab("plans")}
               >
-                {icons.profile}
+                Fazer upgrade
               </button>
             </div>
-          </header>
-          <div className={styles.contentArea}>{renderContent()}</div>
-        </main>
-        {mobileMenuOpen && (
-          <div
-            className={styles.mobileBackdrop}
-            onClick={() => setMobileMenuOpen(false)}
-          />
-        )}
-      </div>
+          ) : null
+        }
+      >
+        {renderContent()}
+      </DashboardShell>
     </>
   );
 };

@@ -741,3 +741,67 @@
     width: 100%;
   }
 }
+
+
+/* ============================================================
+   DARK MODE (append-only, generated)
+   Scoped to .dashShell[data-theme="dark"]; light mode untouched.
+   ============================================================ */
+:global(.dashShell[data-theme="dark"]) .heroCard {
+  background: var(--surface-2);
+}
+
+:global(.dashShell[data-theme="dark"]) .heroBadgeMuted {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .statusDisabled,
+:global(.dashShell[data-theme="dark"]) .applicationPending {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .statCard {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .assessmentItem {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .summaryItem {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .actionWarning {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .emptyApplications {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .applicationCard {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .applicationBadgePriority {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .assessmentReview {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .applicationInsight {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .smallActionNeutral {
+  border-color: var(--border);
+}

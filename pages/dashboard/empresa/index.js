@@ -4,6 +4,29 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import dynamic from "next/dynamic";
 import { useAuth } from "../../../context/AuthContext";
+import {
+  FiPlusCircle,
+  FiStar,
+  FiBell,
+  FiBriefcase,
+  FiInbox,
+  FiCalendar,
+  FiEye,
+  FiUsers,
+  FiSend,
+  FiCheckCircle,
+  FiEdit2,
+  FiTrash2,
+  FiClock,
+  FiVideo,
+  FiCheck,
+  FiTrendingUp,
+  FiAward,
+  FiMail,
+  FiDownload,
+  FiFilter,
+} from "react-icons/fi";
+import DashboardShell from "../../../components/dashboard/DashboardShell";
 import styles from "../../../styles/EmpresaDashboard.module.css";
 import nookies from "nookies";
 import VerificationBadge from "../../../components/VerificationBadge";
@@ -71,13 +94,14 @@ const EmpresaPlansCatalog = dynamic(
 );
 
 const MENU_ITEMS = [
-  { id: "dashboard", label: "Visão Geral", icon: "dashboard" },
-  { id: "jobs", label: "Vagas", icon: "briefcase" },
-  { id: "candidates", label: "Candidatos Verificados", icon: "users" },
+  { id: "dashboard", label: "Visão geral", icon: "dashboard" },
+  { id: "jobs", label: "Minhas vagas", icon: "briefcase" },
   { id: "applications", label: "Candidaturas", icon: "inbox" },
+  { id: "candidates", label: "Banco de talentos", icon: "users" },
+  { id: "interviews", label: "Entrevistas", icon: "calendar" },
   { id: "messages", label: "Mensagens", icon: "messages" },
   { id: "analytics", label: "Analytics", icon: "chart" },
-  { id: "company-profile", label: "Perfil Empresa", icon: "building" },
+  { id: "company-profile", label: "Perfil empresa", icon: "building" },
   { id: "plans", label: "Planos", icon: "crown" },
 ];
 
@@ -148,19 +172,19 @@ const TIP_LIBRARY = {
     {
       title: "Equipe em sincronia",
       content:
-        "Integre o painel com CRM e mantenha feedbacks dos líderes de negócio.",
+        "Funcionalidade futura em desenvolvimento: integração do painel com CRM e feedbacks dos líderes de negócio, brevemente.",
       category: "GESTÃO",
     },
     {
       title: "Insights da IA",
       content:
-        "Analise os talentos que mais aplicam e direcione campanhas regionais.",
+        "Funcionalidade futura em desenvolvimento: análise dos talentos que mais aplicam e direcionamento de campanhas regionais, brevemente.",
       category: "INTELIGÊNCIA",
     },
     {
       title: "Retenção de talentos",
       content:
-        "Ofereça trilhas rápidas de desenvolvimento para os contratados.",
+        "Funcionalidade futura em desenvolvimento: trilhas rápidas de desenvolvimento para os contratados, brevemente.",
       category: "CULTURA",
     },
   ],
@@ -2036,209 +2060,562 @@ export default function EmpresaDashboard({
 
   const renderContent = () => {
     switch (activeTab) {
-      case "dashboard":
+      case "dashboard": {
+        const companyName =
+          profile?.companyName || profile?.name || user?.name || "Empresa";
+        const pendingCount = applicationsData.filter(
+          (a) => a.status === "pending",
+        ).length;
+        const interviewsCount = applicationsData.filter(
+          (a) => a.status === "interview" || a.interviewDate || a.interviewStatus,
+        ).length;
+        const totalViews = jobs.reduce((sum, job) => sum + (job.views || 0), 0);
+        const recentApps = [...applicationsData]
+          .sort(
+            (a, b) =>
+              new Date(b.createdAt || 0).getTime() -
+              new Date(a.createdAt || 0).getTime(),
+          )
+          .slice(0, 5);
+        const topJobs = (activeJobs.length ? activeJobs : jobs).slice(0, 4);
+        const appStatusBadge = (status) => {
+          switch (status) {
+            case "approved":
+            case "accepted":
+              return { label: "Aprovado", cls: "badge-success" };
+            case "interview":
+              return { label: "Entrevista", cls: "badge-pending" };
+            case "rejected":
+              return { label: "Rejeitado", cls: "badge-closed" };
+            default:
+              return { label: "Pendente", cls: "badge-active" };
+          }
+        };
+        const initialsOf = (name) =>
+          (name || "?")
+            .split(" ")
+            .map((w) => w[0])
+            .filter(Boolean)
+            .slice(0, 2)
+            .join("")
+            .toUpperCase();
+
         return (
-          <section className={styles.sectionBlock}>
-            <div className={styles.statsGrid}>
-              {statsList.map((stat) => (
-                <StatisticCard key={stat.label} {...stat} />
-              ))}
-            </div>
-            <div className={styles.dashboardGrid}>
-              <div className={styles.chartCard}>
-                <div className={styles.chartTitle}>
-                  <span>Fluxo de Candidaturas</span>
-                  <small>Ultimos 7 dias</small>
-                </div>
-                <div className={styles.chartWrapper}>
-                  <EmpresaApplicationsChart data={chartData} />
-                </div>
-              </div>
-              <div className={styles.tipsCard}>
-                <div className={styles.tipsHeader}>
-                  <span>Insights de Recrutamento</span>
-                  <small>Baseado no seu plano</small>
-                </div>
-                <div className={styles.tipsList}>
-                  {hiringTips.map((tip) => (
-                    <div key={tip.title} className={styles.tipItem}>
-                      <p className={styles.tipCategory}>{tip.category}</p>
-                      <h4>{tip.title}</h4>
-                      <p>{tip.content}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </section>
-        );
-      case "jobs":
-        return (
-          <section className={styles.sectionBlock}>
-            <div className={styles.sectionHeading}>
+          <>
+            <div className="header-card">
               <div>
-                <h2>Vagas Publicadas</h2>
-                <p>
-                  {activeJobs.length} ativas de {jobs.length} total
+                <div className="header-eyebrow">Empresa · Dashboard</div>
+                <h1 className="header-title">Olá, {companyName}! 👋</h1>
+                <p className="header-sub">
+                  Tens{" "}
+                  <strong>
+                    {activeJobs.length} vaga{activeJobs.length !== 1 ? "s" : ""} activa
+                    {activeJobs.length !== 1 ? "s" : ""}
+                  </strong>{" "}
+                  e{" "}
+                  <strong>
+                    {totalApplications} candidatura{totalApplications !== 1 ? "s" : ""}
+                  </strong>{" "}
+                  para rever.
                 </p>
               </div>
-              <div className={styles.sectionActions}>
-                <div className={styles.filterTabs}>
-                  <button
-                    type="button"
-                    className={`${styles.filterTab} ${jobFilter === "all" ? styles.filterTabActive : ""}`}
-                    onClick={() => setJobFilter("all")}
-                  >
-                    Todas
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.filterTab} ${jobFilter === "active" ? styles.filterTabActive : ""}`}
-                    onClick={() => setJobFilter("active")}
-                  >
-                    Ativas
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.filterTab} ${jobFilter === "closed" ? styles.filterTabActive : ""}`}
-                    onClick={() => setJobFilter("closed")}
-                  >
-                    Fechadas
-                  </button>
+              <div className="header-actions">
+                <Link href="/dashboard/empresa/vaga/criar-vaga" className="btn btn-lime">
+                  <FiPlusCircle /> Nova vaga
+                </Link>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={() => setActiveTab("candidates")}
+                >
+                  <FiUsers /> Ver talentos
+                </button>
+              </div>
+            </div>
+
+            <div className="stats-grid">
+              <div
+                className="stat-card"
+                style={{ "--accent": "rgba(32,87,215,0.85)", "--accent-shadow": "rgba(32,87,215,0.28)" }}
+              >
+                <div className="stat-icon" style={{ background: "linear-gradient(135deg,#2057d7,#4f8ef7)" }}>
+                  <FiBriefcase />
+                </div>
+                <div className="stat-value">{activeJobs.length}</div>
+                <div className="stat-label">Vagas activas</div>
+                <div className="stat-delta up">↑ {jobs.length} no total</div>
+              </div>
+              <div
+                className="stat-card"
+                style={{ "--accent": "rgba(186,230,39,0.9)", "--accent-shadow": "rgba(186,230,39,0.28)" }}
+              >
+                <div
+                  className="stat-icon"
+                  style={{ background: "linear-gradient(135deg,#d9ff2f,#bae619)", color: "#162a55" }}
+                >
+                  <FiInbox />
+                </div>
+                <div className="stat-value">{totalApplications}</div>
+                <div className="stat-label">Candidaturas recebidas</div>
+                <div className="stat-delta warn">↑ {pendingCount} novas</div>
+              </div>
+              <div
+                className="stat-card"
+                style={{ "--accent": "rgba(95,184,245,0.9)", "--accent-shadow": "rgba(95,184,245,0.28)" }}
+              >
+                <div className="stat-icon" style={{ background: "linear-gradient(135deg,#5fb8f5,#7dceff)" }}>
+                  <FiCalendar />
+                </div>
+                <div className="stat-value">{interviewsCount}</div>
+                <div className="stat-label">Entrevistas agendadas</div>
+                <div className="stat-delta up">Esta semana</div>
+              </div>
+              <div
+                className="stat-card"
+                style={{ "--accent": "rgba(61,187,122,0.9)", "--accent-shadow": "rgba(61,187,122,0.28)" }}
+              >
+                <div className="stat-icon" style={{ background: "linear-gradient(135deg,#3dbb7a,#22c55e)" }}>
+                  <FiEye />
+                </div>
+                <div className="stat-value">{totalViews}</div>
+                <div className="stat-label">Vistas às vagas</div>
+                <div className="stat-delta up">Acumulado</div>
+              </div>
+            </div>
+
+            <div className="grid-2">
+              <div className="panel">
+                <div className="panel-title">
+                  Candidaturas recentes
+                  <span className="panel-badge">{totalApplications}</span>
+                </div>
+                <div className="item-list">
+                  {recentApps.length === 0 ? (
+                    <div className="dash-muted" style={{ padding: "12px 0" }}>
+                      Ainda sem candidaturas.
+                    </div>
+                  ) : (
+                    recentApps.map((app, i) => {
+                      const badge = appStatusBadge(app.status);
+                      return (
+                        <div key={app.id || i} className="list-item">
+                          <div className="list-item-icon">{initialsOf(app.candidateName)}</div>
+                          <div className="list-item-body">
+                            <div className="list-item-title">
+                              {app.candidateName || "Candidato"}
+                            </div>
+                            <div className="list-item-meta">{app.jobTitle || "Vaga"}</div>
+                          </div>
+                          <span className={`badge ${badge.cls}`}>{badge.label}</span>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+
+              <div className="panel">
+                <div className="panel-title">
+                  Vagas activas
+                  <span className="panel-badge">{activeJobs.length}</span>
+                </div>
+                <div className="item-list">
+                  {topJobs.length === 0 ? (
+                    <div className="dash-muted" style={{ padding: "12px 0" }}>
+                      Sem vagas publicadas.
+                    </div>
+                  ) : (
+                    topJobs.map((job, i) => {
+                      const featured = job.featured || job.destaque;
+                      return (
+                        <div
+                          key={job.id || i}
+                          className="list-item"
+                          style={{ display: "block" }}
+                        >
+                          <div className="dash-flex-between">
+                            <div className="list-item-title">{job.titulo || "Vaga"}</div>
+                            <span className={`badge ${featured ? "badge-empresa" : "badge-active"}`}>
+                              {featured ? "DESTAQUE" : "ACTIVA"}
+                            </span>
+                          </div>
+                          <div
+                            className="list-item-meta"
+                            style={{ marginTop: 8, display: "flex", gap: 16 }}
+                          >
+                            <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
+                              <FiSend /> {job.applications || 0} candidaturas
+                            </span>
+                            <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
+                              <FiEye /> {job.views || 0} vistas
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
                 <Link
                   href="/dashboard/empresa/vaga/criar-vaga"
-                  className={styles.createJobBtn}
+                  className="btn btn-lime"
+                  style={{ width: "100%", marginTop: 12 }}
                 >
-                  <span className={styles.navIcon}>{icons.plus}</span>
-                  Nova Vaga
+                  <FiPlusCircle /> Publicar nova vaga
                 </Link>
               </div>
             </div>
-            <div className={styles.jobsGrid}>
-              {filteredJobs.map((job) => (
-                <JobCard key={job.id} job={job} />
-              ))}
-              {!filteredJobs.length && jobs.length > 0 && (
-                <EmptyState
-                  icon={icons.briefcase}
-                  title="Nenhuma vaga encontrada"
-                  message="Altere o filtro para ver outras vagas"
-                />
-              )}
-              {!jobs.length && (
-                <EmptyState
-                  icon={icons.briefcase}
-                  title="Nenhuma vaga criada"
-                  message="Publique sua primeira vaga para comecar a receber candidaturas"
-                  action={
-                    <Link
-                      href="/dashboard/empresa/vaga/criar-vaga"
-                      className={styles.actionLink}
-                    >
-                      Criar primeira vaga
-                    </Link>
-                  }
-                />
-              )}
+
+            <div className="grid-2">
+              <div className="panel">
+                <div className="panel-title">
+                  Fluxo de candidaturas
+                  <span className="panel-badge">Últimos 7 dias</span>
+                </div>
+                <div style={{ minHeight: 240 }}>
+                  <EmpresaApplicationsChart data={chartData} />
+                </div>
+              </div>
+              <div className="panel">
+                <div className="panel-title">
+                  Insights de recrutamento
+                  <span className="panel-badge">✨ IA</span>
+                </div>
+                {hiringTips.map((tip) => (
+                  <div key={tip.title} className="advisor-item">
+                    <div className="advisor-cat">{tip.category}</div>
+                    <div className="advisor-title">{tip.title}</div>
+                    <div className="advisor-text">{tip.content}</div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </section>
+          </>
         );
-      case "candidates":
+      }
+      case "jobs": {
+        const jobsViews = jobs.reduce((sum, job) => sum + (job.views || 0), 0);
+        const deleteJob = async (jobId) => {
+          if (
+            !window.confirm(
+              "Eliminar esta vaga? Esta ação não pode ser revertida.",
+            )
+          )
+            return;
+          try {
+            const { getAuth } = await import("firebase/auth");
+            const token = await getAuth().currentUser?.getIdToken();
+            const res = await fetch(`/api/jobs/${jobId}`, {
+              method: "DELETE",
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            if (res.ok) {
+              router.reload();
+            } else {
+              const data = await res.json().catch(() => ({}));
+              alert(data.error || "Erro ao eliminar vaga");
+            }
+          } catch (error) {
+            alert("Erro ao eliminar vaga");
+          }
+        };
+
         return (
-          <section
-            className={`${styles.sectionBlock} ${styles.candidatesSection}`}
-          >
-            <div className={styles.candidatesOverview}>
-              <div className={styles.candidatesOverviewHeader}>
-                <div>
-                  <span className={styles.candidatesOverviewEyebrow}>
-                    Banco validado
-                  </span>
-                  <h2 className={styles.candidatesOverviewTitle}>
-                    Candidatos Verificados
-                  </h2>
-                  <p className={styles.candidatesOverviewText}>
-                    Visão rápida dos perfis validados mais recentes, com acesso
-                    direto ao banco de talentos e aos perfis individuais.
+          <>
+            <div className="header-card">
+              <div>
+                <div className="header-eyebrow">Empresa · Vagas</div>
+                <h1 className="header-title">Minhas vagas</h1>
+                <p className="header-sub">
+                  {activeJobs.length} vaga{activeJobs.length !== 1 ? "s" : ""} activa
+                  {activeJobs.length !== 1 ? "s" : ""} publicada
+                  {activeJobs.length !== 1 ? "s" : ""}
+                </p>
+              </div>
+              <div className="header-actions">
+                <Link href="/dashboard/empresa/vaga/criar-vaga" className="btn btn-lime">
+                  <FiPlusCircle /> Nova vaga
+                </Link>
+              </div>
+            </div>
+
+            <div className="stats-grid">
+              <div className="stat-card" style={{ "--accent": "rgba(61,187,122,0.9)", "--accent-shadow": "rgba(61,187,122,0.28)" }}>
+                <div className="stat-icon" style={{ background: "linear-gradient(135deg,#3dbb7a,#22c55e)" }}>
+                  <FiCheckCircle />
+                </div>
+                <div className="stat-value">{activeJobs.length}</div>
+                <div className="stat-label">Activas</div>
+              </div>
+              <div className="stat-card" style={{ "--accent": "rgba(32,87,215,0.85)", "--accent-shadow": "rgba(32,87,215,0.28)" }}>
+                <div className="stat-icon" style={{ background: "linear-gradient(135deg,#2057d7,#4f8ef7)" }}>
+                  <FiInbox />
+                </div>
+                <div className="stat-value">{totalApplications}</div>
+                <div className="stat-label">Candidaturas</div>
+              </div>
+              <div className="stat-card" style={{ "--accent": "rgba(95,184,245,0.9)", "--accent-shadow": "rgba(95,184,245,0.28)" }}>
+                <div className="stat-icon" style={{ background: "linear-gradient(135deg,#5fb8f5,#7dceff)" }}>
+                  <FiEye />
+                </div>
+                <div className="stat-value">{jobsViews}</div>
+                <div className="stat-label">Vistas totais</div>
+              </div>
+              <div className="stat-card" style={{ "--accent": "rgba(186,230,39,0.9)", "--accent-shadow": "rgba(186,230,39,0.28)" }}>
+                <div className="stat-icon" style={{ background: "linear-gradient(135deg,#d9ff2f,#bae619)", color: "#162a55" }}>
+                  <FiStar />
+                </div>
+                <div className="stat-value">{highlightedJobsCount}</div>
+                <div className="stat-label">Destaque</div>
+              </div>
+            </div>
+
+            <div className="tabs">
+              <button type="button" className={`tab${jobFilter === "all" ? " active" : ""}`} onClick={() => setJobFilter("all")}>
+                Todas
+              </button>
+              <button type="button" className={`tab${jobFilter === "active" ? " active" : ""}`} onClick={() => setJobFilter("active")}>
+                Activas
+              </button>
+              <button type="button" className={`tab${jobFilter === "closed" ? " active" : ""}`} onClick={() => setJobFilter("closed")}>
+                Fechadas
+              </button>
+            </div>
+
+            {filteredJobs.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-state-icon">📋</div>
+                <p>
+                  {jobs.length === 0
+                    ? "Ainda não publicou nenhuma vaga."
+                    : "Nenhuma vaga corresponde ao filtro."}
+                </p>
+                {jobs.length === 0 && (
+                  <div style={{ marginTop: 16 }}>
+                    <Link href="/dashboard/empresa/vaga/criar-vaga" className="btn btn-primary">
+                      <FiPlusCircle /> Criar primeira vaga
+                    </Link>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="table-shell">
+                <div className="table-scroll">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Vaga</th>
+                        <th>Categoria</th>
+                        <th>Candidaturas</th>
+                        <th>Vistas</th>
+                        <th>Estado</th>
+                        <th className="td-right">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredJobs.map((job) => {
+                        const isActive = job.status === "active";
+                        const featured = job.featured || job.destaque;
+                        return (
+                          <tr key={job.id}>
+                            <td className="td-strong">
+                              <div>{job.titulo || "Vaga"}</div>
+                              {featured && (
+                                <div
+                                  style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: 5,
+                                    marginTop: 4,
+                                    fontSize: "0.72rem",
+                                    fontWeight: 800,
+                                    color: "#7a9000",
+                                  }}
+                                >
+                                  <FiStar style={{ color: "#bae619" }} /> Destaque
+                                </div>
+                              )}
+                            </td>
+                            <td className="td-muted">{job.categoria || "—"}</td>
+                            <td className="td-strong">{job.applicationCount || 0}</td>
+                            <td className="td-muted">{job.views || 0}</td>
+                            <td>
+                              <span className={`badge ${isActive ? "badge-active" : "badge-closed"}`}>
+                                <span className="badge-dot" />
+                                {isActive ? "Activa" : "Fechada"}
+                              </span>
+                            </td>
+                            <td className="td-right">
+                              <div style={{ display: "inline-flex", gap: 6, justifyContent: "flex-end" }}>
+                                <Link
+                                  href={`/dashboard/empresa/vaga/${job.id}`}
+                                  className="btn btn-ghost btn-sm"
+                                  title="Ver candidaturas"
+                                  aria-label="Ver candidaturas"
+                                >
+                                  <FiInbox />
+                                </Link>
+                                <Link
+                                  href={`/dashboard/empresa/vaga/${job.id}`}
+                                  className="btn btn-ghost btn-sm"
+                                  title="Editar"
+                                  aria-label="Editar"
+                                >
+                                  <FiEdit2 />
+                                </Link>
+                                <button
+                                  type="button"
+                                  className="btn btn-danger-ghost btn-sm"
+                                  title="Eliminar"
+                                  aria-label="Eliminar"
+                                  onClick={() => deleteJob(job.id)}
+                                >
+                                  <FiTrash2 />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </>
+        );
+      }
+      case "candidates": {
+        const initialsOf = (name) =>
+          (name || "?")
+            .split(" ")
+            .map((w) => w[0])
+            .filter(Boolean)
+            .slice(0, 2)
+            .join("")
+            .toUpperCase();
+        return (
+          <>
+            <div className="header-card">
+              <div>
+                <div className="header-eyebrow">Empresa · Talentos</div>
+                <h1 className="header-title">Banco de talentos</h1>
+                <p className="header-sub">
+                  Candidatos verificados disponíveis para contacto.
+                </p>
+              </div>
+            </div>
+
+            <div className="panel">
+              <div className="dash-toolbar">
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="Pesquisar por nome ou competência..."
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                />
+                <select className="form-select" style={{ maxWidth: 200 }} aria-label="Área" disabled>
+                  <option>Todas as áreas</option>
+                </select>
+                <button type="button" className="btn btn-lime">
+                  <FiFilter /> Filtrar
+                </button>
+              </div>
+
+              {!companyPlanFeatures.accessTalentPool && (
+                <div className="dash-muted" style={{ marginBottom: 14, fontSize: "0.84rem" }}>
+                  Plano Básico: visualização limitada aos candidatos que já se
+                  candidataram.{" "}
+                  <Link href="/premium/empresa" style={{ color: "var(--blue)", fontWeight: 700 }}>
+                    Desbloquear banco completo
+                  </Link>
+                </div>
+              )}
+              {companyPlanFeatures.accessTalentPool && loadingTalentPool && (
+                <p className="dash-muted">A carregar banco de talentos…</p>
+              )}
+              {companyPlanFeatures.accessTalentPool && talentPoolError && (
+                <p className="dash-muted" style={{ color: "var(--danger)" }}>
+                  {talentPoolError}
+                </p>
+              )}
+
+              {filteredTalents.length === 0 ? (
+                <div className="empty-state">
+                  <div className="empty-state-icon">👥</div>
+                  <p>
+                    Os perfis de candidatos aparecerão aqui assim que receber
+                    candidaturas.
                   </p>
                 </div>
-              </div>
-
-              <div className={styles.candidatesSummaryGrid}>
-                <div className={styles.candidatesSummaryCard}>
-                  <span>Total verificados</span>
-                  <strong>{publicCandidateStats.totalCandidatos || 0}</strong>
+              ) : (
+                <div className="dash-grid-3">
+                  {filteredTalents.map((talent, index) => {
+                    const locked =
+                      !companyPlanFeatures.accessTalentPool && index >= 3;
+                    return (
+                      <div key={talent.id} className="dash-talent-card">
+                        <div className="dash-talent-head">
+                          <div className="dash-avatar">
+                            {talent.avatar ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={talent.avatar} alt={talent.name} />
+                            ) : (
+                              initialsOf(talent.name)
+                            )}
+                          </div>
+                          <div style={{ minWidth: 0 }}>
+                            <div
+                              className="list-item-title"
+                              style={{ display: "flex", alignItems: "center", gap: 6 }}
+                            >
+                              {talent.name}
+                              {talent.verified && (
+                                <VerificationBadge verified size="sm" />
+                              )}
+                            </div>
+                            <div className="list-item-meta">
+                              {[talent.headline, talent.location]
+                                .filter(Boolean)
+                                .join(" · ")}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="dash-chips">
+                          {(talent.skills || []).slice(0, 3).map((skill) => (
+                            <span key={skill} className="dash-chip">
+                              {skill}
+                            </span>
+                          ))}
+                          {(!talent.skills || talent.skills.length === 0) && (
+                            <span className="dash-chip" style={{ background: "var(--surface-3)", color: "var(--text-3)" }}>
+                              Perfil pronto
+                            </span>
+                          )}
+                        </div>
+                        {locked ? (
+                          <button type="button" className="btn btn-ghost" style={{ width: "100%" }} disabled>
+                            Plano PRO necessário
+                          </button>
+                        ) : (
+                          <Link
+                            href={talent.profileUrl || `/dashboard/empresa/candidato/${talent.id}`}
+                            className="btn btn-ghost"
+                            style={{ width: "100%" }}
+                          >
+                            <FiMail /> Contactar
+                          </Link>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
-                <div className={styles.candidatesSummaryCard}>
-                  <span>Áreas mapeadas</span>
-                  <strong>{publicCandidateStats.uniqueAreasCount || 0}</strong>
-                </div>
-                <div className={styles.candidatesSummaryCard}>
-                  <span>Perfis destacados</span>
-                  <strong>
-                    {publicCandidateStats.featuredCandidatesCount || 0}
-                  </strong>
-                </div>
-                <div className={styles.candidatesSummaryCard}>
-                  <span>No banco atual</span>
-                  <strong>{talentPool.length}</strong>
-                </div>
-              </div>
+              )}
             </div>
-
-            <div className={styles.candidatesToolbar}>
-              <input
-                type="text"
-                placeholder="Buscar talentos por nome ou habilidade"
-                className={styles.searchInput}
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-              />
-              <span className={styles.searchHint}>
-                {filteredTalents.length} talentos encontrados
-              </span>
-            </div>
-            {!companyPlanFeatures.accessTalentPool && (
-              <div
-                className={`${styles.sectionNote} ${styles.sectionNoteWarning}`}
-              >
-                Plano Básico: visualização limitada aos candidatos que já se
-                candidataram às suas vagas.{" "}
-                <Link href="/premium/empresa" className={styles.actionLink}>
-                  Desbloquear banco completo
-                </Link>
-              </div>
-            )}
-            {companyPlanFeatures.accessTalentPool && loadingTalentPool && (
-              <p className={styles.sectionNote}>
-                A carregar banco de talentos...
-              </p>
-            )}
-            {companyPlanFeatures.accessTalentPool && talentPoolError && (
-              <p className={`${styles.sectionNote} ${styles.sectionNoteError}`}>
-                {talentPoolError}
-              </p>
-            )}
-            <div className={styles.talentsGrid}>
-              {filteredTalents.map((talent, index) => (
-                <TalentCard
-                  key={talent.id}
-                  talent={talent}
-                  locked={!companyPlanFeatures.accessTalentPool && index >= 3}
-                />
-              ))}
-            </div>
-            {!filteredTalents.length && (
-              <EmptyState
-                icon={icons.users}
-                title="Nenhum talento disponível"
-                message="Os perfis de candidatos aparecerão aqui assim que receber candidaturas"
-              />
-            )}
-          </section>
+          </>
         );
-      case "applications":
+      }
+      case "applications": {
         const pendingCount = applicationsData.filter(
           (a) => !a.status || a.status === "pending",
         ).length;
@@ -2251,110 +2628,325 @@ export default function EmpresaDashboard({
         const approvedCount = applicationsData.filter(
           (a) => a.status === "approved",
         ).length;
-        const rejectedCount = applicationsData.filter(
-          (a) => a.status === "rejected",
-        ).length;
+        const appTabs = [
+          { key: "all", label: "Todas", count: applicationsData.length },
+          { key: "pending", label: "Novas", count: pendingCount },
+          { key: "interview", label: "Entrevistas", count: interviewCount },
+          { key: "approved", label: "Aprovadas", count: approvedCount },
+        ];
+        const appMeta = (status) => {
+          switch (status) {
+            case "analysis":
+              return { label: "Em análise", cls: "badge-pending" };
+            case "interview":
+              return { label: "Entrevista", cls: "badge-pending" };
+            case "approved":
+            case "accepted":
+              return { label: "Aprovado", cls: "badge-success" };
+            case "rejected":
+              return { label: "Rejeitado", cls: "badge-closed" };
+            default:
+              return { label: "Nova", cls: "badge-warn" };
+          }
+        };
+        const initialsOf = (name) =>
+          (name || "?")
+            .split(" ")
+            .map((w) => w[0])
+            .filter(Boolean)
+            .slice(0, 2)
+            .join("")
+            .toUpperCase();
 
         return (
-          <section className={styles.sectionBlock}>
-            <div className={styles.sectionHeading}>
+          <>
+            <div className="header-card">
               <div>
-                <h2>Gestao de Candidaturas</h2>
-                <p>
-                  {applicationsData.length} total | {pendingCount} pendentes |{" "}
-                  {interviewCount} em entrevista
+                <div className="header-eyebrow">Empresa · Candidaturas</div>
+                <h1 className="header-title">Candidaturas recebidas</h1>
+                <p className="header-sub">
+                  {applicationsData.length} candidatura
+                  {applicationsData.length !== 1 ? "s" : ""} no total
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={handleExportApplications}
-                disabled={exportingCsv}
-                className={`${styles.applicationBtnOutline} ${styles.buttonWide}`}
-              >
-                {exportingCsv ? "A exportar..." : "Exportar CSV"}
-              </button>
+              <div className="header-actions">
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={handleExportApplications}
+                  disabled={exportingCsv}
+                >
+                  <FiDownload /> {exportingCsv ? "A exportar…" : "Exportar CSV"}
+                </button>
+              </div>
             </div>
 
-            {/* Status Summary Cards */}
-            <div className={styles.applicationSummary}>
-              <button
-                type="button"
-                className={`${styles.summaryCard} ${applicationFilter === "all" ? styles.summaryCardActive : ""}`}
-                onClick={() => setApplicationFilter("all")}
-              >
-                <span className={styles.summaryValue}>
-                  {applicationsData.length}
-                </span>
-                <span className={styles.summaryLabel}>Todas</span>
-              </button>
-              <button
-                type="button"
-                className={`${styles.summaryCard} ${styles.summaryPending} ${applicationFilter === "pending" ? styles.summaryCardActive : ""}`}
-                onClick={() => setApplicationFilter("pending")}
-              >
-                <span className={styles.summaryValue}>{pendingCount}</span>
-                <span className={styles.summaryLabel}>Pendentes</span>
-              </button>
-              <button
-                type="button"
-                className={`${styles.summaryCard} ${styles.summaryAnalysis} ${applicationFilter === "analysis" ? styles.summaryCardActive : ""}`}
-                onClick={() => setApplicationFilter("analysis")}
-              >
-                <span className={styles.summaryValue}>{analysisCount}</span>
-                <span className={styles.summaryLabel}>Em Analise</span>
-              </button>
-              <button
-                type="button"
-                className={`${styles.summaryCard} ${styles.summaryInterview} ${applicationFilter === "interview" ? styles.summaryCardActive : ""}`}
-                onClick={() => setApplicationFilter("interview")}
-              >
-                <span className={styles.summaryValue}>{interviewCount}</span>
-                <span className={styles.summaryLabel}>Entrevista</span>
-              </button>
-              <button
-                type="button"
-                className={`${styles.summaryCard} ${styles.summaryApproved} ${applicationFilter === "approved" ? styles.summaryCardActive : ""}`}
-                onClick={() => setApplicationFilter("approved")}
-              >
-                <span className={styles.summaryValue}>{approvedCount}</span>
-                <span className={styles.summaryLabel}>Aprovados</span>
-              </button>
-              <button
-                type="button"
-                className={`${styles.summaryCard} ${styles.summaryRejected} ${applicationFilter === "rejected" ? styles.summaryCardActive : ""}`}
-                onClick={() => setApplicationFilter("rejected")}
-              >
-                <span className={styles.summaryValue}>{rejectedCount}</span>
-                <span className={styles.summaryLabel}>Rejeitados</span>
-              </button>
+            <div className="stats-grid">
+              <div className="stat-card" style={{ "--accent": "rgba(32,87,215,0.85)", "--accent-shadow": "rgba(32,87,215,0.28)" }}>
+                <div className="stat-icon" style={{ background: "linear-gradient(135deg,#2057d7,#4f8ef7)" }}>
+                  <FiInbox />
+                </div>
+                <div className="stat-value">{pendingCount}</div>
+                <div className="stat-label">Novas</div>
+              </div>
+              <div className="stat-card" style={{ "--accent": "rgba(217,106,61,0.9)", "--accent-shadow": "rgba(217,106,61,0.28)" }}>
+                <div className="stat-icon" style={{ background: "linear-gradient(135deg,#f59e0b,#d9773d)" }}>
+                  <FiClock />
+                </div>
+                <div className="stat-value">{analysisCount}</div>
+                <div className="stat-label">Em análise</div>
+              </div>
+              <div className="stat-card" style={{ "--accent": "rgba(95,184,245,0.9)", "--accent-shadow": "rgba(95,184,245,0.28)" }}>
+                <div className="stat-icon" style={{ background: "linear-gradient(135deg,#5fb8f5,#7dceff)" }}>
+                  <FiVideo />
+                </div>
+                <div className="stat-value">{interviewCount}</div>
+                <div className="stat-label">Entrevistas</div>
+              </div>
+              <div className="stat-card" style={{ "--accent": "rgba(61,187,122,0.9)", "--accent-shadow": "rgba(61,187,122,0.28)" }}>
+                <div className="stat-icon" style={{ background: "linear-gradient(135deg,#3dbb7a,#22c55e)" }}>
+                  <FiCheckCircle />
+                </div>
+                <div className="stat-value">{approvedCount}</div>
+                <div className="stat-label">Aprovadas</div>
+              </div>
             </div>
 
-            <div className={styles.applicationsList}>
-              {filteredApplications.length > 0 ? (
-                filteredApplications.map((application) => (
-                  <ApplicationCard
-                    key={application.id}
-                    application={application}
-                    onStatusUpdate={handleApplicationStatusUpdate}
-                    onOpenInterviewScheduler={openInterviewScheduler}
-                  />
-                ))
-              ) : applicationsData.length > 0 ? (
-                <EmptyState
-                  icon={icons.inbox}
-                  title="Nenhuma candidatura neste filtro"
-                  message="Altere o filtro para ver outras candidaturas"
-                />
-              ) : (
-                <EmptyState
-                  icon={icons.users}
-                  title="Nenhuma candidatura registrada"
-                  message="As candidaturas aparecerao conforme os talentos se inscreverem nas suas vagas"
-                />
-              )}
+            <div className="tabs">
+              {appTabs.map((tab) => (
+                <button
+                  key={tab.key}
+                  type="button"
+                  className={`tab${applicationFilter === tab.key ? " active" : ""}`}
+                  onClick={() => setApplicationFilter(tab.key)}
+                >
+                  {tab.label} ({tab.count})
+                </button>
+              ))}
             </div>
-          </section>
+
+            {filteredApplications.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-state-icon">📨</div>
+                <p>
+                  {applicationsData.length === 0
+                    ? "As candidaturas aparecerão à medida que os talentos se inscreverem."
+                    : "Nenhuma candidatura neste filtro."}
+                </p>
+              </div>
+            ) : (
+              <div className="item-list">
+                {filteredApplications.map((application) => {
+                  const meta = appMeta(application.status);
+                  const score = application.compatibilityScore;
+                  const hasScore = typeof score === "number";
+                  const canSchedule =
+                    !application.status ||
+                    application.status === "pending" ||
+                    application.status === "analysis";
+                  return (
+                    <div key={application.id} className="list-item">
+                      <div className="list-item-icon">
+                        {initialsOf(application.candidateName)}
+                      </div>
+                      <div className="list-item-body">
+                        <div className="list-item-title">
+                          {application.candidateName || "Candidato"}
+                        </div>
+                        <div className="list-item-meta">
+                          {application.jobTitle || "Vaga"}
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        {hasScore && (
+                          <span
+                            style={{
+                              fontWeight: 800,
+                              fontSize: "0.84rem",
+                              color: score >= 90 ? "#3dbb7a" : "#2057d7",
+                            }}
+                          >
+                            {score}% match
+                          </span>
+                        )}
+                        <span className={`badge ${meta.cls}`}>{meta.label}</span>
+                        <div style={{ display: "inline-flex", gap: 6 }}>
+                          <Link
+                            href={`/dashboard/empresa/candidato/${application.candidateId}`}
+                            className="btn btn-ghost btn-sm"
+                            title="Ver perfil"
+                            aria-label="Ver perfil"
+                          >
+                            <FiEye />
+                          </Link>
+                          {canSchedule && (
+                            <button
+                              type="button"
+                              className="btn btn-lime btn-sm"
+                              title="Agendar entrevista"
+                              aria-label="Agendar entrevista"
+                              onClick={() => openInterviewScheduler?.(application)}
+                            >
+                              <FiCalendar />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </>
         );
+      }
+      case "interviews": {
+        const scheduled = applicationsData.filter(
+          (a) => a.interviewDetails?.scheduledAt || a.status === "interview",
+        );
+        const initialsOf = (name) =>
+          (name || "?")
+            .split(" ")
+            .map((w) => w[0])
+            .filter(Boolean)
+            .slice(0, 2)
+            .join("")
+            .toUpperCase();
+        const guide = [
+          {
+            title: "Prepare as perguntas",
+            text: "Prepare 8–10 perguntas relevantes para cada posição.",
+          },
+          {
+            title: "Avalie com critérios",
+            text: "Use uma escala de 1–5 para competências técnicas e soft skills.",
+          },
+          {
+            title: "Feedback rápido",
+            text: "Dê feedback em 48h para manter a reputação da empresa.",
+          },
+          {
+            title: "Painel diversificado",
+            text: "Inclua pelo menos 2 avaliadores por entrevista.",
+          },
+        ];
+        return (
+          <>
+            <div className="header-card">
+              <div>
+                <div className="header-eyebrow">Empresa · Entrevistas</div>
+                <h1 className="header-title">Entrevistas agendadas</h1>
+                <p className="header-sub">
+                  {scheduled.length} entrevista{scheduled.length !== 1 ? "s" : ""}{" "}
+                  agendada{scheduled.length !== 1 ? "s" : ""} esta semana.
+                </p>
+              </div>
+              <div className="header-actions">
+                <button
+                  type="button"
+                  className="btn btn-lime"
+                  onClick={() => setActiveTab("applications")}
+                >
+                  <FiCalendar /> Agendar
+                </button>
+              </div>
+            </div>
+
+            <div className="grid-2">
+              <div className="panel">
+                <div className="panel-title">
+                  Esta semana
+                  <span className="panel-badge">{scheduled.length}</span>
+                </div>
+                {scheduled.length === 0 ? (
+                  <div className="empty-state">
+                    <div className="empty-state-icon">📅</div>
+                    <p>Nenhuma entrevista agendada. Marque uma a partir de uma candidatura.</p>
+                  </div>
+                ) : (
+                  <div className="item-list">
+                    {scheduled.map((app) => {
+                      const details = app.interviewDetails || {};
+                      const when = details.scheduledAt
+                        ? formatInterviewDateTime(details.scheduledAt)
+                        : "Data a confirmar";
+                      const isPresential = details.mode === "presencial";
+                      const modeLabel = isPresential
+                        ? `Presencial · ${details.location || "Escritório"}`
+                        : `Online${details.provider ? ` · ${details.provider}` : ""}`;
+                      return (
+                        <div key={app.id} className="list-item" style={{ display: "block" }}>
+                          <div className="dash-flex" style={{ marginBottom: 8 }}>
+                            <div className="list-item-icon">
+                              {initialsOf(app.candidateName)}
+                            </div>
+                            <div style={{ minWidth: 0 }}>
+                              <div className="list-item-title">
+                                {app.candidateName || "Candidato"}
+                              </div>
+                              <div className="list-item-meta">
+                                {app.jobTitle || "Vaga"}
+                              </div>
+                            </div>
+                          </div>
+                          <div
+                            style={{
+                              color: "var(--blue)",
+                              fontWeight: 700,
+                              fontSize: "0.82rem",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 6,
+                            }}
+                          >
+                            <FiCalendar /> {when}
+                          </div>
+                          <div className="list-item-meta" style={{ marginTop: 2 }}>
+                            {modeLabel}
+                          </div>
+                          <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                            {!isPresential && details.link ? (
+                              <a
+                                href={details.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn btn-primary btn-sm"
+                              >
+                                <FiVideo /> Entrar
+                              </a>
+                            ) : (
+                              <button type="button" className="btn btn-primary btn-sm" disabled>
+                                <FiVideo /> Entrar
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              className="btn btn-ghost btn-sm"
+                              onClick={() => openInterviewScheduler?.(app)}
+                            >
+                              <FiClock /> Reagendar
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <div className="panel">
+                <div className="panel-title">Guia de entrevistas</div>
+                {guide.map((tip) => (
+                  <div key={tip.title} className="advisor-item">
+                    <div className="advisor-title">{tip.title}</div>
+                    <div className="advisor-text">{tip.text}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        );
+      }
       case "messages":
         const activeConversation = conversations.find(
           (conversation) => conversation.id === selectedConversation,
@@ -2556,21 +3148,27 @@ export default function EmpresaDashboard({
             )}
           </section>
         );
-      case "analytics":
+      case "analytics": {
         if (!companyPlanFeatures.canAccessAnalytics) {
           return (
-            <section className={styles.sectionBlock}>
-              <EmptyState
-                icon={icons.chart}
-                title="Analytics disponível apenas no plano PRO"
-                message="Faça upgrade para o plano PRO para desbloquear métricas completas, tendências e ranking de performance das vagas."
-                action={
-                  <Link href="/premium/empresa" className={styles.actionLink}>
+            <>
+              <div className="header-card">
+                <div>
+                  <div className="header-eyebrow">Empresa · Analytics</div>
+                  <h1 className="header-title">Desempenho das vagas</h1>
+                  <p className="header-sub">Análise detalhada das suas publicações.</p>
+                </div>
+              </div>
+              <div className="empty-state">
+                <div className="empty-state-icon">📊</div>
+                <p>Analytics disponível apenas no plano PRO.</p>
+                <div style={{ marginTop: 16 }}>
+                  <Link href="/premium/empresa" className="btn btn-primary">
                     Ver planos
                   </Link>
-                }
-              />
-            </section>
+                </div>
+              </div>
+            </>
           );
         }
 
@@ -2581,63 +3179,39 @@ export default function EmpresaDashboard({
           totalViews > 0 ? (totalApplications / totalViews) * 100 : 0;
         const avgAppsPerJob =
           jobs.length > 0 ? Math.round(totalApplications / jobs.length) : 0;
-        const avgViewsPerJob =
-          jobs.length > 0 ? Math.round(totalViews / jobs.length) : 0;
-        const lastSevenDays = Array.from({ length: 7 }, (_, index) => {
-          const date = new Date();
-          date.setDate(date.getDate() - (6 - index));
-          return date;
-        });
-
-        const viewsByDate = {};
-        (analytics?.viewsTimeline || []).forEach((entry) => {
-          if (entry?.date) {
-            viewsByDate[entry.date] = entry.count || 0;
-          }
-        });
-
-        const appsByDate = {};
-        applicationsData.forEach((application) => {
-          const dateValue = application.appliedAt || application.createdAt;
-          if (!dateValue) return;
-          const key = new Date(dateValue).toISOString().slice(0, 10);
-          appsByDate[key] = (appsByDate[key] || 0) + 1;
-        });
-
-        const weeklyData = lastSevenDays.map((date) => {
-          const key = date.toISOString().slice(0, 10);
-          return {
-            name: date.toLocaleDateString("pt-PT", { weekday: "short" }),
-            views: viewsByDate[key] || 0,
-            apps: appsByDate[key] || 0,
-          };
-        });
-
+        const qualityScore = jobs.length
+          ? Math.min(
+              10,
+              Math.min(conversionRate / 4, 1) * 5 +
+                (activeJobs.length / Math.max(jobs.length, 1)) * 5,
+            )
+          : 0;
+        const timeToHire = analytics?.avgTimeToHire;
         const statusBuckets = [
           {
             name: "Pendentes",
             value: applicationsData.filter(
               (app) => !app.status || app.status === "pending",
             ).length,
-            color: "#6f84a6",
+            color: "#2057d7",
           },
           {
             name: "Em análise",
             value: applicationsData.filter((app) => app.status === "analysis")
               .length,
-            color: "#2057d7",
+            color: "#5fb8f5",
           },
           {
             name: "Entrevista",
             value: applicationsData.filter((app) => app.status === "interview")
               .length,
-            color: "#5fb8f5",
+            color: "#d9ff2f",
           },
           {
             name: "Aprovadas",
             value: applicationsData.filter((app) => app.status === "approved")
               .length,
-            color: "#2f91d8",
+            color: "#3dbb7a",
           },
         ];
         const totalBucketValues =
@@ -2646,280 +3220,129 @@ export default function EmpresaDashboard({
           ...bucket,
           value: Math.round((bucket.value / totalBucketValues) * 100),
         }));
+        const topViewJobs = [...jobs]
+          .sort((a, b) => (b.views || 0) - (a.views || 0))
+          .slice(0, 5);
+        const maxViews = Math.max(...topViewJobs.map((j) => j.views || 0), 1);
+        const shortName = (title) => (title || "Vaga").split(" ")[0];
 
         return (
-          <section className={styles.sectionBlock}>
-            <div className={styles.sectionHeading}>
+          <>
+            <div className="header-card">
               <div>
-                <h2>Analytics</h2>
-                <p>Performance e metricas das suas vagas</p>
+                <div className="header-eyebrow">Empresa · Analytics</div>
+                <h1 className="header-title">Desempenho das vagas</h1>
+                <p className="header-sub">Análise detalhada das suas publicações.</p>
               </div>
-              <div className={styles.filterTabs}>
+              <div className="header-actions">
                 <button
                   type="button"
-                  className={`${styles.filterTab} ${styles.filterTabActive}`}
+                  className="btn btn-ghost"
+                  onClick={handleExportApplications}
+                  disabled={exportingCsv}
                 >
-                  7 dias
-                </button>
-                <button type="button" className={styles.filterTab}>
-                  30 dias
-                </button>
-                <button type="button" className={styles.filterTab}>
-                  90 dias
+                  <FiDownload /> {exportingCsv ? "A exportar…" : "Exportar"}
                 </button>
               </div>
             </div>
 
-            {loadingAnalytics && (
-              <div className={styles.spinner}>Carregando metricas...</div>
-            )}
-            {!loadingAnalytics && analyticsError && (
-              <div className={styles.emptyState}>
+            {loadingAnalytics ? (
+              <div className="loading-state">
+                <div className="spinner" />
+                <p>A carregar métricas…</p>
+              </div>
+            ) : analyticsError ? (
+              <div className="empty-state">
+                <div className="empty-state-icon">⚠️</div>
                 <p>{analyticsError}</p>
               </div>
-            )}
-
-            {!loadingAnalytics && !analyticsError && (
+            ) : (
               <>
-                {/* Main KPI Cards */}
-                <div className={styles.analyticsKPIGrid}>
-                  <AnalyticsCard
-                    title="Visualizacoes Totais"
-                    value={totalViews.toLocaleString("pt-PT")}
-                    subtitle="Ultimos 30 dias"
-                    color="#2057d7"
-                    icon={icons.eye}
-                    change={12}
-                  />
-                  <AnalyticsCard
-                    title="Taxa de Conversao"
-                    value={`${conversionRate.toFixed(1)}%`}
-                    subtitle="Candidaturas / Views"
-                    color="#5fb8f5"
-                    icon={icons.trending}
-                    change={5}
-                  />
-                  <AnalyticsCard
-                    title="Candidaturas"
-                    value={totalApplications}
-                    subtitle="Total recebidas"
-                    color="#2057d7"
-                    icon={icons.inbox}
-                    change={-3}
-                  />
-                  <AnalyticsCard
-                    title="Vagas Ativas"
-                    value={activeJobs.length}
-                    subtitle={`de ${jobs.length} publicadas`}
-                    color="#2057d7"
-                    icon={icons.briefcase}
-                  />
+                <div className="stats-grid">
+                  <div className="stat-card" style={{ "--accent": "rgba(186,230,39,0.9)", "--accent-shadow": "rgba(186,230,39,0.28)" }}>
+                    <div className="stat-icon" style={{ background: "linear-gradient(135deg,#d9ff2f,#bae619)", color: "#162a55" }}>
+                      <FiTrendingUp />
+                    </div>
+                    <div className="stat-value">{conversionRate.toFixed(1)}%</div>
+                    <div className="stat-label">Taxa de conversão</div>
+                  </div>
+                  <div className="stat-card" style={{ "--accent": "rgba(32,87,215,0.85)", "--accent-shadow": "rgba(32,87,215,0.28)" }}>
+                    <div className="stat-icon" style={{ background: "linear-gradient(135deg,#2057d7,#4f8ef7)" }}>
+                      <FiClock />
+                    </div>
+                    <div className="stat-value">{timeToHire ? `${timeToHire}d` : "—"}</div>
+                    <div className="stat-label">Tempo médio p/ contratar</div>
+                  </div>
+                  <div className="stat-card" style={{ "--accent": "rgba(95,184,245,0.9)", "--accent-shadow": "rgba(95,184,245,0.28)" }}>
+                    <div className="stat-icon" style={{ background: "linear-gradient(135deg,#5fb8f5,#7dceff)" }}>
+                      <FiUsers />
+                    </div>
+                    <div className="stat-value">{avgAppsPerJob}</div>
+                    <div className="stat-label">Candidatos por vaga</div>
+                  </div>
+                  <div className="stat-card" style={{ "--accent": "rgba(61,187,122,0.9)", "--accent-shadow": "rgba(61,187,122,0.28)" }}>
+                    <div className="stat-icon" style={{ background: "linear-gradient(135deg,#3dbb7a,#22c55e)" }}>
+                      <FiAward />
+                    </div>
+                    <div className="stat-value">{qualityScore.toFixed(1)}/10</div>
+                    <div className="stat-label">Score de qualidade</div>
+                  </div>
                 </div>
 
-                {/* Charts Row */}
-                <div className={styles.analyticsChartsRow}>
-                  {/* Views & Applications Chart */}
-                  <div className={styles.analyticsChartCard}>
-                    <div className={styles.analyticsChartHeader}>
-                      <div>
-                        <h3>Visualizacoes vs Candidaturas</h3>
-                        <p>Tendencia semanal</p>
+                <div className="grid-2">
+                  <div className="panel">
+                    <div className="panel-title">Vistas por vaga</div>
+                    {topViewJobs.length === 0 ? (
+                      <div className="dash-muted" style={{ padding: "12px 0" }}>
+                        Sem dados de visualizações.
                       </div>
-                      <div className={styles.analyticsLegend}>
-                        <span>
-                          <i
-                            className={styles.analyticsLegendDot}
-                            style={{ "--legend-color": "#2057d7" }}
-                          ></i>{" "}
-                          Views
-                        </span>
-                        <span>
-                          <i
-                            className={styles.analyticsLegendDot}
-                            style={{ "--legend-color": "#5fb8f5" }}
-                          ></i>{" "}
-                          Apps
-                        </span>
+                    ) : (
+                      <div className="chart-bars">
+                        {topViewJobs.map((job, i) => {
+                          const height = Math.max(
+                            ((job.views || 0) / maxViews) * 100,
+                            6,
+                          );
+                          return (
+                            <div className="chart-bar-wrap" key={job.id}>
+                              <div className="chart-bar-val">{job.views || 0}</div>
+                              <div
+                                className={`chart-bar${i % 2 ? " lime" : ""}`}
+                                style={{ height: `${height}%` }}
+                              />
+                              <div className="chart-bar-label">
+                                {shortName(job.titulo)}
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
-                    </div>
-                    <div className={styles.analyticsChartWrapper}>
-                      <EmpresaWeeklyViewsAppsChart data={weeklyData} />
-                    </div>
+                    )}
                   </div>
 
-                  {/* Source Distribution */}
-                  <div className={styles.analyticsChartCard}>
-                    <div className={styles.analyticsChartHeader}>
-                      <div>
-                        <h3>Distribuição das Candidaturas</h3>
-                        <p>Baseado no estado atual do funil</p>
-                      </div>
-                    </div>
-                    <div className={styles.analyticsSourceList}>
+                  <div className="panel">
+                    <div className="panel-title">Distribuição das candidaturas</div>
+                    <div className="metric-list">
                       {sourceData.map((source) => (
-                        <div
-                          key={source.name}
-                          className={styles.analyticsSourceItem}
-                        >
-                          <div className={styles.analyticsSourceInfo}>
-                            <span
-                              className={`${styles.analyticsSourceDot} ${styles.analyticsSourceAccent}`}
-                              style={{ "--accent-color": source.color }}
-                            ></span>
-                            <span className={styles.analyticsSourceName}>
-                              {source.name}
-                            </span>
-                          </div>
-                          <div className={styles.analyticsSourceBar}>
+                        <div className="metric-row" key={source.name}>
+                          <div className="metric-label">{source.name}</div>
+                          <div className="metric-track">
                             <div
-                              className={`${styles.analyticsSourceProgress} ${styles.analyticsSourceAccent}`}
-                              style={{
-                                width: `${source.value}%`,
-                                "--accent-color": source.color,
-                              }}
-                            ></div>
+                              className="metric-fill"
+                              style={{ width: `${source.value}%`, background: source.color }}
+                            />
                           </div>
-                          <span className={styles.analyticsSourceValue}>
-                            {source.value}%
-                          </span>
+                          <div className="metric-val">{source.value}%</div>
                         </div>
                       ))}
                     </div>
                   </div>
                 </div>
-
-                {/* Performance by Job */}
-                <div className={styles.analyticsTableCard}>
-                  <div className={styles.analyticsTableHeader}>
-                    <h3>Performance por Vaga</h3>
-                    <p>Ranking das vagas mais visualizadas</p>
-                  </div>
-                  <div className={styles.analyticsTable}>
-                    <div className={styles.analyticsTableHead}>
-                      <span>Vaga</span>
-                      <span>Views</span>
-                      <span>Apps</span>
-                      <span>Conversao</span>
-                      <span>Status</span>
-                    </div>
-                    {(analytics?.topJobs || jobs.slice(0, 5)).map(
-                      (job, index) => {
-                        const jobViews = job.views || 0;
-                        const jobApps =
-                          job.applications ?? job.applicationCount ?? 0;
-                        const jobConversion =
-                          jobViews > 0
-                            ? ((jobApps / jobViews) * 100).toFixed(1)
-                            : 0;
-
-                        return (
-                          <div
-                            key={job.id}
-                            className={styles.analyticsTableRow}
-                          >
-                            <div className={styles.analyticsTableJob}>
-                              <span className={styles.analyticsTableRank}>
-                                #{index + 1}
-                              </span>
-                              <div>
-                                <p className={styles.analyticsTableTitle}>
-                                  {job.titulo}
-                                </p>
-                                <p className={styles.analyticsTableMeta}>
-                                  {job.localizacao || "Local nao informado"}
-                                </p>
-                              </div>
-                            </div>
-                            <span className={styles.analyticsTableValue}>
-                              {jobViews.toLocaleString("pt-PT")}
-                            </span>
-                            <span className={styles.analyticsTableValue}>
-                              {jobApps}
-                            </span>
-                            <span className={styles.analyticsTableValue}>
-                              {jobConversion}%
-                            </span>
-                            <span
-                              className={`${styles.analyticsTableStatus} ${job.status === "active" ? styles.statusActive : styles.statusInactive}`}
-                            >
-                              {job.status === "active" ? "Ativa" : "Inativa"}
-                            </span>
-                          </div>
-                        );
-                      },
-                    )}
-                    {jobs.length === 0 && (
-                      <div className={styles.analyticsTableEmpty}>
-                        Nenhuma vaga publicada ainda
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Quick Stats Row */}
-                <div className={styles.analyticsQuickStats}>
-                  <div className={styles.analyticsQuickStat}>
-                    <span className={styles.analyticsQuickIcon}>
-                      {icons.clock}
-                    </span>
-                    <div>
-                      <p className={styles.analyticsQuickValue}>
-                        {avgViewsPerJob}
-                      </p>
-                      <p className={styles.analyticsQuickLabel}>
-                        Media views/vaga
-                      </p>
-                    </div>
-                  </div>
-                  <div className={styles.analyticsQuickStat}>
-                    <span className={styles.analyticsQuickIcon}>
-                      {icons.users}
-                    </span>
-                    <div>
-                      <p className={styles.analyticsQuickValue}>
-                        {avgAppsPerJob}
-                      </p>
-                      <p className={styles.analyticsQuickLabel}>
-                        Media apps/vaga
-                      </p>
-                    </div>
-                  </div>
-                  <div className={styles.analyticsQuickStat}>
-                    <span className={styles.analyticsQuickIcon}>
-                      {icons.trending}
-                    </span>
-                    <div>
-                      <p className={styles.analyticsQuickValue}>
-                        {jobs.length > 0
-                          ? Math.round((activeJobs.length / jobs.length) * 100)
-                          : 0}
-                        %
-                      </p>
-                      <p className={styles.analyticsQuickLabel}>Vagas ativas</p>
-                    </div>
-                  </div>
-                  <div className={styles.analyticsQuickStat}>
-                    <span className={styles.analyticsQuickIcon}>
-                      {icons.bell}
-                    </span>
-                    <div>
-                      <p className={styles.analyticsQuickValue}>
-                        {
-                          recentApplications.filter(
-                            (a) => !a.status || a.status === "pending",
-                          ).length
-                        }
-                      </p>
-                      <p className={styles.analyticsQuickLabel}>
-                        Apps pendentes
-                      </p>
-                    </div>
-                  </div>
-                </div>
               </>
             )}
-          </section>
+          </>
         );
+      }
       case "company-profile":
         return (
           <section className={styles.sectionBlock}>
@@ -3020,6 +3443,79 @@ export default function EmpresaDashboard({
   const activeLabel =
     MENU_ITEMS.find((item) => item.id === activeTab)?.label || activeTab;
 
+  const pendingApplicationsCount = applicationsData.filter(
+    (a) => a.status === "pending",
+  ).length;
+  const empresaPlanLabel =
+    typeof planState === "string" ? planState : planState?.planName || "Gratuito";
+  const companyName =
+    profile?.companyName || profile?.name || user?.name || "Empresa";
+  const scheduledInterviewsCount = applicationsData.filter(
+    (a) => a.interviewDetails?.scheduledAt || a.status === "interview",
+  ).length;
+  const topbarSubMap = {
+    dashboard: `${companyName} · Plano ${empresaPlanLabel}`,
+    jobs: "Gestão de publicações",
+    applications: `${applicationsData.length} candidaturas recebidas`,
+    candidates: "Candidatos verificados disponíveis",
+    interviews: `${scheduledInterviewsCount} entrevistas agendadas`,
+    analytics: "Desempenho das suas vagas",
+    messages: "Conversas com candidatos",
+    "company-profile": "Perfil público da empresa",
+    plans: "Gestão do seu plano",
+  };
+  const empresaNav = [
+    {
+      label: "Menu Principal",
+      items: [
+        { key: "dashboard", label: "Visão geral", icon: "home", onClick: () => setActiveTab("dashboard") },
+        {
+          key: "jobs",
+          label: "Minhas vagas",
+          icon: "briefcase",
+          onClick: () => setActiveTab("jobs"),
+          badge: activeJobs.length || undefined,
+        },
+        {
+          key: "applications",
+          label: "Candidaturas",
+          icon: "inbox",
+          onClick: () => setActiveTab("applications"),
+          badge: totalApplications || undefined,
+        },
+        { key: "candidates", label: "Banco de talentos", icon: "users", onClick: () => setActiveTab("candidates") },
+        {
+          key: "interviews",
+          label: "Entrevistas",
+          icon: "calendar",
+          onClick: () => setActiveTab("interviews"),
+          badge: scheduledInterviewsCount || undefined,
+          badgeStyle: "lime",
+        },
+        {
+          key: "messages",
+          label: "Mensagens",
+          icon: "messages",
+          onClick: () => setActiveTab("messages"),
+          badge: unreadMessages || undefined,
+        },
+      ],
+    },
+    {
+      label: "Análise",
+      items: [
+        { key: "analytics", label: "Analytics", icon: "chart", onClick: () => setActiveTab("analytics") },
+      ],
+    },
+    {
+      label: "Conta",
+      items: [
+        { key: "company-profile", label: "Perfil empresa", icon: "user", href: "/dashboard/empresa/profile" },
+        { key: "plans", label: "Planos", icon: "star", onClick: () => setActiveTab("plans") },
+      ],
+    },
+  ];
+
   return (
     <>
       <Head>
@@ -3029,40 +3525,135 @@ export default function EmpresaDashboard({
           content="Gerencie suas vagas e candidatos no painel empresarial do EmpregoSTP"
         />
       </Head>
-      <div className={styles.pageLayout}>
-        <Sidebar
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          currentPlan={planState}
-          profile={profile}
-          onLogout={handleLogout}
-          pendingApplicationsCount={
-            applicationsData.filter((a) => a.status === "pending").length
-          }
-          unreadMessages={unreadMessages}
-        />
-        <main className={styles.mainContent}>
-          <TopBar
-            profile={profile}
-            activeLabel={activeLabel}
-            notificationsCount={unreadNotifications}
-            notifications={notifications}
-            notificationsOpen={notificationsOpen}
-            notificationsLoading={notificationsLoading}
-            notificationsError={notificationsError}
-            onToggleNotifications={() => {
-              setNotificationsOpen((prev) => {
-                const next = !prev;
-                if (!prev && next) fetchNotifications();
-                return next;
-              });
-            }}
-            onNotificationClick={handleNotificationClick}
-            onMarkAllNotificationsRead={markAllNotificationsRead}
-          />
-          <div className={styles.contentArea}>{renderContent()}</div>
-        </main>
-      </div>
+      <DashboardShell
+        role="empresa"
+        active={activeTab}
+        title={activeLabel}
+        subtitle={topbarSubMap[activeTab] || `${companyName} · Plano ${empresaPlanLabel}`}
+        searchPlaceholder="Pesquisar candidatos..."
+        nav={empresaNav}
+        onLogout={handleLogout}
+        topbarActions={
+          <div className="dash-notif-wrap">
+            <button
+              type="button"
+              className="dash-icon-btn"
+              onClick={() => {
+                setNotificationsOpen((prev) => {
+                  const next = !prev;
+                  if (!prev && next) fetchNotifications();
+                  return next;
+                });
+              }}
+              aria-expanded={notificationsOpen}
+              aria-label="Notificações"
+            >
+              <FiBell />
+              {unreadNotifications > 0 && <span className="dash-notif-dot" />}
+            </button>
+            {notificationsOpen && (
+              <div className="dash-notif-panel" role="dialog" aria-label="Notificações">
+                <div className="dash-notif-head">
+                  <strong>Notificações</strong>
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    onClick={markAllNotificationsRead}
+                    disabled={notificationsLoading || unreadNotifications === 0}
+                  >
+                    Marcar todas
+                  </button>
+                </div>
+                <div className="dash-notif-list">
+                  {notificationsError ? (
+                    <div className="dash-notif-empty">Erro: {notificationsError}</div>
+                  ) : notificationsLoading ? (
+                    <div className="dash-notif-empty">A carregar…</div>
+                  ) : notifications.length === 0 ? (
+                    <div className="dash-notif-empty">Nenhuma notificação recente.</div>
+                  ) : (
+                    notifications.slice(0, 10).map((notif) => (
+                      <button
+                        key={notif.id}
+                        type="button"
+                        className={`dash-notif-row${notif.read ? "" : " unread"}`}
+                        onClick={() => handleNotificationClick?.(notif)}
+                        title={notif.message || notif.title || "Notificação"}
+                      >
+                        <span className="dash-notif-ic">{notif.icon || "🔔"}</span>
+                        <div className="dash-notif-txt">
+                          <div className="dash-notif-row-title">{notif.title || "Notificação"}</div>
+                          {notif.message && <p className="dash-notif-row-msg">{notif.message}</p>}
+                          <span className="dash-notif-time">
+                            {notif.createdAt
+                              ? new Date(notif.createdAt).toLocaleString("pt-PT")
+                              : ""}
+                          </span>
+                        </div>
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        }
+        profile={{
+          name: profile?.companyName || profile?.name || user?.name || "Empresa",
+          role: "Empresa",
+          plan:
+            empresaPlanLabel && empresaPlanLabel.toLowerCase() !== "gratuito"
+              ? empresaPlanLabel
+              : undefined,
+          avatarUrl: profile?.logoUrl || profile?.photoUrl || undefined,
+        }}
+        sidebarTop={
+          <div style={{ padding: "0 12px 6px" }}>
+            <Link
+              href="/dashboard/empresa/vaga/criar-vaga"
+              className="btn btn-primary btn-sm"
+              style={{ width: "100%" }}
+            >
+              <FiPlusCircle /> Publicar vaga
+            </Link>
+          </div>
+        }
+        sidebarFooter={
+          empresaPlanLabel.toLowerCase() === "gratuito" ? (
+            <div
+              style={{
+                margin: "0 0 12px",
+                padding: 14,
+                borderRadius: 16,
+                background: "var(--surface-2)",
+                border: "1px solid var(--border)",
+              }}
+            >
+              <div className="dash-flex" style={{ marginBottom: 10 }}>
+                <FiStar style={{ color: "#bae619" }} />
+                <div>
+                  <div style={{ fontSize: "0.82rem", fontWeight: 800, color: "var(--text-1)" }}>
+                    Plano Gratuito
+                  </div>
+                  <div style={{ fontSize: "0.7rem", color: "var(--text-3)" }}>
+                    Amplie o seu alcance
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="btn btn-lime btn-sm"
+                style={{ width: "100%" }}
+                onClick={() => setActiveTab("plans")}
+              >
+                Fazer upgrade
+              </button>
+            </div>
+          ) : null
+        }
+      >
+        {renderContent()}
+      </DashboardShell>
       {interviewModal.open && (
         <div className={styles.modalOverlay} onClick={closeInterviewScheduler}>
           <div

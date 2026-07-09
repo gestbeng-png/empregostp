@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo } from "react";
 import { getAuth } from "firebase/auth";
 import { useAuth } from "../../context/AuthContext";
 import PublicPageShell from "../../components/PublicPageShell";
-import Badge from "../../components/Badge";
 import UpgradeModal from "../../components/UpgradeModal";
 import styles from "../../styles/VagaDetailPage.module.css";
 import {
@@ -12,8 +11,8 @@ import {
   FiBookmark,
   FiBriefcase,
   FiCalendar,
+  FiCheck,
   FiCheckCircle,
-  FiChevronRight,
   FiClock,
   FiDollarSign,
   FiDownload,
@@ -24,9 +23,11 @@ import {
   FiPhone,
   FiShare2,
   FiShield,
+  FiStar,
+  FiUsers,
+  FiX,
   FiZap,
 } from "react-icons/fi";
-import { HiOutlineBuildingOffice2 } from "react-icons/hi2";
 import {
   buildCoverLetterSuggestion,
   evaluateCandidateJobAccess,
@@ -54,6 +55,21 @@ function formatDate(value) {
     month: "short",
     year: "numeric",
   });
+}
+
+function formatRelativeDate(value) {
+  if (!value) return "Publicada recentemente";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Publicada recentemente";
+
+  const diffMs = Date.now() - date.getTime();
+  const diffDays = Math.max(0, Math.floor(diffMs / 86400000));
+
+  if (diffDays === 0) return "Publicada hoje";
+  if (diffDays === 1) return "Publicada há 1 dia";
+  if (diffDays < 30) return `Publicada há ${diffDays} dias`;
+
+  return `Publicada em ${formatDate(value)}`;
 }
 
 function formatDateTime(value) {
@@ -324,7 +340,7 @@ export default function VagaDetalhe({ vaga, relatedJobs = [] }) {
     const raw =
       vaga.publicadoEm || vaga.createdAt || vaga.dataAbertura || vaga.dataFecho;
     if (!raw) return "Publicado recentemente";
-    return formatDate(raw);
+    return formatRelativeDate(raw);
   }, [vaga]);
 
   const premiumConfig = useMemo(
@@ -355,6 +371,75 @@ export default function VagaDetalhe({ vaga, relatedJobs = [] }) {
       candidateProfileData,
     );
   }, [vaga, candidateProfileData, user, userType]);
+
+  const requirementsList = parseList(vaga?.requisitos);
+  const responsibilitiesList = parseList(vaga?.responsabilidades);
+  const benefitsList = parseList(vaga?.beneficios);
+  const overviewParagraphs = String(vaga?.descricao || "")
+    .split(/\n{2,}/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean);
+  const skillsTags = Array.from(
+    new Set(
+      [
+        ...(Array.isArray(vaga?.palavrasChave) ? vaga.palavrasChave : []),
+        vaga?.categoria,
+        vaga?.nivelExperiencia,
+      ]
+        .map((item) => String(item || "").trim())
+        .filter(Boolean),
+    ),
+  ).slice(0, 8);
+
+  const skillChecklist = useMemo(() => {
+    const shorten = (value) => {
+      const label = String(value || "").trim();
+      if (label.length <= 34) return label;
+      return `${label.slice(0, 31).trim()}...`;
+    };
+
+    if (candidateJobInsights) {
+      const matched = (candidateJobInsights.matchedSkills || [])
+        .slice(0, 4)
+        .map((skill) => ({ label: shorten(skill), matched: true }));
+      const missing = (candidateJobInsights.missingSkills || [])
+        .slice(0, Math.max(0, 4 - matched.length))
+        .map((skill) => ({ label: shorten(skill), matched: false }));
+      const combined = [...matched, ...missing];
+      if (combined.length) return combined;
+    }
+
+    const publicSkills = Array.from(
+      new Set(
+        [
+          ...skillsTags,
+          ...requirementsList.slice(0, 4),
+          vaga?.categoria,
+          vaga?.nivelExperiencia,
+        ]
+          .map((item) => shorten(item))
+          .filter(Boolean),
+      ),
+    ).slice(0, 4);
+
+    const fallbackSkills = [
+      "Experiência relevante",
+      "Boa comunicação",
+      "Organização",
+      "Disponibilidade",
+    ];
+    const source = publicSkills.length ? publicSkills : fallbackSkills;
+
+    return source.map((skill, index) => ({
+      label: skill,
+      matched: index < Math.min(3, source.length),
+    }));
+  }, [candidateJobInsights, requirementsList, skillsTags, vaga?.categoria, vaga?.nivelExperiencia]);
+
+  const skillFitPercent = Math.min(
+    100,
+    Math.max(0, Number(candidateJobInsights?.matchPercent) || 80),
+  );
 
   if (!vaga) {
     return (
@@ -402,25 +487,6 @@ export default function VagaDetalhe({ vaga, relatedJobs = [] }) {
       vaga.ficheiroTdr,
   );
 
-  const requirementsList = parseList(requisitos);
-  const responsibilitiesList = parseList(responsabilidades);
-  const benefitsList = parseList(beneficios);
-  const overviewParagraphs = String(descricao || "")
-    .split(/\n{2,}/)
-    .map((paragraph) => paragraph.trim())
-    .filter(Boolean);
-  const skillsTags = Array.from(
-    new Set(
-      [
-        ...(Array.isArray(vaga.palavrasChave) ? vaga.palavrasChave : []),
-        vaga.categoria,
-        vaga.nivelExperiencia,
-      ]
-        .map((item) => String(item || "").trim())
-        .filter(Boolean),
-    ),
-  ).slice(0, 8);
-
   const fallbackRequirements = [
     "Experiência prática relevante para a função e ambiente de trabalho descritos.",
     "Capacidade de execução com atenção a prazos, qualidade e responsabilidade.",
@@ -451,7 +517,6 @@ export default function VagaDetalhe({ vaga, relatedJobs = [] }) {
         ? "Remoto"
         : "Presencial"
       : "Não informado";
-  const badgeStatus = destaque ? "urgent" : status;
   const isOpen = status === "active" || status === "open" || !status;
   const isApplying = applyStatus === "loading";
   const isApplied = applyStatus === "success";
@@ -470,31 +535,53 @@ export default function VagaDetalhe({ vaga, relatedJobs = [] }) {
     !assessmentComplete ||
     missingRequiredCoverLetter;
 
-  const details = [
-    { label: "Salário", value: salaryRange, Icon: FiDollarSign },
+  const applicationCount = Number(
+    vaga.applicationsCount ||
+      vaga.candidaturasCount ||
+      vaga.totalApplications ||
+      vaga.applicationCount ||
+      0,
+  );
+  const heroMetaItems = [
     {
-      label: "Tipo de contrato",
-      value: getContractTypeLabel(tipoContrato),
+      label: localizacao || "Local não informado",
+      Icon: FiMapPin,
+    },
+    {
+      label: getContractTypeLabel(tipoContrato),
       Icon: FiBriefcase,
     },
     {
-      label: "Localização",
-      value: localizacao || "Não informado",
-      Icon: FiMapPin,
+      label: salaryRange,
+      Icon: FiDollarSign,
     },
+    {
+      label: postedAtLabel,
+      Icon: FiClock,
+    },
+    applicationCount > 0
+      ? {
+          label: `${applicationCount} candidatura${applicationCount === 1 ? "" : "s"}`,
+          Icon: FiUsers,
+        }
+      : null,
+  ].filter(Boolean);
+
+  const secondaryDetails = [
+    { label: "Estado", value: statusLabel, Icon: FiShield },
     { label: "Regime", value: remoteLabel, Icon: FiGlobe },
     {
-      label: "Nível de experiência",
+      label: "Experiência",
       value: vaga.nivelExperiencia || vaga.experiencia || "Não informado",
       Icon: FiCheckCircle,
     },
+    { label: "Abertura", value: formatDate(dataAbertura), Icon: FiCalendar },
+    { label: "Encerramento", value: formatDate(dataFecho), Icon: FiClock },
     {
       label: "Escolaridade",
       value: vaga.escolaridade || "Não informado",
       Icon: FiFileText,
     },
-    { label: "Abertura", value: formatDate(dataAbertura), Icon: FiCalendar },
-    { label: "Encerramento", value: formatDate(dataFecho), Icon: FiClock },
   ];
 
   const companyInfoItems = [
@@ -796,138 +883,79 @@ export default function VagaDetalhe({ vaga, relatedJobs = [] }) {
               >
                 <FiShare2 size={18} />
               </button>
-              {userType !== "empresa" && (
-                <button
-                  type="button"
-                  className={`${styles.toolbarButton} ${isSaved ? styles.toolbarButtonSaved : ""}`}
-                  onClick={handleToggleSave}
-                  disabled={saving}
-                  title={isSaved ? "Remover dos salvos" : "Salvar vaga"}
-                >
-                  <FiBookmark size={18} />
-                </button>
-              )}
             </div>
           </div>
 
-          <section className={styles.hero}>
-            <div className={styles.heroMain}>
-              <div className={styles.signalRow}>
-                <Badge status={badgeStatus} />
-                {premiumConfig.premiumOnly && (
-                  <span
-                    className={`${styles.signalPill} ${styles.signalPillGold}`}
-                  >
-                    <FiShield size={13} />
-                    Vaga premium
-                  </span>
-                )}
-                {premiumConfig.isEarlyAccessActive && (
-                  <span
-                    className={`${styles.signalPill} ${styles.signalPillCyan}`}
-                  >
-                    <FiZap size={13} />
-                    Acesso antecipado até{" "}
-                    {formatDateTime(premiumConfig.earlyAccessUntil)}
-                  </span>
-                )}
-                {premiumConfig.requireCoverLetter && (
-                  <span
-                    className={`${styles.signalPill} ${styles.signalPillGreen}`}
-                  >
-                    <FiFileText size={13} />
-                    Carta obrigatória
-                  </span>
-                )}
-              </div>
-
-              <div className={styles.companyBand}>
-                <div className={styles.companyMark}>
+          <div className={styles.mainGrid}>
+            <div className={styles.contentColumn}>
+              <section className={styles.hero}>
+            <div className={styles.heroCopy}>
+              <div className={styles.heroKicker}>
+                <span className={styles.companyMark}>
                   {vaga.companyLogo || vaga.empresaLogo ? (
-                    <>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={vaga.companyLogo || vaga.empresaLogo}
-                        alt={companyLabel}
-                        className={styles.companyLogo}
-                        loading="eager"
-                        decoding="async"
-                        width="72"
-                        height="72"
-                      />
-                    </>
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={vaga.companyLogo || vaga.empresaLogo}
+                      alt={companyLabel}
+                      className={styles.companyMarkLogo}
+                      loading="lazy"
+                      decoding="async"
+                      width="44"
+                      height="44"
+                    />
                   ) : (
-                    <span className={styles.companyInitials}>
-                      {companyInitials}
-                    </span>
+                    companyInitials
                   )}
-                </div>
-
-                <div className={styles.companyInfo}>
-                  <div className={styles.companyTitleRow}>
-                    <span className={styles.companyName}>{companyLabel}</span>
-                    {vaga.companyVerified ? (
-                      <span className={styles.verifiedBadge}>
-                        <FiCheckCircle size={12} />
-                        Empresa verificada
-                      </span>
-                    ) : null}
-                  </div>
-
-                  <div className={styles.companyMetaRow}>
-                    <span className={styles.metaChip}>
-                      <HiOutlineBuildingOffice2 size={15} />
-                      {vaga.categoria || "Oportunidade profissional"}
-                    </span>
-                    <span className={styles.metaChip}>
-                      <FiMapPin size={15} />
-                      {localizacao || "Local não informado"}
-                    </span>
-                  </div>
-                </div>
+                </span>
+                {destaque && (
+                  <span className={styles.featuredPill}>
+                    <FiStar size={15} />
+                    Vaga em destaque
+                  </span>
+                )}
+                {!isOpen && (
+                  <span className={styles.statusPill}>{statusLabel}</span>
+                )}
+                {premiumConfig.premiumOnly && (
+                  <span className={styles.statusPill}>
+                    <FiShield size={14} />
+                    Premium
+                  </span>
+                )}
               </div>
 
               <h1 className={styles.title}>{titulo}</h1>
 
-              <p className={styles.subtitle}>
-                {overviewParagraphs[0] ||
-                  "Consulte os detalhes completos da vaga, requisitos, benefícios e recursos de candidatura abaixo."}
-              </p>
-
-              <div className={styles.summaryGrid}>
-                <div className={styles.summaryCard}>
-                  <span className={styles.summaryLabel}>Faixa salarial</span>
-                  <strong className={styles.summaryValue}>{salaryRange}</strong>
-                </div>
-                <div className={styles.summaryCard}>
-                  <span className={styles.summaryLabel}>Contrato</span>
-                  <strong className={styles.summaryValue}>
-                    {getContractTypeLabel(tipoContrato)}
-                  </strong>
-                </div>
-                <div className={styles.summaryCard}>
-                  <span className={styles.summaryLabel}>Publicado</span>
-                  <strong className={styles.summaryValue}>
-                    {postedAtLabel}
-                  </strong>
-                </div>
-                <div className={styles.summaryCard}>
-                  <span className={styles.summaryLabel}>Prazo</span>
-                  <strong className={styles.summaryValue}>
-                    {formatDate(dataFecho)}
-                  </strong>
-                </div>
+              <div className={styles.companyLine}>
+                <strong>{companyLabel}</strong>
+                {vaga.companyVerified ? (
+                  <span className={styles.verifiedDot}>
+                    <FiCheck size={11} strokeWidth={3} />
+                  </span>
+                ) : null}
               </div>
 
-              {skillsTags.length > 0 && (
-                <div className={styles.tagRow}>
-                  {skillsTags.map((tag) => (
-                    <span key={tag} className={styles.tag}>
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
+              <div className={styles.heroMetaList}>
+                {heroMetaItems.map(({ label, Icon }) => (
+                  <span key={label} className={styles.heroMetaItem}>
+                    <Icon size={18} />
+                    {label}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {(skillsTags.length > 0 || premiumConfig.hasPremiumFlow) && (
+              <div className={styles.heroFooter}>
+                {skillsTags.length > 0 && (
+                  <div className={styles.tagRow}>
+                    {skillsTags.map((tag) => (
+                      <span key={tag} className={styles.tag}>
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
 
               {premiumConfig.hasPremiumFlow && (
                 <div className={styles.premiumCallout}>
@@ -961,17 +989,13 @@ export default function VagaDetalhe({ vaga, relatedJobs = [] }) {
                     )}
                 </div>
               )}
-            </div>
-          </section>
+              </div>
+            )}
+              </section>
 
-          <div className={styles.mainGrid}>
-            <div className={styles.contentColumn}>
-              <section className={styles.sectionCard}>
-                <div className={styles.sectionHeader}>
-                  <h2 className={styles.sectionTitle}>
-                    Visão geral da oportunidade
-                  </h2>
-                </div>
+              <section className={styles.jobDescriptionCard}>
+                <h2 className={styles.sectionTitle}>Sobre a vaga</h2>
+
                 <div className={styles.richText}>
                   {(overviewParagraphs.length
                     ? overviewParagraphs
@@ -980,36 +1004,10 @@ export default function VagaDetalhe({ vaga, relatedJobs = [] }) {
                     <p key={paragraph}>{paragraph}</p>
                   ))}
                 </div>
-              </section>
 
-              <section className={styles.sectionCard}>
-                <div className={styles.sectionHeader}>
-                  <h2 className={styles.sectionTitle}>Informações da vaga</h2>
-                </div>
-                <div className={styles.detailsGrid}>
-                  {details.map((item) => (
-                    <div key={item.label} className={styles.detailCard}>
-                      <span className={styles.detailIcon}>
-                        <item.Icon size={16} />
-                      </span>
-                      <div className={styles.detailBody}>
-                        <span className={styles.detailLabel}>{item.label}</span>
-                        <strong className={styles.detailValue}>
-                          {item.value}
-                        </strong>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-
-              {responsibilitiesList.length > 0 && (
-                <section className={styles.sectionCard}>
-                  <div className={styles.sectionHeader}>
-                    <h2 className={styles.sectionTitle}>
-                      Responsabilidades principais
-                    </h2>
-                  </div>
+                {responsibilitiesList.length > 0 && (
+                  <div className={styles.descriptionBlock}>
+                    <h3 className={styles.blockTitle}>O que vais fazer</h3>
                   <div className={styles.bulletList}>
                     {responsibilitiesList.map((item) => (
                       <div key={item} className={styles.bulletItem}>
@@ -1020,13 +1018,11 @@ export default function VagaDetalhe({ vaga, relatedJobs = [] }) {
                       </div>
                     ))}
                   </div>
-                </section>
-              )}
+                  </div>
+                )}
 
-              <section className={styles.sectionCard}>
-                <div className={styles.sectionHeader}>
-                  <h2 className={styles.sectionTitle}>O que procuramos</h2>
-                </div>
+                <div className={styles.descriptionBlock}>
+                  <h3 className={styles.blockTitle}>Requisitos</h3>
                 <div className={styles.bulletList}>
                   {(requirementsList.length
                     ? requirementsList
@@ -1040,22 +1036,34 @@ export default function VagaDetalhe({ vaga, relatedJobs = [] }) {
                     </div>
                   ))}
                 </div>
+                </div>
+
+                <div className={styles.descriptionBlock}>
+                  <h3 className={styles.blockTitle}>Benefícios</h3>
+                  <div className={styles.benefitsPills}>
+                  {benefitsToShow.map((benefit) => (
+                    <span key={benefit} className={styles.benefitPill}>
+                      {benefit}
+                    </span>
+                  ))}
+                  </div>
+                </div>
               </section>
 
               <section className={styles.sectionCard}>
-                <div className={styles.sectionHeader}>
-                  <h2 className={styles.sectionTitle}>Benefícios e contexto</h2>
-                </div>
-                <div className={styles.benefitsGrid}>
-                  {benefitsToShow.map((benefit) => (
-                    <div key={benefit} className={styles.benefitCard}>
-                      <span className={styles.benefitIcon}>
-                        <FiZap size={16} />
+                <h2 className={styles.sectionTitle}>Detalhes</h2>
+                <div className={styles.detailsGrid}>
+                  {secondaryDetails.map((item) => (
+                    <div key={item.label} className={styles.detailCard}>
+                      <span className={styles.detailIcon}>
+                        <item.Icon size={16} />
                       </span>
-                      <strong>{benefit}</strong>
-                      <p>
-                        Benefício ou vantagem associada a esta oportunidade.
-                      </p>
+                      <div className={styles.detailBody}>
+                        <span className={styles.detailLabel}>{item.label}</span>
+                        <strong className={styles.detailValue}>
+                          {item.value}
+                        </strong>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1154,71 +1162,35 @@ export default function VagaDetalhe({ vaga, relatedJobs = [] }) {
 
             <aside className={styles.sidebarColumn}>
               <div className={styles.sidebarStack}>
-                <section
-                  className={`${styles.sidebarCard} ${styles.applyCard}`}
-                >
-                  <span className={styles.sidebarEyebrow}>Candidatura</span>
-                  <div className={styles.applySalary}>{salaryRange}</div>
-                  <p className={styles.applySalaryMeta}>
-                    Resumo salarial apresentado pela vaga
-                  </p>
-
-                  <div className={styles.sideInfoList}>
-                    <div className={styles.sideInfoRow}>
-                      <span>
-                        <FiMapPin size={14} /> Localização
-                      </span>
-                      <strong>{localizacao || "—"}</strong>
-                    </div>
-                    <div className={styles.sideInfoRow}>
-                      <span>
-                        <FiBriefcase size={14} /> Contrato
-                      </span>
-                      <strong>{getContractTypeLabel(tipoContrato)}</strong>
-                    </div>
-                    <div className={styles.sideInfoRow}>
-                      <span>
-                        <FiClock size={14} /> Regime
-                      </span>
-                      <strong>{remoteLabel}</strong>
-                    </div>
-                    <div className={styles.sideInfoRow}>
-                      <span>
-                        <FiCalendar size={14} /> Encerra
-                      </span>
-                      <strong>{formatDate(dataFecho)}</strong>
-                    </div>
-                  </div>
-
+                <section className={styles.sidebarCard}>
                   <button
+                    type="button"
                     className={`${styles.applyButton} ${applyDisabled ? styles.applyButtonDisabled : styles.applyButtonEnabled}`}
                     onClick={handleApply}
                     disabled={applyDisabled}
                   >
-                    {isApplying ? (
-                      <>
-                        <span className={styles.buttonSpinner} />
-                        Enviando...
-                      </>
-                    ) : isApplied ? (
-                      <>
-                        Candidatado
-                        <FiChevronRight size={18} />
-                      </>
-                    ) : !isOpen ? (
-                      "Vaga encerrada"
-                    ) : premiumApplyRestriction ? (
-                      <>
-                        Desbloquear acesso
-                        <FiChevronRight size={18} />
-                      </>
-                    ) : (
-                      <>
-                        Candidatar-se
-                        <FiChevronRight size={18} />
-                      </>
-                    )}
+                    {isApplying
+                      ? "Enviando..."
+                      : isApplied
+                        ? "Candidatura enviada"
+                        : !isOpen
+                          ? "Vaga encerrada"
+                          : premiumApplyRestriction
+                            ? "Desbloquear acesso"
+                            : "Candidatar agora"}
                   </button>
+
+                  {userType !== "empresa" && (
+                    <button
+                      type="button"
+                      className={`${styles.saveButton} ${isSaved ? styles.saveButtonSaved : ""}`}
+                      onClick={handleToggleSave}
+                      disabled={saving}
+                    >
+                      <FiBookmark size={20} />
+                      {isSaved ? "Guardado" : "Guardar"}
+                    </button>
+                  )}
 
                   {isBlocked && (
                     <p className={styles.warningText}>
@@ -1239,87 +1211,44 @@ export default function VagaDetalhe({ vaga, relatedJobs = [] }) {
                   )}
                 </section>
 
-                {userType !== "empresa" && candidateJobInsights && (
-                  <section className={styles.sidebarCard}>
-                    <span className={styles.sidebarEyebrow}>
-                      Aderência do perfil
-                    </span>
-                    <div className={styles.matchHeader}>
-                      <div>
-                        <h3 className={styles.sidebarTitle}>
-                          Análise de compatibilidade
-                        </h3>
-                        <p className={styles.sidebarMuted}>
-                          {candidateJobInsights.matchLabel}
-                        </p>
+                <section className={styles.sidebarCard}>
+                  <h3 className={styles.sidebarTitle}>
+                    {candidateJobInsights
+                      ? `Tens ${skillFitPercent}% das skills`
+                      : "Skills principais"}
+                  </h3>
+                  <div className={styles.skillProgressTrack}>
+                    <span
+                      className={styles.skillProgressFill}
+                      style={{ width: `${skillFitPercent}%` }}
+                    />
+                  </div>
+                  <div className={styles.skillList}>
+                    {skillChecklist.map((skill) => (
+                      <div key={skill.label} className={styles.skillRow}>
+                        <span>{skill.label}</span>
+                        <strong
+                          className={
+                            skill.matched
+                              ? styles.skillCheck
+                              : styles.skillMiss
+                          }
+                        >
+                          {skill.matched ? (
+                            <FiCheck size={18} />
+                          ) : (
+                            <FiX size={18} />
+                          )}
+                        </strong>
                       </div>
-                      <div className={styles.matchScore}>
-                        {candidateJobInsights.matchPercent}%
-                      </div>
-                    </div>
-
-                    {candidateJobInsights.reasons?.length > 0 && (
-                      <p className={styles.sidebarText}>
-                        {candidateJobInsights.reasons.slice(0, 3).join(" • ")}
-                      </p>
-                    )}
-
-                    {candidateJobInsights.matchedSkills?.length > 0 && (
-                      <div className={styles.sidebarBlock}>
-                        <span className={styles.sidebarSubheading}>
-                          O que já combina
-                        </span>
-                        <div className={styles.tagRow}>
-                          {candidateJobInsights.matchedSkills
-                            .slice(0, 4)
-                            .map((skill) => (
-                              <span
-                                key={skill}
-                                className={`${styles.tag} ${styles.tagPositive}`}
-                              >
-                                {skill}
-                              </span>
-                            ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {candidateJobInsights.missingSkills?.length > 0 && (
-                      <div className={styles.sidebarBlock}>
-                        <span className={styles.sidebarSubheading}>
-                          Pontos a reforçar
-                        </span>
-                        <div className={styles.tagRow}>
-                          {candidateJobInsights.missingSkills
-                            .slice(0, 4)
-                            .map((skill) => (
-                              <span
-                                key={skill}
-                                className={`${styles.tag} ${styles.tagWarning}`}
-                              >
-                                {skill}
-                              </span>
-                            ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {candidateJobInsights.cvOptimizationTips?.length > 0 && (
-                      <div className={styles.sidebarBlock}>
-                        <span className={styles.sidebarSubheading}>
-                          Dicas para esta candidatura
-                        </span>
-                        <ul className={styles.miniList}>
-                          {candidateJobInsights.cvOptimizationTips
-                            .slice(0, 3)
-                            .map((tip) => (
-                              <li key={tip}>{tip}</li>
-                            ))}
-                        </ul>
-                      </div>
-                    )}
-                  </section>
-                )}
+                    ))}
+                  </div>
+                  {candidateJobInsights?.matchLabel && (
+                    <p className={styles.sidebarMuted}>
+                      {candidateJobInsights.matchLabel}
+                    </p>
+                  )}
+                </section>
 
                 {(premiumConfig.requireCoverLetter ||
                   candidatePremiumAccess.canUseCoverLetter ||
@@ -1501,10 +1430,7 @@ export default function VagaDetalhe({ vaga, relatedJobs = [] }) {
 
                 {relatedJobs.length > 0 && (
                   <section className={styles.sidebarCard}>
-                    <span className={styles.sidebarEyebrow}>
-                      Mais oportunidades
-                    </span>
-                    <h3 className={styles.sidebarTitle}>Vagas relacionadas</h3>
+                    <h3 className={styles.sidebarTitle}>Vagas semelhantes</h3>
                     <div className={styles.relatedList}>
                       {relatedJobs.map((job) => (
                         <Link
@@ -1512,27 +1438,22 @@ export default function VagaDetalhe({ vaga, relatedJobs = [] }) {
                           href={`/vaga/${job.id}`}
                           className={styles.relatedItem}
                         >
-                          <div className={styles.relatedTop}>
-                            <strong className={styles.relatedTitle}>
-                              {job.titulo}
-                            </strong>
-                            {job.destaque ? (
-                              <span className={styles.relatedBadge}>
-                                Destaque
-                              </span>
-                            ) : null}
-                          </div>
-                          <p className={styles.relatedMeta}>
-                            {job.empresaNome || job.companyName || "Empresa"} •{" "}
-                            {job.localizacao || "Local não informado"}
-                          </p>
-                          <p className={styles.relatedMeta}>
-                            {job.salarioResumo || "A combinar"} •{" "}
-                            {formatDate(job.dataFecho)}
-                          </p>
+                          <span className={styles.relatedTitle}>
+                            {job.titulo}
+                          </span>
+                          <span className={styles.relatedCompany}>
+                            {" · "}
+                            {job.empresaNome ||
+                              job.companyName ||
+                              job.localizacao ||
+                              "Empresa"}
+                          </span>
                         </Link>
                       ))}
                     </div>
+                    <Link href="/vagas" className={styles.relatedAll}>
+                      Ver todas as vagas
+                    </Link>
                   </section>
                 )}
               </div>

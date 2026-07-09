@@ -8,6 +8,8 @@ import { EARLY_ACCESS_HOUR_OPTIONS } from "../../../../lib/candidateApplicationP
 import { auth, storage } from "../../../../lib/firebase";
 import { getFirebaseStorageErrorMessage } from "../../../../lib/firebaseStorageError";
 import { normalizeSkillsAssessmentInput } from "../../../../lib/skillsAssessment";
+import { FiArrowLeft } from "react-icons/fi";
+import DashboardShell from "../../../../components/dashboard/DashboardShell";
 
 const EMPLOYMENT_TYPES = [
   "Tempo Integral",
@@ -589,33 +591,19 @@ export default function CriarVaga() {
         `}</style>
       </Head>
 
-      <div style={{ maxWidth: "900px", margin: "0 auto", padding: "2rem" }}>
-        {/* Header */}
-        <div style={{ marginBottom: "2rem" }}>
-          <Link
-            href="/dashboard/empresa"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              color: "#2057d7",
-              textDecoration: "none",
-              fontWeight: "600",
-              marginBottom: "1rem",
-            }}
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-            Voltar ao Dashboard
-          </Link>
+      <DashboardShell
+        role="empresa"
+        active="jobs"
+        title={isEditMode ? "Editar vaga" : "Publicar vaga"}
+        subtitle="Gestão de publicações"
+        profile={{ name: "Empresa", role: "Empresa" }}
+      >
+        <div className="dash-page">
+          {/* Header */}
+          <div style={{ marginBottom: "2rem" }}>
+            <Link href="/dashboard/empresa?tab=jobs" className="dash-back">
+              <FiArrowLeft /> Voltar às vagas
+            </Link>
           <h1
             style={{
               margin: "0 0 0.5rem 0",
@@ -1750,7 +1738,8 @@ export default function CriarVaga() {
             </div>
           </div>
         </form>
-      </div>
+        </div>
+      </DashboardShell>
     </>
   );
 }

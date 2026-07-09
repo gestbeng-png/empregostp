@@ -1,229 +1,212 @@
 import Head from "next/head";
 import Link from "next/link";
+import {
+  FiBarChart2,
+  FiBriefcase,
+  FiFilter,
+  FiHome,
+  FiShield,
+  FiStar,
+  FiTarget,
+  FiUsers,
+  FiZap,
+} from "react-icons/fi";
 import PublicPageShell from "../components/PublicPageShell";
+import { DEFAULT_EMPRESA_PLANS } from "../lib/defaultPlans";
 import styles from "../styles/EmpresasPage.module.css";
 
-const IMPLEMENTED_SERVICES = [
+const RECRUITMENT_TOOLS = [
   {
-    id: "publicacao-vagas",
-    category: "Base",
-    title: "Publicação de vagas",
-    description: "Crie e publique vagas diretamente no painel da empresa.",
-    highlights: ["Publicação rápida", "Gestão centralizada"],
-    plans: ["Básico", "Profissional", "PRO"],
-    href: "/dashboard/empresa/vaga/criar-vaga",
-    cta: "Criar vaga",
-    featured: true,
-  },
-  {
-    id: "gestao-candidaturas",
-    category: "Base",
-    title: "Gestão de candidaturas",
+    title: "Perfil Institucional",
     description:
-      "Acompanhe candidaturas, estados e decisões dentro do dashboard.",
-    highlights: ["Pipeline ativo", "Leitura rápida"],
-    plans: ["Básico", "Profissional", "PRO"],
-    href: "/dashboard/empresa/vagas",
-    cta: "Gerir candidaturas",
-    featured: true,
+      "Cria um perfil completo da tua empresa com verificação oficial.",
+    Icon: FiHome,
   },
   {
-    id: "visualizacao-perfis",
-    category: "Triagem",
-    title: "Visualização de perfis e CV",
+    title: "Publicação de Vagas",
     description:
-      "Veja perfis públicos, informações do candidato e currículos enviados.",
-    highlights: ["Perfis detalhados", "CV disponível"],
-    plans: ["Básico", "Profissional", "PRO"],
-    href: "/dashboard/empresa",
-    cta: "Ver perfis",
+      "Publica vagas em minutos com formulário intuitivo e templates profissionais.",
+    Icon: FiZap,
   },
   {
-    id: "agendamento-entrevistas",
-    category: "Triagem",
-    title: "Agendamento de entrevistas",
+    title: "Banco de Talentos",
     description:
-      "Marque entrevistas com candidatos dentro do fluxo de candidatura.",
-    highlights: ["Agenda integrada", "Fluxo mais rápido"],
-    plans: ["Profissional", "PRO"],
-    href: "/dashboard/empresa/vagas",
-    cta: "Abrir recrutamento",
+      "Acede a uma base de candidatos qualificados e filtra por competências.",
+    Icon: FiUsers,
   },
   {
-    id: "exportacao-candidatos",
-    category: "Automação",
-    title: "Exportação de candidatos",
-    description: "Exporte candidatos e dados de recrutamento em PDF ou Excel.",
-    highlights: ["PDF e Excel", "Partilha rápida"],
-    plans: ["Profissional", "PRO"],
-    href: "/dashboard/empresa/vagas",
-    cta: "Exportar dados",
-  },
-  {
-    id: "empresa-verificada",
-    category: "Confiança",
-    title: "Empresa verificada",
+    title: "Triagem Inteligente",
     description:
-      "A empresa pode solicitar verificação e ganhar mais confiança na plataforma.",
-    highlights: ["Mais confiança", "Selo visível"],
-    plans: ["Profissional", "PRO"],
-    href: "/dashboard/empresa/profile",
-    cta: "Ver perfil",
-    verifiedRelated: true,
-    featured: true,
+      "Filtra candidatos automaticamente com base nos requisitos da vaga.",
+    Icon: FiFilter,
   },
   {
-    id: "perfil-empresa",
-    category: "Marca",
-    title: "Perfil institucional",
+    title: "Match Automático",
     description:
-      "Personalize o perfil da empresa com descrição, contactos e identidade.",
-    highlights: ["Marca da empresa", "Apresentação clara"],
-    plans: ["Básico", "Profissional", "PRO"],
-    href: "/dashboard/empresa/profile",
-    cta: "Editar perfil",
+      "A plataforma sugere os candidatos mais compatíveis com cada vaga.",
+    Icon: FiTarget,
   },
   {
-    id: "banco-talentos",
-    category: "Talento",
-    title: "Candidatos verificados",
+    title: "Relatórios",
     description:
-      "Consulte candidatos validados e perfis com melhor leitura para recrutamento.",
-    highlights: ["Perfis validados", "Acesso rápido"],
-    plans: ["Profissional", "PRO"],
-    href: "/dashboard/empresa",
-    cta: "Abrir banco",
-    verifiedRelated: true,
+      "Analisa o desempenho das vagas e o processo de recrutamento com dados reais.",
+    Icon: FiBarChart2,
+  },
+  {
+    title: "Destaque de Vagas",
+    description:
+      "Destaca as tuas vagas para aparecerem no topo das pesquisas.",
+    Icon: FiStar,
+  },
+  {
+    title: "Empresa Verificada",
+    description:
+      "Obtém o badge de empresa verificada e aumenta a confiança dos candidatos.",
+    Icon: FiShield,
+  },
+  {
+    title: "Serviço RH",
+    description:
+      "Recrutamento assistido por especialistas: triagem, shortlist, entrevistas, avaliação de competências e relatórios profissionais.",
+    Icon: FiBriefcase,
   },
 ];
 
-function SparkIcon({ className }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M11 2l1.86 5.14L18 9l-5.14 1.86L11 16l-1.86-5.14L4 9l5.14-1.86L11 2z" />
-      <path d="M18 14l.93 2.57L21.5 17.5l-2.57.93L18 21l-.93-2.57L14.5 17.5l2.57-.93L18 14z" />
-    </svg>
-  );
-}
+const COMPANY_STEPS = [
+  {
+    number: "01",
+    title: "Cria o Perfil da Empresa",
+    description:
+      "Regista a tua empresa e obtém verificação oficial para aumentar a credibilidade.",
+  },
+  {
+    number: "02",
+    title: "Publica a Vaga",
+    description:
+      "Define os requisitos, responsabilidades e benefícios da posição em aberto.",
+  },
+  {
+    number: "03",
+    title: "Recebe Candidaturas",
+    description:
+      "A plataforma filtra e sugere os candidatos mais compatíveis automaticamente.",
+  },
+  {
+    number: "04",
+    title: "Avalia e Contrata",
+    description:
+      "Cria shortlists, agenda entrevistas e toma decisões informadas com dados reais.",
+  },
+];
 
-function VerifiedIcon({ className }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path
-        fillRule="evenodd"
-        d="M8.603 3.799A4.49 4.49 0 0112 2.25c1.357 0 2.573.6 3.397 1.549a4.49 4.49 0 013.498 1.307 4.491 4.491 0 011.307 3.497A4.49 4.49 0 0121.75 12a4.49 4.49 0 01-1.549 3.397 4.491 4.491 0 01-1.307 3.497 4.491 4.491 0 01-3.497 1.307A4.49 4.49 0 0112 21.75a4.49 4.49 0 01-3.397-1.549 4.49 4.49 0 01-3.498-1.306 4.491 4.491 0 01-1.307-3.498A4.49 4.49 0 012.25 12c0-1.357.6-2.573 1.549-3.397a4.49 4.49 0 011.307-3.497 4.49 4.49 0 013.497-1.307zm7.007 6.387a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z"
-        clipRule="evenodd"
-      />
-    </svg>
-  );
-}
-
-function ArrowRightIcon({ className }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <path d="M5 12h14M12 5l7 7-7 7" />
-    </svg>
-  );
-}
-
-function normalizePlanTag(plan) {
-  if (plan === "PRO") return styles.planPro;
-  if (plan === "Profissional") return styles.planProfessional;
-  return styles.planBasic;
-}
-
-function CompanyServiceCard({ service }) {
-  return (
-    <article className={styles.serviceCard}>
-      <div className={styles.serviceHeader}>
-        <span className={styles.serviceCategory}>{service.category}</span>
-        <div className={styles.serviceBadges}>
-          {service.featured ? (
-            <span className={styles.featuredBadge}>
-              <SparkIcon className={styles.badgeIcon} />
-              Destaque
-            </span>
-          ) : null}
-          {service.verifiedRelated ? (
-            <span className={styles.verifiedBadge}>
-              <VerifiedIcon className={styles.badgeIcon} />
-              Verificado
-            </span>
-          ) : null}
-        </div>
-      </div>
-
-      <h2 className={styles.serviceTitle}>{service.title}</h2>
-      <p className={styles.serviceDescription}>{service.description}</p>
-
-      <ul className={styles.serviceHighlights}>
-        {service.highlights.slice(0, 2).map((highlight) => (
-          <li key={`${service.id}-${highlight}`}>{highlight}</li>
-        ))}
-      </ul>
-
-      <div className={styles.planRow}>
-        {service.plans.map((plan) => (
-          <span
-            key={`${service.id}-${plan}`}
-            className={`${styles.planTag} ${normalizePlanTag(plan)}`}
-          >
-            {plan}
-          </span>
-        ))}
-      </div>
-
-      <Link href={service.href} className={styles.serviceLink}>
-        {service.cta}
-        <ArrowRightIcon className={styles.linkIcon} />
-      </Link>
-    </article>
-  );
-}
+const COMPANY_PLANS = DEFAULT_EMPRESA_PLANS.filter((plan) =>
+  ["basic_empresa", "professional_empresa", "unlimited_empresa"].includes(plan.id),
+);
 
 export default function EmpresasPage() {
   return (
     <>
       <Head>
-        <title>Serviços para Empresas - EmpregoSTP</title>
+        <title>Ferramentas de Recrutamento Profissional | EmpregoSTP</title>
         <meta
           name="description"
-          content="Veja os principais serviços já disponíveis para empresas no EmpregoSTP."
+          content="Ferramentas para empresas encontrarem, avaliarem e contratarem os melhores talentos em São Tomé e Príncipe."
         />
-        <meta
-          property="og:title"
-          content="Serviços para Empresas - EmpregoSTP"
-        />
-        <meta property="og:type" content="website" />
       </Head>
 
       <PublicPageShell>
-        <div className={styles.page}>
-          <section className={styles.servicesSection}>
+        <main className={styles.page}>
+          <section className={styles.toolsSection}>
             <div className={styles.container}>
-              <div className={styles.sectionHeading}>
-                <div>
-                  <span className={styles.sectionEyebrow}>Já implementado</span>
-                  <h2 className={styles.sectionTitle}>
-                    Recursos disponíveis agora
-                  </h2>
-                </div>
+              <div className={styles.sectionIntro}>
+                <h1 className={styles.title}>
+                  Ferramentas de recrutamento profissional
+                </h1>
+                <p className={styles.subtitle}>
+                  Tudo o que precisas para encontrar, avaliar e contratar os
+                  melhores talentos.
+                </p>
               </div>
 
-              <div className={styles.servicesGrid}>
-                {IMPLEMENTED_SERVICES.map((service) => (
-                  <CompanyServiceCard key={service.id} service={service} />
+              <div className={styles.toolsGrid}>
+                {RECRUITMENT_TOOLS.map(({ title, description, Icon }) => (
+                  <article key={title} className={styles.toolCard}>
+                    <span className={styles.toolIcon} aria-hidden="true">
+                      <Icon />
+                    </span>
+                    <h2 className={styles.toolTitle}>{title}</h2>
+                    <p className={styles.toolDescription}>{description}</p>
+                  </article>
                 ))}
               </div>
             </div>
           </section>
-        </div>
+
+          <section className={styles.stepsSection}>
+            <div className={styles.container}>
+              <h2 className={styles.stepsTitle}>Como funciona para empresas</h2>
+
+              <div className={styles.stepsGrid}>
+                {COMPANY_STEPS.map((step) => (
+                  <article key={step.number} className={styles.stepCard}>
+                    <span className={styles.stepNumber}>{step.number}</span>
+                    <div>
+                      <h3 className={styles.stepTitle}>{step.title}</h3>
+                      <p className={styles.stepDescription}>{step.description}</p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section className={styles.plansSection}>
+            <div className={styles.container}>
+              <div className={styles.plansIntro}>
+                <h2 className={styles.plansTitle}>Planos para empresas</h2>
+                <p className={styles.plansSubtitle}>
+                  Escolhe o plano certo para publicar vagas, destacar
+                  oportunidades e recrutar com mais eficiência.
+                </p>
+              </div>
+
+              <div className={styles.plansGrid}>
+                {COMPANY_PLANS.map((plan) => {
+                  const isPopular = plan.id === "professional_empresa";
+                  return (
+                    <article
+                      key={plan.id}
+                      className={`${styles.planCard} ${
+                        isPopular ? styles.planCardPopular : ""
+                      }`}
+                    >
+                      {isPopular ? (
+                        <span className={styles.planBadge}>Mais escolhido</span>
+                      ) : null}
+                      <h3 className={styles.planName}>{plan.name}</h3>
+                      <p className={styles.planPrice}>{plan.priceLabel}</p>
+                      <ul className={styles.planFeatures}>
+                        {plan.features.slice(0, 6).map((feature) => (
+                          <li key={feature}>{feature}</li>
+                        ))}
+                      </ul>
+                      <Link
+                        href={
+                          plan.price === 0
+                            ? "/register?type=empresa"
+                            : "/premium/empresa"
+                        }
+                        className={styles.planAction}
+                      >
+                        {plan.price === 0 ? "Começar grátis" : "Ver plano"}
+                      </Link>
+                    </article>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+        </main>
       </PublicPageShell>
     </>
   );

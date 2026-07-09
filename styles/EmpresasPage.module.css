@@ -242,9 +242,215 @@
   background: rgba(248, 251, 255, 0.94);
 }
 
+.toolsSection,
+.stepsSection,
+.plansSection,
 .servicesSection {
   position: relative;
   padding: 2.8rem 0 4.5rem;
+}
+
+.sectionIntro {
+  max-width: 780px;
+  margin-bottom: 2rem;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(2rem, 4.2vw, 2.8rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  color: var(--app-text-primary);
+}
+
+.subtitle {
+  margin: 0.9rem 0 0;
+  color: var(--app-text-secondary);
+  font-size: 1.03rem;
+  line-height: 1.8;
+}
+
+.toolsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.toolCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 1.3rem;
+  border-radius: 24px;
+  border: 1px solid rgba(21, 37, 79, 0.08);
+  background: linear-gradient(180deg, #ffffff, #f8fbff);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+}
+
+.toolIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #2057d7, #5fb8f5);
+  color: #ffffff;
+}
+
+.toolIcon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.toolTitle {
+  margin: 0;
+  font-size: 1.06rem;
+  font-weight: 800;
+  color: var(--app-text-primary);
+}
+
+.toolDescription {
+  margin: 0;
+  color: var(--app-text-secondary);
+  font-size: 0.93rem;
+  line-height: 1.7;
+}
+
+.stepsTitle,
+.plansTitle {
+  margin: 0 0 1rem;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: var(--app-text-primary);
+}
+
+.stepsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.stepCard {
+  display: flex;
+  gap: 0.95rem;
+  align-items: flex-start;
+  padding: 1.2rem;
+  border-radius: 24px;
+  border: 1px solid rgba(21, 37, 79, 0.08);
+  background: linear-gradient(180deg, #ffffff, #f8fbff);
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.06);
+}
+
+.stepNumber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: rgba(95, 184, 245, 0.14);
+  color: #2057d7;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.stepTitle {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--app-text-primary);
+}
+
+.stepDescription {
+  margin: 0;
+  color: var(--app-text-secondary);
+  font-size: 0.93rem;
+  line-height: 1.7;
+}
+
+.plansIntro {
+  margin-bottom: 1.2rem;
+  max-width: 760px;
+}
+
+.plansSubtitle {
+  margin: 0;
+  color: var(--app-text-secondary);
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.plansGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.planCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+  padding: 1.3rem;
+  border-radius: 24px;
+  border: 1px solid rgba(21, 37, 79, 0.08);
+  background: linear-gradient(180deg, #ffffff, #f8fbff);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+}
+
+.planCardPopular {
+  border-color: rgba(95, 184, 245, 0.28);
+  box-shadow: 0 24px 48px rgba(32, 87, 215, 0.12);
+}
+
+.planBadge {
+  width: fit-content;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(217, 255, 47, 0.24);
+  color: #1e2b4d;
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.planName {
+  margin: 0;
+  font-size: 1.12rem;
+  font-weight: 900;
+  color: var(--app-text-primary);
+}
+
+.planPrice {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #2057d7;
+}
+
+.planFeatures {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0 0 0 1rem;
+  color: var(--app-text-secondary);
+  line-height: 1.6;
+}
+
+.planAction {
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.7rem 1rem;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #2057d7, #5fb8f5);
+  color: #ffffff;
+  font-weight: 800;
+  text-decoration: none;
 }
 
 .servicesSection::before {
@@ -600,6 +806,10 @@
     max-width: 100%;
   }
 
+  .stepsGrid {
+    grid-template-columns: 1fr;
+  }
+
   .statsGrid {
     grid-template-columns: 1fr;
     max-width: 100%;
@@ -633,6 +843,8 @@
     width: 100%;
   }
 
+  .toolsGrid,
+  .plansGrid,
   .servicesGrid {
     grid-template-columns: 1fr;
   }

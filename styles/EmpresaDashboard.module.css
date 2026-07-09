@@ -1,12 +1,18 @@
 /* Professional Dashboard Theme */
 .pageLayout {
+  --dashboard-surface: rgba(255, 255, 255, 0.96);
+  --dashboard-surface-soft: rgba(248, 251, 255, 0.95);
+  --dashboard-border: rgba(21, 37, 79, 0.08);
+  --dashboard-shadow: 0 22px 56px rgba(15, 23, 42, 0.08);
   display: flex;
   min-height: 100vh;
+  position: relative;
+  isolation: isolate;
   background:
-    radial-gradient(circle at 0% 0%, rgba(95, 184, 245, 0.14), transparent 24%),
+    radial-gradient(circle at 0% 0%, rgba(95, 184, 245, 0.16), transparent 24%),
     radial-gradient(
       circle at 100% 18%,
-      rgba(32, 87, 215, 0.08),
+      rgba(32, 87, 215, 0.1),
       transparent 22%
     ),
     linear-gradient(180deg, #ffffff 0%, #f8fbff 42%, #eef7ff 100%);
@@ -19,7 +25,7 @@
 .sidebar {
   width: 292px;
   background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-  border-right: 1px solid rgba(21, 37, 79, 0.08);
+  border-right: 1px solid var(--dashboard-border);
   display: flex;
   flex-direction: column;
   padding: 0;
@@ -2891,4 +2897,498 @@
 
 .modalFieldFull {
   grid-column: 1 / -1;
+}
+
+
+/* ============================================================
+   DARK MODE (append-only, generated)
+   Scoped to .dashShell[data-theme="dark"]; light mode untouched.
+   ============================================================ */
+:global(.dashShell[data-theme="dark"]) .pageLayout {
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .sidebar {
+  background: var(--surface-2);
+}
+
+:global(.dashShell[data-theme="dark"]) .sidebarLogo {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .logoText {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .sidebarProfile {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .profileName {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .navButton {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .navButton:hover {
+  background: var(--surface-2);
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .navActive {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .sidebarFooter {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .sidebarPlanCard {
+  background: var(--surface-2);
+}
+
+:global(.dashShell[data-theme="dark"]) .sidebarPlanCardIcon {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .sidebarPlanCardTitle {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .mainContent {
+  background: var(--surface-2);
+}
+
+:global(.dashShell[data-theme="dark"]) .topBar {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .pageTitle {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .searchInput {
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .searchInput:focus {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .iconButton {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .iconButton:hover {
+  background: var(--surface);
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .notificationsPopover {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .notificationsHeader {
+  border-color: var(--border);
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .notificationItem {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .notificationItem:hover {
+  background: var(--surface-2);
+}
+
+:global(.dashShell[data-theme="dark"]) .notificationIcon {
+  border-color: var(--border);
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .notificationTitle {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .sectionBlock {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .statCard {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .statValue {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .chartCard,
+:global(.dashShell[data-theme="dark"]) .tipsCard {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .chartTitle span,
+:global(.dashShell[data-theme="dark"]) .tipsHeader span {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .tipItem {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .tipItem:hover {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .tipItem h4 {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .messagesList {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .messageItem {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .messageItem:hover {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .messageBadge {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .messageBody strong {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .messageDetail {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .messageDetailHeader {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .messageDetailHeader h3 {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .messageBubble {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .messageBubble span,
+:global(.dashShell[data-theme="dark"]) .messageBubbleOwn span {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .messageFooter {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .messageTextInput {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .messageSendBtn {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .sectionHeading {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .sectionHeading h2 {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .jobCard {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .jobCard:hover {
+  background: var(--surface-2);
+}
+
+:global(.dashShell[data-theme="dark"]) .jobTitle {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .jobStats {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .jobStatValue {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .candidatesOverview {
+  background: var(--surface-2);
+}
+
+:global(.dashShell[data-theme="dark"]) .candidatesOverviewTitle {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .candidatesSummaryCard {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .candidatesSummaryCard strong {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .talentCard {
+  background: var(--surface-2);
+}
+
+:global(.dashShell[data-theme="dark"]) .talentCard:hover {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .talentCard h4 {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .talentStatusMuted {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .talentSkillMuted {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .analyticsCard {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .analyticsCard:hover {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .analyticsValue {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .analyticsChartCard {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .analyticsChartHeader h3 {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .analyticsSourceName {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .analyticsSourceValue {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .analyticsTableCard {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .analyticsTableHeader h3 {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .analyticsTableHead {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .analyticsTableRow {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .analyticsTableRow:hover {
+  background: var(--surface-2);
+}
+
+:global(.dashShell[data-theme="dark"]) .analyticsTableTitle {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .analyticsTableValue {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .analyticsQuickStat {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .analyticsQuickValue {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .profileSection {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .profileHeaderRow h2 {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .profileSummary {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .profileStat {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .profileStat strong {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .emptyState {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .emptyState h3 {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .modalCard {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .modalHeader h3 {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .modalCloseButton {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .modalField span {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .modalField input,
+:global(.dashShell[data-theme="dark"]) .modalField select,
+:global(.dashShell[data-theme="dark"]) .modalField textarea {
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .filterTabs {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .filterTab:hover {
+  background: var(--surface);
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .applicationCard {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .applicationCard:hover {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme="dark"]) .applicationTitle {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .applicationBadgeNeutral {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .applicationInsightBox {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .applicationInsightBox strong {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .applicationActions {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .applicationBtnOutline {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .applicationBtnOutline:hover {
+  background: var(--surface-2);
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .applicationStatusActions {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .statusBtn {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .statusBtn:hover:not(:disabled) {
+  background: var(--surface-2);
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .summaryCard {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme="dark"]) .summaryCard:hover {
+  background: var(--surface-2);
+}
+
+:global(.dashShell[data-theme="dark"]) .summaryValue {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .talentAvatarFallback {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme="dark"]) .sectionNoteWarning {
+  color: var(--text-1);
 }

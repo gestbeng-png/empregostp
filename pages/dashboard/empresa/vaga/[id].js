@@ -4,6 +4,8 @@ import Link from "next/link";
 import Head from "next/head";
 import { useState } from "react";
 import { useRouter } from "next/router";
+import { FiArrowLeft } from "react-icons/fi";
+import DashboardShell from "../../../../components/dashboard/DashboardShell";
 import styles from "../../../../styles/EmpresaJobDetail.module.css";
 
 function safeTimestampToMillis(timestamp) {
@@ -185,12 +187,22 @@ export default function DetalheVaga({ vaga, candidaturas }) {
         <Head>
           <title>Vaga nao encontrada - EmpregoSTP</title>
         </Head>
-        <main className={styles.emptyPage}>
-          <h2 className={styles.emptyTitle}>Vaga nao encontrada</h2>
-          <Link href="/dashboard/empresa" className={styles.backLink}>
-            Voltar ao Dashboard
-          </Link>
-        </main>
+        <DashboardShell
+          role="empresa"
+          active="jobs"
+          title="Detalhe da vaga"
+          profile={{ name: "Empresa", role: "Empresa" }}
+        >
+          <div className="dash-page">
+            <Link href="/dashboard/empresa?tab=jobs" className="dash-back">
+              <FiArrowLeft /> Voltar às vagas
+            </Link>
+            <div className="empty-state">
+              <div className="empty-state-icon">🔍</div>
+              <p>Vaga não encontrada.</p>
+            </div>
+          </div>
+        </DashboardShell>
       </>
     );
   }
@@ -240,20 +252,17 @@ export default function DetalheVaga({ vaga, candidaturas }) {
         <title>{titulo} - EmpregoSTP</title>
       </Head>
 
-      <main className={styles.page}>
-        <Link href="/dashboard/empresa" className={styles.backLink}>
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
-          Voltar ao Dashboard
-        </Link>
+      <DashboardShell
+        role="empresa"
+        active="jobs"
+        title="Detalhe da vaga"
+        subtitle={titulo}
+        profile={{ name: "Empresa", role: "Empresa" }}
+      >
+        <div className="dash-page">
+          <Link href="/dashboard/empresa?tab=jobs" className="dash-back">
+            <FiArrowLeft /> Voltar às vagas
+          </Link>
 
         <section className={styles.heroCard}>
           <div className={styles.heroHeader}>
@@ -704,7 +713,8 @@ export default function DetalheVaga({ vaga, candidaturas }) {
             </div>
           )}
         </section>
-      </main>
+        </div>
+      </DashboardShell>
     </>
   );
 }
