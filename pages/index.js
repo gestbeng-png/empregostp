@@ -74,9 +74,9 @@ function formatSalaryRange(fromValue, toValue) {
   const from = normalizeMoney(fromValue);
   const to = normalizeMoney(toValue);
 
-  if (from && to && from !== to) return `${from} - ${to} Db`;
-  if (from) return `${from} Db`;
-  if (to) return `${to} Db`;
+  if (from && to && from !== to) return `${from} - ${to} STD`;
+  if (from) return `${from} STD`;
+  if (to) return `${to} STD`;
   return "A combinar";
 }
 
@@ -252,8 +252,8 @@ export async function getServerSideProps(context) {
     ]);
 
     const activeJobsData = activeJobsSnapshot.docs.map((doc) => ({
-      id: doc.id,
       ...doc.data(),
+      id: doc.id,
     }));
     const companyIds = [
       ...new Set(activeJobsData.map((job) => job.companyId).filter(Boolean)),
@@ -701,39 +701,6 @@ export default function HomePage({
                   aria-hidden="true"
                 />
 
-                {heroJobs.map((job, index) => (
-                  <Link
-                    key={job.id}
-                    href={`/vaga/${job.id}`}
-                    className={`${styles.heroFloatingCard} ${styles[`floatingCard${index + 1}`]}`}
-                  >
-                    <div className={styles.heroFloatingIcon}>
-                      {job.empresaLogo ? (
-                        <img
-                          src={job.empresaLogo}
-                          alt={job.empresaNome}
-                          className={styles.heroFloatingLogo}
-                          loading="lazy"
-                          decoding="async"
-                        />
-                      ) : (
-                        <span>{getInitials(job.empresaNome)}</span>
-                      )}
-                    </div>
-                    <div className={styles.heroFloatingBody}>
-                      <strong>{truncateText(job.titulo, 34)}</strong>
-                      <span>{job.empresaNome}</span>
-                      <div className={styles.heroFloatingMeta}>
-                        <small>
-                          <i className="fas fa-briefcase" aria-hidden="true" />
-                          {normalizeContractType(job.tipoContrato)}
-                        </small>
-                        <em className={styles.heroFloatingTag}>OPEN</em>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-
                 <div className={styles.heroRingOuter} aria-hidden="true" />
                 <div className={styles.heroRingInner}>
                   <p className={styles.heroEyebrow}>
@@ -772,6 +739,39 @@ export default function HomePage({
                   </form>
 
                 </div>
+
+                {heroJobs.map((job, index) => (
+                  <Link
+                    key={job.id}
+                    href={`/vaga/${job.id}`}
+                    className={`${styles.heroFloatingCard} ${styles[`floatingCard${index + 1}`]}`}
+                  >
+                    <div className={styles.heroFloatingIcon}>
+                      {job.empresaLogo ? (
+                        <img
+                          src={job.empresaLogo}
+                          alt={job.empresaNome}
+                          className={styles.heroFloatingLogo}
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      ) : (
+                        <span>{getInitials(job.empresaNome)}</span>
+                      )}
+                    </div>
+                    <div className={styles.heroFloatingBody}>
+                      <strong>{truncateText(job.titulo, 34)}</strong>
+                      <span>{job.empresaNome}</span>
+                      <div className={styles.heroFloatingMeta}>
+                        <small>
+                          <i className="fas fa-briefcase" aria-hidden="true" />
+                          {normalizeContractType(job.tipoContrato)}
+                        </small>
+                        <em className={styles.heroFloatingTag}>OPEN</em>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
               </div>
             </div>
           </section>
@@ -880,7 +880,11 @@ export default function HomePage({
                   </div>
                 </article>
 
-                <article className={styles.testimonialCard}>
+                <Link
+                  href="/sobre-nos#testemunhos"
+                  className={styles.testimonialCard}
+                  aria-label="Ver testemunhos na página Sobre nós"
+                >
                   <h2 className={styles.testimonialTitle}>Testemunhos</h2>
                   <div className={styles.testimonialAvatars}>
                     {featuredCandidates.length ? (
@@ -904,7 +908,7 @@ export default function HomePage({
                     Empresas e talentos estão a usar a plataforma para encontrar
                     oportunidades com mais rapidez e clareza.
                   </p>
-                </article>
+                </Link>
               </div>
             </div>
           </section>
@@ -1012,14 +1016,6 @@ export default function HomePage({
                     Explore perfis verificados, descubra profissionais em
                     vitrine e acelere o recrutamento com mais confiança.
                   </p>
-                  <div className={styles.talentsActions}>
-                    <Link href="/candidatos" className={styles.talentsLink}>
-                      EXPLORAR
-                    </Link>
-                    <p className={styles.talentsHint}>
-                      Perfis validados e prontos para recrutamento.
-                    </p>
-                  </div>
                 </div>
 
                 <div className={styles.candidatesPanel}>

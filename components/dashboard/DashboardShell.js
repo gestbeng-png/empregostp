@@ -28,8 +28,10 @@ import {
   FiMenu,
   FiMoon,
   FiSun,
+  FiX,
 } from "react-icons/fi";
 import { useAuth } from "../../context/AuthContext";
+import { DashboardShellProvider } from "../../context/DashboardShellContext";
 import { getDashboardNav, ROLE_LABEL } from "./dashboardNav";
 
 const ICONS = {
@@ -58,135 +60,6 @@ const ICONS = {
 };
 
 const THEME_KEY = "estp-theme";
-
-/**
- * Lightweight, theme-aware particle field ported from the design's
- * animations.js. Cleans up on unmount and honours reduced-motion.
- */
-function useParticles(canvasRef, enabled, theme) {
-  const themeRef = useRef(theme);
-  useEffect(() => {
-    themeRef.current = theme;
-  }, [theme]);
-
-  useEffect(() => {
-    if (!enabled) return undefined;
-    if (typeof window === "undefined") return undefined;
-    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
-      return undefined;
-    }
-    const canvas = canvasRef.current;
-    if (!canvas) return undefined;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return undefined;
-
-    const mouse = { x: -999, y: -999 };
-    let dots = [];
-    let raf;
-    const COUNT = 46;
-
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-    const onMove = (e) => {
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
-    };
-    const onLeave = () => {
-      mouse.x = -999;
-      mouse.y = -999;
-    };
-
-    const spawn = () => ({
-      x: Math.random() * window.innerWidth,
-      y: Math.random() * window.innerHeight,
-      r: Math.random() * 1.6 + 0.5,
-      vx: (Math.random() - 0.5) * 0.22,
-      vy: (Math.random() - 0.5) * 0.22,
-      alpha: Math.random() * 0.4 + 0.1,
-      pulse: Math.random() * Math.PI * 2,
-    });
-
-    resize();
-    for (let i = 0; i < COUNT; i += 1) dots.push(spawn());
-    window.addEventListener("resize", resize);
-    window.addEventListener("mousemove", onMove);
-    window.addEventListener("mouseleave", onLeave);
-
-    const draw = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const dark = themeRef.current === "dark";
-      const dotCol = dark ? "95,184,245" : "32,87,215";
-      const lineCol = dark ? "95,184,245" : "32,87,215";
-      const mouseCol = dark ? "217,255,47" : "95,184,245";
-
-      dots.forEach((d, i) => {
-        d.pulse += 0.012;
-        const breathe = 1 + 0.25 * Math.sin(d.pulse);
-        const mdx = d.x - mouse.x;
-        const mdy = d.y - mouse.y;
-        const mdist = Math.sqrt(mdx * mdx + mdy * mdy);
-        if (mdist < 90) {
-          const force = (1 - mdist / 90) * 0.6;
-          d.vx += (mdx / mdist) * force * 0.08;
-          d.vy += (mdy / mdist) * force * 0.08;
-        }
-        d.vx *= 0.985;
-        d.vy *= 0.985;
-        const spd = Math.sqrt(d.vx * d.vx + d.vy * d.vy);
-        if (spd > 0.7) {
-          d.vx = (d.vx / spd) * 0.7;
-          d.vy = (d.vy / spd) * 0.7;
-        }
-        d.x += d.vx;
-        d.y += d.vy;
-        if (d.x < 0) d.x = canvas.width;
-        if (d.x > canvas.width) d.x = 0;
-        if (d.y < 0) d.y = canvas.height;
-        if (d.y > canvas.height) d.y = 0;
-
-        dots.slice(i + 1).forEach((e) => {
-          const dx = d.x - e.x;
-          const dy = d.y - e.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 120) {
-            ctx.beginPath();
-            ctx.strokeStyle = `rgba(${lineCol},${0.07 * (1 - dist / 120)})`;
-            ctx.lineWidth = 0.8;
-            ctx.moveTo(d.x, d.y);
-            ctx.lineTo(e.x, e.y);
-            ctx.stroke();
-          }
-        });
-
-        if (mdist < 130) {
-          ctx.beginPath();
-          ctx.strokeStyle = `rgba(${mouseCol},${0.12 * (1 - mdist / 130)})`;
-          ctx.lineWidth = 1;
-          ctx.moveTo(d.x, d.y);
-          ctx.lineTo(mouse.x, mouse.y);
-          ctx.stroke();
-        }
-
-        ctx.beginPath();
-        ctx.arc(d.x, d.y, d.r * breathe, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${dotCol},${d.alpha})`;
-        ctx.fill();
-      });
-      raf = requestAnimationFrame(draw);
-    };
-    draw();
-
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("resize", resize);
-      window.removeEventListener("mousemove", onMove);
-      window.removeEventListener("mouseleave", onLeave);
-      dots = [];
-    };
-  }, [canvasRef, enabled, theme]);
-}
 
 /** Animated number counter used inside stat cards. */
 export function Counter({ value, duration = 1100, className }) {
@@ -228,7 +101,6 @@ export default function DashboardShell({
   searchPlaceholder,
   topbarActions,
   onLogout,
-  particles = true,
   children,
 }) {
   const router = useRouter();
@@ -236,7 +108,6 @@ export default function DashboardShell({
   const [theme, setTheme] = useState("light");
   const [mounted, setMounted] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const canvasRef = useRef(null);
   const shellRef = useRef(null);
 
   useEffect(() => {
@@ -261,35 +132,12 @@ export default function DashboardShell({
     });
   }, []);
 
-  useParticles(canvasRef, particles && mounted, theme);
-
   // Close mobile sidebar on route change.
   useEffect(() => {
     const close = () => setSidebarOpen(false);
     router.events?.on("routeChangeStart", close);
     return () => router.events?.off("routeChangeStart", close);
   }, [router.events]);
-
-  // Ripple effect on dashboard buttons.
-  useEffect(() => {
-    const root = shellRef.current;
-    if (!root) return undefined;
-    const handler = (e) => {
-      const btn = e.target.closest(".btn");
-      if (!btn || !root.contains(btn)) return;
-      const rect = btn.getBoundingClientRect();
-      const size = Math.max(rect.width, rect.height) * 1.8;
-      const span = document.createElement("span");
-      span.className = "dash-ripple";
-      span.style.cssText = `width:${size}px;height:${size}px;left:${
-        e.clientX - rect.left - size / 2
-      }px;top:${e.clientY - rect.top - size / 2}px;`;
-      btn.appendChild(span);
-      setTimeout(() => span.remove(), 600);
-    };
-    root.addEventListener("pointerdown", handler);
-    return () => root.removeEventListener("pointerdown", handler);
-  }, []);
 
   const handleLogout = useCallback(async () => {
     if (onLogout) {
@@ -320,8 +168,6 @@ export default function DashboardShell({
       data-theme={theme}
       suppressHydrationWarning
     >
-      {particles && <canvas ref={canvasRef} className="dash-particles" aria-hidden="true" />}
-
       {sidebarOpen && (
         <div
           className="dash-sidebar-backdrop"
@@ -331,6 +177,14 @@ export default function DashboardShell({
       )}
 
       <aside className="dash-sidebar">
+        <button
+          type="button"
+          className="dash-sidebar-close"
+          onClick={() => setSidebarOpen(false)}
+          aria-label="Fechar menu"
+        >
+          <FiX />
+        </button>
         <Link href="/" className="dash-sidebar-logo" aria-label="Ir para a página inicial">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/assets/Emprego STP Logo.png" alt="EmpregoSTP" />
@@ -434,12 +288,14 @@ export default function DashboardShell({
             {subtitle && <div className="dash-topbar-sub">{subtitle}</div>}
           </div>
           <div className="dash-topbar-spacer" />
-          {searchPlaceholder && (
+          {searchPlaceholder && typeof onSearchChange === "function" && (
             <input
               className="dash-topbar-search"
               placeholder={searchPlaceholder}
               aria-label="Pesquisar"
               type="text"
+              value={searchValue || ""}
+              onChange={(event) => onSearchChange(event.target.value)}
             />
           )}
           {topbarActions}
@@ -456,7 +312,9 @@ export default function DashboardShell({
           )}
         </header>
 
-        <main className="dash-content">{children}</main>
+        <main className="dash-content" id="dashboard-content">
+          <DashboardShellProvider value>{children}</DashboardShellProvider>
+        </main>
       </div>
     </div>
   );

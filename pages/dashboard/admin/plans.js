@@ -1,10 +1,60 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { getAuth } from 'firebase/auth';
 import Link from 'next/link';
 import Head from 'next/head';
 import LandingHeader from '../../../components/LandingHeader';
 import { requireAdminPageAuth } from '../../../lib/adminPageGuard';
+import { normalizeUserType } from '../../../lib/defaultPlans';
+import { getCandidateMarketingPlans } from '../../../lib/candidateCatalog';
 import styles from '../../../styles/AdminPanel.module.css';
+
+// Os planos de candidato são fixos (Verificação, Profissional, Premium): o admin
+// edita-os, mas não cria/apaga planos avulsos. O dashboard do candidato lê
+// exatamente estes 3 planos canónicos.
+const FIXED_CANDIDATE_PLANS = getCandidateMarketingPlans({
+  includeBasic: false,
+  includeVerification: true,
+});
+
+function buildFixedCandidatePlans(firestorePlans) {
+  const byId = (firestorePlans || []).reduce((acc, plan) => {
+    acc[plan.id] = plan;
+    return acc;
+  }, {});
+
+  return FIXED_CANDIDATE_PLANS.map((base) => {
+    const override = byId[base.id] || {};
+    return {
+      ...base,
+      ...override,
+      id: base.id,
+      type: 'candidato',
+      priceLabel: override.priceLabel || base.priceLabel,
+      features: Array.isArray(override.features) && override.features.length
+        ? override.features
+        : base.features,
+    };
+  });
+}
+
+const PLAN_SECTIONS = [
+  {
+    type: 'empresa',
+    title: 'Planos para Empresas',
+    accent: '#f59e0b',
+    createBg: 'rgba(245, 158, 11, 0.18)',
+    createBorder: 'rgba(245, 158, 11, 0.35)',
+    createColor: '#fbbf24'
+  },
+  {
+    type: 'candidato',
+    title: 'Planos para Candidatos',
+    accent: '#10b981',
+    createBg: 'rgba(16, 185, 129, 0.18)',
+    createBorder: 'rgba(16, 185, 129, 0.35)',
+    createColor: '#34d399'
+  }
+];
 
 const getMessageTone = (message) => {
   const normalized = String(message || '').toLowerCase();
@@ -146,11 +196,6 @@ export default function AdminPlans() {
     loadData();
   }, []);
 
-  const filteredPlans = useMemo(
-    () => plans.filter((plan) => plan.type === planType),
-    [plans, planType]
-  );
-
   const resetForm = () => {
     setFormData({
       name: '',
@@ -167,17 +212,33 @@ export default function AdminPlans() {
     setEditingPlan(null);
   };
 
-  const openModal = (plan = null) => {
+  const openModal = (plan = null, typeForNew = 'empresa') => {
+    const resolvedType = plan ? (normalizeUserType(plan.type) || 'empresa') : typeForNew;
+    setPlanType(resolvedType);
+
     if (plan) {
       setFormData({
         ...plan,
+        type: resolvedType,
         features: plan.features || [],
         vagasLimit: plan.vagasLimit?.toString() || '',
         duration: plan.duration?.toString() || ''
       });
       setEditingPlan(plan);
     } else {
-      resetForm();
+      setFormData({
+        name: '',
+        price: '',
+        priceLabel: '',
+        duration: '',
+        type: resolvedType,
+        vagasLimit: '',
+        destaque: false,
+        curriculoDestacado: false,
+        features: [],
+        isActive: true
+      });
+      setEditingPlan(null);
     }
 
     setIsModalOpen(true);
@@ -395,8 +456,8 @@ export default function AdminPlans() {
     }
   }
 
-  const renderPlansTable = () => {
-    if (!filteredPlans.length) {
+  const renderPlansTable = (planKind, sectionPlans, { allowDelete = true } = {}) => {
+    if (!sectionPlans.length) {
       return (
         <div className={styles.emptyState}>
           <p className={styles.emptyText}>Nenhum plano cadastrado para este tipo.</p>
@@ -412,7 +473,7 @@ export default function AdminPlans() {
               <tr className={styles.tableHeadRow}>
                 <th className={styles.tableHeadCell}>Nome</th>
                 <th className={styles.tableHeadCell}>Preço</th>
-                {planType === 'empresa' ? (
+                {planKind === 'empresa' ? (
                   <>
                     <th className={`${styles.tableHeadCell} ${styles.alignCenter}`}>Vagas</th>
                     <th className={`${styles.tableHeadCell} ${styles.alignCenter}`}>Destaque</th>
@@ -426,11 +487,11 @@ export default function AdminPlans() {
               </tr>
             </thead>
             <tbody>
-              {filteredPlans.map((plan) => (
+              {sectionPlans.map((plan) => (
                 <tr key={plan.id} className={styles.tableRow}>
                   <td className={`${styles.tableCell} ${styles.tableCellStrong}`}>{plan.name}</td>
                   <td className={`${styles.tableCell} ${styles.tableCellStrong}`}>{plan.priceLabel}</td>
-                  {planType === 'empresa' ? (
+                  {planKind === 'empresa' ? (
                     <>
                       <td className={`${styles.tableCell} ${styles.alignCenter} ${styles.tableCellMuted}`}>
                         {plan.vagasLimit === null ? '∞' : plan.vagasLimit}
@@ -474,14 +535,16 @@ export default function AdminPlans() {
                       >
                         Editar
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDeletePlan(plan.id)}
-                        className={`${styles.buttonBase} ${styles.buttonAccent} ${styles.buttonSmall}`}
-                        style={{ '--button-bg': 'rgba(239, 68, 68, 0.18)', '--button-border': 'rgba(239, 68, 68, 0.35)', '--button-color': '#fca5a5' }}
-                      >
-                        Excluir
-                      </button>
+                      {allowDelete ? (
+                        <button
+                          type="button"
+                          onClick={() => handleDeletePlan(plan.id)}
+                          className={`${styles.buttonBase} ${styles.buttonAccent} ${styles.buttonSmall}`}
+                          style={{ '--button-bg': 'rgba(239, 68, 68, 0.18)', '--button-border': 'rgba(239, 68, 68, 0.35)', '--button-color': '#fca5a5' }}
+                        >
+                          Excluir
+                        </button>
+                      ) : null}
                     </div>
                   </td>
                 </tr>
@@ -490,6 +553,38 @@ export default function AdminPlans() {
           </table>
         </div>
       </div>
+    );
+  };
+
+  const renderPlanSection = ({ type, title, accent, createBg, createBorder, createColor }) => {
+    const isCandidate = type === 'candidato';
+    const sectionPlans = isCandidate
+      ? buildFixedCandidatePlans(plans)
+      : plans.filter((plan) => normalizeUserType(plan.type) === type);
+
+    return (
+      <section className={styles.section} key={type}>
+        <div className={styles.sectionHeading}>
+          <div className={styles.sectionTitleWrap}>
+            <h2 className={styles.sectionTitle} style={{ '--accent-color': accent }}>{title}</h2>
+            <span className={styles.countBadge}>{sectionPlans.length}</span>
+          </div>
+          {isCandidate ? (
+            <span className={styles.metaText}>Planos fixos — edite nome, preço e recursos.</span>
+          ) : (
+            <button
+              type="button"
+              onClick={() => openModal(null, type)}
+              className={`${styles.buttonBase} ${styles.buttonAccent} ${styles.buttonSmall}`}
+              style={{ '--button-bg': createBg, '--button-border': createBorder, '--button-color': createColor }}
+            >
+              + Novo plano
+            </button>
+          )}
+        </div>
+
+        {renderPlansTable(type, sectionPlans, { allowDelete: !isCandidate })}
+      </section>
     );
   };
 
@@ -608,9 +703,6 @@ export default function AdminPlans() {
             <p className={styles.headerSubtitle}>Gerencie planos ativos e acompanhe os pedidos de assinatura a partir do mesmo fluxo visual.</p>
           </div>
           <div className={styles.headerActions}>
-            <button type="button" onClick={() => openModal()} className={`${styles.buttonBase} ${styles.buttonSuccess}`}>
-              Criar Novo Plano
-            </button>
             <button type="button" onClick={handleCreatePlans} disabled={loading} className={`${styles.buttonBase} ${styles.buttonAccent}`} style={{ '--button-bg': 'rgba(59, 130, 246, 0.18)', '--button-border': 'rgba(59, 130, 246, 0.3)', '--button-color': '#60a5fa' }}>
               Criar Planos Padrão
             </button>
@@ -655,36 +747,9 @@ export default function AdminPlans() {
             <p className={styles.loadingText}>Carregando gestão de planos...</p>
           </div>
         ) : activeTab === 'plans' ? (
-          <section className={styles.section}>
-            <div className={styles.toggleRow}>
-              <button
-                type="button"
-                onClick={() => setPlanType('empresa')}
-                className={`${styles.buttonBase} ${styles.buttonAccent}`}
-                style={{
-                  '--button-bg': planType === 'empresa' ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' : 'rgba(255, 255, 255, 0.05)',
-                  '--button-border': planType === 'empresa' ? 'transparent' : 'rgba(255, 255, 255, 0.1)',
-                  '--button-color': '#fff'
-                }}
-              >
-                Planos para Empresas
-              </button>
-              <button
-                type="button"
-                onClick={() => setPlanType('candidato')}
-                className={`${styles.buttonBase} ${styles.buttonAccent}`}
-                style={{
-                  '--button-bg': planType === 'candidato' ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'rgba(255, 255, 255, 0.05)',
-                  '--button-border': planType === 'candidato' ? 'transparent' : 'rgba(255, 255, 255, 0.1)',
-                  '--button-color': '#fff'
-                }}
-              >
-                Planos para Candidatos
-              </button>
-            </div>
-
-            {renderPlansTable()}
-          </section>
+          <>
+            {PLAN_SECTIONS.map((section) => renderPlanSection(section))}
+          </>
         ) : (
           <section className={styles.section}>
             {renderRequestsTable()}
@@ -697,7 +762,9 @@ export default function AdminPlans() {
           <div className={`${styles.modalCard} ${styles.modalCardLarge}`} onClick={(event) => event.stopPropagation()}>
             <div className={`${styles.modalHeader} ${styles.sectionHeading}`}>
               <div>
-                <h2 className={styles.modalTitle}>{editingPlan ? 'Editar Plano' : 'Criar Novo Plano'}</h2>
+                <h2 className={styles.modalTitle}>
+                  {editingPlan ? 'Editar Plano' : 'Criar Novo Plano'} — {planType === 'empresa' ? 'Empresa' : 'Candidato'}
+                </h2>
                 <p className={styles.modalSubtitle}>Atualize nome, preço, recursos e regras do plano selecionado.</p>
               </div>
               <button type="button" onClick={closeModal} className={`${styles.buttonBase} ${styles.buttonGhost} ${styles.buttonSmall}`}>
@@ -792,7 +859,7 @@ export default function AdminPlans() {
 export async function getServerSideProps(context) {
   const authResult = await requireAdminPageAuth(context);
   if (!authResult.ok) {
-    return authResult.redirect;
+    return { redirect: authResult.redirect };
   }
 
   return { props: {} };

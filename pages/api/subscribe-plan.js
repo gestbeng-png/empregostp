@@ -72,9 +72,11 @@ async function handleSubscription(req, res) {
         return res.status(400).json({ message: 'Este plano está desativado no momento' });
       }
       if (STANDARD_EMPRESA_PLANS[plan.id]) {
+        // Os valores do admin (documento no Firestore) têm prioridade;
+        // o plano padrão apenas preenche campos em falta.
         plan = {
-          ...plan,
           ...STANDARD_EMPRESA_PLANS[plan.id],
+          ...plan,
           id: plan.id,
           type: 'empresa',
           isActive: plan.isActive !== false

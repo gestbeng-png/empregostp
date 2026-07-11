@@ -64,6 +64,8 @@
   --app-font-sans:
     "Plus Jakarta Sans", Inter, system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", sans-serif;
+  --app-font-display:
+    "Space Grotesk", "Avenir Next", "Segoe UI", system-ui, sans-serif;
   --app-transition-fast: 160ms ease;
   --app-transition-normal: 240ms ease;
 }
@@ -148,8 +150,8 @@ button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 2px solid rgba(32, 87, 215, 0.28);
-  outline-offset: 2px;
+  outline: 3px solid #2057d7;
+  outline-offset: 3px;
 }
 
 .skipLink {

@@ -5,12 +5,20 @@ import { AuthProvider } from '../context/AuthContext';
 import PwaInstallPrompt from '../components/PwaInstallPrompt';
 import WebPushManager from '../components/WebPushManager';
 import Head from 'next/head';
-import { Plus_Jakarta_Sans } from 'next/font/google';
+import { Plus_Jakarta_Sans, Space_Grotesk } from 'next/font/google';
+import DashboardRouteFrame from '../components/dashboard/DashboardRouteFrame';
 
 const appFont = Plus_Jakarta_Sans({
   subsets: ['latin'],
   display: 'swap',
   fallback: ['Inter', 'system-ui', 'sans-serif']
+});
+
+const displayFont = Space_Grotesk({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--app-font-display',
+  fallback: ['Avenir Next', 'Segoe UI', 'sans-serif']
 });
 
 function MyApp({ Component, pageProps }) {
@@ -55,7 +63,7 @@ function MyApp({ Component, pageProps }) {
 
   return (
     <AuthProvider>
-      <div className={appFont.className}>
+      <div className={`${appFont.className} ${displayFont.variable}`}>
         <Head>
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           <meta name="theme-color" content="#ffffff" />
@@ -68,7 +76,7 @@ function MyApp({ Component, pageProps }) {
         </Head>
         <PwaInstallPrompt />
         <WebPushManager />
-        <Component {...pageProps} />
+        <DashboardRouteFrame Component={Component} pageProps={pageProps} />
       </div>
     </AuthProvider>
   );

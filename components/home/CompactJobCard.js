@@ -63,8 +63,6 @@ export default function CompactJobCard({
 
   return (
     <Link href={href} className={rootClassName}>
-      <span className={styles.edgeGlow} aria-hidden="true" />
-
       <div className={styles.ribbonRow}>
         {badgeLabel ? (
           <span className={styles.badge}>{badgeLabel}</span>

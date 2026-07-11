@@ -159,31 +159,46 @@ function getCompanyInitials(companyLabel) {
   );
 }
 
-function serializeTimestamp(timestamp) {
-  if (timestamp && typeof timestamp.toDate === "function") {
-    return timestamp.toDate().toISOString();
+function serializeFirestoreValue(value) {
+  if (value === undefined) return null;
+  if (value === null) return null;
+
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    return value;
   }
-  return timestamp;
+
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value.toISOString();
+  }
+
+  if (typeof value?.toDate === "function") {
+    const date = value.toDate();
+    return date instanceof Date && !Number.isNaN(date.getTime()) ? date.toISOString() : null;
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => serializeFirestoreValue(item));
+  }
+
+  if (typeof value === "object") {
+    const proto = Object.getPrototypeOf(value);
+    const isPlainObject = proto === Object.prototype || proto === null;
+
+    if (!isPlainObject) {
+      return null;
+    }
+
+    return Object.keys(value).reduce((acc, key) => {
+      acc[key] = serializeFirestoreValue(value[key]);
+      return acc;
+    }, {});
+  }
+
+  return null;
 }
 
 function serializeJob(job) {
-  const serialized = { ...job };
-  for (const key in serialized) {
-    if (
-      serialized[key] &&
-      typeof serialized[key] === "object" &&
-      typeof serialized[key].toDate === "function"
-    ) {
-      serialized[key] = serializeTimestamp(serialized[key]);
-    } else if (
-      serialized[key] &&
-      typeof serialized[key] === "object" &&
-      !Array.isArray(serialized[key])
-    ) {
-      serialized[key] = serializeJob(serialized[key]);
-    }
-  }
-  return serialized;
+  return serializeFirestoreValue(job) || {};
 }
 
 export default function VagaDetalhe({ vaga, relatedJobs = [] }) {

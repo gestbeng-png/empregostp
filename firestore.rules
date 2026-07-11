@@ -145,6 +145,20 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    match /testimonials/{testimonialId} {
+      // Testemunhos aprovados são públicos; pendentes só o admin vê.
+      // Submissões e moderação passam pela API (Firebase Admin SDK).
+      allow read: if resource.data.status == 'approved' || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    match /affiliateApplications/{affiliateId} {
+      // O próprio utilizador vê a sua candidatura; o admin vê todas.
+      // Submissões e moderação passam pela API (Firebase Admin SDK).
+      allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+      allow write: if false;
+    }
+
     match /conversations/{conversationId} {
       allow read: if isAdmin()
         || (signedIn() && resource.data.participants.hasAny([request.auth.uid]));

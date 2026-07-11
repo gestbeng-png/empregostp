@@ -1,134 +1,120 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { getAuth } from 'firebase/auth';
 import ManualPaymentProofCard from './ManualPaymentProofCard';
 import { getCandidateMarketingPlans } from '../lib/candidateCatalog';
+import styles from '../styles/CandidatePremiumPlansExperience.module.css';
 
-function PaymentForm({ plan, paymentSettings, onConfirm, onCancel }) {
-  if (!plan || Number(plan.price) === 0) return null;
+// Planos de marketing usados apenas como fallback e para metadados de
+// apresentação (ex.: destaque "popular") quando cruzados com os planos do admin.
+const FALLBACK_CANDIDATE_PLANS = getCandidateMarketingPlans({
+  includeBasic: false,
+  includeVerification: true,
+});
 
+// Cruza os planos criados pelo admin (Firestore) com os metadados de
+// apresentação, mantendo os valores do admin (nome, preço, recursos) como fonte
+// da verdade.
+function mergeAdminPlansWithPresentation(apiPlans) {
+  const byTier = FALLBACK_CANDIDATE_PLANS.reduce((acc, plan) => {
+    acc[plan.id] = plan;
+    return acc;
+  }, {});
+
+  return apiPlans.map((plan) => {
+    const tier = plan.planTierId || plan.id;
+    const presentation = byTier[tier] || {};
+    return {
+      ...presentation,
+      ...plan,
+      id: plan.id,
+      tierId: tier,
+      popular: plan.popular ?? presentation.popular ?? false,
+    };
+  });
+}
+
+function Modal({ title, subtitle, onClose, children, wide = false }) {
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'rgba(0, 0, 0, 0.8)',
-      backdropFilter: 'blur(5px)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000,
-      padding: '2rem'
-    }}>
-      <div style={{
-        background: 'linear-gradient(180deg, #1a1f35 0%, #0a0e1a 100%)',
-        border: '2px solid rgba(251, 191, 36, 0.3)',
-        borderRadius: '20px',
-        padding: '2.5rem',
-        maxWidth: '600px',
-        width: '100%',
-        maxHeight: '90vh',
-        overflowY: 'auto',
-        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)'
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-          <h2 style={{ fontSize: '1.75rem', fontWeight: 900, color: 'white', margin: 0 }}>
-            Confirmar Assinatura
-          </h2>
-          <button
-            onClick={onCancel}
-            style={{
-              background: 'rgba(255, 255, 255, 0.1)',
-              border: 'none',
-              borderRadius: '8px',
-              width: '32px',
-              height: '32px',
-              color: 'white',
-              cursor: 'pointer',
-              fontSize: '1.25rem'
-            }}
-          >
+    <div className={styles.overlay} onClick={onClose}>
+      <div
+        className={`${styles.modal} ${wide ? styles.modalWide : ''}`}
+        onClick={(event) => event.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+      >
+        <div className={styles.modalHeader}>
+          <div>
+            <h2 className={styles.modalTitle}>{title}</h2>
+            {subtitle && <p className={styles.modalSubtitle}>{subtitle}</p>}
+          </div>
+          <button type="button" className={styles.modalClose} onClick={onClose} aria-label="Fechar">
             ×
           </button>
         </div>
-
-        <div style={{
-          background: 'rgba(251, 191, 36, 0.1)',
-          border: '1px solid rgba(251, 191, 36, 0.3)',
-          borderRadius: '12px',
-          padding: '1.5rem',
-          marginBottom: '2rem'
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-            <span style={{ color: 'rgba(255, 255, 255, 0.7)' }}>Plano:</span>
-            <span style={{ color: '#fbbf24', fontWeight: 700 }}>{plan.name}</span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span style={{ color: 'rgba(255, 255, 255, 0.7)' }}>Valor:</span>
-            <span style={{ color: 'white', fontWeight: 700, fontSize: '1.25rem' }}>{plan.priceLabel}</span>
-          </div>
-        </div>
-
-        {paymentSettings && (
-          <div style={{
-            background: 'rgba(255, 255, 255, 0.05)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '12px',
-            padding: '1.5rem',
-            marginBottom: '1.5rem'
-          }}>
-            <h3 style={{ color: 'white', marginTop: 0, marginBottom: '1rem' }}>Dados para transferência</h3>
-            {paymentSettings.accountNumber && <p style={{ color: 'white' }}><strong>Conta:</strong> {paymentSettings.accountNumber}</p>}
-            {paymentSettings.accountName && <p style={{ color: 'white' }}><strong>Titular:</strong> {paymentSettings.accountName}</p>}
-            {paymentSettings.bankName && <p style={{ color: 'white' }}><strong>Banco:</strong> {paymentSettings.bankName}</p>}
-            {paymentSettings.email && <p style={{ color: 'white' }}><strong>Email:</strong> {paymentSettings.email}</p>}
-            {paymentSettings.instructions && (
-              <p style={{ color: 'rgba(255,255,255,0.85)', marginBottom: 0 }}>{paymentSettings.instructions}</p>
-            )}
-          </div>
-        )}
-
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <button
-            onClick={onCancel}
-            style={{
-              flex: 1,
-              padding: '1rem',
-              background: 'rgba(255, 255, 255, 0.1)',
-              border: '2px solid rgba(255, 255, 255, 0.2)',
-              borderRadius: '12px',
-              color: 'white',
-              fontWeight: 700,
-              cursor: 'pointer'
-            }}
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={onConfirm}
-            disabled={!paymentSettings}
-            style={{
-              flex: 1,
-              padding: '1rem',
-              background: paymentSettings
-                ? 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)'
-                : 'rgba(255, 255, 255, 0.1)',
-              border: 'none',
-              borderRadius: '12px',
-              color: 'white',
-              fontWeight: 700,
-              cursor: paymentSettings ? 'pointer' : 'not-allowed',
-              opacity: paymentSettings ? 1 : 0.6
-            }}
-          >
-            Confirmar
-          </button>
-        </div>
+        <div className={styles.modalBody}>{children}</div>
       </div>
     </div>
+  );
+}
+
+function ConfirmPaymentModal({ plan, paymentSettings, onConfirm, onCancel, loading }) {
+  if (!plan || Number(plan.price) === 0) return null;
+
+  const bankRows = [
+    ['Conta', paymentSettings?.accountNumber],
+    ['Titular', paymentSettings?.accountName],
+    ['Banco', paymentSettings?.bankName],
+    ['Email', paymentSettings?.email],
+  ].filter(([, value]) => Boolean(value));
+
+  return (
+    <Modal
+      title="Confirmar assinatura"
+      subtitle="Reveja os dados, faça a transferência e confirme para gerar o pedido."
+      onClose={onCancel}
+    >
+      <div className={styles.summaryBox}>
+        <div className={styles.summaryRow}>
+          <span className={styles.summaryLabel}>Plano</span>
+          <span className={styles.summaryValue}>{plan.name}</span>
+        </div>
+        <div className={styles.summaryRow}>
+          <span className={styles.summaryLabel}>Valor</span>
+          <span className={styles.summaryPrice}>{plan.priceLabel}</span>
+        </div>
+      </div>
+
+      {(bankRows.length > 0 || paymentSettings?.instructions) && (
+        <div className={styles.bankBox}>
+          <p className={styles.bankTitle}>Dados para transferência</p>
+          {bankRows.map(([label, value]) => (
+            <div key={label} className={styles.bankRow}>
+              <span>{label}</span>
+              <strong>{value}</strong>
+            </div>
+          ))}
+          {paymentSettings?.instructions && (
+            <p className={styles.bankNote}>{paymentSettings.instructions}</p>
+          )}
+        </div>
+      )}
+
+      <div className={styles.modalActions}>
+        <button type="button" className={styles.btnGhost} onClick={onCancel}>
+          Cancelar
+        </button>
+        <button
+          type="button"
+          className={styles.btnPrimary}
+          onClick={onConfirm}
+          disabled={!paymentSettings || loading}
+        >
+          {loading ? 'A processar...' : 'Confirmar'}
+        </button>
+      </div>
+    </Modal>
   );
 }
 
@@ -143,13 +129,11 @@ export default function CandidatePremiumPlansExperience({
   const [currentPlan, setCurrentPlan] = useState(null);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [showProofModal, setShowProofModal] = useState(false);
   const [paymentSettings, setPaymentSettings] = useState(null);
   const [pendingPaymentRequest, setPendingPaymentRequest] = useState(null);
 
-  const plans = useMemo(
-    () => getCandidateMarketingPlans({ includeBasic: false, includeVerification: true }),
-    []
-  );
+  const [plans, setPlans] = useState(FALLBACK_CANDIDATE_PLANS);
 
   useEffect(() => {
     async function bootstrap() {
@@ -164,11 +148,20 @@ export default function CandidatePremiumPlansExperience({
         }
 
         const token = await user.getIdToken();
-        const [profileRes, paymentRes, pendingRes] = await Promise.all([
+        const [profileRes, paymentRes, pendingRes, plansRes] = await Promise.all([
           fetch('/api/profile', { headers: { Authorization: `Bearer ${token}` } }),
           fetch('/api/admin/payment-settings'),
-          fetch('/api/subscription-requests/current', { headers: { Authorization: `Bearer ${token}` } })
+          fetch('/api/subscription-requests/current', { headers: { Authorization: `Bearer ${token}` } }),
+          fetch('/api/candidate/plans', { headers: { Authorization: `Bearer ${token}` } })
         ]);
+
+        if (plansRes.ok) {
+          const plansJson = await plansRes.json();
+          const apiPlans = Array.isArray(plansJson.plans) ? plansJson.plans : [];
+          if (apiPlans.length) {
+            setPlans(mergeAdminPlansWithPresentation(apiPlans));
+          }
+        }
 
         if (profileRes.ok) {
           const profileJson = await profileRes.json();
@@ -256,6 +249,7 @@ export default function CandidatePremiumPlansExperience({
           status: 'pending',
           paymentInstructions: data.paymentInstructions || null
         });
+        setShowProofModal(true);
       } else {
         setSuccess(data.message || 'Solicitação enviada com sucesso.');
       }
@@ -268,12 +262,13 @@ export default function CandidatePremiumPlansExperience({
   };
 
   const handleSubscribe = async (planId) => {
-    if (currentPlan === planId) {
+    const plan = plans.find((item) => item.id === planId);
+    const tier = plan?.tierId || planId;
+    if (currentPlan === planId || currentPlan === tier) {
       setError('Você já está neste plano.');
       return;
     }
 
-    const plan = plans.find((item) => item.id === planId);
     if (plan && Number(plan.price) > 0) {
       setSelectedPlan(planId);
       setShowPaymentForm(true);
@@ -284,65 +279,44 @@ export default function CandidatePremiumPlansExperience({
   };
 
   return (
-    <div style={{ maxWidth: '1400px', margin: '0 auto', padding: embedded ? 0 : '2rem' }}>
-      <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-        <h1 style={{
-          fontSize: 'clamp(1.6rem, 3vw, 2.5rem)',
-          fontWeight: 900,
-          color: 'white',
-          marginBottom: '0.75rem',
-          background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent'
-        }}>
-          Escolha Seu Plano
-        </h1>
-        <p style={{ fontSize: '1rem', color: 'rgba(255, 255, 255, 0.7)', maxWidth: '680px', margin: '0 auto' }}>
-          Destaque seu currículo e aumente suas chances de conseguir emprego.
+    <div className={styles.wrap}>
+      <div className={styles.header}>
+        <h1 className={styles.title}>Escolha o seu plano</h1>
+        <p className={styles.subtitle}>
+          Destaque o seu currículo e aumente as suas chances de conseguir emprego.
         </p>
       </div>
 
-      {error && (
-        <div style={{
-          padding: '1rem 1.25rem',
-          marginBottom: '1rem',
-          background: 'rgba(239, 68, 68, 0.15)',
-          border: '2px solid rgba(239, 68, 68, 0.3)',
-          borderRadius: '12px',
-          color: '#fca5a5'
-        }}>
-          {error}
-        </div>
-      )}
-
-      {success && (
-        <div style={{
-          padding: '1rem 1.25rem',
-          marginBottom: '1rem',
-          background: 'rgba(16, 185, 129, 0.15)',
-          border: '2px solid rgba(16, 185, 129, 0.3)',
-          borderRadius: '12px',
-          color: '#34d399'
-        }}>
-          {success}
-        </div>
-      )}
+      {error && <div className={`${styles.alert} ${styles.alertError}`}>{error}</div>}
+      {success && <div className={`${styles.alert} ${styles.alertSuccess}`}>{success}</div>}
 
       {pendingPaymentRequest?.id && (
-        <div style={{ marginBottom: '1rem' }}>
-          <ManualPaymentProofCard
-            request={pendingPaymentRequest}
-            title="Pagamento manual"
-            description="Depois da transferência, envie o comprovativo para aprovação do administrador."
-            onSubmitted={setPendingPaymentRequest}
-          />
+        <div className={styles.pendingBanner}>
+          <div className={styles.pendingInfo}>
+            <span className={styles.pendingIcon} aria-hidden="true">🧾</span>
+            <div className={styles.pendingTexts}>
+              <strong>
+                Pagamento pendente
+                {pendingPaymentRequest.planName ? ` — ${pendingPaymentRequest.planName}` : ''}
+              </strong>
+              <span>Depois da transferência, envie o comprovativo para aprovação.</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            className={styles.pendingBtn}
+            onClick={() => setShowProofModal(true)}
+          >
+            Enviar comprovativo
+          </button>
         </div>
       )}
 
       {showPaymentForm && selectedPlan && (
-        <PaymentForm
+        <ConfirmPaymentModal
           plan={plans.find((item) => item.id === selectedPlan)}
           paymentSettings={paymentSettings}
+          loading={loading}
           onConfirm={() => processSubscription(selectedPlan)}
           onCancel={() => {
             setShowPaymentForm(false);
@@ -351,82 +325,59 @@ export default function CandidatePremiumPlansExperience({
         />
       )}
 
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-        gap: '1.25rem',
-        marginBottom: '1.25rem'
-      }}>
+      {showProofModal && pendingPaymentRequest?.id && (
+        <Modal
+          title="Enviar comprovativo"
+          subtitle="Faça a transferência e envie aqui o comprovativo para revisão do administrador."
+          onClose={() => setShowProofModal(false)}
+          wide
+        >
+          <ManualPaymentProofCard
+            request={pendingPaymentRequest}
+            title="Comprovativo de pagamento"
+            description="Anexe o comprovativo da transferência (PDF, JPG ou PNG)."
+            onSubmitted={(updated) => setPendingPaymentRequest(updated)}
+          />
+        </Modal>
+      )}
+
+      <div className={styles.grid}>
         {plans.map((plan) => {
-          const isCurrent = currentPlan === plan.id;
+          const isCurrent = currentPlan === plan.id || currentPlan === plan.tierId;
           const isSelected = selectedPlan === plan.id && loading;
           const isPopular = Boolean(plan.popular);
           return (
             <div
               key={plan.id}
-              style={{
-                position: 'relative',
-                background: isPopular
-                  ? 'linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.15) 100%)'
-                  : 'rgba(255, 255, 255, 0.05)',
-                border: isPopular
-                  ? '2px solid rgba(251, 191, 36, 0.5)'
-                  : isCurrent
-                    ? '2px solid rgba(16, 185, 129, 0.5)'
-                    : '2px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '20px',
-                padding: '1.5rem',
-                color: 'white'
-              }}
+              className={`${styles.card} ${isPopular ? styles.cardPopular : ''} ${isCurrent ? styles.cardCurrent : ''}`}
             >
-              {isPopular && (
-                <div style={{
-                  position: 'absolute',
-                  top: '-10px',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                  color: '#111827',
-                  padding: '0.25rem 0.8rem',
-                  borderRadius: '999px',
-                  fontSize: '0.75rem',
-                  fontWeight: 700
-                }}>
-                  Popular
-                </div>
-              )}
+              {isPopular && <div className={styles.popularBadge}>Popular</div>}
 
-              <h3 style={{ marginTop: 0, marginBottom: '0.25rem', fontSize: '1.4rem' }}>{plan.name}</h3>
-              <p style={{ marginTop: 0, marginBottom: '1rem', color: '#fbbf24', fontWeight: 800, fontSize: '1.6rem' }}>
-                {plan.priceLabel}
-              </p>
-              <ul style={{ margin: 0, paddingLeft: '1rem', minHeight: 120 }}>
+              <h3 className={styles.planName}>{plan.name}</h3>
+              <div className={styles.priceRow}>
+                <span className={styles.price}>{plan.priceLabel}</span>
+                {Number(plan.price) > 0 && <span className={styles.pricePeriod}>/ mês</span>}
+              </div>
+              {plan.summary && <p className={styles.summary}>{plan.summary}</p>}
+
+              <div className={styles.divider} />
+
+              <ul className={styles.features}>
                 {(plan.features || []).slice(0, 8).map((feature) => (
-                  <li key={feature} style={{ marginBottom: '0.4rem', color: 'rgba(255,255,255,0.9)' }}>{feature}</li>
+                  <li key={feature} className={styles.feature}>
+                    <span className={styles.checkIcon} aria-hidden="true">✓</span>
+                    {feature}
+                  </li>
                 ))}
               </ul>
 
               <button
+                type="button"
                 onClick={() => handleSubscribe(plan.id)}
                 disabled={loading || isCurrent}
-                style={{
-                  width: '100%',
-                  marginTop: '1rem',
-                  padding: '0.9rem',
-                  borderRadius: '12px',
-                  border: 'none',
-                  cursor: isCurrent ? 'not-allowed' : 'pointer',
-                  fontWeight: 700,
-                  color: 'white',
-                  background: isCurrent
-                    ? 'rgba(16, 185, 129, 0.2)'
-                    : isPopular
-                      ? 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)'
-                      : 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-                  opacity: loading && !isSelected ? 0.6 : 1
-                }}
+                className={`${styles.subscribeBtn} ${isPopular ? styles.subscribeBtnPopular : ''} ${isCurrent ? styles.subscribeBtnCurrent : ''}`}
               >
-                {isSelected ? 'Processando...' : isCurrent ? 'Plano Atual' : 'Assinar Plano'}
+                {isSelected ? 'A processar...' : isCurrent ? 'Plano atual' : 'Assinar plano'}
               </button>
             </div>
           );
@@ -434,19 +385,8 @@ export default function CandidatePremiumPlansExperience({
       </div>
 
       {!embedded && (
-        <div style={{ textAlign: 'center' }}>
-          <Link
-            href="/dashboard/candidato"
-            style={{
-              padding: '0.75rem 1.25rem',
-              background: 'rgba(59, 130, 246, 0.2)',
-              border: '2px solid rgba(59, 130, 246, 0.3)',
-              borderRadius: '12px',
-              color: '#60a5fa',
-              textDecoration: 'none',
-              fontWeight: 700
-            }}
-          >
+        <div className={styles.footer}>
+          <Link href="/dashboard/candidato" className={styles.backLink}>
             Voltar ao Dashboard
           </Link>
         </div>

@@ -330,7 +330,7 @@ export default function SubscriptionRequests() {
 export async function getServerSideProps(context) {
   const authResult = await requireAdminPageAuth(context);
   if (!authResult.ok) {
-    return authResult.redirect;
+    return { redirect: authResult.redirect };
   }
 
   return { props: {} };

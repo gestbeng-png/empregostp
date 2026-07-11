@@ -14,7 +14,6 @@ import {
   FiList,
   FiMapPin,
   FiStar,
-  FiUsers,
   FiX,
   FiZap,
 } from "react-icons/fi";
@@ -112,11 +111,9 @@ function parseMoney(value) {
 function formatCompactMoney(value) {
   const numeric = parseMoney(value);
   if (numeric === null) return "";
-  if (numeric >= 1000) {
-    const compact = numeric / 1000;
-    return `${Number.isInteger(compact) ? compact : compact.toFixed(1)}k`;
-  }
-  return new Intl.NumberFormat("pt-PT", { maximumFractionDigits: 0 }).format(numeric);
+  return Math.round(numeric)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
 
 function formatSalary(fromValue, toValue) {
@@ -256,7 +253,6 @@ function JobCard({ job, index, viewMode }) {
   const initials = getCompanyInitials(companyName);
   const match = getMatchPercent(job, index);
   const flag = getCardFlag(job, index, match);
-  const applications = getApplicationCount(job, index === 0 ? 8 : 0);
   const tags = getJobTags(job).slice(0, 3);
 
   return (
@@ -314,12 +310,6 @@ function JobCard({ job, index, viewMode }) {
           <FiClock size={17} />
           {formatPublishedAgo(job.publicadoEm || job.publishedAt || job.createdAt)}
         </span>
-        {applications > 0 ? (
-          <span>
-            <FiUsers size={17} />
-            {applications}
-          </span>
-        ) : null}
       </div>
 
       {tags.length > 0 ? (
@@ -569,10 +559,6 @@ export default function VagasPage({ initialJobs = [] }) {
                   <span>
                     <FiClock />
                     {formatPublishedAgo(featuredJob.publishedAt || featuredJob.createdAt)}
-                  </span>
-                  <span>
-                    <FiUsers />
-                    {featuredApplications} candidaturas
                   </span>
                 </div>
 

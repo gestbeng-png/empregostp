@@ -1,13 +1,16 @@
 import { admin } from '../../../lib/firebaseAdmin';
-import { DEFAULT_CANDIDATO_PLANS } from '../../../lib/defaultPlans';
 import { serializeFirestoreValue } from '../../../lib/empresaPlansCatalog';
-import { normalizeCandidatePlanId } from '../../../lib/candidatePlanFeatures';
+import { getCandidateMarketingPlans } from '../../../lib/candidateCatalog';
 
-const ALLOWED_CANDIDATE_PLANS = new Set([
-  'verification_candidato',
-  'professional_candidato',
-  'unlimited_candidato'
-]);
+// Modelo "3 planos fixos": o candidato vê sempre exatamente os planos canónicos
+// (Verificação, Profissional, Premium). O admin pode editar nome, preço, rótulo
+// e recursos; essas edições são guardadas em documentos do Firestore com o id
+// canónico e sobrepõem-se aos valores por omissão. Planos avulsos criados no
+// passado são ignorados de propósito.
+const FIXED_CANDIDATE_PLANS = getCandidateMarketingPlans({
+  includeBasic: false,
+  includeVerification: true,
+});
 
 function normalizePriceLabel(plan) {
   const price = Number(plan?.price) || 0;
@@ -41,49 +44,38 @@ export default async function handler(req, res) {
       return res.status(403).json({ error: 'Esta API é apenas para candidatos' });
     }
 
-    // Avoid composite index requirements: query by a single field and filter in memory.
-    const snapshot = await admin.firestore().collection('plans')
-      .where('type', '==', 'candidato')
-      .get();
+    // Ler os documentos canónicos diretamente pelo id (onde vivem as edições do
+    // admin). Evita queries/índices e é determinístico: sempre os mesmos 3 planos.
+    const plansCollection = admin.firestore().collection('plans');
+    const refs = FIXED_CANDIDATE_PLANS.map((plan) => plansCollection.doc(plan.id));
+    const docs = await admin.firestore().getAll(...refs);
 
-    const firestorePlans = snapshot.docs.map((doc) => {
-      const data = serializeFirestoreValue(doc.data()) || {};
-      const planTierId = normalizeCandidatePlanId(doc.id, data.name, data);
-      const normalized = {
-        id: doc.id,
-        ...data,
-        planTierId,
-        type: data.type || 'candidato',
-        isDefault: false
-      };
-      normalized.priceLabel = normalizePriceLabel(normalized);
-      return normalized;
+    const overrides = {};
+    docs.forEach((doc) => {
+      if (doc.exists) {
+        overrides[doc.id] = serializeFirestoreValue(doc.data()) || {};
+      }
     });
 
-    const activePlans = firestorePlans
-      .filter((plan) => plan.isActive !== false)
-      .filter((plan) => ALLOWED_CANDIDATE_PLANS.has(String(plan.planTierId || plan.id || '')));
-
-    const dedupedActivePlans = [];
-    const seenTiers = new Set();
-    [...activePlans]
-      .sort((a, b) => (Number(a.price) || 0) - (Number(b.price) || 0))
-      .forEach((plan) => {
-        if (seenTiers.has(plan.planTierId)) return;
-        seenTiers.add(plan.planTierId);
-        dedupedActivePlans.push(plan);
-      });
-
-    const plans = dedupedActivePlans.length
-      ? dedupedActivePlans
-      : DEFAULT_CANDIDATO_PLANS
-          .filter((plan) => ALLOWED_CANDIDATE_PLANS.has(String(plan.id || '')))
-          .map((plan) => ({
-            ...plan,
-            planTierId: plan.id,
-            priceLabel: normalizePriceLabel(plan),
-            isDefault: true
-          }));
+    const plans = FIXED_CANDIDATE_PLANS
+      .map((base) => {
+        const override = overrides[base.id] || {};
+        const merged = {
+          ...base,
+          ...override,
+          id: base.id,
+          planTierId: base.id,
+          type: 'candidato',
+          // Mantém os recursos por omissão se o admin não tiver definido nenhum.
+          features: Array.isArray(override.features) && override.features.length
+            ? override.features
+            : base.features,
+        };
+        merged.priceLabel = normalizePriceLabel(merged);
+        return merged;
+      })
+      // O admin pode desativar um plano canónico; nesse caso não é mostrado.
+      .filter((plan) => plan.isActive !== false);
 
     plans.sort((a, b) => (Number(a.price) || 0) - (Number(b.price) || 0));
 

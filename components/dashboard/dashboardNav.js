@@ -27,6 +27,7 @@ export const DASHBOARD_NAV = {
         { key: "news", label: "Notícias", href: "/dashboard/admin/news", icon: "rss" },
         { key: "resources", label: "Recursos", href: "/dashboard/admin/resources", icon: "folder" },
         { key: "services", label: "Serviços", href: "/dashboard/admin/services", icon: "tool" },
+        { key: "hr-services", label: "Serviços RH", href: "/dashboard/admin/hr-services", icon: "briefcase" },
       ],
     },
     {
@@ -44,6 +45,12 @@ export const DASHBOARD_NAV = {
           label: "Solicitações",
           href: "/dashboard/admin/subscription-requests",
           icon: "inbox",
+        },
+        {
+          key: "affiliates",
+          label: "Afiliados",
+          href: "/dashboard/admin/affiliates",
+          icon: "users",
         },
       ],
     },

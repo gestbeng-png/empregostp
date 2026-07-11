@@ -23,6 +23,7 @@ import {
   FiTool,
   FiStar,
   FiList,
+  FiMessageSquare,
 } from "react-icons/fi";
 import DashboardShell, { Counter } from "../../../components/dashboard/DashboardShell";
 import { useAuth } from "../../../context/AuthContext";
@@ -111,6 +112,9 @@ const ACTIONS = [
   { href: "/dashboard/admin/news", label: "Notícias", icon: FiRss, color: "#7a9000", bg: "rgba(217,255,47,0.16)", border: "rgba(186,230,39,0.32)" },
   { href: "/dashboard/admin/resources", label: "Recursos", icon: FiFolder, color: "#5fb8f5", bg: "rgba(95,184,245,0.12)", border: "rgba(95,184,245,0.24)" },
   { href: "/dashboard/admin/services", label: "Serviços", icon: FiTool, color: "#2057d7", bg: "rgba(32,87,215,0.1)", border: "rgba(32,87,215,0.18)" },
+  { href: "/dashboard/admin/hr-services", label: "Serviços RH", icon: FiBriefcase, color: "#3dbb7a", bg: "rgba(61,187,122,0.12)", border: "rgba(61,187,122,0.22)" },
+  { href: "/dashboard/admin/testimonials", label: "Testemunhos", icon: FiMessageSquare, color: "#3dbb7a", bg: "rgba(61,187,122,0.12)", border: "rgba(61,187,122,0.22)" },
+  { href: "/dashboard/admin/affiliates", label: "Afiliados", icon: FiUserCheck, color: "#7a9000", bg: "rgba(217,255,47,0.16)", border: "rgba(186,230,39,0.32)" },
   { href: "/dashboard/admin/plans", label: "Planos", icon: FiStar, color: "#7a9000", bg: "rgba(217,255,47,0.16)", border: "rgba(186,230,39,0.32)" },
   { href: "/dashboard/admin/payment-settings", label: "Pagamentos", icon: FiCreditCard, color: "#2057d7", bg: "rgba(32,87,215,0.1)", border: "rgba(32,87,215,0.18)" },
   { href: "/dashboard/admin/subscription-requests", label: "Solicitações", icon: FiInbox, color: "#5fb8f5", bg: "rgba(95,184,245,0.12)", border: "rgba(95,184,245,0.24)" },

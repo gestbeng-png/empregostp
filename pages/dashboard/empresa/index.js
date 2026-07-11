@@ -25,8 +25,11 @@ import {
   FiMail,
   FiDownload,
   FiFilter,
+  FiFileText,
+  FiX,
 } from "react-icons/fi";
 import DashboardShell from "../../../components/dashboard/DashboardShell";
+import AffiliateSection from "../../../components/affiliate/AffiliateSection";
 import styles from "../../../styles/EmpresaDashboard.module.css";
 import nookies from "nookies";
 import VerificationBadge from "../../../components/VerificationBadge";
@@ -101,8 +104,10 @@ const MENU_ITEMS = [
   { id: "interviews", label: "Entrevistas", icon: "calendar" },
   { id: "messages", label: "Mensagens", icon: "messages" },
   { id: "analytics", label: "Analytics", icon: "chart" },
+  { id: "hr-services", label: "Serviço RH", icon: "briefcase" },
   { id: "company-profile", label: "Perfil empresa", icon: "building" },
   { id: "plans", label: "Planos", icon: "crown" },
+  { id: "affiliate", label: "Ser Afiliado", icon: "star" },
 ];
 
 const formatInterviewDateTime = (value) => {
@@ -117,6 +122,25 @@ const formatInterviewDateTime = (value) => {
     minute: "2-digit",
   });
 };
+
+const HR_SERVICE_TYPES = [
+  "Recrutamento e seleção",
+  "Triagem de candidatos",
+  "Avaliação curricular",
+  "Entrevistas técnicas",
+  "Consultoria RH",
+  "Documentação laboral",
+  "Outro serviço RH",
+];
+
+const HR_STATUS_META = {
+  pending: { label: "Em análise", className: "badge-pending" },
+  approved: { label: "Aprovado · em andamento", className: "badge-active" },
+  completed: { label: "Concluído", className: "badge-success" },
+  rejected: { label: "Não aprovado", className: "badge-closed" },
+};
+
+const emptyHrDocument = () => ({ label: "", url: "" });
 
 const toDateTimeLocalValue = (value) => {
   if (!value) return "";
@@ -1108,6 +1132,16 @@ export default function EmpresaDashboard({
   });
   const [interviewSubmitting, setInterviewSubmitting] = useState(false);
   const [interviewError, setInterviewError] = useState("");
+  const [hrRequests, setHrRequests] = useState([]);
+  const [hrLoading, setHrLoading] = useState(false);
+  const [hrSubmitting, setHrSubmitting] = useState(false);
+  const [hrFeedback, setHrFeedback] = useState(null);
+  const [hrForm, setHrForm] = useState({
+    serviceType: HR_SERVICE_TYPES[0],
+    title: "",
+    description: "",
+    documents: [emptyHrDocument()],
+  });
   const messagesEndRef = useRef(null);
   const lastOpenedCandidateRef = useRef(null);
   const companyPlanFeatures = useMemo(
@@ -1262,6 +1296,9 @@ export default function EmpresaDashboard({
       // Bring the company back to applications list for interview-related notifications.
       if (notif.type === "interview_response" || notif.type === "application") {
         setActiveTab("applications");
+      }
+      if (String(notif.type || "").startsWith("HR_SERVICE_")) {
+        setActiveTab("hr-services");
       }
       setNotificationsOpen(false);
     },
@@ -1509,6 +1546,131 @@ export default function EmpresaDashboard({
     [router],
   );
 
+  const fetchHrRequests = useCallback(async ({ silent = false } = {}) => {
+    if (!user) return;
+    if (!silent) {
+      setHrLoading(true);
+      setHrFeedback(null);
+    }
+    try {
+      const { getAuth } = await import("firebase/auth");
+      const auth = getAuth();
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) return;
+
+      const response = await fetch("/api/hr-services", {
+        cache: "no-store",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || "Não foi possível carregar os serviços RH.");
+      }
+      setHrRequests(Array.isArray(data.requests) ? data.requests : []);
+    } catch (error) {
+      console.error("Erro ao carregar serviços RH:", error);
+      if (!silent) {
+        setHrFeedback({
+          type: "error",
+          text: error?.message || "Não foi possível carregar os serviços RH.",
+        });
+      }
+    } finally {
+      if (!silent) setHrLoading(false);
+    }
+  }, [user]);
+
+  const updateHrForm = (field, value) => {
+    setHrForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const updateHrDocument = (index, field, value) => {
+    setHrForm((prev) => ({
+      ...prev,
+      documents: prev.documents.map((doc, i) =>
+        i === index ? { ...doc, [field]: value } : doc,
+      ),
+    }));
+  };
+
+  const addHrDocument = () => {
+    setHrForm((prev) => ({
+      ...prev,
+      documents:
+        prev.documents.length >= 10
+          ? prev.documents
+          : [...prev.documents, emptyHrDocument()],
+    }));
+  };
+
+  const removeHrDocument = (index) => {
+    setHrForm((prev) => {
+      const nextDocuments = prev.documents.filter((_, i) => i !== index);
+      return {
+        ...prev,
+        documents: nextDocuments.length ? nextDocuments : [emptyHrDocument()],
+      };
+    });
+  };
+
+  const submitHrRequest = async (event) => {
+    event.preventDefault();
+    if (!user || hrSubmitting) return;
+
+    setHrSubmitting(true);
+    setHrFeedback(null);
+    try {
+      const { getAuth } = await import("firebase/auth");
+      const auth = getAuth();
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) throw new Error("Sessão expirada. Faça login novamente.");
+
+      const documents = hrForm.documents
+        .map((doc) => ({
+          label: (doc.label || "").trim(),
+          url: (doc.url || "").trim(),
+        }))
+        .filter((doc) => doc.url);
+
+      const response = await fetch("/api/hr-services", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          serviceType: hrForm.serviceType,
+          title: hrForm.title,
+          description: hrForm.description,
+          documents,
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || "Não foi possível enviar o pedido.");
+      }
+
+      setHrForm({
+        serviceType: HR_SERVICE_TYPES[0],
+        title: "",
+        description: "",
+        documents: [emptyHrDocument()],
+      });
+      setHrFeedback({
+        type: "success",
+        text: data.message || "Pedido enviado para análise do admin.",
+      });
+      await fetchHrRequests({ silent: true });
+    } catch (error) {
+      setHrFeedback({
+        type: "error",
+        text: error?.message || "Não foi possível enviar o pedido.",
+      });
+    } finally {
+      setHrSubmitting(false);
+    }
+  };
+
   const activeJobs = useMemo(
     () => jobs.filter((job) => job.status === "active"),
     [jobs],
@@ -1526,6 +1688,11 @@ export default function EmpresaDashboard({
     if (activeTab !== "messages") return;
     fetchConversations();
   }, [activeTab, fetchConversations]);
+
+  useEffect(() => {
+    if (activeTab !== "hr-services") return;
+    fetchHrRequests();
+  }, [activeTab, fetchHrRequests]);
 
   useEffect(() => {
     if (activeTab !== "messages") return undefined;
@@ -3419,6 +3586,253 @@ export default function EmpresaDashboard({
             </div>
           </section>
         );
+      case "hr-services": {
+        const pendingHr = hrRequests.filter((request) => request.status === "pending").length;
+        const completedHr = hrRequests.filter((request) => request.status === "completed").length;
+        const formatHrDate = (value) => {
+          if (!value) return "Data não disponível";
+          const date = new Date(value);
+          if (Number.isNaN(date.getTime())) return "Data não disponível";
+          return date.toLocaleDateString("pt-PT", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          });
+        };
+
+        return (
+          <section className={styles.sectionBlock}>
+            <div className="header-card">
+              <div>
+                <div className="header-eyebrow">Empresa · Serviço RH</div>
+                <h1 className="header-title">Solicitar apoio da equipa RH</h1>
+                <p className="header-sub">
+                  Indique o serviço pretendido, detalhe a necessidade, anexe links dos documentos e acompanhe a resposta do admin.
+                </p>
+              </div>
+              <div className="header-actions">
+                <span className="badge badge-active">{pendingHr} em análise</span>
+                <span className="badge badge-success">{completedHr} concluído{completedHr === 1 ? "" : "s"}</span>
+              </div>
+            </div>
+
+            {hrFeedback ? (
+              <div
+                style={{
+                  marginBottom: 16,
+                  padding: "12px 14px",
+                  borderRadius: 12,
+                  border:
+                    hrFeedback.type === "success"
+                      ? "1px solid rgba(61,187,122,0.28)"
+                      : "1px solid rgba(220,106,124,0.28)",
+                  background:
+                    hrFeedback.type === "success"
+                      ? "rgba(61,187,122,0.1)"
+                      : "rgba(220,106,124,0.1)",
+                  color: hrFeedback.type === "success" ? "#15803d" : "#b91c1c",
+                  fontWeight: 700,
+                }}
+              >
+                {hrFeedback.text}
+              </div>
+            ) : null}
+
+            <div className="grid-2" style={{ alignItems: "start" }}>
+              <form className="panel" onSubmit={submitHrRequest}>
+                <div className="panel-title">
+                  Novo pedido
+                  <span className="panel-badge">Admin analisa</span>
+                </div>
+
+                <div className="form-group">
+                  <label>Serviço pretendido</label>
+                  <select
+                    className="form-input"
+                    value={hrForm.serviceType}
+                    onChange={(event) => updateHrForm("serviceType", event.target.value)}
+                    required
+                  >
+                    {HR_SERVICE_TYPES.map((type) => (
+                      <option key={type} value={type}>
+                        {type}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Assunto</label>
+                  <input
+                    className="form-input"
+                    value={hrForm.title}
+                    onChange={(event) => updateHrForm("title", event.target.value)}
+                    minLength={4}
+                    maxLength={120}
+                    placeholder="Ex.: Triagem para vaga de contabilista"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Informações e detalhes</label>
+                  <textarea
+                    className="form-input"
+                    value={hrForm.description}
+                    onChange={(event) => updateHrForm("description", event.target.value)}
+                    minLength={15}
+                    maxLength={3000}
+                    rows={7}
+                    placeholder="Descreva o contexto, prazos, perfil pretendido e instruções relevantes."
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Links dos documentos</label>
+                  <div style={{ display: "grid", gap: 10 }}>
+                    {hrForm.documents.map((doc, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "minmax(0, 0.8fr) minmax(0, 1.4fr) auto",
+                          gap: 8,
+                          alignItems: "center",
+                        }}
+                      >
+                        <input
+                          className="form-input"
+                          value={doc.label}
+                          onChange={(event) => updateHrDocument(index, "label", event.target.value)}
+                          placeholder="Nome"
+                          maxLength={120}
+                        />
+                        <input
+                          className="form-input"
+                          value={doc.url}
+                          onChange={(event) => updateHrDocument(index, "url", event.target.value)}
+                          placeholder="https://..."
+                          type="url"
+                        />
+                        <button
+                          type="button"
+                          className="dash-icon-btn"
+                          onClick={() => removeHrDocument(index)}
+                          aria-label="Remover documento"
+                        >
+                          <FiX />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    style={{ marginTop: 10 }}
+                    onClick={addHrDocument}
+                  >
+                    <FiFileText /> Adicionar documento
+                  </button>
+                </div>
+
+                <button type="submit" className="btn btn-primary" disabled={hrSubmitting}>
+                  <FiSend /> {hrSubmitting ? "A enviar..." : "Enviar para análise"}
+                </button>
+              </form>
+
+              <div className="panel">
+                <div className="panel-title">
+                  Pedidos enviados
+                  <span className="panel-badge">{hrRequests.length}</span>
+                </div>
+                {hrLoading ? (
+                  <div className="dash-muted" style={{ padding: "12px 0" }}>
+                    A carregar pedidos...
+                  </div>
+                ) : hrRequests.length === 0 ? (
+                  <EmptyState
+                    icon={<FiFileText />}
+                    title="Sem pedidos RH"
+                    message="Quando enviar um pedido, o estado e a resposta do admin aparecem aqui."
+                  />
+                ) : (
+                  <div className="item-list">
+                    {hrRequests.map((request) => {
+                      const meta = HR_STATUS_META[request.status] || HR_STATUS_META.pending;
+                      return (
+                        <article key={request.id} className="list-item" style={{ display: "block" }}>
+                          <div className="dash-flex-between" style={{ gap: 12, alignItems: "flex-start" }}>
+                            <div>
+                              <div className="advisor-cat">{request.serviceType}</div>
+                              <div className="list-item-title">{request.title}</div>
+                              <div className="list-item-meta">Enviado em {formatHrDate(request.createdAt)}</div>
+                            </div>
+                            <span className={`badge ${meta.className}`}>{meta.label}</span>
+                          </div>
+                          <p className="dash-muted" style={{ margin: "10px 0 0", whiteSpace: "pre-line" }}>
+                            {request.description}
+                          </p>
+
+                          {request.documents?.length > 0 ? (
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10 }}>
+                              {request.documents.map((doc, index) => (
+                                <a
+                                  key={index}
+                                  href={doc.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="btn btn-ghost btn-sm"
+                                >
+                                  <FiFileText /> {doc.label || "Documento"}
+                                </a>
+                              ))}
+                            </div>
+                          ) : null}
+
+                          {request.adminResponse ? (
+                            <div
+                              style={{
+                                marginTop: 12,
+                                padding: 12,
+                                borderRadius: 12,
+                                background: "var(--surface-2)",
+                                border: "1px solid var(--border)",
+                              }}
+                            >
+                              <div className="advisor-cat">
+                                {request.status === "completed" ? "Resposta final" : "Resposta do admin"}
+                              </div>
+                              <p className="dash-muted" style={{ margin: "6px 0 0", whiteSpace: "pre-line" }}>
+                                {request.adminResponse}
+                              </p>
+                              {request.resultDocuments?.length > 0 ? (
+                                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10 }}>
+                                  {request.resultDocuments.map((doc, index) => (
+                                    <a
+                                      key={index}
+                                      href={doc.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="btn btn-lime btn-sm"
+                                    >
+                                      <FiDownload /> {doc.label || "Resultado"}
+                                    </a>
+                                  ))}
+                                </div>
+                              ) : null}
+                            </div>
+                          ) : null}
+                        </article>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+        );
+      }
       case "plans":
         return (
           <section className={styles.sectionBlock}>
@@ -3432,6 +3846,22 @@ export default function EmpresaDashboard({
               pendingPaymentRequest={pendingPaymentRequest}
               onPaymentProofSubmitted={setPendingPaymentRequest}
               onSubscribe={handleSubscribePlan}
+            />
+          </section>
+        );
+      case "affiliate":
+        return (
+          <section className={styles.sectionBlock}>
+            <AffiliateSection
+              role="empresa"
+              user={user}
+              defaults={{
+                fullName: profile?.companyName || profile?.name || user?.name || "",
+                email: profile?.email || user?.email || "",
+                phone: profile?.phone || profile?.contact || "",
+                location: profile?.location || "",
+                occupation: profile?.industry || profile?.segment || profile?.area || "",
+              }}
             />
           </section>
         );
@@ -3460,9 +3890,11 @@ export default function EmpresaDashboard({
     candidates: "Candidatos verificados disponíveis",
     interviews: `${scheduledInterviewsCount} entrevistas agendadas`,
     analytics: "Desempenho das suas vagas",
+    "hr-services": "Pedidos de serviço RH e respostas do admin",
     messages: "Conversas com candidatos",
     "company-profile": "Perfil público da empresa",
     plans: "Gestão do seu plano",
+    affiliate: "Programa de afiliados EmpregoSTP",
   };
   const empresaNav = [
     {
@@ -3505,6 +3937,7 @@ export default function EmpresaDashboard({
       label: "Análise",
       items: [
         { key: "analytics", label: "Analytics", icon: "chart", onClick: () => setActiveTab("analytics") },
+        { key: "hr-services", label: "Serviço RH", icon: "briefcase", onClick: () => setActiveTab("hr-services") },
       ],
     },
     {
@@ -3512,6 +3945,7 @@ export default function EmpresaDashboard({
       items: [
         { key: "company-profile", label: "Perfil empresa", icon: "user", href: "/dashboard/empresa/profile" },
         { key: "plans", label: "Planos", icon: "star", onClick: () => setActiveTab("plans") },
+        { key: "affiliate", label: "Ser Afiliado", icon: "star", badgeStyle: "lime", onClick: () => setActiveTab("affiliate") },
       ],
     },
   ];

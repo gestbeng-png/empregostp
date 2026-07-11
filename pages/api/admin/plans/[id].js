@@ -20,11 +20,11 @@ export default async function handler(req, res) {
 
     const planRef = admin.firestore().collection('plans').doc(id);
     const planDoc = await planRef.get();
-    if (!planDoc.exists) {
-      return res.status(404).json({ error: 'Plano não encontrado' });
-    }
 
     if (req.method === 'GET') {
+      if (!planDoc.exists) {
+        return res.status(404).json({ error: 'Plano não encontrado' });
+      }
       const data = planDoc.data();
       return res.status(200).json({
         id: planDoc.id,
@@ -79,7 +79,12 @@ export default async function handler(req, res) {
         updateData.features = features;
       }
 
-      await planRef.update(updateData);
+      // Upsert: editar um plano canónico ainda sem documento no Firestore
+      // (ex.: um dos 3 planos fixos de candidato) cria-o no id correto.
+      if (!planDoc.exists) {
+        updateData.createdAt = admin.firestore.FieldValue.serverTimestamp();
+      }
+      await planRef.set(updateData, { merge: true });
       const updated = await planRef.get();
       const d = updated.data();
 
@@ -100,6 +105,9 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'DELETE') {
+      if (!planDoc.exists) {
+        return res.status(404).json({ error: 'Plano não encontrado' });
+      }
       const planName = planDoc.data()?.name || id;
       await planRef.delete();
 

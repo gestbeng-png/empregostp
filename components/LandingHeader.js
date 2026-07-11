@@ -3,6 +3,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { useAuth } from "../context/AuthContext";
+import { useIsInsideDashboardShell } from "../context/DashboardShellContext";
 import styles from "../styles/LandingHeader.module.css";
 
 const ABOUT_SUBMENU = [
@@ -17,21 +18,10 @@ const RESOURCES_SUBMENU = [
   { href: "/recursos", label: "Recursos" },
 ];
 
-const CANDIDATES_SUBMENU = [
-  { href: "/candidatos?nacional", label: "Nacional" },
-  { href: "/candidatos?internacional", label: "Internacional" },
-];
-
 const DEFAULT_NAV_ITEMS = [
   { href: "/vagas", label: "Vagas" },
-  {
-    href: "/candidatos",
-    label: "Candidatos",
-    hasCaret: true,
-    submenu: CANDIDATES_SUBMENU,
-    submenuKey: "candidates",
-  },
-  { href: "/empresas", label: "Empresas" },
+  { href: "/candidatos", label: "Para candidatos" },
+  { href: "/empresas", label: "Para empresas" },
   {
     href: "/recursos",
     label: "Recursos",
@@ -46,14 +36,8 @@ const DEFAULT_NAV_ITEMS = [
 const LIGHT_NAV_ITEMS = [
   { href: "/sobre-nos", label: "Sobre nós" },
   { href: "/vagas", label: "Vagas" },
-  {
-    href: "/candidatos",
-    label: "Candidatos",
-    hasCaret: true,
-    submenu: CANDIDATES_SUBMENU,
-    submenuKey: "candidates",
-  },
-  { href: "/empresas", label: "Empresas" },
+  { href: "/candidatos", label: "Para candidatos" },
+  { href: "/empresas", label: "Para empresas" },
   {
     href: "/recursos",
     label: "Recursos",
@@ -64,6 +48,14 @@ const LIGHT_NAV_ITEMS = [
 ];
 
 export default function LandingHeader({ variant = "light" }) {
+  const isInsideDashboardShell = useIsInsideDashboardShell();
+
+  if (isInsideDashboardShell) return null;
+
+  return <LandingHeaderContent variant={variant} />;
+}
+
+function LandingHeaderContent({ variant = "light" }) {
   const router = useRouter();
   const { user, logout } = useAuth();
   const [profile, setProfile] = useState(null);

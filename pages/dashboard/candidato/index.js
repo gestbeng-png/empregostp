@@ -14,6 +14,7 @@ import { VERIFICATION_TYPE_CONFIG } from "../../../lib/candidateVerification";
 import { getFirebaseStorageErrorMessage } from "../../../lib/firebaseStorageError";
 import { FiSearch, FiStar, FiFileText, FiBell } from "react-icons/fi";
 import DashboardShell from "../../../components/dashboard/DashboardShell";
+import AffiliateSection from "../../../components/affiliate/AffiliateSection";
 import styles from "../../../styles/DashboardCandidato.module.css";
 
 const CandidateApplicationsChart = dynamic(
@@ -289,6 +290,7 @@ const NAV_MENU = [
   { id: "notifications", label: "Notificações", icon: "notifications" },
   { id: "verification", label: "Verificação", icon: "verification" },
   { id: "plans", label: "Planos premium", icon: "plans" },
+  { id: "affiliate", label: "Ser Afiliado", icon: "trophy" },
 ];
 
 const getPlanFeatureList = (features) => {
@@ -4759,6 +4761,23 @@ const CandidateDashboard = () => {
           </div>
         );
 
+      case "affiliate":
+        return (
+          <div className={styles.contentArea}>
+            <AffiliateSection
+              role="candidato"
+              user={user}
+              defaults={{
+                fullName: profile?.fullName || profile?.name || user?.name || "",
+                email: profile?.email || user?.email || "",
+                phone: profile?.phone || "",
+                location: profile?.city || "",
+                occupation: profile?.headline || profile?.profession || "",
+              }}
+            />
+          </div>
+        );
+
       default:
         return null;
     }
@@ -4829,6 +4848,7 @@ const CandidateDashboard = () => {
         { key: "cv-generator", label: "Gerador de CV", icon: "fileText", href: "/recursos/gerador-cv" },
         { key: "verification", label: "Verificação", icon: "verification", onClick: () => setActiveTab("verification") },
         { key: "plans", label: "Planos premium", icon: "star", onClick: () => setActiveTab("plans") },
+        { key: "affiliate", label: "Ser Afiliado", icon: "star", badgeStyle: "lime", onClick: () => setActiveTab("affiliate") },
       ],
     },
   ];
