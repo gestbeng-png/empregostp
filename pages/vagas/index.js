@@ -360,6 +360,8 @@ export default function VagasPage({ initialJobs = [] }) {
   const [isLoading, setIsLoading] = useState(false);
   const [sortBy, setSortBy] = useState("recentes");
   const [viewMode, setViewMode] = useState("grid");
+  const [alertEmail, setAlertEmail] = useState("");
+  const [alertState, setAlertState] = useState({ status: "idle", message: "" });
 
   useEffect(() => {
     setSearchTerm(typeof router.query.search === "string" ? router.query.search : "");
@@ -514,6 +516,55 @@ export default function VagasPage({ initialJobs = [] }) {
 
   const handleSearchSubmit = (event) => {
     event.preventDefault();
+  };
+
+  const handleActivateAlert = async () => {
+    const email = alertEmail.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setAlertState({ status: "error", message: "Introduza um email válido." });
+      return;
+    }
+
+    setAlertState({ status: "loading", message: "" });
+
+    try {
+      const response = await fetch("/api/job-alerts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          filters: {
+            search: searchTerm,
+            localizacao: filters.localizacao,
+            tipoContrato: filters.tipoContrato,
+            categoria: filters.categoria,
+            modalidade: filters.modalidade,
+            experiencia: filters.experiencia,
+            minSalary,
+          },
+        }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        setAlertState({
+          status: "error",
+          message: data.error || "Não foi possível ativar o alerta.",
+        });
+        return;
+      }
+
+      setAlertState({
+        status: "success",
+        message: data.message || "Alerta ativado! Vamos avisar-te por email.",
+      });
+    } catch (error) {
+      setAlertState({
+        status: "error",
+        message: "Erro de ligação. Tente novamente dentro de momentos.",
+      });
+    }
   };
 
   return (
@@ -739,8 +790,47 @@ export default function VagasPage({ initialJobs = [] }) {
                   <FiBell size={26} />
                 </span>
                 <strong>Cria um alerta</strong>
-                <p>Avisamos-te por email assim que surgir uma vaga com estes filtros.</p>
-                <button type="button">Ativar alerta</button>
+                <p>Recebe já por email as vagas publicadas com estes filtros.</p>
+                <input
+                  type="email"
+                  className={styles.alertInput}
+                  placeholder="o.teu@email.com"
+                  value={alertEmail}
+                  onChange={(event) => {
+                    setAlertEmail(event.target.value);
+                    if (alertState.status !== "idle") {
+                      setAlertState({ status: "idle", message: "" });
+                    }
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      handleActivateAlert();
+                    }
+                  }}
+                  aria-label="Email para receber o alerta de vagas"
+                  disabled={alertState.status === "loading"}
+                />
+                <button
+                  type="button"
+                  onClick={handleActivateAlert}
+                  disabled={alertState.status === "loading"}
+                >
+                  {alertState.status === "loading" ? "A ativar…" : "Ativar alerta"}
+                </button>
+                {alertState.message ? (
+                  <p
+                    className={`${styles.alertFeedback} ${
+                      alertState.status === "error"
+                        ? styles.alertFeedbackError
+                        : styles.alertFeedbackSuccess
+                    }`}
+                    role="status"
+                    aria-live="polite"
+                  >
+                    {alertState.message}
+                  </p>
+                ) : null}
               </div>
             </form>
 

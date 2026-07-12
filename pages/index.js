@@ -552,6 +552,10 @@ export default function HomePage({
   const [filteredJobs, setFilteredJobs] = useState(initialJobs);
   const [categories, setCategories] = useState([]);
   const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterState, setNewsletterState] = useState({
+    status: "idle",
+    message: "",
+  });
 
   useEffect(() => {
     setFilteredJobs(initialJobs);
@@ -614,9 +618,46 @@ export default function HomePage({
     );
   };
 
-  const handleNewsletterSubmit = (event) => {
+  const handleNewsletterSubmit = async (event) => {
     event.preventDefault();
-    router.push("/blog");
+    const email = newsletterEmail.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setNewsletterState({
+        status: "error",
+        message: "Introduza um email válido.",
+      });
+      return;
+    }
+
+    setNewsletterState({ status: "loading", message: "" });
+
+    try {
+      const response = await fetch("/api/newsletter/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, source: "home" }),
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        setNewsletterState({
+          status: "error",
+          message: data.error || "Não foi possível subscrever. Tente novamente.",
+        });
+        return;
+      }
+
+      setNewsletterState({
+        status: "success",
+        message: data.message || "Subscrição confirmada! Obrigado.",
+      });
+      setNewsletterEmail("");
+    } catch (error) {
+      setNewsletterState({
+        status: "error",
+        message: "Erro de ligação. Tente novamente dentro de momentos.",
+      });
+    }
   };
 
   const displayedCategories = (
@@ -1133,17 +1174,43 @@ export default function HomePage({
                     <input
                       type="email"
                       value={newsletterEmail}
-                      onChange={(event) =>
-                        setNewsletterEmail(event.target.value)
-                      }
+                      onChange={(event) => {
+                        setNewsletterEmail(event.target.value);
+                        if (newsletterState.status !== "idle") {
+                          setNewsletterState({ status: "idle", message: "" });
+                        }
+                      }}
                       className={styles.newsletterInput}
                       placeholder="Seu email"
                       aria-label="Email para subscrever a newsletter"
+                      disabled={newsletterState.status === "loading"}
                     />
-                    <button type="submit" className={styles.newsletterButton}>
-                      Submeter
+                    <button
+                      type="submit"
+                      className={styles.newsletterButton}
+                      disabled={newsletterState.status === "loading"}
+                    >
+                      {newsletterState.status === "loading" ? "A subscrever…" : "Submeter"}
                     </button>
                   </form>
+                  {newsletterState.message ? (
+                    <p
+                      className={styles.newsletterFeedback}
+                      style={{
+                        marginTop: "0.6rem",
+                        fontSize: "0.85rem",
+                        fontWeight: 600,
+                        color:
+                          newsletterState.status === "error"
+                            ? "#dc2626"
+                            : "#16a34a",
+                      }}
+                      role="status"
+                      aria-live="polite"
+                    >
+                      {newsletterState.message}
+                    </p>
+                  ) : null}
                 </article>
 
                 {newsPosts.map((post) => (

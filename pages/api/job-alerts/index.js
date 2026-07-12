@@ -1,9 +1,11 @@
 import { admin } from '../../../lib/firebaseAdmin';
 import { checkRateLimit } from '../../../lib/rateLimit';
+import { sendEmail, isEmailConfigured } from '../../../lib/email';
+import { filterPublishedJobs, buildJobAlertEmail } from '../../../lib/jobAlertEmail';
 
-// Guarda subscrições de alertas de vagas. O envio periódico dos emails é
-// feito por um processo agendado à parte (ainda não configurado): esta rota
-// apenas regista a intenção do utilizador e os filtros escolhidos.
+// Regista a subscrição do alerta e envia de imediato um email com todas as
+// vagas publicadas que correspondem aos filtros. O envio periódico de futuras
+// vagas continua a poder ser feito por um processo agendado à parte.
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -16,6 +18,15 @@ function clientIp(req) {
   );
 }
 
+function baseUrl(req) {
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    return process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '');
+  }
+  const proto = (req.headers['x-forwarded-proto'] || 'https').split(',')[0].trim();
+  const host = req.headers['x-forwarded-host'] || req.headers.host;
+  return host ? `${proto}://${host}` : '';
+}
+
 function sanitize(value, max = 120) {
   if (typeof value !== 'string') return '';
   return value
@@ -23,6 +34,37 @@ function sanitize(value, max = 120) {
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, max);
+}
+
+async function fetchPublishedJobs() {
+  const snapshot = await admin
+    .firestore()
+    .collection('jobs')
+    .orderBy('createdAt', 'desc')
+    .get();
+
+  const jobs = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
+  // Anexa o nome da empresa para o email ficar mais legível.
+  const companyIds = [...new Set(jobs.map((j) => j.companyId).filter(Boolean))];
+  if (companyIds.length) {
+    const refs = companyIds.map((id) =>
+      admin.firestore().collection('users').doc(id),
+    );
+    const companyDocs = await admin.firestore().getAll(...refs);
+    const namesById = new Map();
+    companyDocs.forEach((doc) => {
+      if (doc.exists) {
+        const data = doc.data() || {};
+        namesById.set(doc.id, data.name || data.fullName || 'Empresa');
+      }
+    });
+    jobs.forEach((job) => {
+      job.empresaNome = namesById.get(job.companyId) || job.empresaNome || job.companyName || 'Empresa';
+    });
+  }
+
+  return jobs;
 }
 
 export default async function handler(req, res) {
@@ -57,6 +99,7 @@ export default async function handler(req, res) {
         : 0,
     };
 
+    // Guardar a subscrição (para futuros envios agendados).
     await admin.firestore().collection('jobAlerts').add({
       email,
       filters,
@@ -67,9 +110,44 @@ export default async function handler(req, res) {
       ip: clientIp(req),
     });
 
+    // Reunir as vagas publicadas que correspondem aos filtros e enviar já o email.
+    const allJobs = await fetchPublishedJobs();
+    const matchingJobs = filterPublishedJobs(allJobs, filters).slice(0, 30);
+    const { subject, html, text } = buildJobAlertEmail({
+      jobs: matchingJobs,
+      filters,
+      baseUrl: baseUrl(req),
+    });
+
+    if (!isEmailConfigured()) {
+      // Subscrição guardada, mas o provedor de email ainda não está configurado.
+      return res.status(202).json({
+        message:
+          'Alerta guardado. O envio de email ainda não está ativo — falta configurar a chave do serviço de email.',
+        emailSent: false,
+        matches: matchingJobs.length,
+      });
+    }
+
+    try {
+      await sendEmail({ to: email, subject, html, text });
+    } catch (emailError) {
+      console.error('Erro ao enviar email de alerta:', emailError);
+      return res.status(202).json({
+        message:
+          'Alerta guardado, mas não foi possível enviar o email agora. Vamos tentar de novo mais tarde.',
+        emailSent: false,
+        matches: matchingJobs.length,
+      });
+    }
+
     return res.status(201).json({
       message:
-        'Alerta ativado! Vamos avisar-te por email assim que surgir uma vaga com estes filtros.',
+        matchingJobs.length > 0
+          ? `Enviámos para ${email} um email com ${matchingJobs.length} vaga${matchingJobs.length === 1 ? '' : 's'} publicada${matchingJobs.length === 1 ? '' : 's'}.`
+          : `Alerta ativado! De momento não há vagas com estes filtros — avisamos-te por email assim que surgir uma.`,
+      emailSent: true,
+      matches: matchingJobs.length,
     });
   } catch (error) {
     console.error('Erro ao registar alerta de vagas:', error);
