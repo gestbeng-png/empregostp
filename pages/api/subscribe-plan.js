@@ -136,6 +136,14 @@ async function handleSubscription(req, res) {
     // Planos básicos sempre estão ativos, planos pagos precisam verificar data de término
     const isBasicPlan = currentPlanId === 'basic_candidato' || currentPlanId === 'basic_empresa';
     const hasActivePlan = !isBasicPlan && isPlanActive(userData.planEndDate);
+
+    // O plano Básico já ativo não precisa de novo pedido, notificação ou escrita.
+    if (isBasicPlan && currentPlanId === requestedPlanIdForRules) {
+      return res.status(200).json({
+        message: 'Plano já está ativo',
+        status: 'approved'
+      });
+    }
     
     // Se já tem plano ativo e está tentando assinar o mesmo plano, bloquear
     if (hasActivePlan && currentPlanId === requestedPlanIdForRules) {
@@ -176,10 +184,14 @@ async function handleSubscription(req, res) {
 
     // Calcular a data de término do plano
     const now = admin.firestore.Timestamp.now();
-    const planEndDate = new admin.firestore.Timestamp(
-      now.seconds + (plan.duration * 24 * 60 * 60),
-      now.nanoseconds
-    );
+    const isRequestedBasicPlan = requestedPlanIdForRules === 'basic_candidato'
+      || requestedPlanIdForRules === 'basic_empresa';
+    const planEndDate = isRequestedBasicPlan
+      ? null
+      : new admin.firestore.Timestamp(
+          now.seconds + (plan.duration * 24 * 60 * 60),
+          now.nanoseconds
+        );
 
     // Criar solicitação de assinatura
     const subscriptionRequest = {
@@ -192,7 +204,7 @@ async function handleSubscription(req, res) {
       planType: inferredPlanType,
       price: plan.price,
       duration: plan.duration || 30,
-      status: 'pending',
+      status: plan.price === 0 ? 'approved' : 'pending',
       requestDate: now,
       createdAt: now,
       updatedAt: now,
@@ -258,7 +270,12 @@ async function handleSubscription(req, res) {
         ...subscriptionRequest,
         paymentInstructions: resolvedPaymentInstructions,
         paymentStatus: plan.price > 0 ? 'awaiting_proof' : 'not_required',
-        priceLabel: plan.priceLabel || ''
+        priceLabel: plan.priceLabel || '',
+        ...(plan.price === 0 && {
+          approvedDate: now,
+          autoApproved: true,
+          processedAt: now
+        })
       };
       transaction.set(subscriptionRef, requestPayload);
 
@@ -298,6 +315,7 @@ async function handleSubscription(req, res) {
           planId: plan.id,
           planName: plan.name,
           planEndDate: planEndDate,
+          ...(isRequestedBasicPlan && { planActivationVersion: null }),
           planFeatures: plan.features || [],
           updatedAt: now
         };
@@ -319,6 +337,29 @@ async function handleSubscription(req, res) {
         }
 
         transaction.update(userRef, updateData);
+
+        const subscriptionMirrorRef = admin.firestore()
+          .collection('subscriptions')
+          .doc(uid);
+        const subscriptionMirror = {
+          planId: plan.id,
+          planTierId: normalizedUserType === 'empresa' ? resolvedEmpresaPlanId : requestedCandidateTierId,
+          planName: plan.name,
+          userId: uid,
+          startDate: now,
+          endDate: planEndDate,
+          status: 'active',
+          features: plan.features || [],
+          ...(isRequestedBasicPlan && { activationVersion: null }),
+          ...(normalizedUserType === 'empresa' && {
+            vagasLimit: updateData.vagasLimit,
+            destaque: updateData.destaque
+          }),
+          ...(normalizedUserType === 'candidato' && {
+            curriculoDestacado: updateData.curriculoDestacado
+          })
+        };
+        transaction.set(subscriptionMirrorRef, subscriptionMirror, { merge: true });
       }
 
       // Criar notificação para o usuário

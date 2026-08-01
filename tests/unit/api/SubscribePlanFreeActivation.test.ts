@@ -1,4 +1,5 @@
 import { admin } from '../../../lib/firebaseAdmin';
+import { sendPushToUser } from '../../../lib/serverNotifications';
 import subscribePlanHandler from '../../../pages/api/subscribe-plan';
 
 jest.mock('../../../lib/firebaseAdmin', () => {
@@ -43,6 +44,7 @@ jest.mock('../../../lib/serverNotifications', () => ({
 
 const authMock = admin.auth as unknown as jest.Mock;
 const firestoreMock = admin.firestore as unknown as jest.Mock;
+const sendPushMock = jest.mocked(sendPushToUser);
 
 function createResponse() {
   const response = {
@@ -54,20 +56,25 @@ function createResponse() {
   return response;
 }
 
-function installFirestore(userType: string) {
+function installFirestore(
+  userType: string,
+  currentPlan = 'professional_empresa',
+) {
   const userRef = {
     get: jest.fn().mockResolvedValue({
       data: () => ({
-        currentPlan: 'basic_empresa',
-        email: 'empresa@example.test',
-        name: 'Empresa Teste',
+        currentPlan,
+        email: 'user@example.test',
+        name: 'Utilizador Teste',
+        planEndDate: currentPlan.startsWith('basic_') ? null : new Date(0),
         userType,
       }),
       exists: true,
     }),
-    id: 'company-1',
+    id: 'user-1',
   };
   const subscriptionRef = { id: 'subscription-1' };
+  const subscriptionMirrorRef = { id: 'user-1' };
   const notificationRef = { id: 'notification-1' };
   const transaction = {
     set: jest.fn(),
@@ -96,31 +103,78 @@ function installFirestore(userType: string) {
     if (name === 'notifications') {
       return { doc: jest.fn(() => notificationRef) };
     }
+    if (name === 'subscriptions') {
+      return { doc: jest.fn(() => subscriptionMirrorRef) };
+    }
     throw new Error(`Colecao inesperada: ${name}`);
   });
 
   firestoreMock.mockReturnValue({ collection, runTransaction });
 
-  return { transaction, userRef };
+  return {
+    notificationRef,
+    runTransaction,
+    subscriptionMirrorRef,
+    subscriptionRef,
+    transaction,
+    userRef,
+  };
 }
 
-describe('ativacao imediata de plano empresarial gratuito', () => {
+describe('ativacao imediata de plano gratuito', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     authMock.mockReturnValue({
-      verifyIdToken: jest.fn().mockResolvedValue({ uid: 'company-1' }),
+      verifyIdToken: jest.fn().mockResolvedValue({ uid: 'user-1' }),
     });
   });
 
-  test.each(['empresa', 'company'])(
-    'ativa o plano e persiste os limites para o tipo %s',
-    async (userType) => {
-      const { transaction, userRef } = installFirestore(userType);
+  test.each([
+    {
+      currentPlan: 'professional_empresa',
+      expectedEntitlements: { destaque: false, vagasLimit: 1 },
+      expectedSubscriptionEntitlements: { destaque: false, vagasLimit: 1 },
+      planId: 'basic_empresa',
+      userType: 'empresa',
+    },
+    {
+      currentPlan: 'professional_empresa',
+      expectedEntitlements: { destaque: false, vagasLimit: 1 },
+      expectedSubscriptionEntitlements: { destaque: false, vagasLimit: 1 },
+      planId: 'basic_empresa',
+      userType: 'company',
+    },
+    {
+      currentPlan: 'professional_candidato',
+      expectedEntitlements: {
+        curriculoDestacado: false,
+        destaque: false,
+      },
+      expectedSubscriptionEntitlements: { curriculoDestacado: false },
+      planId: 'basic_candidato',
+      userType: 'candidato',
+    },
+  ])(
+    'ativa $planId e persiste o contrato para $userType',
+    async ({
+      currentPlan,
+      expectedEntitlements,
+      expectedSubscriptionEntitlements,
+      planId,
+      userType,
+    }) => {
+      const {
+        notificationRef,
+        subscriptionMirrorRef,
+        subscriptionRef,
+        transaction,
+        userRef,
+      } = installFirestore(userType, currentPlan);
       const response = createResponse();
 
       await subscribePlanHandler(
         {
-          body: { planId: 'basic_empresa' },
+          body: { planId },
           headers: { authorization: 'Bearer valid-token' },
           method: 'POST',
         },
@@ -135,12 +189,85 @@ describe('ativacao imediata de plano empresarial gratuito', () => {
       expect(transaction.update).toHaveBeenCalledWith(
         userRef,
         expect.objectContaining({
-          currentPlan: 'basic_empresa',
-          destaque: false,
-          planTierId: 'basic_empresa',
-          vagasLimit: 1,
+          ...expectedEntitlements,
+          currentPlan: planId,
+          planActivationVersion: null,
+          planEndDate: null,
+          planId,
+          planTierId: planId,
         }),
       );
+      const requestPayload = transaction.set.mock.calls.find(
+        ([ref]) => ref === subscriptionRef,
+      )?.[1];
+      expect(requestPayload).toEqual(
+        expect.objectContaining({
+          approvedDate: expect.anything(),
+          autoApproved: true,
+          paymentInstructions: null,
+          paymentStatus: 'not_required',
+          price: 0,
+          processedAt: expect.anything(),
+          status: 'approved',
+        }),
+      );
+      expect(requestPayload.approvedDate).toBe(requestPayload.createdAt);
+      expect(requestPayload.processedAt).toBe(requestPayload.createdAt);
+      expect(requestPayload.requestDate).toBe(requestPayload.createdAt);
+      expect(requestPayload.updatedAt).toBe(requestPayload.createdAt);
+
+      expect(transaction.set).toHaveBeenCalledWith(
+        subscriptionMirrorRef,
+        expect.objectContaining({
+          ...expectedSubscriptionEntitlements,
+          activationVersion: null,
+          endDate: null,
+          planId,
+          planTierId: planId,
+          status: 'active',
+          userId: 'user-1',
+        }),
+        { merge: true },
+      );
+      const userUpdate = transaction.update.mock.calls.find(
+        ([ref]) => ref === userRef,
+      )?.[1];
+      const subscriptionPayload = transaction.set.mock.calls.find(
+        ([ref]) => ref === subscriptionMirrorRef,
+      )?.[1];
+      const notificationPayload = transaction.set.mock.calls.find(
+        ([ref]) => ref === notificationRef,
+      )?.[1];
+      expect(userUpdate.updatedAt).toBe(requestPayload.createdAt);
+      expect(subscriptionPayload.startDate).toBe(requestPayload.createdAt);
+      expect(notificationPayload.createdAt).toBe(requestPayload.createdAt);
+      expect(sendPushMock).not.toHaveBeenCalled();
     },
   );
+
+  test('nao cria novo pedido quando o plano basico ja esta ativo', async () => {
+    const { runTransaction, transaction } = installFirestore(
+      'empresa',
+      'basic_empresa',
+    );
+    const response = createResponse();
+
+    await subscribePlanHandler(
+      {
+        body: { planId: 'basic_empresa' },
+        headers: { authorization: 'Bearer valid-token' },
+        method: 'POST',
+      },
+      response,
+    );
+
+    expect(response.status).toHaveBeenCalledWith(200);
+    expect(response.json).toHaveBeenCalledWith({
+      message: 'Plano já está ativo',
+      status: 'approved',
+    });
+    expect(runTransaction).not.toHaveBeenCalled();
+    expect(transaction.set).not.toHaveBeenCalled();
+    expect(transaction.update).not.toHaveBeenCalled();
+  });
 });
