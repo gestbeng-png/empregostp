@@ -5,14 +5,18 @@ import {
   getFirebaseStorageErrorMessage,
   isFirebaseStorageBillingDisabledError
 } from '../../../../lib/firebaseStorageError';
+import {
+  createPaymentProofFileName,
+  parsePaymentProofDataUrl
+} from '../../../../lib/paymentProofFile';
 import { logServerError, logServerWarning } from '../../../../lib/serverLog';
 import { sendPushToUser } from '../../../../lib/serverNotifications';
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const PAYMENT_PROOF_VALIDATION_MESSAGES = new Set([
   'Formato do comprovativo inválido',
   'Formato não suportado. Envie PDF, JPG ou PNG.',
   'Ficheiro inválido',
+  'O tipo do comprovativo não corresponde ao ficheiro.',
   'O comprovativo deve ter no máximo 10MB.'
 ]);
 const PAYMENT_PROOF_DOMAIN_ERRORS = Object.freeze({
@@ -34,37 +38,6 @@ const PUBLIC_STORAGE_ERROR_CODES = new Set([
   'storage/unauthorized'
 ]);
 
-const sanitizeFileName = (value = '') => String(value).replace(/[^a-zA-Z0-9._-]/g, '-');
-
-const normalizeContentType = (value = '') => String(value || '').trim().toLowerCase();
-
-const isAllowedContentType = (value = '') => {
-  const contentType = normalizeContentType(value);
-  return contentType === 'application/pdf' || contentType.startsWith('image/');
-};
-
-const detectExtension = (contentType = '', fileName = '') => {
-  const normalizedContentType = normalizeContentType(contentType);
-  const byType = {
-    'application/pdf': 'pdf',
-    'image/jpeg': 'jpg',
-    'image/jpg': 'jpg',
-    'image/png': 'png',
-    'image/webp': 'webp'
-  };
-
-  if (byType[normalizedContentType]) return byType[normalizedContentType];
-
-  const name = String(fileName || '');
-  const nameParts = name.split('.');
-  if (nameParts.length > 1) {
-    const ext = sanitizeFileName(nameParts[nameParts.length - 1]).toLowerCase();
-    if (ext) return ext;
-  }
-
-  return 'bin';
-};
-
 const resolveBucketCandidates = () => {
   const appOptionsBucket = admin.app()?.options?.storageBucket || '';
   const envBucket = process.env.FIREBASE_STORAGE_BUCKET || process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || '';
@@ -81,31 +54,12 @@ const resolveBucketCandidates = () => {
 };
 
 async function uploadProofServerSide({ uid, requestId, proofName, fileBase64, contentType }) {
-  const dataUrl = String(fileBase64 || '').trim();
-  const matches = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
-  if (!matches) {
-    throw new Error('Formato do comprovativo inválido');
-  }
-
-  const dataUrlContentType = normalizeContentType(matches[1]);
-  const finalContentType = normalizeContentType(contentType) || dataUrlContentType;
-
-  if (!isAllowedContentType(finalContentType)) {
-    throw new Error('Formato não suportado. Envie PDF, JPG ou PNG.');
-  }
-
-  const buffer = Buffer.from(matches[2], 'base64');
-  if (!buffer || buffer.length === 0) {
-    throw new Error('Ficheiro inválido');
-  }
-  if (buffer.length > MAX_FILE_SIZE) {
-    throw new Error('O comprovativo deve ter no máximo 10MB.');
-  }
-
-  const extension = detectExtension(finalContentType, proofName);
-  const normalizedName = sanitizeFileName(proofName || `comprovativo-${Date.now()}.${extension}`);
-  const hasExtension = normalizedName.includes('.');
-  const fileName = hasExtension ? normalizedName : `${normalizedName}.${extension}`;
+  const {
+    buffer,
+    contentType: finalContentType,
+    extension
+  } = parsePaymentProofDataUrl({ fileBase64, contentType });
+  const fileName = createPaymentProofFileName(proofName, extension);
   const storagePath = `payment-proofs/${uid}/${requestId}-${Date.now()}-${fileName}`;
 
   const bucketCandidates = resolveBucketCandidates();
@@ -137,6 +91,7 @@ async function uploadProofServerSide({ uid, requestId, proofName, fileBase64, co
       resumable: false,
       metadata: {
         contentType: finalContentType,
+        contentDisposition: `attachment; filename="${fileName}"`,
         cacheControl: 'private, max-age=0, no-transform',
         metadata: {
           firebaseStorageDownloadTokens: downloadToken,
@@ -157,6 +112,7 @@ async function uploadProofServerSide({ uid, requestId, proofName, fileBase64, co
             resumable: false,
             metadata: {
               contentType: finalContentType,
+              contentDisposition: `attachment; filename="${fileName}"`,
               cacheControl: 'private, max-age=0, no-transform',
               metadata: {
                 firebaseStorageDownloadTokens: downloadToken,
@@ -205,7 +161,13 @@ export default async function handler(req, res) {
     const token = authHeader.split('Bearer ')[1];
     const decodedToken = await admin.auth().verifyIdToken(token);
     const { id } = req.query;
-    const { proofUrl, proofName, fileBase64, note = '', contentType = '', size = 0 } = req.body || {};
+    const body = req.body || {};
+    const { proofName, fileBase64, note = '', contentType = '' } = body;
+    if (Object.prototype.hasOwnProperty.call(body, 'proofUrl')) {
+      return res.status(400).json({
+        error: 'Envie o comprovativo como ficheiro'
+      });
+    }
 
     const requestRef = admin.firestore().collection('subscription-requests').doc(id);
     const requestDoc = await requestRef.get();
@@ -226,37 +188,24 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Este pedido não requer comprovativo' });
     }
 
-    let finalProofUrl = proofUrl;
-    let finalProofName = proofName;
-    let finalContentType = contentType;
-    let finalSize = Number(size) || 0;
-
-    if ((!finalProofUrl || !finalProofName) && fileBase64) {
-      const uploaded = await uploadProofServerSide({
-        uid: decodedToken.uid,
-        requestId: id,
-        proofName: proofName || `comprovativo-${Date.now()}`,
-        fileBase64,
-        contentType
-      });
-
-      finalProofUrl = uploaded.proofUrl;
-      finalProofName = uploaded.proofName;
-      finalContentType = uploaded.contentType;
-      finalSize = uploaded.size;
-    }
-
-    if (!finalProofUrl || !finalProofName) {
+    if (!fileBase64) {
       return res.status(400).json({ error: 'Comprovativo inválido' });
     }
+    const uploaded = await uploadProofServerSide({
+      uid: decodedToken.uid,
+      requestId: id,
+      proofName,
+      fileBase64,
+      contentType
+    });
 
     const now = admin.firestore.Timestamp.now();
     const paymentProof = {
-      url: finalProofUrl,
-      name: finalProofName,
+      url: uploaded.proofUrl,
+      name: uploaded.proofName,
       note,
-      contentType: finalContentType,
-      size: Number(finalSize) || 0,
+      contentType: uploaded.contentType,
+      size: uploaded.size,
       submittedAt: now,
       submittedBy: decodedToken.uid
     };
