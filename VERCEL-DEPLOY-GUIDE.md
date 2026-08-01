@@ -219,7 +219,8 @@ Dashboard → EmpregoSTP → Settings → Environment Variables
 
 #### 3️⃣ Reconfigure as Variáveis Backend:
 
-**IMPORTANTE:** Copie EXATAMENTE como mostrado abaixo:
+**IMPORTANTE:** obtenha os valores na consola Firebase/Google Cloud e configure-os
+diretamente nos segredos da Vercel. Nunca cole credenciais reais neste ficheiro.
 
 **A) FIREBASE_PROJECT_ID:**
 ```
@@ -228,49 +229,19 @@ empregostp
 
 **B) FIREBASE_CLIENT_EMAIL:**
 ```
-firebase-adminsdk-fbsvc@empregostp.iam.gserviceaccount.com
+__FIREBASE_CLIENT_EMAIL__
 ```
 
 **C) FIREBASE_PRIVATE_KEY:**
 ```
------BEGIN PRIVATE KEY-----
-MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC4FkQ/HE6p4Aiv
-FMu47W2RGQ+SfNvPItELrj+Wv0fdjShqRsmxpIrOduw64mmkPzKii5VVCqC5WJnA
-nmSwQ5usBYCVBMO5G52tBch1k9N0ckoPWkLmAH+02mywEkRXs+F5MgsxigOe6t22
-m/C1NjuIBgj+fLyoJhMO/1kLyopLTKPmDHWoiQN6bM+vrAlTezf7U9hPgIb0K72U
-+4nD0HliZyGPPMSDiZbT/5ZO9r/AMZ2xO7sWL0IaGJkyd1AJwj6wG/VzcfkbhTWB
-mTrV6y5bl+S/u5yrv4gUupglWNfxbMSXkbHJpRBQL75ywoRUG/3wAc3a9/14c9du
-w+JbJp4zAgMBAAECggEADjS9sIcdNPPSh7xZmlxMO8nMz1euWNZNfpLEWnxJbfoC
-N+1djEVv5s37nfGyCFhOLogKDqWC0LrbJqeyin21KjnEefuDpSnR6bPMC/LL+y0E
-tRmYlwpL0KeYgp/uQTxi9ojbn0eQzvc+A+UV1s4oGu+oSwdSQcGqb9pZw1Suhm/y
-bkNOzljzu5jHgKjRv81VXKyvLD9GWLyWQbK6LyzYQ5YL1pQA/Z0DiJefFlpvxLMD
-SdyvwSP/X4BsaR5ZmVS+fQaNTUkwkOJd2xsHPvn/Dsp1jWvRwJI/872IDBodVOHZ
-fiGMz0+Ri3DVyhcRJ6l40JB7WtWXQEDlNRKkhCJ0kQKBgQDzbW0jZGxbTJ4/jzh0
-jZul9eziE9scIpHH4nv8TC9FrTPfJdnp/AZ6Pk8IS6e8Rtm0p3Plu5PW6gwmgbb7
-m3ULip/TYBvWu+sk2j2HilvC2SzOdSiffkboNsjjqMzCN/ey8r4BukRNID01ksRq
-Cf2rXuFl1uN4KI2zbGXmcDiwowKBgQDBmD8X3tZ4nvZraBW3AoJmXN4ZShMtay3x
-Bqa8n3BvSd/lRLiytmJUQlBsGae9ltBoJWTYHxFVF9AdrPEW0dl/Fb2dt8tfcLBT
-JEn92uXZKJiTP2TkgcZyxFUUJceqXTJv0cX/o3EEosE/Gmm0NPqjWemqyk12KPDs
-nAz3MjnlMQKBgQCh9tvX4ZhrAsaD+bIRcqruOHu9TILL7IBco2flTXdif8R0o8Wi
-9moE6fJBzbyz+9wcZBIr96t9IkqlUEdEj4HIBRskU90R+gSRh5fK2BcHxOIYGEHI
-JQfet5zgRM7AJubrLLGZiqqpOlsfiyCegTlDzaRg0yKULz9g8y21rlM5ywKBgEwK
-jw3DO57ZYZVCpvThiXLHm313eRzn8n2vzSJdxf4QmF8npRydQvYxrgEn+pkfefDO
-b1PssBQqbFabrX73ImUmlvoyTTHJw5iEsoOBzbKEnZmI1wpiZx6BO6HUTR7/yGXf
-kdQd0LCvdRRiPY7JGIG9OWkaWV7GKgvmJ7mZAuChAoGAYkFElDpZtscfljUVfSjp
-zIHqye4LLwI6VvrEL/EY/1rZjCxaDIiphNZld74jcjP3Vs9CJSZIOzfGJ2wq/KuV
-ddNYrcxVRl/q4s3dUypIwV9SmQIgwecPUSVju6+qhGeSRv7DwFa4Z+vU2fbJt+Pw
-RB1If6qTQ0UGSKlwg3I1dNk=
------END PRIVATE KEY-----
+__FIREBASE_PRIVATE_KEY__
 ```
 
 **⚠️ ATENÇÃO ao copiar FIREBASE_PRIVATE_KEY:**
-- ✅ Cole EXATAMENTE como está acima
-- ✅ Com `-----BEGIN PRIVATE KEY-----` no começo
-- ✅ Com `-----END PRIVATE KEY-----` no final
-- ✅ Com todas as quebras de linha
-- ❌ NÃO adicione aspas extras
-- ❌ NÃO adicione `\n` manualmente
-- ❌ NÃO remova os hifens
+- ✅ Copie a chave apenas da credencial ativa da service account
+- ✅ Configure o valor diretamente na Vercel, incluindo cabeçalho, rodapé e quebras de linha
+- ✅ Rode imediatamente qualquer chave que tenha sido partilhada ou versionada
+- ❌ Não guarde a chave em documentação, scripts ou ficheiros rastreados pelo Git
 
 #### 4️⃣ Configurar Ambientes:
 
@@ -401,6 +372,5 @@ git push origin feature/nova-funcionalidade
 
 **Última atualização:** 31/10/2025  
 **Commit atual:** `9369a6b - 🚀 Trigger Vercel deploy`
-
 
 

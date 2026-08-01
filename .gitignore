@@ -16,6 +16,9 @@
 # misc
 .DS_Store
 *.pem
+*.key
+*.p12
+*.pfx
 
 # debug
 npm-debug.log*
@@ -25,6 +28,9 @@ yarn-error.log*
 # local env files
 .env*.local
 .env
+.env.*
+!.env.example
+!.env.*.example
 
 # vercel
 .vercel
@@ -38,6 +44,9 @@ next-env.d.ts
 firebase-debug.log
 firebase-debug.*.log
 lib/firebase-admin-credentials.json
+*service-account*.json
+*serviceaccount*.json
+*firebase-admin*.json
 
 # IDE
 .idea/

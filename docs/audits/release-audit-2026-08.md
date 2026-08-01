@@ -9,7 +9,7 @@
 | Fase                                         | Estado   | Observação                                                                                                              |
 | -------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------- |
 | 0 — Baseline, backup e ambiente              | PENDENTE | Baseline local e snapshot de rules concluídos; export Firestore e contas QA bloqueados até confirmação do backup cloud. |
-| 1 — Segurança crítica                        | PENDENTE | Chave privada Admin exposta no histórico exige rotação urgente e saneamento do `HEAD`.                                  |
+| 1 — Segurança crítica                        | EM CURSO | Segredo removido do worktree atual e protegido por teste; rotação e histórico continuam pendentes.                      |
 | 2 — Rotas de API                             | PENDENTE | Ainda não iniciada.                                                                                                     |
 | 3 — Páginas e dashboards                     | PENDENTE | Ainda não iniciada.                                                                                                     |
 | 4 — Purga de legado                          | PENDENTE | Ainda não iniciada.                                                                                                     |
@@ -176,7 +176,7 @@ Ações obrigatórias:
 1. Revogar/eliminar imediatamente a chave exposta na service account; se não for possível identificá-la inequivocamente, rodar todas as chaves dessa identidade.
 2. Confirmar que Vercel e `.env.local` usam exclusivamente a nova chave.
 3. Auditar Cloud Audit Logs desde 2026-04-25 para atividade anómala da identidade.
-4. Substituir os valores reais nos dois documentos por placeholders.
+4. Substituir os valores reais nos dois documentos por placeholders. **Concluído no worktree atual.**
 5. Só com aprovação explícita, sanear todo o histórico com `git filter-repo` e force-push coordenado de branches/tags. Rotação continua obrigatória porque clones, forks e caches podem preservar o valor.
 6. Repetir a varredura de segredos no histórico completo.
 
@@ -208,6 +208,20 @@ São necessárias duas confirmações externas antes de avançar para operaçõe
 2. rotação/revogação da chave Admin exposta.
 
 Depois dessas confirmações, criar as contas `qa-` uma a uma, registar os UIDs e preparar a limpeza UID-a-UID. Nenhum broadcast, `notify-candidates` real ou operação em massa será executado.
+
+## Fase 1 — Segurança crítica
+
+### Contenção de chave Firebase Admin no `HEAD`
+
+| Item                             | Estado           | Ficheiros / evidência                                                                                                                            |
+| -------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Teste de regressão para PEM real | CORRIGIDO        | `tests/unit/security/trackedSecrets.test.ts`; falhou primeiro apontando exclusivamente os dois documentos comprometidos e passou após a redação. |
+| Segredo nos documentos atuais    | CORRIGIDO        | `VERCEL-DEPLOY-GUIDE.md` e `VERCEL-ENV-SETUP.txt` usam apenas placeholders e instruções para configurar diretamente na Vercel.                   |
+| Cobertura de `.gitignore`        | MELHORADO        | `.env.*`, formatos de service account e extensões `*.key`, `*.p12`, `*.pfx`, preservando `.env.example` e variantes de exemplo.                  |
+| Chave no histórico Git           | PENDENTE CRÍTICO | Mantida no histórico anterior por decisão explícita de não fazer `filter-repo`/force-push sem autorização.                                       |
+| Rotação/revogação cloud          | PENDENTE CRÍTICO | Depende de confirmação do proprietário na consola Google Cloud.                                                                                  |
+
+Validação do item: `npm run quality` aprovado com 36 suites e 138 testes. Nenhum valor de segredo foi reproduzido em testes, relatório ou logs da auditoria.
 
 ## Inventário de veredictos
 
