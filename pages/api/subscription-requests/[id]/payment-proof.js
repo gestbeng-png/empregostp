@@ -11,6 +11,7 @@ import {
 } from '../../../../lib/paymentProofFile';
 import { logServerError, logServerWarning } from '../../../../lib/serverLog';
 import { sendPushToUser } from '../../../../lib/serverNotifications';
+import { assertPaymentProofUploadEligible } from '../../../../lib/subscriptionLifecycle';
 
 const PAYMENT_PROOF_VALIDATION_MESSAGES = new Set([
   'Formato do comprovativo inválido',
@@ -143,8 +144,24 @@ async function uploadProofServerSide({ uid, requestId, proofName, fileBase64, co
     proofUrl,
     proofName: fileName,
     contentType: finalContentType,
-    size: buffer.length
+    size: buffer.length,
+    storagePath,
+    bucketName: bucket.name
   };
+}
+
+async function cleanupUploadedProof(uploadedProof) {
+  if (!uploadedProof?.storagePath || !uploadedProof?.bucketName) return;
+
+  try {
+    await admin
+      .storage()
+      .bucket(uploadedProof.bucketName)
+      .file(uploadedProof.storagePath)
+      .delete({ ignoreNotFound: true });
+  } catch (cleanupError) {
+    logServerWarning('payment_proof.cleanup_failed', cleanupError);
+  }
 }
 
 export default async function handler(req, res) {
@@ -176,22 +193,23 @@ export default async function handler(req, res) {
     }
 
     const requestData = requestDoc.data() || {};
-    if (requestData.userId !== decodedToken.uid) {
-      return res.status(403).json({ error: 'Acesso não autorizado' });
+    try {
+      assertPaymentProofUploadEligible(requestData, decodedToken.uid);
+    } catch (eligibilityError) {
+      if (eligibilityError?.code === 'REQUEST_FORBIDDEN') {
+        return res.status(403).json({ error: eligibilityError.message });
+      }
+      if (eligibilityError?.code === 'PAYMENT_PROOF_NOT_REQUIRED') {
+        return res.status(400).json({ error: eligibilityError.message });
+      }
+      return res.status(400).json({ error: eligibilityError.message });
     }
 
-    if (requestData.status === 'approved' || requestData.status === 'rejected') {
-      return res.status(400).json({ error: 'Este pedido já foi processado' });
-    }
-
-    if (Number(requestData.price || 0) <= 0) {
-      return res.status(400).json({ error: 'Este pedido não requer comprovativo' });
-    }
-
+    let uploadedProof = null;
     if (!fileBase64) {
       return res.status(400).json({ error: 'Comprovativo inválido' });
     }
-    const uploaded = await uploadProofServerSide({
+    uploadedProof = await uploadProofServerSide({
       uid: decodedToken.uid,
       requestId: id,
       proofName,
@@ -201,21 +219,44 @@ export default async function handler(req, res) {
 
     const now = admin.firestore.Timestamp.now();
     const paymentProof = {
-      url: uploaded.proofUrl,
-      name: uploaded.proofName,
+      url: uploadedProof.proofUrl,
+      name: uploadedProof.proofName,
       note,
-      contentType: uploaded.contentType,
-      size: uploaded.size,
+      contentType: uploadedProof.contentType,
+      size: uploadedProof.size,
       submittedAt: now,
       submittedBy: decodedToken.uid
     };
 
-    await requestRef.set({
-      paymentProof,
-      paymentStatus: 'proof_submitted',
-      status: 'payment_submitted',
-      updatedAt: now
-    }, { merge: true });
+    try {
+      await admin.firestore().runTransaction(async (transaction) => {
+        const freshRequestDoc = await transaction.get(requestRef);
+        const freshRequest = freshRequestDoc.exists
+          ? freshRequestDoc.data()
+          : null;
+
+        assertPaymentProofUploadEligible(freshRequest, decodedToken.uid);
+
+        transaction.update(requestRef, {
+          paymentProof,
+          paymentStatus: 'proof_submitted',
+          status: 'payment_submitted',
+          updatedAt: now
+        });
+      });
+    } catch (transactionError) {
+      const isKnownPreWriteRejection = [
+        'REQUEST_NOT_FOUND',
+        'REQUEST_FORBIDDEN',
+        'REQUEST_NOT_UPLOAD_ELIGIBLE',
+        'PAYMENT_PROOF_NOT_REQUIRED'
+      ].includes(transactionError?.code);
+
+      if (isKnownPreWriteRejection) {
+        await cleanupUploadedProof(uploadedProof);
+      }
+      throw transactionError;
+    }
 
     const adminSnapshot = await admin.firestore().collection('users').where('userType', '==', 'admin').get();
     const batch = admin.firestore().batch();

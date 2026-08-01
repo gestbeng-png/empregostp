@@ -1,13 +1,15 @@
 import { admin } from '../../../lib/firebaseAdmin';
 import { getDefaultBasicPlanForUserType } from '../../../lib/defaultPlans';
 import { createServerNotification } from '../../../lib/serverNotifications';
+import { evaluatePlanExpirationTask } from '../../../lib/subscriptionLifecycle';
 
 /**
  * Cron job to check and update expired plans
  * Run daily to downgrade users with expired subscriptions to basic plan
  * 
  * Setup: Use CRON_SECRET environment variable for security
- * Example: curl -X POST https://yoursite.com/api/cron/check-plan-expiration -H "Authorization: Bearer YOUR_CRON_SECRET"
+ * Vercel Cron invokes this route with GET. POST remains available for manual runs.
+ * Example: curl https://yoursite.com/api/cron/check-plan-expiration -H "Authorization: Bearer YOUR_CRON_SECRET"
  */
 export default async function handler(req, res) {
   // Verify cron job secret
@@ -21,13 +23,16 @@ export default async function handler(req, res) {
     });
   }
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed. Use POST.' });
+  if (req.method !== 'GET' && req.method !== 'POST') {
+    res.setHeader('Allow', ['GET', 'POST']);
+    return res.status(405).json({ error: 'Method not allowed. Use GET or POST.' });
   }
 
   try {
     const now = new Date();
+    const nowTimestamp = admin.firestore.Timestamp.now();
     let updatedCount = 0;
+    let skippedCount = 0;
     let errorCount = 0;
 
     console.log(`[${now.toISOString()}] Starting plan expiration check...`);
@@ -36,105 +41,139 @@ export default async function handler(req, res) {
     const tasksSnapshot = await admin.firestore()
       .collection('scheduledTasks')
       .where('type', '==', 'REVERT_TO_BASIC_PLAN')
-      .where('executeAt', '<=', admin.firestore.Timestamp.now())
+      .where('executeAt', '<=', nowTimestamp)
       .get();
-
-    const batch = admin.firestore().batch();
 
     for (const doc of tasksSnapshot.docs) {
       try {
-        const task = doc.data();
-        const userId = task.userId;
-        const userRef = admin.firestore().collection('users').doc(userId);
-        const userDoc = await userRef.get();
+        const outcome = await admin.firestore().runTransaction(async (transaction) => {
+          const freshTaskDoc = await transaction.get(doc.ref);
+          if (!freshTaskDoc.exists) {
+            return { status: 'skipped', reason: 'task_already_processed' };
+          }
 
-        if (!userDoc.exists) {
-          console.error(`Usuário ${userId} não encontrado`);
+          const task = freshTaskDoc.data() || {};
+          const userId = task.userId;
+          if (!userId) {
+            transaction.delete(doc.ref);
+            return { status: 'skipped', reason: 'task_without_user' };
+          }
+
+          const userRef = admin.firestore().collection('users').doc(userId);
+          const userDoc = await transaction.get(userRef);
+          if (!userDoc.exists) {
+            transaction.delete(doc.ref);
+            return { status: 'skipped', reason: 'user_not_found' };
+          }
+
+          const subscriptionRef = admin.firestore().collection('subscriptions').doc(userId);
+          const subscriptionDoc = await transaction.get(subscriptionRef);
+          const userData = userDoc.data() || {};
+          const subscriptionData = subscriptionDoc.exists
+            ? subscriptionDoc.data()
+            : null;
+          const eligibility = evaluatePlanExpirationTask({
+            task,
+            user: userData,
+            subscription: subscriptionData,
+            now: nowTimestamp
+          });
+
+          if (!eligibility.eligible) {
+            transaction.delete(doc.ref);
+            return {
+              status: 'skipped',
+              reason: eligibility.reason,
+              userId
+            };
+          }
+
+          const userType = userData.userType === 'empresa' ? 'empresa' : 'candidato';
+          const basicPlanId = userType === 'empresa' ? 'basic_empresa' : 'basic_candidato';
+          const basicPlanRef = admin.firestore().collection('plans').doc(basicPlanId);
+          const basicPlanDoc = await transaction.get(basicPlanRef);
+          const basicPlan = basicPlanDoc.exists
+            ? basicPlanDoc.data()
+            : getDefaultBasicPlanForUserType(userType);
+
+          const userUpdate = {
+            currentPlan: basicPlanId,
+            planId: basicPlanId,
+            planTierId: basicPlanId,
+            planName: basicPlan.name || 'Básico',
+            planEndDate: null,
+            planActivationVersion: null,
+            planFeatures: basicPlan.features || [],
+            updatedAt: admin.firestore.FieldValue.serverTimestamp()
+          };
+
+          if (userType === 'empresa') {
+            userUpdate.vagasLimit = basicPlan.vagasLimit ?? 1;
+            userUpdate.destaque = Boolean(basicPlan.destaque);
+          } else {
+            userUpdate.curriculoDestacado = Boolean(basicPlan.curriculoDestacado);
+            userUpdate.destaque = Boolean(basicPlan.curriculoDestacado);
+          }
+
+          transaction.update(userRef, userUpdate);
+          transaction.set(subscriptionRef, {
+            planId: basicPlanId,
+            planTierId: basicPlanId,
+            planName: basicPlan.name || 'Básico',
+            userId,
+            startDate: nowTimestamp,
+            endDate: null,
+            status: 'active',
+            activationVersion: null,
+            features: basicPlan.features || [],
+            ...(userType === 'empresa'
+              ? {
+                  vagasLimit: basicPlan.vagasLimit ?? 1,
+                  destaque: Boolean(basicPlan.destaque)
+                }
+              : {
+                  curriculoDestacado: Boolean(basicPlan.curriculoDestacado)
+                })
+          });
+          transaction.delete(doc.ref);
+
+          return {
+            status: 'downgraded',
+            userId,
+            userType
+          };
+        });
+
+        if (outcome.status !== 'downgraded') {
+          skippedCount++;
+          console.log(`↷ Skipped plan expiration task ${doc.id}: ${outcome.reason}`);
           continue;
         }
 
-        const userData = userDoc.data();
-        const userType = userData.userType === 'empresa' ? 'empresa' : 'candidato';
-        const basicPlanId = userType === 'empresa' ? 'basic_empresa' : 'basic_candidato';
-
-        // Buscar o plano básico
-        const basicPlanDoc = await admin.firestore().collection('plans').doc(basicPlanId).get();
-        const basicPlan = basicPlanDoc.exists ? basicPlanDoc.data() : getDefaultBasicPlanForUserType(userType);
-
-        // Atualizar usuário para o plano básico
-        const userUpdate = {
-          currentPlan: basicPlanId,
-          planId: basicPlanId,
-          planName: basicPlan.name || 'Básico',
-          planEndDate: null,
-          planFeatures: basicPlan.features,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp()
-        };
-
-        if (userType === 'empresa') {
-          userUpdate.vagasLimit = basicPlan.vagasLimit ?? 1;
-          userUpdate.destaque = Boolean(basicPlan.destaque);
-        } else {
-          userUpdate.curriculoDestacado = Boolean(basicPlan.curriculoDestacado);
-          userUpdate.destaque = Boolean(basicPlan.curriculoDestacado);
-        }
-
-        batch.update(userRef, userUpdate);
-
-        // Atualizar assinatura
-        const subscriptionRef = admin.firestore().collection('subscriptions').doc(userId);
-        batch.set(subscriptionRef, {
-          planId: basicPlanId,
-          planName: basicPlan.name || 'Básico',
-          userId,
-          startDate: admin.firestore.Timestamp.now(),
-          endDate: null,
-          status: 'active',
-          features: basicPlan.features,
-          ...(userType === 'empresa'
-            ? {
-                vagasLimit: basicPlan.vagasLimit ?? 1,
-                destaque: Boolean(basicPlan.destaque)
-              }
-            : {
-                curriculoDestacado: Boolean(basicPlan.curriculoDestacado)
-              })
-        });
-
-        // Marcar tarefa como concluída
-        batch.delete(doc.ref);
-
         updatedCount++;
-        console.log(`✓ User ${userId}: reverted to basic plan`);
+        console.log(`✓ User ${outcome.userId}: reverted to basic plan`);
+
+        try {
+          await createServerNotification(admin, {
+            userId: outcome.userId,
+            type: 'plan_expired',
+            title: '📋 Seu Plano Expirou',
+            message: 'Seu plano expirou e foi alterado para o plano Básico. Renove a sua subscrição para continuar com os recursos premium.',
+            actionUrl: outcome.userType === 'empresa' ? '/premium/empresa' : '/premium/candidatos'
+          });
+        } catch (notificationError) {
+          console.error('Error creating plan expiration notification:', notificationError);
+        }
       } catch (error) {
         errorCount++;
-        console.error(`✗ Error updating user:`, error);
-      }
-    }
-
-    if (updatedCount > 0) {
-      await batch.commit();
-    }
-
-    // Também criar notificação para usuários que foram downgraciados
-    for (const doc of tasksSnapshot.docs) {
-      try {
-        const task = doc.data();
-        await createServerNotification(admin, {
-          userId: task.userId,
-          type: 'plan_expired',
-          title: '📋 Seu Plano Expirou',
-          message: 'Seu plano expirou e foi downgraciado para o plano Básico. Renove sua assinatura para continuar com recursos premium.',
-          actionUrl: '/premium/candidatos'
-        });
-      } catch (error) {
-        console.error('Error creating notification:', error);
+        console.error(`✗ Error processing plan expiration task ${doc.id}:`, error);
       }
     }
 
     console.log(`[${now.toISOString()}] Plan expiration check completed:`, {
       processed: tasksSnapshot.docs.length,
       updated: updatedCount,
+      skipped: skippedCount,
       errors: errorCount
     });
 
@@ -144,6 +183,7 @@ export default async function handler(req, res) {
       stats: {
         processed: tasksSnapshot.docs.length,
         updated: updatedCount,
+        skipped: skippedCount,
         errors: errorCount
       },
       timestamp: now.toISOString()

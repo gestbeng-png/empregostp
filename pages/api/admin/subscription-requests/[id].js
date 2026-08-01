@@ -3,6 +3,22 @@ import { normalizeCandidatePlanId } from '../../../../lib/candidatePlanFeatures'
 import { normalizeEmpresaPlanId } from '../../../../lib/empresaPlanFeatures';
 import { normalizeUserType } from '../../../../lib/defaultPlans';
 import { createServerNotification } from '../../../../lib/serverNotifications';
+import {
+  buildPlanActivationVersion,
+  buildPlanExpirationTaskId
+} from '../../../../lib/subscriptionLifecycle';
+
+function assertRequestCanBeProcessed(request, action) {
+  const allowedStatuses =
+    action === 'approve'
+      ? ['pending', 'payment_submitted']
+      : ['pending', 'payment_submitted'];
+  if (!allowedStatuses.includes(request?.status)) {
+    const error = new Error('Pedido já foi processado');
+    error.code = 'REQUEST_ALREADY_PROCESSED';
+    throw error;
+  }
+}
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -46,6 +62,7 @@ export default async function handler(req, res) {
     }
 
     const now = admin.firestore.Timestamp.now();
+    const activationVersion = buildPlanActivationVersion(id);
 
     if (action === 'approve') {
       if (Number(request.price || 0) > 0 && !request.paymentProof?.url) {
@@ -56,6 +73,14 @@ export default async function handler(req, res) {
       let finalPlanName = request.planName || request.planId;
       
       await admin.firestore().runTransaction(async (transaction) => {
+        const freshRequestDoc = await transaction.get(requestDoc.ref);
+        if (!freshRequestDoc.exists) {
+          const error = new Error('Pedido não encontrado');
+          error.code = 'REQUEST_NOT_FOUND';
+          throw error;
+        }
+        assertRequestCanBeProcessed(freshRequestDoc.data(), 'approve');
+
         // Buscar dados do usuário para verificar o tipo
         const userRef = admin.firestore().collection('users').doc(request.userId);
         const userDoc = await transaction.get(userRef);
@@ -148,7 +173,8 @@ export default async function handler(req, res) {
           startDate: now,
           endDate: endDate,
           status: 'active',
-          planName: planName
+          planName: planName,
+          activationVersion
         };
         
         // Adicionar apenas campos que existem e não são undefined
@@ -178,6 +204,7 @@ export default async function handler(req, res) {
           planEndDate: endDate, // null para planos ilimitados, Timestamp para planos com prazo
           planName: planName || request.planId,
           planStartDate: now, // Adicionar data de início
+          planActivationVersion: activationVersion,
           updatedAt: now
         };
         
@@ -235,10 +262,17 @@ export default async function handler(req, res) {
 
         // Se tem data de término, agendar reversão
         if (endDate) {
-          const scheduledTaskRef = admin.firestore().collection('scheduledTasks').doc();
+          const scheduledTaskRef = admin.firestore()
+            .collection('scheduledTasks')
+            .doc(buildPlanExpirationTaskId(request.userId, id));
           transaction.set(scheduledTaskRef, {
             type: 'REVERT_TO_BASIC_PLAN',
             userId: request.userId,
+            requestId: id,
+            planId: request.planId,
+            planTierId: normalizedUserType === 'empresa' ? resolvedCompanyPlanTier : resolvedCandidatePlanTier,
+            activationVersion,
+            planEndDate: endDate,
             executeAt: endDate,
             created: now
           });
@@ -270,6 +304,14 @@ export default async function handler(req, res) {
     } else {
       // Rejeitar pedido
       await admin.firestore().runTransaction(async (transaction) => {
+        const freshRequestDoc = await transaction.get(requestDoc.ref);
+        if (!freshRequestDoc.exists) {
+          const error = new Error('Pedido não encontrado');
+          error.code = 'REQUEST_NOT_FOUND';
+          throw error;
+        }
+        assertRequestCanBeProcessed(freshRequestDoc.data(), 'reject');
+
         // Atualizar status do pedido
         transaction.update(requestDoc.ref, {
           status: 'rejected',
@@ -310,6 +352,12 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
+    if (error?.code === 'REQUEST_ALREADY_PROCESSED') {
+      return res.status(409).json({ error: error.message });
+    }
+    if (error?.code === 'REQUEST_NOT_FOUND') {
+      return res.status(404).json({ error: error.message });
+    }
     console.error('Erro ao processar pedido:', error);
     console.error('Stack trace:', error.stack);
     return res.status(500).json({ 
