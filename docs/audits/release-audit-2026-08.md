@@ -223,6 +223,19 @@ Depois dessas confirmações, criar as contas `qa-` uma a uma, registar os UIDs 
 
 Validação do item: `npm run quality` aprovado com 36 suites e 138 testes. Nenhum valor de segredo foi reproduzido em testes, relatório ou logs da auditoria.
 
+### Remoção de endpoints internos do artefacto de produção
+
+| Item                        | Estado    | Prova / decisão                                                                                                                                                                                                                                  |
+| --------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `pages/api/create-admin.js` | REMOVIDO  | Zero consumidores após pesquisa por imports e strings de rota. A flag era a única autorização: se ativada, qualquer cliente anónimo podia criar um administrador. A operação local `scripts/createAdmin.mjs` permanece como alternativa a rever. |
+| `pages/api/debug-user.js`   | REMOVIDO  | Zero consumidores. Apesar de validar admin, devolvia documentos completos de utilizador, perfil e subscrição, criando exposição desnecessária de PII.                                                                                            |
+| Regressão estática          | CORRIGIDO | `tests/unit/security/internalToolsRemoval.test.ts` falhou com as duas rotas presentes e passou após a remoção.                                                                                                                                   |
+| `/setup/seed`               | PENDENTE  | Não removido: a página, CSS e testes contêm alterações preexistentes não commitadas do utilizador. O estado atual mantém flag e guard admin; a decisão de purga será isolada sem descartar esse trabalho.                                        |
+
+Não foi feita qualquer chamada às rotas nem ao Firebase. A documentação técnica histórica continua a mencioná-las como fotografia do estado anterior; será marcada/arquivada na fase de documentação legada.
+
+Validação do item: `npm run quality` aprovado com 37 suites e 139 testes.
+
 ## Inventário de veredictos
 
 As tabelas exaustivas de rotas de API e páginas serão acrescentadas nas Fases 2 e 3. Nenhuma rota ou página é marcada como validada com base apenas na auditoria histórica.

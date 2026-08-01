@@ -1,5 +1,5 @@
 import { execFileSync, spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const PRIVATE_KEY_BLOCK =
@@ -25,7 +25,11 @@ describe('segredos nos ficheiros rastreados', () => {
     const exposedFiles: string[] = [];
 
     for (const file of listTrackedTextFiles()) {
-      const contents = readFileSync(resolve(process.cwd(), file));
+      const absolutePath = resolve(process.cwd(), file);
+
+      if (!existsSync(absolutePath)) continue;
+
+      const contents = readFileSync(absolutePath);
 
       if (contents.includes(0)) continue;
 
