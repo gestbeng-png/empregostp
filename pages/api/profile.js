@@ -21,6 +21,13 @@ const serializeDeep = (value) => {
 };
 
 export default async function handler(req, res) {
+  // A rota apenas lê o perfil; POST existe só para receber o uid no corpo.
+  // Sem este guard, um DELETE ou PUT era servido como se fosse um GET.
+  if (req.method !== 'GET' && req.method !== 'POST') {
+    res.setHeader('Allow', ['GET', 'POST']);
+    return res.status(405).json({ error: 'Método não permitido' });
+  }
+
   try {
     const authHeader = req.headers.authorization;
     let authenticatedUid = null;
