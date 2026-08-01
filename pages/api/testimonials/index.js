@@ -1,5 +1,5 @@
 import { admin } from '../../../lib/firebaseAdmin';
-import { checkRateLimit } from '../../../lib/rateLimit';
+import { enforceApiRateLimit, getClientIp } from '../../../lib/apiRateLimit';
 
 const MAX_PUBLIC = 60;
 
@@ -9,15 +9,6 @@ const LIMITS = {
   role: { max: 80 },
   message: { min: 12, max: 600 },
 };
-
-function clientIp(req) {
-  return (
-    req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
-    req.headers['x-real-ip'] ||
-    req.socket?.remoteAddress ||
-    'unknown'
-  );
-}
 
 // Remove tags HTML e espaços supérfluos
 function sanitize(value) {
@@ -70,10 +61,14 @@ export default async function handler(req, res) {
 
   if (req.method === 'POST') {
     // Rate limit: no máximo 3 submissões por minuto por IP
-    if (!checkRateLimit(clientIp(req), 3)) {
-      return res.status(429).json({
-        error: 'Demasiadas submissões. Tente novamente dentro de um minuto.',
-      });
+    if (
+      !(await enforceApiRateLimit(req, res, {
+        scope: 'testimonials',
+        limit: 3,
+        message: 'Demasiadas submissões. Tente novamente dentro de um minuto.',
+      }))
+    ) {
+      return;
     }
 
     try {
@@ -110,7 +105,7 @@ export default async function handler(req, res) {
         status: 'pending',
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         userAgent: req.headers['user-agent'] || null,
-        ip: clientIp(req),
+        ip: getClientIp(req),
       });
 
       return res.status(201).json({

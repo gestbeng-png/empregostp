@@ -1,5 +1,5 @@
 import { admin } from '../../lib/firebaseAdmin';
-import { rateLimitMiddleware } from '../../lib/rateLimit';
+import { enforceApiRateLimit } from '../../lib/apiRateLimit';
 import { getEmpresaPlanFeatures, normalizeEmpresaPlanId } from '../../lib/empresaPlanFeatures';
 import { normalizeCandidatePlanId } from '../../lib/candidatePlanFeatures';
 import { DEFAULT_EMPRESA_PLANS, DEFAULT_CANDIDATO_PLANS, normalizeUserType } from '../../lib/defaultPlans';
@@ -16,8 +16,16 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: 'Método não permitido' });
   }
 
-  // Apply rate limiting - max 10 subscription requests per minute
-  return rateLimitMiddleware(req, res, () => handleSubscription(req, res), 10);
+  // Rate limit: no máximo 10 pedidos de subscrição por minuto por IP
+  if (
+    !(await enforceApiRateLimit(req, res, {
+      scope: 'subscribe_plan',
+      limit: 10,
+    }))
+  ) {
+    return;
+  }
+  return handleSubscription(req, res);
 }
 
 async function handleSubscription(req, res) {

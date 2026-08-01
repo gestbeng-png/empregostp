@@ -1,10 +1,15 @@
 import { admin } from '../../lib/firebaseAdmin';
-import { rateLimitMiddleware } from '../../lib/rateLimit';
+import { enforceApiRateLimit } from '../../lib/apiRateLimit';
 import { createServerNotification } from '../../lib/serverNotifications';
 
 export default async function handler(req, res) {
-  // Apply rate limiting - max 30 requests per minute
-  return rateLimitMiddleware(req, res, () => handleNotifications(req, res), 30);
+  // Rate limit: no máximo 30 pedidos por minuto por IP
+  if (
+    !(await enforceApiRateLimit(req, res, { scope: 'notifications', limit: 30 }))
+  ) {
+    return;
+  }
+  return handleNotifications(req, res);
 }
 
 async function handleNotifications(req, res) {

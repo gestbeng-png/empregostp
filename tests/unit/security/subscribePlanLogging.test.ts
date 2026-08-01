@@ -11,8 +11,8 @@ jest.mock('../../../lib/firebaseAdmin', () => ({
   },
 }));
 
-jest.mock('../../../lib/rateLimit', () => ({
-  rateLimitMiddleware: jest.fn((_req, _res, next) => next()),
+jest.mock('../../../lib/apiRateLimit', () => ({
+  enforceApiRateLimit: jest.fn().mockResolvedValue(true),
 }));
 
 jest.mock('../../../lib/serverNotifications', () => ({

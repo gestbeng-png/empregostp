@@ -1,5 +1,5 @@
 import { admin } from '../../../lib/firebaseAdmin';
-import { checkRateLimit } from '../../../lib/rateLimit';
+import { enforceApiRateLimit, getClientIp } from '../../../lib/apiRateLimit';
 import { sendEmail, isEmailConfigured } from '../../../lib/email';
 import { filterPublishedJobs, buildJobAlertEmail } from '../../../lib/jobAlertEmail';
 
@@ -8,15 +8,6 @@ import { filterPublishedJobs, buildJobAlertEmail } from '../../../lib/jobAlertEm
 // vagas continua a poder ser feito por um processo agendado à parte.
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-function clientIp(req) {
-  return (
-    req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
-    req.headers['x-real-ip'] ||
-    req.socket?.remoteAddress ||
-    'unknown'
-  );
-}
 
 function baseUrl(req) {
   if (process.env.NEXT_PUBLIC_SITE_URL) {
@@ -74,10 +65,10 @@ export default async function handler(req, res) {
   }
 
   // Rate limit: no máximo 3 subscrições por minuto por IP
-  if (!checkRateLimit(clientIp(req), 3)) {
-    return res.status(429).json({
-      error: 'Demasiados pedidos. Tente novamente dentro de um minuto.',
-    });
+  if (
+    !(await enforceApiRateLimit(req, res, { scope: 'job_alerts', limit: 3 }))
+  ) {
+    return;
   }
 
   try {
@@ -107,7 +98,7 @@ export default async function handler(req, res) {
       status: 'pending',
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       userAgent: req.headers['user-agent'] || null,
-      ip: clientIp(req),
+      ip: getClientIp(req),
     });
 
     // Reunir as vagas publicadas que correspondem aos filtros e enviar já o email.
