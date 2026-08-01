@@ -1,5 +1,6 @@
 import { admin } from '../../../lib/firebaseAdmin';
 import { logServerError } from '../../../lib/serverLog';
+import { resolveOwnedStorageObjectPath } from '../../../lib/storageObjectPath';
 
 const mapPlanInfo = (userData) => ({
   currentPlan: userData.currentPlan,
@@ -49,11 +50,37 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Dados do CV inválidos' });
     }
 
+    // O cliente faz o upload diretamente para o Storage e envia-nos o URL
+    // resultante. Sem esta verificação, bastava forjar o URL para apontar o
+    // próprio perfil ao ficheiro de outra pessoa — e passar depois pela rota
+    // de assinatura como se fosse dono dele.
+    const cvStoragePath = resolveOwnedStorageObjectPath({
+      ownerUid: uid,
+      prefix: 'cvUrl',
+      value: cvUrl,
+    });
+    if (!cvStoragePath) {
+      return res.status(400).json({ error: 'Dados do CV inválidos' });
+    }
+
     const userRef = admin.firestore().collection('users').doc(uid);
     const profileRef = admin.firestore().collection('profiles').doc(uid);
 
-    await userRef.update({ cvUrl, cvName, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
-    await profileRef.set({ cvUrl, cvName, updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+    await userRef.update({
+      cvUrl,
+      cvName,
+      cvStoragePath,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+    await profileRef.set(
+      {
+        cvUrl,
+        cvName,
+        cvStoragePath,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      },
+      { merge: true }
+    );
 
     const [userSnap, profileSnap] = await Promise.all([userRef.get(), profileRef.get()]);
     const userData = userSnap.data() || {};
