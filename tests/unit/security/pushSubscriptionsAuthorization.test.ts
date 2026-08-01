@@ -214,7 +214,7 @@ describe('autorização da rota de subscrições push', () => {
       response,
     );
 
-    expect(response.setHeader).toHaveBeenCalledWith('Allow', 'POST, DELETE');
+    expect(response.setHeader).toHaveBeenCalledWith('Allow', ['POST', 'DELETE']);
     expect(response.status).toHaveBeenCalledWith(405);
     expect(authMock).not.toHaveBeenCalled();
   });

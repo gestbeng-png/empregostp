@@ -119,6 +119,6 @@ export default async function handler(req, res) {
     }
   }
 
-  res.setHeader('Allow', 'GET, POST');
+  res.setHeader('Allow', ['GET', 'POST']);
   return res.status(405).json({ error: 'Método não permitido' });
 }

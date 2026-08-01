@@ -19,6 +19,7 @@ const STANDARD_EMPRESA_PLANS = DEFAULT_EMPRESA_PLANS.reduce((acc, plan) => {
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
+    res.setHeader('Allow', ['POST']);
     return res.status(405).json({ message: 'Método não permitido' });
   }
 

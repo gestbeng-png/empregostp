@@ -145,6 +145,6 @@ export default async function handler(req, res) {
 
     default:
       res.setHeader('Allow', ['GET', 'PUT']);
-      res.status(405).end(`Method ${method} Not Allowed`);
+      res.status(405).json({ message: 'Método não permitido' });
   }
 }

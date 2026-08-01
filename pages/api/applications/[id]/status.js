@@ -84,7 +84,7 @@ const serializeTimestamp = (value) => {
 
 export default async function handler(req, res) {
   if (req.method !== 'PATCH' && req.method !== 'PUT') {
-    return res.status(405).setHeader('Allow', ['PATCH', 'PUT']).json({ error: 'Metodo nao permitido' });
+    return res.status(405).setHeader('Allow', ['PATCH', 'PUT']).json({ error: 'Método não permitido' });
   }
 
   const authHeader = req.headers.authorization;

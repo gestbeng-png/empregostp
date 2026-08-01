@@ -243,7 +243,7 @@ describe('rota de URL assinado do CV', () => {
       wrongMethod,
     );
     expect(wrongMethod.status).toHaveBeenCalledWith(405);
-    expect(wrongMethod.setHeader).toHaveBeenCalledWith('Allow', 'POST');
+    expect(wrongMethod.setHeader).toHaveBeenCalledWith('Allow', ['POST']);
   });
 
   test('exige um candidateId válido no corpo', async () => {

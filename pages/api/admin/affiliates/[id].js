@@ -70,7 +70,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ message: 'Estado atualizado', status });
     }
 
-    res.setHeader('Allow', 'PATCH, POST, DELETE');
+    res.setHeader('Allow', ['POST', 'PATCH', 'DELETE']);
     return res.status(405).json({ message: 'Método não permitido' });
   } catch (error) {
     logServerError('admin_affiliates_id.moderar_afiliado_failed', error);

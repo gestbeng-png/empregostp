@@ -123,6 +123,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ message: 'Plano excluído com sucesso', id });
     }
 
+    res.setHeader('Allow', ['GET', 'PUT', 'DELETE']);
     return res.status(405).json({ error: 'Método não permitido' });
   } catch (error) {
     logServerError('admin_plans_id.gerenciar_plano_failed', error);

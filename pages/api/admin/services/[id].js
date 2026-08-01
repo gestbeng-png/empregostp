@@ -112,6 +112,7 @@ export default async function handler(req, res) {
         id
       });
     } else {
+      res.setHeader('Allow', ['GET', 'PUT', 'DELETE']);
       return res.status(405).json({ message: 'Método não permitido' });
     }
   } catch (error) {

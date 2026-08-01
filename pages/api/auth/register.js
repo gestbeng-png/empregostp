@@ -48,8 +48,8 @@ export function buildRegistrationProfile(body = {}, userType) {
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST');
-    return res.status(405).json({ error: 'Method not allowed' });
+    res.setHeader('Allow', ['POST']);
+    return res.status(405).json({ error: 'Método não permitido' });
   }
 
   if (!(await enforceApiRateLimit(req, res, { scope: 'register', limit: 5 }))) {

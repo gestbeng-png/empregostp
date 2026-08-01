@@ -116,6 +116,7 @@ export default async function handler(req, res) {
       return handlePut(req, res, decodedToken);
     }
 
+    res.setHeader('Allow', ['GET', 'POST', 'PUT']);
     return res.status(405).json({ error: 'Método não permitido' });
   } catch (error) {
     logServerError('verifications.api_de_verificacoes_failed', error);

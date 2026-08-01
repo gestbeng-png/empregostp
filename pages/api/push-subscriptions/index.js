@@ -39,7 +39,7 @@ function parsePushSubscriptionBody(body, method) {
 export default async function handler(req, res) {
   const { method } = req;
   if (!ALLOWED_METHODS.has(method)) {
-    res.setHeader('Allow', 'POST, DELETE');
+    res.setHeader('Allow', ['POST', 'DELETE']);
     return res.status(405).json({ error: 'Método não permitido' });
   }
 

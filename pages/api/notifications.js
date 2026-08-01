@@ -140,6 +140,7 @@ async function handleNotifications(req, res) {
       return res.status(200).json({ message: 'Notificação marcada como lida' });
     }
 
+    res.setHeader('Allow', ['GET', 'POST', 'PATCH']);
     return res.status(405).json({ error: 'Método não permitido' });
 
   } catch (error) {

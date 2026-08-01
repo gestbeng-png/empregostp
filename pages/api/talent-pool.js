@@ -20,6 +20,7 @@ export default async function handler(req, res) {
 
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    res.setHeader('Allow', ['GET']);
     return res.status(401).json({ error: 'Token de autenticação não fornecido' });
   }
   const token = authHeader.split('Bearer ')[1];
