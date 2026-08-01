@@ -9,8 +9,8 @@
 | Fase                                         | Estado   | Observação                                                                                                              |
 | -------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------- |
 | 0 — Baseline, backup e ambiente              | PENDENTE | Baseline local e snapshot de rules concluídos; export Firestore e contas QA bloqueados até confirmação do backup cloud. |
-| 1 — Segurança crítica                        | EM CURSO | Segredo removido do worktree atual e protegido por teste; rotação e histórico continuam pendentes.                      |
-| 2 — Rotas de API                             | PENDENTE | Ainda não iniciada.                                                                                                     |
+| 1 — Segurança crítica                        | EM CURSO | Itens 1.3, 1.4, 1.5, 1.6 e 1.7 concluídos. Falta 1.2 (`/setup/seed`) e a rotação da chave Admin, que depende do proprietário. |
+| 2 — Rotas de API                             | EM CURSO | Veredicto de auth das 71 rotas concluído em 1.7; falta a passagem funcional grupo a grupo.                              |
 | 3 — Páginas e dashboards                     | PENDENTE | Ainda não iniciada.                                                                                                     |
 | 4 — Purga de legado                          | PENDENTE | Ainda não iniciada.                                                                                                     |
 | 5 — UX, visual, performance e acessibilidade | PENDENTE | Ainda não iniciada.                                                                                                     |
@@ -402,6 +402,102 @@ Validação do item: 25 casos novos vermelho→verde (`storageObjectPath` 12, `c
 
 **Trabalho por commitar (decisão do proprietário):** as alterações a `pages/candidatos/[id].js`, `pages/dashboard/empresa/candidato/[id].js` e `styles/EmpresaCandidateProfilePage.module.css` contêm as minhas (remoção do `cvUrl` do payload e novo botão) intercaladas, nas mesmas linhas, com trabalho baseline não commitado de retrabalho visual e de gating de privacidade. Não foram commitadas para não apropriar esse trabalho; `tests/unit/security/candidateFileExposure.test.ts` fica retido com elas, por depender do seu estado corrigido. Estão aplicadas no worktree e verdes.
 
+### Item 1.7 (concluído) — revisão transversal de auth
+
+Varredura estática das 71 rotas de `pages/api`, seguida de leitura dirigida a tudo o que a varredura sinalizou.
+
+| Item | Estado | Evidência / decisão |
+| --- | --- | --- |
+| Verificação de admin | OK | Zero rotas sob `/api/admin` sem `userType === 'admin'` a seguir ao `verifyIdToken`. |
+| IDOR nas rotas sensíveis | OK | Todas as rotas endereçadas por id verificam posse antes de agir: `applications/[id]/*` compara `candidateId`/`companyId`, `messages/[conversationId]` exige o uid em `participants`, `jobs/[id]` e `jobs/[id]/destaque` comparam `companyId`, `subscription-requests/[id]/payment-proof` usa `assertPaymentProofUploadEligible`, e `export/applications`, `saved-jobs` e `subscription-requests/current` filtram a query pelo uid do chamador. |
+| Rotas sem `verifyIdToken` | OK | As 11 são públicas por desenho (registo, contacto, testemunhos, newsletter, alertas de vaga, vagas ativas, categorias, download de recursos, recuperação de password, verificação de email, contagem de visualizações). As que escrevem estão todas atrás do limitador Firestore. |
+| Guard de método | CORRIGIDO | `/api/profile` não tinha nenhum: um `DELETE` ou `PUT` era servido como um `GET`. As outras cinco sinalizadas eram falsos positivos do regex (despacham por `const { method } = req` e têm fallthrough 405 correto). Commit `7c9cd7d`. |
+| Cabeçalho `Allow` no 405 | CORRIGIDO | Faltava em 42 rotas, contra a RFC 9110. Métodos inferidos do próprio despacho, revistos um a um antes de aplicar. Commit `643ddb4`. |
+| Microcopy dos 405 | CORRIGIDO | Três variantes conviviam (`Method not allowed`, `Metodo nao permitido`, e a forma correta), duas delas em texto simples inglês. Uniformizadas em português, preservando a chave `error`/`message` de cada rota para não quebrar consumidores. |
+| Regressão | CORRIGIDO | `apiMethodContract.test.ts` fixa: `Allow` presente em toda a rota com 405, microcopy em PT, sem cabeçalho duplicado, inventário não vazio. |
+
+#### Achado por decidir — gating do gerador de CV
+
+`pages/recursos/gerador-cv.js` não tem `getServerSideProps` e portanto nenhum gating de plano, ao contrário das outras duas ferramentas premium (`calculadora-salarial` e `calculadora-impostos`), que redirecionam para `/login` ou para o upgrade. Ao mesmo tempo, `lib/resourcesCatalog.js` tem **duas entradas para a mesma página**: `tool-cv-builder-europass` com `requiresProfessional: true` e `tool-cv-profissional` com `requiresProfessional: false`.
+
+Não alterei nada: fechar o acesso partiria os utilizadores que hoje chegam pela entrada gratuita, e é uma decisão de negócio. **Precisa da tua decisão: o gerador de CV é premium ou gratuito?** Se for premium, removo a entrada gratuita do catálogo e acrescento o `getServerSideProps` igual ao das calculadoras; se for gratuito, removo a flag `requiresProfessional` da entrada duplicada.
+
+#### Veredicto por rota
+
+| Rota | Autenticação | `Allow` | Controlos |
+| --- | --- | --- | --- |
+| `/api/admin` | token + admin | sim | — |
+| `/api/admin/activities` | token + admin | sim | — |
+| `/api/admin/affiliates` | token + admin | sim | — |
+| `/api/admin/affiliates/[id]` | token + admin | sim | — |
+| `/api/admin/hr-services` | token + admin | sim | — |
+| `/api/admin/hr-services/[id]` | token + admin | sim | — |
+| `/api/admin/jobs` | token + admin | sim | posse |
+| `/api/admin/jobs/[id]` | token + admin | sim | — |
+| `/api/admin/jobs/[id]/moderate` | token + admin | sim | transação |
+| `/api/admin/migrate-verifications` | token + admin | sim | — |
+| `/api/admin/moderation-settings` | token + admin | sim | — |
+| `/api/admin/payment-settings` | token + admin | sim | — |
+| `/api/admin/plans` | token + admin | sim | — |
+| `/api/admin/plans/[id]` | token + admin | sim | — |
+| `/api/admin/plans/setup` | token + admin | sim | — |
+| `/api/admin/services` | token + admin | sim | — |
+| `/api/admin/services/[id]` | token + admin | sim | — |
+| `/api/admin/subscription-requests` | token + admin | sim | — |
+| `/api/admin/subscription-requests/[id]` | token + admin | sim | transação |
+| `/api/admin/testimonials` | token + admin | sim | — |
+| `/api/admin/testimonials/[id]` | token + admin | sim | — |
+| `/api/admin/users` | token + admin | sim | — |
+| `/api/admin/users/[id]` | token + admin | sim | — |
+| `/api/admin/verifications` | token + admin | sim | — |
+| `/api/admin/verify-action` | token + admin | sim | — |
+| `/api/affiliate/apply` | token + tipo | sim | — |
+| `/api/analytics` | token + tipo | sim | posse |
+| `/api/applications` | token + tipo | sim | posse, transação |
+| `/api/applications/[id]/interview-ics` | token + tipo | sim | posse |
+| `/api/applications/[id]/interview-response` | token + tipo | sim | posse, transação |
+| `/api/applications/[id]/status` | token + admin | sim | transação |
+| `/api/auth/register` | pública (desenho) | sim | rate-limit |
+| `/api/auth/send-password-reset` | pública (desenho) | sim | — |
+| `/api/auth/send-verification` | token | sim | — |
+| `/api/auth/setup-user` | token + tipo | sim | — |
+| `/api/candidate/plan-status` | token + tipo | sim | posse |
+| `/api/candidate/plans` | token + tipo | sim | — |
+| `/api/career-advice` | token + tipo | sim | — |
+| `/api/contact` | pública (desenho) | sim | rate-limit |
+| `/api/cron/check-job-expiration` | `CRON_SECRET` | sim | — |
+| `/api/cron/check-plan-expiration` | `CRON_SECRET` | sim | transação |
+| `/api/empresa` | token + tipo | sim | — |
+| `/api/export/applications` | token + tipo | sim | posse |
+| `/api/files/candidate-cv` | token + tipo | sim | — |
+| `/api/hr-services` | token + tipo | sim | posse |
+| `/api/job-alerts` | pública (desenho) | sim | rate-limit |
+| `/api/jobs` | token + tipo | sim | posse |
+| `/api/jobs/[id]` | token + tipo | sim | posse |
+| `/api/jobs/[id]/destaque` | token + tipo | sim | posse |
+| `/api/jobs/active` | pública (desenho) | sim | — |
+| `/api/jobs/categories` | pública (desenho) | sim | — |
+| `/api/messages` | token + tipo | sim | transação |
+| `/api/messages/[conversationId]` | token + tipo | sim | posse |
+| `/api/newsletter/broadcast` | token + admin | sim | — |
+| `/api/newsletter/subscribe` | pública (desenho) | sim | rate-limit |
+| `/api/notifications` | token + admin | sim | posse, rate-limit |
+| `/api/notify-candidates` | token + tipo | sim | — |
+| `/api/profile` | token + admin | sim | posse |
+| `/api/profile/update` | token + tipo | sim | — |
+| `/api/profile/upload-cv` | token + tipo | sim | — |
+| `/api/push-subscriptions` | token | sim | posse, transação |
+| `/api/recommendations` | token + tipo | sim | posse |
+| `/api/resources/download` | pública (desenho) | sim | — |
+| `/api/saved-jobs` | token + tipo | sim | posse |
+| `/api/subscribe-plan` | token + tipo | sim | posse, rate-limit, transação |
+| `/api/subscription-requests/[id]/payment-proof` | token + tipo | sim | transação |
+| `/api/subscription-requests/current` | token | sim | posse |
+| `/api/talent-pool` | token + tipo | sim | — |
+| `/api/testimonials` | pública (desenho) | sim | rate-limit |
+| `/api/track-view` | pública (desenho) | sim | — |
+| `/api/verifications` | token + admin | sim | — |
+
 ## Inventário de veredictos
 
-As tabelas exaustivas de rotas de API e páginas serão acrescentadas nas Fases 2 e 3. Nenhuma rota ou página é marcada como validada com base apenas na auditoria histórica.
+A tabela de rotas de API está acima, na Fase 1.7. A tabela de páginas é acrescentada na Fase 3. Nenhuma rota ou página é marcada como validada com base apenas na auditoria histórica.
