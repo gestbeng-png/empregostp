@@ -357,6 +357,19 @@ Validação do item: testes dirigidos vermelho→verde (guard 8/8 antes da imple
 
 Validação: testes dirigidos vermelho→verde (8/9 falharam antes da correção), `npm run quality` aprovado com 53 suites e 229 testes, `npm run build` concluído com sucesso. Nenhuma chamada ao Firebase online foi efetuada.
 
+### Item 1.5 (concluído) — moderação de vagas com toggle admin
+
+| Item                          | Estado    | Ficheiros / evidência                                                                                                                                                                                                                          |
+| ----------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Toggle nas settings           | CRIADO    | `settings/moderation.jobApprovalRequired` gerido por GET/PUT `/api/admin/moderation-settings` (admin-only, valida booleano, auditoria em `activities`). Default desligado = publicação direta, comportamento atual preservado até decisão do dono. |
+| Criação com moderação         | CORRIGIDO | `POST /api/jobs` cria `pending_review` sem `publishedAt` quando o toggle está ligado; `isJobPubliclyVisible` já só aceita `active`, pelo que a vaga fica invisível ao público. Admins recebem notificação in-app da fila. Leitura das settings falha aberto com `jobs.moderation_settings_lookup_failed`. |
+| Decisão admin                 | CRIADO    | `POST /api/admin/jobs/[id]/moderate` (`approve`/`reject` + motivo sanitizado): transacional, 409 para vagas já processadas ou expiradas antes da aprovação, notificação in-app + push + email branded PT à empresa (falha de entrega não reverte a decisão). |
+| Fila no GET admin             | MELHORADO | `GET /api/admin/jobs?status=pending_review` funciona com o filtro existente; stats ganham `pendingReview`.                                                                                                                                     |
+| Criação manual admin          | COMMITADO | Trabalho baseline coerente aterrado como commit próprio `d2756c8`: empresas externas por nome, validação salarial, `currency`. Coberto por `AdminJobCreation.test.ts` (3/3).                                                                    |
+| UI dos dashboards             | PENDENTE (Fase 3) | Badges/ações de moderação nos dashboards admin e empresa entram na passagem página a página da Fase 3.                                                                                                                                  |
+
+Validação do item: `JobModeration.test.ts` com 13 casos (criação ON/OFF/falha de settings, aprovação, rejeição com motivo, 409 repetido, 409 expirado, 403 não-admin, 400 ação inválida, email falhado não reverte, 405, toggle GET/PUT/403), `npm run quality` aprovado com 54 suites e 242 testes, `npm run build` concluído. Commits `c5f477d` e `d2756c8`. Nenhuma chamada ao Firebase online foi efetuada.
+
 ## Inventário de veredictos
 
 As tabelas exaustivas de rotas de API e páginas serão acrescentadas nas Fases 2 e 3. Nenhuma rota ou página é marcada como validada com base apenas na auditoria histórica.
