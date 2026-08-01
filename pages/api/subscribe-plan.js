@@ -4,6 +4,12 @@ import { getEmpresaPlanFeatures, normalizeEmpresaPlanId } from '../../lib/empres
 import { normalizeCandidatePlanId } from '../../lib/candidatePlanFeatures';
 import { DEFAULT_EMPRESA_PLANS, DEFAULT_CANDIDATO_PLANS, normalizeUserType } from '../../lib/defaultPlans';
 import { logServerError, logServerWarning } from '../../lib/serverLog';
+import {
+  buildPlanActivationVersion,
+  buildPlanExpirationTaskId,
+  normalizePlanDurationDays,
+  normalizePlanPrice,
+} from '../../lib/subscriptionLifecycle';
 import { sendPushToUser } from '../../lib/serverNotifications';
 
 const STANDARD_EMPRESA_PLANS = DEFAULT_EMPRESA_PLANS.reduce((acc, plan) => {
@@ -130,6 +136,18 @@ async function handleSubscription(req, res) {
       return res.status(400).json({ message: 'Plano não suportado. Selecione um dos planos atuais.' });
     }
 
+    // Preço e duração são normalizados uma única vez; todas as decisões
+    // gratuito/pago e datas de expiração derivam destes dois valores.
+    const planPrice = normalizePlanPrice(plan.price);
+    const planDurationDays = normalizePlanDurationDays(plan.duration);
+    if (planPrice === null || planDurationDays === null) {
+      logServerWarning('subscription.plan_config_invalid', undefined);
+      return res.status(400).json({
+        message: 'A configuração deste plano está inválida. Contacte o suporte.',
+      });
+    }
+    const isFreePlan = planPrice === 0;
+
     // Verificar se o usuário já tem um plano ativo
     const requestedEmpresaTierId = normalizedRequestedEmpresaPlanId;
     const requestedCandidateTierId = normalizedRequestedCandidatePlanId;
@@ -197,7 +215,7 @@ async function handleSubscription(req, res) {
     const planEndDate = isRequestedBasicPlan
       ? null
       : new admin.firestore.Timestamp(
-          now.seconds + (plan.duration * 24 * 60 * 60),
+          now.seconds + (planDurationDays * 24 * 60 * 60),
           now.nanoseconds
         );
 
@@ -210,9 +228,9 @@ async function handleSubscription(req, res) {
       planTierId: normalizedUserType === 'empresa' ? requestedEmpresaTierId : requestedCandidateTierId,
       planName: plan.name,
       planType: inferredPlanType,
-      price: plan.price,
-      duration: plan.duration || 30,
-      status: plan.price === 0 ? 'approved' : 'pending',
+      price: planPrice,
+      duration: planDurationDays,
+      status: isFreePlan ? 'approved' : 'pending',
       requestDate: now,
       createdAt: now,
       updatedAt: now,
@@ -239,7 +257,7 @@ async function handleSubscription(req, res) {
     let adminIds = [];
     let paymentSettings = null;
     
-    if (plan.price > 0) {
+    if (!isFreePlan) {
       const adminsSnapshot = await admin.firestore()
         .collection('users')
         .where('userType', '==', 'admin')
@@ -257,8 +275,8 @@ async function handleSubscription(req, res) {
       }
     }
 
-    const resolvedPaymentInstructions = plan.price > 0 ? {
-      amount: plan.price,
+    const resolvedPaymentInstructions = !isFreePlan ? {
+      amount: planPrice,
       currency: 'Dobras',
       accountNumber: paymentSettings?.accountNumber || '',
       accountName: paymentSettings?.accountName || '',
@@ -277,9 +295,9 @@ async function handleSubscription(req, res) {
       const requestPayload = {
         ...subscriptionRequest,
         paymentInstructions: resolvedPaymentInstructions,
-        paymentStatus: plan.price > 0 ? 'awaiting_proof' : 'not_required',
+        paymentStatus: !isFreePlan ? 'awaiting_proof' : 'not_required',
         priceLabel: plan.priceLabel || '',
-        ...(plan.price === 0 && {
+        ...(isFreePlan && {
           approvedDate: now,
           autoApproved: true,
           processedAt: now
@@ -288,7 +306,7 @@ async function handleSubscription(req, res) {
       transaction.set(subscriptionRef, requestPayload);
 
       // Se for plano PAGO, criar notificação para ADMIN
-      if (plan.price > 0 && adminIds.length > 0) {
+      if (!isFreePlan && adminIds.length > 0) {
         // Criar notificação para cada admin (dentro da transação)
         adminIds.forEach(adminId => {
           const adminNotificationRef = admin.firestore().collection('notifications').doc();
@@ -309,7 +327,7 @@ async function handleSubscription(req, res) {
       }
 
       // Se for plano gratuito, atualizar usuário imediatamente
-      if (plan.price === 0) {
+      if (isFreePlan) {
         const userRef = admin.firestore().collection('users').doc(uid);
         const resolvedEmpresaPlanId = normalizedUserType === 'empresa'
           ? requestedEmpresaTierId
@@ -317,13 +335,22 @@ async function handleSubscription(req, res) {
         const resolvedEmpresaFeatures = normalizedUserType === 'empresa'
           ? getEmpresaPlanFeatures(resolvedEmpresaPlanId, plan.name, plan)
           : null;
+        // O Básico é vitalício e não versionado; um tier com prazo ativado
+        // gratuitamente recebe o mesmo lifecycle versionado do fluxo pago,
+        // para que o cron de expiração o consiga reverter com segurança.
+        const activationVersion = isRequestedBasicPlan
+          ? null
+          : buildPlanActivationVersion(subscriptionRef.id);
+        const resolvedTierId = normalizedUserType === 'empresa'
+          ? resolvedEmpresaPlanId
+          : requestedCandidateTierId;
         const updateData = {
-          currentPlan: normalizedUserType === 'empresa' ? resolvedEmpresaPlanId : requestedCandidateTierId,
-          planTierId: normalizedUserType === 'empresa' ? resolvedEmpresaPlanId : requestedCandidateTierId,
+          currentPlan: resolvedTierId,
+          planTierId: resolvedTierId,
           planId: plan.id,
           planName: plan.name,
           planEndDate: planEndDate,
-          ...(isRequestedBasicPlan && { planActivationVersion: null }),
+          planActivationVersion: activationVersion,
           planFeatures: plan.features || [],
           updatedAt: now
         };
@@ -351,14 +378,14 @@ async function handleSubscription(req, res) {
           .doc(uid);
         const subscriptionMirror = {
           planId: plan.id,
-          planTierId: normalizedUserType === 'empresa' ? resolvedEmpresaPlanId : requestedCandidateTierId,
+          planTierId: resolvedTierId,
           planName: plan.name,
           userId: uid,
           startDate: now,
           endDate: planEndDate,
           status: 'active',
           features: plan.features || [],
-          ...(isRequestedBasicPlan && { activationVersion: null }),
+          activationVersion,
           ...(normalizedUserType === 'empresa' && {
             vagasLimit: updateData.vagasLimit,
             destaque: updateData.destaque
@@ -368,6 +395,23 @@ async function handleSubscription(req, res) {
           })
         };
         transaction.set(subscriptionMirrorRef, subscriptionMirror, { merge: true });
+
+        if (!isRequestedBasicPlan && planEndDate) {
+          const scheduledTaskRef = admin.firestore()
+            .collection('scheduledTasks')
+            .doc(buildPlanExpirationTaskId(uid, subscriptionRef.id));
+          transaction.set(scheduledTaskRef, {
+            type: 'REVERT_TO_BASIC_PLAN',
+            userId: uid,
+            requestId: subscriptionRef.id,
+            planId: plan.id,
+            planTierId: resolvedTierId,
+            activationVersion,
+            planEndDate,
+            executeAt: planEndDate,
+            created: now
+          });
+        }
       }
 
       // Criar notificação para o usuário
@@ -375,7 +419,7 @@ async function handleSubscription(req, res) {
       let notificationMessage = '';
       let notificationTitle = '';
       
-      if (plan.price === 0) {
+      if (isFreePlan) {
         notificationTitle = 'Plano Ativado';
         notificationMessage = `Seu plano ${plan.name} foi ativado com sucesso!`;
       } else if (hasActivePlan && isUpgrade) {
@@ -383,7 +427,7 @@ async function handleSubscription(req, res) {
         notificationTitle = 'Upgrade de Plano Solicitado';
         const currentPlanName = userData.planName || currentPlanId;
         if (paymentSettings && paymentSettings.accountNumber) {
-          notificationMessage = `Você solicitou upgrade do plano ${currentPlanName} para ${plan.name}. Faça a transferência de ${plan.price} Dobras para a conta ${paymentSettings.accountNumber}${paymentSettings.accountName ? ` (${paymentSettings.accountName})` : ''}${paymentSettings.bankName ? ` - ${paymentSettings.bankName}` : ''} e envie o comprovativo na plataforma. Seu plano atual permanecerá ativo até a aprovação do upgrade.`;
+          notificationMessage = `Você solicitou upgrade do plano ${currentPlanName} para ${plan.name}. Faça a transferência de ${planPrice} Dobras para a conta ${paymentSettings.accountNumber}${paymentSettings.accountName ? ` (${paymentSettings.accountName})` : ''}${paymentSettings.bankName ? ` - ${paymentSettings.bankName}` : ''} e envie o comprovativo na plataforma. Seu plano atual permanecerá ativo até a aprovação do upgrade.`;
         } else {
           notificationMessage = `Você solicitou upgrade do plano ${currentPlanName} para ${plan.name}. Aguarde instruções de pagamento do administrador. Seu plano atual permanecerá ativo até a aprovação do upgrade.`;
         }
@@ -391,7 +435,7 @@ async function handleSubscription(req, res) {
         notificationTitle = 'Aguardando Pagamento';
         // Usar configurações de pagamento buscadas antes da transação
         if (paymentSettings && paymentSettings.accountNumber) {
-          notificationMessage = `Sua solicitação do plano ${plan.name} foi recebida. Faça a transferência de ${plan.price} Dobras para a conta ${paymentSettings.accountNumber}${paymentSettings.accountName ? ` (${paymentSettings.accountName})` : ''}${paymentSettings.bankName ? ` - ${paymentSettings.bankName}` : ''} e envie o comprovativo na plataforma para revisão.`;
+          notificationMessage = `Sua solicitação do plano ${plan.name} foi recebida. Faça a transferência de ${planPrice} Dobras para a conta ${paymentSettings.accountNumber}${paymentSettings.accountName ? ` (${paymentSettings.accountName})` : ''}${paymentSettings.bankName ? ` - ${paymentSettings.bankName}` : ''} e envie o comprovativo na plataforma para revisão.`;
         } else {
           notificationMessage = `Sua solicitação do plano ${plan.name} foi recebida. Aguarde instruções de pagamento do administrador.`;
         }
@@ -408,7 +452,7 @@ async function handleSubscription(req, res) {
       transaction.set(notificationRef, notification);
     });
 
-    if (plan.price > 0 && adminIds.length > 0) {
+    if (!isFreePlan && adminIds.length > 0) {
       await Promise.all(adminIds.map((adminId) => sendPushToUser(admin, adminId, {
         title: 'Nova Solicitação de Plano',
         message: `${userData.fullName || userData.name || userData.email} (${userData.email}) solicitou o plano ${plan.name} (${plan.priceLabel}).`,
@@ -419,7 +463,7 @@ async function handleSubscription(req, res) {
       })));
     }
 
-    if (plan.price > 0) {
+    if (!isFreePlan) {
       let notificationTitle = '';
       let notificationMessage = '';
       if (hasActivePlan && isUpgrade) {
@@ -449,8 +493,8 @@ async function handleSubscription(req, res) {
     const paymentInstructions = resolvedPaymentInstructions;
 
     // Retornar resposta apropriada
-    if (plan.price === 0) {
-      return res.status(200).json({ 
+    if (isFreePlan) {
+      return res.status(200).json({
         message: 'Plano ativado com sucesso',
         status: 'approved'
       });
@@ -460,7 +504,7 @@ async function handleSubscription(req, res) {
         status: 'awaiting_payment',
         requestId: subscriptionRequestId,
         paymentInstructions: paymentInstructions || {
-          amount: plan.price,
+          amount: planPrice,
           currency: 'Dobras',
           email: 'empregoSTP@gmail.com',
           message: 'Faça a transferência e envie o comprovativo pela plataforma.'
