@@ -3,6 +3,7 @@ import { rateLimitMiddleware } from '../../lib/rateLimit';
 import { normalizeEmpresaPlanId } from '../../lib/empresaPlanFeatures';
 import { normalizeCandidatePlanId } from '../../lib/candidatePlanFeatures';
 import { DEFAULT_EMPRESA_PLANS, DEFAULT_CANDIDATO_PLANS, normalizeUserType } from '../../lib/defaultPlans';
+import { logServerError, logServerWarning } from '../../lib/serverLog';
 import { sendPushToUser } from '../../lib/serverNotifications';
 
 const STANDARD_EMPRESA_PLANS = DEFAULT_EMPRESA_PLANS.reduce((acc, plan) => {
@@ -232,7 +233,7 @@ async function handleSubscription(req, res) {
           paymentSettings = paymentSettingsDoc.data();
         }
       } catch (err) {
-        console.error('Erro ao buscar configurações de pagamento:', err);
+        logServerWarning('subscription.payment_settings_lookup_failed', err);
       }
     }
 
@@ -395,9 +396,6 @@ async function handleSubscription(req, res) {
       });
     }
     
-    // Log de sucesso
-    console.log('✅ Solicitação de assinatura processada com sucesso');
-
     // Buscar configurações de pagamento se for plano pago
     const paymentInstructions = resolvedPaymentInstructions;
 
@@ -422,19 +420,11 @@ async function handleSubscription(req, res) {
     }
 
   } catch (error) {
-    console.error('Erro ao processar solicitação de assinatura:', error);
-    console.error('Stack trace:', error.stack);
-    
-    // Retornar mensagem de erro mais detalhada
-    let errorMessage = 'Erro ao processar solicitação de assinatura';
-    if (error.message) {
-      errorMessage = error.message;
-    }
-    
+    logServerError('subscription.request_failed', error);
+    const errorMessage = 'Erro ao processar solicitação de assinatura';
     return res.status(500).json({ 
       error: errorMessage,
-      message: errorMessage,
-      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      message: errorMessage
     });
   }
 } 

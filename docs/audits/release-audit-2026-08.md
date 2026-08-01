@@ -299,6 +299,19 @@ Validação do item: os testes falharam primeiro com 12 violações reproduzidas
 
 Validação do item: `npm run quality` aprovado com 45 suites e 164 testes. Nenhuma chamada ao Firebase online foi efetuada.
 
+### Logs da rota de subscrição de planos
+
+| Item                                 | Estado           | Ficheiros / evidência                                                                                                                                                                                                                   |
+| ------------------------------------ | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Erro e stack na resposta/log         | CORRIGIDO        | `pages/api/subscribe-plan.js` usa `logServerError('subscription.request_failed', error)` e devolve apenas mensagem 500 constante; stack, bearer, email, conta bancária, payload e mensagem interna deixam de sair.                      |
+| Falha ao ler definições de pagamento | CORRIGIDO        | A degradação graciosa permanece, mas o erro bruto foi substituído por `logServerWarning('subscription.payment_settings_lookup_failed', err)`.                                                                                           |
+| Log de sucesso                       | REMOVIDO         | O `console.log` de debug não acrescentava observabilidade acionável e foi eliminado. A rota não contém chamadas diretas a `console.*`.                                                                                                  |
+| Regressão com dados-canário          | CORRIGIDO        | `tests/unit/security/subscribePlanLogging.test.ts` falhou primeiro com erro e stack crus e passa verificando metadados classificados, resposta genérica e ausência estática de console direto.                                          |
+| `getEmpresaPlanFeatures` sem import  | PENDENTE CRÍTICO | O ramo de ativação imediata de plano gratuito para empresa referencia o helper sem o importar, causando `ReferenceError` em runtime. Requer teste funcional próprio e correção separada para não misturar logging com regra de negócio. |
+| Rate limiter em memória              | PENDENTE         | A rota continua em `lib/rateLimit.js`; será migrada para o limitador Firestore no item 1.6, preservando 10 pedidos/minuto.                                                                                                              |
+
+Validação do item: testes dirigidos aprovados (2/2) e `npm run quality` aprovado com 49 suites e 198 testes. Nenhuma chamada ao Firebase online foi efetuada.
+
 ## Inventário de veredictos
 
 As tabelas exaustivas de rotas de API e páginas serão acrescentadas nas Fases 2 e 3. Nenhuma rota ou página é marcada como validada com base apenas na auditoria histórica.
