@@ -285,7 +285,7 @@ Validação do item: testes vermelhos provaram o bypass por três classes de URL
 | Reatribuição no `POST`              | CORRIGIDO | A escrita transacional só cria ou renova o token do mesmo UID; um token já associado a outra conta devolve 409 sem escrita. `createdAt` deixa de ser sobrescrito nas renovações.                                            |
 | Validação e métodos                 | CORRIGIDO | Token é string não vazia, sem whitespace e com máximo de 4096 caracteres; permissão tem allowlist; user agent tem máximo de 512. Métodos fora de POST/DELETE recebem 405 e `Allow`; bearer inválido/expirado recebe 401.    |
 | Regressões de segurança             | CORRIGIDO | `pushSubscriptionsAuthorization.test.ts` cobre IDOR, proprietário, idempotência, conflito, datas, corpos inválidos, autenticação e método; `pushSubscriptionsLogging.test.ts` usa falha Firestore com token/email canários. |
-| Logout perante falha do `DELETE`    | PENDENTE  | `lib/webPushClient.js` ainda remove o token local sem verificar `response.ok`; será corrigido num item cliente separado para não misturar UI/estado local com a autorização servidor.                                       |
+| Logout perante falha do `DELETE`    | CORRIGIDO | `lib/webPushClient.js` só remove o token local com confirmação do servidor (2xx ou 403); falha de rede/servidor ou sessão expirada mantêm o token para retry. 5 casos em `webPushClientUnregister.test.ts` (3 vermelhos antes do fix). Commit `9119790`. |
 
 Validação do item: os testes falharam primeiro com 12 violações reproduzidas; testes dirigidos aprovados (15/15), `npm run quality` aprovado com 46 suites e 178 testes e `npm run build` concluído com 27 páginas estáticas. Nenhuma chamada ao Firebase online foi efetuada.
 
