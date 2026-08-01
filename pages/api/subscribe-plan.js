@@ -1,6 +1,6 @@
 import { admin } from '../../lib/firebaseAdmin';
 import { rateLimitMiddleware } from '../../lib/rateLimit';
-import { normalizeEmpresaPlanId } from '../../lib/empresaPlanFeatures';
+import { getEmpresaPlanFeatures, normalizeEmpresaPlanId } from '../../lib/empresaPlanFeatures';
 import { normalizeCandidatePlanId } from '../../lib/candidatePlanFeatures';
 import { DEFAULT_EMPRESA_PLANS, DEFAULT_CANDIDATO_PLANS, normalizeUserType } from '../../lib/defaultPlans';
 import { logServerError, logServerWarning } from '../../lib/serverLog';
@@ -286,15 +286,15 @@ async function handleSubscription(req, res) {
       // Se for plano gratuito, atualizar usuário imediatamente
       if (plan.price === 0) {
         const userRef = admin.firestore().collection('users').doc(uid);
-        const resolvedEmpresaPlanId = userData.userType === 'empresa'
+        const resolvedEmpresaPlanId = normalizedUserType === 'empresa'
           ? requestedEmpresaTierId
           : null;
-        const resolvedEmpresaFeatures = userData.userType === 'empresa'
+        const resolvedEmpresaFeatures = normalizedUserType === 'empresa'
           ? getEmpresaPlanFeatures(resolvedEmpresaPlanId, plan.name, plan)
           : null;
         const updateData = {
-          currentPlan: userData.userType === 'empresa' ? resolvedEmpresaPlanId : requestedCandidateTierId,
-          planTierId: userData.userType === 'empresa' ? resolvedEmpresaPlanId : requestedCandidateTierId,
+          currentPlan: normalizedUserType === 'empresa' ? resolvedEmpresaPlanId : requestedCandidateTierId,
+          planTierId: normalizedUserType === 'empresa' ? resolvedEmpresaPlanId : requestedCandidateTierId,
           planId: plan.id,
           planName: plan.name,
           planEndDate: planEndDate,
@@ -303,7 +303,7 @@ async function handleSubscription(req, res) {
         };
 
         // Para empresas, atualizar limite de vagas
-        if (userData.userType === 'empresa') {
+        if (normalizedUserType === 'empresa') {
           updateData.vagasLimit = plan.vagasLimit !== undefined
             ? plan.vagasLimit
             : resolvedEmpresaFeatures.maxActiveJobs;
@@ -313,7 +313,7 @@ async function handleSubscription(req, res) {
         }
 
         // Para candidatos, atualizar status do currículo
-        if (userData.userType === 'candidato') {
+        if (normalizedUserType === 'candidato') {
           updateData.curriculoDestacado = plan.curriculoDestacado || false;
           updateData.destaque = plan.curriculoDestacado || false;
         }
