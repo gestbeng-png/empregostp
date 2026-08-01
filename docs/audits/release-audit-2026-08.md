@@ -236,6 +236,19 @@ Não foi feita qualquer chamada às rotas nem ao Firebase. A documentação téc
 
 Validação do item: `npm run quality` aprovado com 37 suites e 139 testes.
 
+### Configuração Firebase sem fallbacks versionados
+
+| Item                                           | Estado            | Ficheiros / evidência                                                                                                                                                                                                                                          |
+| ---------------------------------------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Configuração do cliente                        | CORRIGIDO         | `lib/firebase.js` usa referências diretas às sete `NEXT_PUBLIC_FIREBASE_*` e `lib/firebaseClientConfig.js` falha com a lista ordenada de variáveis ausentes, sem expor valores. O suporte a emuladores já existente no worktree foi preservado fora do commit. |
+| Configuração de FCM no service worker          | CORRIGIDO         | `public/sw.js` importa `/firebase-sw-config.js`; `scripts/generate-firebase-sw-config.mjs` gera o ficheiro de forma atómica a partir das env em `predev`/`prebuild`. O artefacto é ignorado pelo Git.                                                          |
+| Fonte única do contrato                        | MELHORADO         | `shared/firebase-client-env.json` define a ordem e o mapeamento das sete variáveis para cliente e gerador.                                                                                                                                                     |
+| Testes                                         | CORRIGIDO         | Cobrem valores válidos, ausentes/whitespace, mensagens sem valores, bootstrap antes do SDK, reutilização da app, JavaScript gerado válido e ausência de ficheiro parcial.                                                                                      |
+| Código inline remanescente em `lib/`/`public/` | OK                | Varredura por chaves Firebase Web e `firebase.initializeApp({` não encontrou ocorrências, excluindo apenas o artefacto gerado e ignorado.                                                                                                                      |
+| `scripts/generate-env.mjs`                     | PENDENTE DE PURGA | Continua a materializar credenciais em plaintext e depende dos antigos fallbacks; não foi executado. Será removido com `gen:env` após prova documental completa.                                                                                               |
+
+Validação do item: `npm run quality` aprovado com 40 suites e 148 testes; `npm run build` concluído com sucesso e geração de 27 páginas estáticas. O build mantém avisos transitivos de `punycode` já registados no baseline.
+
 ## Inventário de veredictos
 
 As tabelas exaustivas de rotas de API e páginas serão acrescentadas nas Fases 2 e 3. Nenhuma rota ou página é marcada como validada com base apenas na auditoria histórica.

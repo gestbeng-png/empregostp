@@ -1,15 +1,13 @@
 try {
   importScripts('https://www.gstatic.com/firebasejs/11.10.0/firebase-app-compat.js');
   importScripts('https://www.gstatic.com/firebasejs/11.10.0/firebase-messaging-compat.js');
-  firebase.initializeApp({
-    apiKey: 'AIzaSyCeexPh-jaUffQosOgfR8FIYuwQSO6Zt0A',
-    authDomain: 'empregostp.firebaseapp.com',
-    projectId: 'empregostp',
-    storageBucket: 'empregostp.firebasestorage.app',
-    messagingSenderId: '1003664770533',
-    appId: '1:1003664770533:web:38bccc1147f4948fff5b0c',
-    measurementId: 'G-C1BJJJS1DB'
-  });
+  importScripts('/firebase-sw-config.js');
+
+  if (!self.__EMPREGOSTP_FIREBASE_CONFIG__) {
+    throw new Error('Configuração Firebase do service worker indisponível');
+  }
+
+  firebase.initializeApp(self.__EMPREGOSTP_FIREBASE_CONFIG__);
   const messaging = firebase.messaging();
 
   messaging.onBackgroundMessage((payload) => {

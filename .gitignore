@@ -47,6 +47,7 @@ lib/firebase-admin-credentials.json
 *service-account*.json
 *serviceaccount*.json
 *firebase-admin*.json
+/public/firebase-sw-config.js
 
 # IDE
 .idea/

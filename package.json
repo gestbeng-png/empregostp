@@ -4,6 +4,8 @@
   "private": true,
   "description": "EmpregosSTP - Plataforma de vagas de emprego em São Tomé e Príncipe",
   "scripts": {
+    "generate:firebase-sw-config": "node --env-file-if-exists=.env.local scripts/generate-firebase-sw-config.mjs",
+    "predev": "npm run generate:firebase-sw-config",
     "dev": "next dev --webpack",
     "build": "next build",
     "start": "next start",
@@ -12,7 +14,8 @@
     "deploy": "bash deploy.sh",
     "deploy:msg": "bash deploy.sh",
     "firestore:index": "node scripts/create-firestore-index.js",
-    "firestore:index:open": "node scripts/open-index-link.js"
+    "firestore:index:open": "node scripts/open-index-link.js",
+    "prebuild": "npm run generate:firebase-sw-config"
   },
   "keywords": [
     "empregos",
