@@ -3,10 +3,11 @@ import { useState } from 'react';
 import Link from 'next/link';
 import nookies from 'nookies';
 import { admin } from '../../../../lib/firebaseAdmin';
-import LandingHeader from '../../../../components/LandingHeader';
+import adminStyles from '../../../../styles/AdminPanel.module.css';
 import { deleteDocument } from '../../../../lib/db';
 import { safeText, safeTimestampToISOString, safeTimestampToMillis } from '../../../../lib/firestoreNormalize';
 import { CONTENT_STATUS, normalizeContentStatus } from '../../../../lib/contentPublication';
+import { redirectToLogin } from '../../../../lib/loginRedirect';
 
 export default function AdminNewsList({ news: initialNews }) {
     const [news, setNews] = useState(initialNews);
@@ -108,17 +109,16 @@ export default function AdminNewsList({ news: initialNews }) {
     return (
         <>
             <Head>
-                <title>Gerenciar Notícias | Admin EmpregoSTP</title>
+                <title>Gerir notícias | Admin EmpregoSTP</title>
             </Head>
-            <div style={styles.page}>
-                <LandingHeader />
-                <main style={styles.container}>
+            <div className={adminStyles.legacyPage} style={styles.page}>
+                <div style={styles.container}>
                     <div style={styles.header}>
                         <div>
                             <Link href="/dashboard/admin" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.9rem', marginBottom: '0.5rem', display: 'block' }}>
                                 ← Voltar ao Dashboard
                             </Link>
-                            <h1 style={styles.title}>Gerenciar Notícias</h1>
+                            <h1 style={styles.title}>Gerir notícias</h1>
                         </div>
                         <Link href="/dashboard/admin/news/novo" style={styles.addButton}>
                             <span>+</span> Nova Notícia
@@ -137,7 +137,7 @@ export default function AdminNewsList({ news: initialNews }) {
                                         <tr>
                                             <th style={styles.th}>Título</th>
                                             <th style={styles.th}>Categoria</th>
-                                            <th style={styles.th}>Status</th>
+                                            <th style={styles.th}>Estado</th>
                                             <th style={styles.th}>Data Exibida</th>
                                             <th style={styles.th}>Criado em</th>
                                             <th style={styles.th} align="right">Ações</th>
@@ -197,7 +197,7 @@ export default function AdminNewsList({ news: initialNews }) {
                             </div>
                         )}
                     </div>
-                </main>
+                </div>
             </div>
         </>
     );
@@ -207,7 +207,7 @@ export async function getServerSideProps(context) {
     try {
         const cookies = nookies.get(context);
         if (!cookies.token) {
-            return { redirect: { destination: '/login', permanent: false } };
+            return redirectToLogin(context);
         }
 
         const token = await admin.auth().verifyIdToken(cookies.token);

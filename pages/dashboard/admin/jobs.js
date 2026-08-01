@@ -1,14 +1,28 @@
-import { useMemo, useState } from "react";
-import Link from "next/link";
-import Head from "next/head";
-import nookies from "nookies";
-import LandingHeader from "../../../components/LandingHeader";
-import { admin } from "../../../lib/firebaseAdmin";
-import styles from "../../../styles/AdminPanel.module.css";
+import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import Head from 'next/head';
+import { useRouter } from 'next/router';
+import nookies from 'nookies';
+import { isAdminPublishedJob } from '../../../lib/adminJobManagement';
+import { admin } from '../../../lib/firebaseAdmin';
+import styles from '../../../styles/AdminPanel.module.css';
+import { redirectToLogin } from '../../../lib/loginRedirect';
 
 export default function AdminJobs({ jobs = [] }) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("all");
+  const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [sourceFilter, setSourceFilter] = useState('all');
+
+  useEffect(() => {
+    if (!router.isReady) return;
+    const requestedSource = router.query.source;
+    setSourceFilter(
+      requestedSource === 'admin' || requestedSource === 'company'
+        ? requestedSource
+        : 'all',
+    );
+  }, [router.isReady, router.query.source]);
 
   const filteredJobs = useMemo(() => {
     return jobs.filter((job) => {
@@ -20,27 +34,42 @@ export default function AdminJobs({ jobs = [] }) {
         job.localizacao?.toLowerCase().includes(query);
 
       const matchesStatus =
-        filterStatus === "all" || job.status === filterStatus;
+        filterStatus === 'all' || job.status === filterStatus;
+      const publishedByAdmin = isAdminPublishedJob(job);
+      const matchesSource =
+        sourceFilter === 'all' ||
+        (sourceFilter === 'admin' && publishedByAdmin) ||
+        (sourceFilter === 'company' && !publishedByAdmin);
 
-      return matchesSearch && matchesStatus;
+      return matchesSearch && matchesStatus && matchesSource;
     });
-  }, [jobs, searchTerm, filterStatus]);
+  }, [jobs, searchTerm, filterStatus, sourceFilter]);
+
+  const handleSourceChange = (event) => {
+    const source = event.target.value;
+    setSourceFilter(source);
+    const nextQuery = { ...router.query };
+    if (source === 'all') delete nextQuery.source;
+    else nextQuery.source = source;
+    router.replace({ pathname: router.pathname, query: nextQuery }, undefined, {
+      shallow: true,
+    });
+  };
 
   const stats = {
     total: jobs.length,
-    active: jobs.filter((job) => job.status === "active").length,
-    closed: jobs.filter((job) => job.status === "closed").length,
-    disabled: jobs.filter((job) => job.status === "disabled").length,
+    active: jobs.filter((job) => job.status === 'active').length,
+    closed: jobs.filter((job) => job.status === 'closed').length,
+    disabled: jobs.filter((job) => job.status === 'disabled').length,
   };
 
   return (
     <>
       <Head>
-        <title>Gerenciar vagas - Admin</title>
+        <title>Gerir vagas - Admin</title>
       </Head>
-      <LandingHeader />
 
-      <main className={styles.page}>
+      <div className={styles.page}>
         <section className={styles.headerCard}>
           <div className={styles.headerCopy}>
             <Link
@@ -59,7 +88,7 @@ export default function AdminJobs({ jobs = [] }) {
               </svg>
               Voltar ao dashboard
             </Link>
-            <h1 className={styles.headerTitle}>Gerenciar vagas</h1>
+            <h1 className={styles.headerTitle}>Gerir vagas</h1>
             <p className={styles.headerSubtitle}>
               {filteredJobs.length} de {jobs.length} vagas listadas.
             </p>
@@ -88,30 +117,30 @@ export default function AdminJobs({ jobs = [] }) {
           <StatCard
             title="Total"
             value={stats.total}
-            active={filterStatus === "all"}
+            active={filterStatus === 'all'}
             accent="#2057d7"
-            onClick={() => setFilterStatus("all")}
+            onClick={() => setFilterStatus('all')}
           />
           <StatCard
             title="Ativas"
             value={stats.active}
-            active={filterStatus === "active"}
+            active={filterStatus === 'active'}
             accent="#d9ff2f"
-            onClick={() => setFilterStatus("active")}
+            onClick={() => setFilterStatus('active')}
           />
           <StatCard
             title="Fechadas"
             value={stats.closed}
-            active={filterStatus === "closed"}
+            active={filterStatus === 'closed'}
             accent="#ef4444"
-            onClick={() => setFilterStatus("closed")}
+            onClick={() => setFilterStatus('closed')}
           />
           <StatCard
             title="Desativadas"
             value={stats.disabled}
-            active={filterStatus === "disabled"}
+            active={filterStatus === 'disabled'}
             accent="#607394"
-            onClick={() => setFilterStatus("disabled")}
+            onClick={() => setFilterStatus('disabled')}
           />
         </section>
 
@@ -119,7 +148,7 @@ export default function AdminJobs({ jobs = [] }) {
           className={`${styles.surface} ${styles.panel} ${styles.section}`}
         >
           <div className={styles.inlineControls}>
-            <div style={{ flex: "1 1 320px" }}>
+            <div style={{ flex: '1 1 320px' }}>
               <label className={styles.chartTitle} htmlFor="admin-jobs-search">
                 Pesquisar
               </label>
@@ -132,10 +161,25 @@ export default function AdminJobs({ jobs = [] }) {
                 className={styles.inputControl}
               />
             </div>
+            <div style={{ flex: '0 1 260px' }}>
+              <label className={styles.chartTitle} htmlFor="admin-jobs-source">
+                Origem da publicação
+              </label>
+              <select
+                id="admin-jobs-source"
+                value={sourceFilter}
+                onChange={handleSourceChange}
+                className={styles.selectControl}
+              >
+                <option value="all">Todas as vagas</option>
+                <option value="admin">Publicadas pelo Admin</option>
+                <option value="company">Publicadas pelas empresas</option>
+              </select>
+            </div>
             {searchTerm ? (
               <button
                 type="button"
-                onClick={() => setSearchTerm("")}
+                onClick={() => setSearchTerm('')}
                 className={`${styles.buttonBase} ${styles.buttonGhost}`}
               >
                 Limpar pesquisa
@@ -158,11 +202,12 @@ export default function AdminJobs({ jobs = [] }) {
                   <tr className={styles.tableHeadRow}>
                     <th className={styles.tableHeadCell}>Título</th>
                     <th className={styles.tableHeadCell}>Empresa</th>
+                    <th className={styles.tableHeadCell}>Origem</th>
                     <th className={styles.tableHeadCell}>Localização</th>
                     <th
                       className={`${styles.tableHeadCell} ${styles.alignCenter}`}
                     >
-                      Status
+                      Estado
                     </th>
                     <th
                       className={`${styles.tableHeadCell} ${styles.alignCenter}`}
@@ -193,12 +238,17 @@ export default function AdminJobs({ jobs = [] }) {
                       <td
                         className={`${styles.tableCell} ${styles.tableCellMuted}`}
                       >
-                        {job.companyName || "N/A"}
+                        {job.companyName || 'N/A'}
+                      </td>
+                      <td className={styles.tableCell}>
+                        <span className={styles.countBadge}>
+                          {isAdminPublishedJob(job) ? 'Admin' : 'Empresa'}
+                        </span>
                       </td>
                       <td
                         className={`${styles.tableCell} ${styles.tableCellSoft}`}
                       >
-                        {job.localizacao || "N/A"}
+                        {job.localizacao || 'N/A'}
                       </td>
                       <td
                         className={`${styles.tableCell} ${styles.alignCenter}`}
@@ -208,11 +258,15 @@ export default function AdminJobs({ jobs = [] }) {
                       <td
                         className={`${styles.tableCell} ${styles.alignCenter} ${styles.tableCellStrong}`}
                       >
-                        {job.applicationCount || 0}
+                        <Link
+                          href={`/dashboard/admin/jobs/${job.id}#candidaturas`}
+                          className={styles.proofLink}
+                        >
+                          {job.applicationCount || 0}
+                        </Link>
                       </td>
                       <td
-                        className={`${styles.tableCell} ${styles.alignCenter} ${styles.tableCellStrong}`}
-                        style={{ color: "#2057d7" }}
+                        className={`${styles.tableCell} ${styles.alignCenter} ${styles.tableCellStrong} ${styles.tableMetric}`}
                       >
                         {job.views || 0}
                       </td>
@@ -235,9 +289,9 @@ export default function AdminJobs({ jobs = [] }) {
                             href={`/dashboard/admin/jobs/${job.id}/edit`}
                             className={`${styles.linkButton} ${styles.buttonAccent} ${styles.buttonSmall}`}
                             style={{
-                              "--button-bg": "rgba(95, 184, 245, 0.14)",
-                              "--button-border": "rgba(95, 184, 245, 0.28)",
-                              "--button-color": "#2057d7",
+                              '--button-bg': 'rgba(95, 184, 245, 0.14)',
+                              '--button-border': 'rgba(95, 184, 245, 0.28)',
+                              '--button-color': '#2057d7',
                             }}
                           >
                             Editar
@@ -251,7 +305,7 @@ export default function AdminJobs({ jobs = [] }) {
             </div>
           </section>
         )}
-      </main>
+      </div>
     </>
   );
 }
@@ -261,13 +315,10 @@ function StatCard({ title, value, active, accent, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={styles.statCard}
+      aria-pressed={active}
+      className={`${styles.statCard} ${active ? styles.statCardActive : ''}`}
       style={{
-        "--accent-color": accent,
-        borderColor: active ? accent : undefined,
-        background: active
-          ? `linear-gradient(180deg, #ffffff, color-mix(in srgb, ${accent} 14%, #f8fbff))`
-          : undefined,
+        '--accent-color': accent,
       }}
     >
       <p className={styles.statValue}>{value}</p>
@@ -279,37 +330,37 @@ function StatCard({ title, value, active, accent, onClick }) {
 function StatusBadge({ status }) {
   const palette = {
     active: {
-      label: "Ativa",
+      label: 'Ativa',
       style: {
-        "--badge-bg": "rgba(217, 255, 47, 0.22)",
-        "--badge-color": "#1e2b4d",
-        "--badge-border": "1px solid rgba(217, 255, 47, 0.3)",
+        '--badge-bg': 'rgba(217, 255, 47, 0.22)',
+        '--badge-color': '#1e2b4d',
+        '--badge-border': '1px solid rgba(217, 255, 47, 0.3)',
       },
     },
     closed: {
-      label: "Fechada",
+      label: 'Fechada',
       style: {
-        "--badge-bg": "rgba(239, 68, 68, 0.12)",
-        "--badge-color": "#c62828",
-        "--badge-border": "1px solid rgba(239, 68, 68, 0.22)",
+        '--badge-bg': 'rgba(239, 68, 68, 0.12)',
+        '--badge-color': '#c62828',
+        '--badge-border': '1px solid rgba(239, 68, 68, 0.22)',
       },
     },
     disabled: {
-      label: "Desativada",
+      label: 'Desativada',
       style: {
-        "--badge-bg": "rgba(123, 141, 168, 0.12)",
-        "--badge-color": "#607394",
-        "--badge-border": "1px solid rgba(123, 141, 168, 0.18)",
+        '--badge-bg': 'rgba(123, 141, 168, 0.12)',
+        '--badge-color': '#607394',
+        '--badge-border': '1px solid rgba(123, 141, 168, 0.18)',
       },
     },
   };
 
   const current = palette[status] || {
-    label: "Desconhecido",
+    label: 'Desconhecido',
     style: {
-      "--badge-bg": "rgba(123, 141, 168, 0.12)",
-      "--badge-color": "#607394",
-      "--badge-border": "1px solid rgba(123, 141, 168, 0.18)",
+      '--badge-bg': 'rgba(123, 141, 168, 0.12)',
+      '--badge-color': '#607394',
+      '--badge-border': '1px solid rgba(123, 141, 168, 0.18)',
     },
   };
 
@@ -324,13 +375,13 @@ function StatusBadge({ status }) {
 }
 
 function formatDate(value) {
-  if (!value) return "N/A";
+  if (!value) return 'N/A';
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "N/A";
-  return date.toLocaleDateString("pt-PT", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
+  if (Number.isNaN(date.getTime())) return 'N/A';
+  return date.toLocaleDateString('pt-PT', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
   });
 }
 
@@ -339,33 +390,27 @@ export async function getServerSideProps(context) {
     const cookies = nookies.get(context);
 
     if (!cookies.token) {
-      return { redirect: { destination: "/login", permanent: false } };
+      return redirectToLogin(context);
     }
 
     const token = await admin.auth().verifyIdToken(cookies.token);
     const { uid } = token;
 
-    const userDoc = await admin.firestore().collection("users").doc(uid).get();
+    const userDoc = await admin.firestore().collection('users').doc(uid).get();
     if (!userDoc.exists) {
-      return { redirect: { destination: "/login", permanent: false } };
+      return redirectToLogin(context);
     }
 
     const userData = userDoc.data();
 
-    if (userData.userType !== "admin") {
-      return { redirect: { destination: "/dashboard", permanent: false } };
+    if (userData.userType !== 'admin') {
+      return { redirect: { destination: '/dashboard', permanent: false } };
     }
 
-    const jobsSnapshot = await admin
-      .firestore()
-      .collection("jobs")
-      .orderBy("createdAt", "desc")
-      .get();
-
-    const applicationsSnapshot = await admin
-      .firestore()
-      .collection("applications")
-      .get();
+    const [jobsSnapshot, applicationsSnapshot] = await Promise.all([
+      admin.firestore().collection('jobs').orderBy('createdAt', 'desc').get(),
+      admin.firestore().collection('applications').get(),
+    ]);
     const applicationsByJob = {};
     applicationsSnapshot.docs.forEach((doc) => {
       const data = doc.data();
@@ -388,37 +433,49 @@ export async function getServerSideProps(context) {
         batches.push(companyIds.slice(index, index + 10));
       }
 
-      for (const batch of batches) {
-        const companiesSnapshot = await admin
-          .firestore()
-          .collection("users")
-          .where(admin.firestore.FieldPath.documentId(), "in", batch)
-          .get();
+      const companySnapshots = await Promise.all(
+        batches.map((batch) =>
+          admin
+            .firestore()
+            .collection('users')
+            .where(admin.firestore.FieldPath.documentId(), 'in', batch)
+            .get(),
+        ),
+      );
 
+      companySnapshots.forEach((companiesSnapshot) => {
         companiesSnapshot.docs.forEach((doc) => {
           const data = doc.data();
-          companiesMap[doc.id] = data.name || data.fullName || "Empresa";
+          companiesMap[doc.id] = data.name || data.fullName || 'Empresa';
         });
-      }
+      });
     }
 
     const jobs = jobsSnapshot.docs.map((doc) => {
       const data = doc.data();
       return {
         id: doc.id,
-        titulo: data.titulo || "Sem título",
-        descricao: data.descricao || "",
-        localizacao: data.localizacao || data.location || "Não especificado",
-        tipoContrato: data.tipoContrato || "Não especificado",
-        salarioDe: data.salarioDe || "",
-        salarioAte: data.salarioAte || "",
-        status: data.status || "active",
-        companyId: data.companyId || "",
-        companyName: companiesMap[data.companyId] || "N/A",
+        titulo: data.titulo || 'Sem título',
+        descricao: data.descricao || '',
+        localizacao: data.localizacao || data.location || 'Não especificado',
+        tipoContrato: data.tipoContrato || 'Não especificado',
+        salarioDe: data.salarioDe || '',
+        salarioAte: data.salarioAte || '',
+        status: data.status || 'active',
+        companyId: data.companyId || '',
+        companySource: data.companySource || '',
+        createdBy: data.createdBy || '',
+        createdByRole: data.createdByRole || '',
+        isExternalCompany: Boolean(data.isExternalCompany),
+        companyName:
+          companiesMap[data.companyId] ||
+          data.companyName ||
+          data.empresaNome ||
+          'N/A',
         applicationCount: applicationsByJob[doc.id] || 0,
         views: data.views || 0,
         createdAt:
-          typeof data.createdAt === "string"
+          typeof data.createdAt === 'string'
             ? data.createdAt
             : data.createdAt?.toDate?.()?.toISOString() ||
               new Date().toISOString(),
@@ -429,7 +486,7 @@ export async function getServerSideProps(context) {
       props: { jobs },
     };
   } catch (error) {
-    console.error("Erro no getServerSideProps de admin/jobs:", error);
-    return { redirect: { destination: "/login", permanent: false } };
+    console.error('Erro no getServerSideProps de admin/jobs:', error);
+    return redirectToLogin(context);
   }
 }

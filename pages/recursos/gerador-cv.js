@@ -27,6 +27,7 @@ import {
   FiCheckCircle,
 } from 'react-icons/fi';
 import styles from '../../styles/GeradorCv.module.css';
+import { redirectToLogin } from '../../lib/loginRedirect';
 
 const STEPS = [
   {
@@ -2780,9 +2781,7 @@ export async function getServerSideProps(context) {
   const access = await resolveProfessionalResourceAccess(context);
 
   if (!access.isAuthenticated) {
-    return {
-      redirect: { destination: '/login', permanent: false },
-    };
+    return redirectToLogin(context);
   }
 
   if (!access.allowed) {

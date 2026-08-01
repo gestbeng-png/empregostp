@@ -3,9 +3,9 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
 import { getAuth } from 'firebase/auth';
-import LandingHeader from '../../../components/LandingHeader';
 import { requireAdminPageAuth } from '../../../lib/adminPageGuard';
 import styles from '../../../styles/AdminPanel.module.css';
+import { buildLoginUrl } from '../../../lib/loginRedirect';
 
 const getMessageTone = (message) => {
   const normalized = String(message || '').toLowerCase();
@@ -33,7 +33,7 @@ export default function PaymentSettings() {
         const token = await auth.currentUser?.getIdToken();
 
         if (!token) {
-          router.push('/login');
+          router.push(buildLoginUrl(router.asPath));
           return;
         }
 
@@ -46,9 +46,12 @@ export default function PaymentSettings() {
         if (res.ok) {
           const data = await res.json();
           setFormData(data);
+        } else {
+          setMessage('Não foi possível carregar as configurações. Tente novamente.');
         }
       } catch (err) {
         console.error('Erro ao carregar configurações:', err);
+        setMessage('Não foi possível carregar as configurações. Tente novamente.');
       } finally {
         setLoading(false);
       }
@@ -76,7 +79,7 @@ export default function PaymentSettings() {
       const token = await auth.currentUser?.getIdToken();
 
       if (!token) {
-        router.push('/login');
+        router.push(buildLoginUrl(router.asPath));
         return;
       }
 
@@ -109,9 +112,8 @@ export default function PaymentSettings() {
       <Head>
         <title>Configurações de Pagamento - Admin</title>
       </Head>
-      <LandingHeader />
 
-      <main className={`${styles.page} ${styles.pageNarrow}`}>
+      <div className={`${styles.page} ${styles.pageNarrow}`}>
         <div className={styles.headerCard}>
           <div className={styles.headerCopy}>
             <Link
@@ -127,7 +129,7 @@ export default function PaymentSettings() {
         </div>
 
         {message ? (
-          <div className={`${styles.alert} ${getMessageTone(message)}`}>
+          <div role="status" aria-live="polite" className={`${styles.alert} ${getMessageTone(message)}`}>
             {message}
           </div>
         ) : null}
@@ -135,7 +137,7 @@ export default function PaymentSettings() {
         {loading ? (
           <div className={styles.loadingState}>
             <div className={styles.spinner} />
-            <p className={styles.loadingText}>Carregando configurações...</p>
+            <p className={styles.loadingText}>A carregar configurações...</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className={`${styles.surface} ${styles.panel}`}>
@@ -219,7 +221,7 @@ export default function PaymentSettings() {
             </div>
           </form>
         )}
-      </main>
+      </div>
     </>
   );
 }

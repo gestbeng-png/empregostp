@@ -3,10 +3,11 @@ import { useState } from 'react';
 import Link from 'next/link';
 import nookies from 'nookies';
 import { admin } from '../../../../lib/firebaseAdmin';
-import LandingHeader from '../../../../components/LandingHeader';
+import adminStyles from '../../../../styles/AdminPanel.module.css';
 import { deleteDocument } from '../../../../lib/db';
 import { safeText, safeTimestampToISOString, safeTimestampToMillis } from '../../../../lib/firestoreNormalize';
 import { CONTENT_STATUS, normalizeContentStatus } from '../../../../lib/contentPublication';
+import { redirectToLogin } from '../../../../lib/loginRedirect';
 
 export default function AdminBlogList({ posts: initialPosts }) {
     const [posts, setPosts] = useState(initialPosts);
@@ -108,17 +109,16 @@ export default function AdminBlogList({ posts: initialPosts }) {
     return (
         <>
             <Head>
-                <title>Gerenciar Blog | Admin EmpregoSTP</title>
+                <title>Gerir blog | Admin EmpregoSTP</title>
             </Head>
-            <div style={styles.page}>
-                <LandingHeader />
-                <main style={styles.container}>
+            <div className={adminStyles.legacyPage} style={styles.page}>
+                <div style={styles.container}>
                     <div style={styles.header}>
                         <div>
                             <Link href="/dashboard/admin" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.9rem', marginBottom: '0.5rem', display: 'block' }}>
                                 ← Voltar ao Dashboard
                             </Link>
-                            <h1 style={styles.title}>Gerenciar Blog</h1>
+                            <h1 style={styles.title}>Gerir blog</h1>
                         </div>
                         <Link href="/dashboard/admin/blog/novo" style={styles.addButton}>
                             <span>+</span> Novo Artigo
@@ -138,7 +138,7 @@ export default function AdminBlogList({ posts: initialPosts }) {
                                             <th style={styles.th}>Título</th>
                                             <th style={styles.th}>Categoria</th>
                                             <th style={styles.th}>Autor</th>
-                                            <th style={styles.th}>Status</th>
+                                            <th style={styles.th}>Estado</th>
                                             <th style={styles.th}>Data</th>
                                             <th style={styles.th} align="right">Ações</th>
                                         </tr>
@@ -197,7 +197,7 @@ export default function AdminBlogList({ posts: initialPosts }) {
                             </div>
                         )}
                     </div>
-                </main>
+                </div>
             </div>
         </>
     );
@@ -207,7 +207,7 @@ export async function getServerSideProps(context) {
     try {
         const cookies = nookies.get(context);
         if (!cookies.token) {
-            return { redirect: { destination: '/login', permanent: false } };
+            return redirectToLogin(context);
         }
 
         const token = await admin.auth().verifyIdToken(cookies.token);

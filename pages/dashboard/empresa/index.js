@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Head from "next/head";
-import Link from "next/link";
-import { useRouter } from "next/router";
-import dynamic from "next/dynamic";
-import { useAuth } from "../../../context/AuthContext";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import Head from 'next/head';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import dynamic from 'next/dynamic';
+import { useAuth } from '../../../context/AuthContext';
 import {
   FiPlusCircle,
   FiStar,
@@ -27,200 +28,148 @@ import {
   FiFilter,
   FiFileText,
   FiX,
-} from "react-icons/fi";
-import DashboardShell from "../../../components/dashboard/DashboardShell";
-import AffiliateSection from "../../../components/affiliate/AffiliateSection";
-import styles from "../../../styles/EmpresaDashboard.module.css";
-import nookies from "nookies";
-import VerificationBadge from "../../../components/VerificationBadge";
+  FiLock,
+} from 'react-icons/fi';
+import DashboardShell from '../../../components/dashboard/DashboardShell';
+import AffiliateSection from '../../../components/affiliate/AffiliateSection';
+import styles from '../../../styles/EmpresaDashboard.module.css';
+import nookies from 'nookies';
+import VerificationBadge from '../../../components/VerificationBadge';
 import {
   getEmpresaPlanFeatures,
   normalizeEmpresaPlanId,
-} from "../../../lib/empresaPlanFeatures";
-import { fetchActiveEmpresaPlans } from "../../../lib/empresaPlansCatalog";
-import { getInterviewStatusLabelPt } from "../../../lib/interviewClient";
+} from '../../../lib/empresaPlanFeatures';
+import { fetchActiveEmpresaPlans } from '../../../lib/empresaPlansCatalog';
+import { getInterviewStatusLabelPt } from '../../../lib/interviewClient';
 import {
   fetchVerifiedCandidates,
   summarizeVerifiedCandidates,
-} from "../../../lib/publicCandidates";
+} from '../../../lib/publicCandidates';
+import { resolveDashboardTab } from '../../../lib/dashboardNavigation';
+import { redirectToLogin } from '../../../lib/loginRedirect';
 
 const EmpresaApplicationsChart = dynamic(
-  () => import("../../../components/charts/EmpresaApplicationsChart"),
+  () => import('../../../components/charts/EmpresaApplicationsChart'),
   {
     ssr: false,
     loading: () => (
       <div
         className={styles.chartWrapper}
         style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "#607394",
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'var(--text-3)',
         }}
       >
-        Carregando gráfico...
+        A carregar gráfico...
       </div>
     ),
   },
 );
 
 const EmpresaWeeklyViewsAppsChart = dynamic(
-  () => import("../../../components/charts/EmpresaWeeklyViewsAppsChart"),
+  () => import('../../../components/charts/EmpresaWeeklyViewsAppsChart'),
   {
     ssr: false,
     loading: () => (
       <div
         className={styles.analyticsChartWrapper}
         style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "#607394",
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'var(--text-3)',
         }}
       >
-        Carregando gráfico...
+        A carregar gráfico...
       </div>
     ),
   },
 );
 
 const EmpresaPlansCatalog = dynamic(
-  () => import("../../../components/EmpresaPlansCatalog"),
+  () => import('../../../components/EmpresaPlansCatalog'),
   {
     ssr: false,
     loading: () => (
-      <div className={styles.sectionBlock} style={{ color: "#607394" }}>
-        Carregando planos...
+      <div className={styles.sectionBlock} style={{ color: 'var(--text-3)' }}>
+        A carregar planos...
       </div>
     ),
   },
 );
 
 const MENU_ITEMS = [
-  { id: "dashboard", label: "Visão geral", icon: "dashboard" },
-  { id: "jobs", label: "Minhas vagas", icon: "briefcase" },
-  { id: "applications", label: "Candidaturas", icon: "inbox" },
-  { id: "candidates", label: "Banco de talentos", icon: "users" },
-  { id: "interviews", label: "Entrevistas", icon: "calendar" },
-  { id: "messages", label: "Mensagens", icon: "messages" },
-  { id: "analytics", label: "Analytics", icon: "chart" },
-  { id: "hr-services", label: "Serviço RH", icon: "briefcase" },
-  { id: "company-profile", label: "Perfil empresa", icon: "building" },
-  { id: "plans", label: "Planos", icon: "crown" },
-  { id: "affiliate", label: "Ser Afiliado", icon: "star" },
+  { id: 'dashboard', label: 'Visão geral', icon: 'dashboard' },
+  { id: 'jobs', label: 'Minhas vagas', icon: 'briefcase' },
+  { id: 'applications', label: 'Candidaturas', icon: 'inbox' },
+  { id: 'candidates', label: 'Banco de talentos', icon: 'users' },
+  { id: 'interviews', label: 'Entrevistas', icon: 'calendar' },
+  { id: 'messages', label: 'Mensagens', icon: 'messages' },
+  { id: 'analytics', label: 'Análise', icon: 'chart' },
+  { id: 'hr-services', label: 'Serviço RH', icon: 'briefcase' },
+  { id: 'company-profile', label: 'Perfil empresa', icon: 'building' },
+  { id: 'plans', label: 'Planos', icon: 'crown' },
+  { id: 'affiliate', label: 'Ser Afiliado', icon: 'star' },
 ];
+const EMPRESA_TAB_IDS = new Set(MENU_ITEMS.map((item) => item.id));
 
 const formatInterviewDateTime = (value) => {
-  if (!value) return "";
+  if (!value) return '';
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  return date.toLocaleString("pt-PT", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleString('pt-PT', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   });
 };
 
 const HR_SERVICE_TYPES = [
-  "Recrutamento e seleção",
-  "Triagem de candidatos",
-  "Avaliação curricular",
-  "Entrevistas técnicas",
-  "Consultoria RH",
-  "Documentação laboral",
-  "Outro serviço RH",
+  'Recrutamento e seleção',
+  'Triagem de candidatos',
+  'Avaliação curricular',
+  'Entrevistas técnicas',
+  'Consultoria RH',
+  'Documentação laboral',
+  'Outro serviço RH',
 ];
 
 const HR_STATUS_META = {
-  pending: { label: "Em análise", className: "badge-pending" },
-  approved: { label: "Aprovado · em andamento", className: "badge-active" },
-  completed: { label: "Concluído", className: "badge-success" },
-  rejected: { label: "Não aprovado", className: "badge-closed" },
+  pending: { label: 'Em análise', className: 'badge-pending' },
+  approved: { label: 'Aprovado, em andamento', className: 'badge-active' },
+  completed: { label: 'Concluído', className: 'badge-success' },
+  rejected: { label: 'Não aprovado', className: 'badge-closed' },
 };
 
-const emptyHrDocument = () => ({ label: "", url: "" });
+const emptyHrDocument = () => ({ label: '', url: '' });
 
 const toDateTimeLocalValue = (value) => {
-  if (!value) return "";
+  if (!value) return '';
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
+  if (Number.isNaN(date.getTime())) return '';
   const offset = date.getTimezoneOffset();
   const localDate = new Date(date.getTime() - offset * 60000);
   return localDate.toISOString().slice(0, 16);
 };
 
-const TIP_LIBRARY = {
-  Básico: [
-    {
-      title: "Marca ativa, candidatos atentos",
-      content:
-        "Amplie sua presença com conteúdos de bastidores e torne-se referência local.",
-      category: "BRANDING",
-    },
-    {
-      title: "Use testes de habilidades",
-      content:
-        "Envie desafios curtos para separar candidatos engajados e reduzir entrevistas iniciais.",
-      category: "PROCESSO",
-    },
-    {
-      title: "Explore o banco limitado",
-      content:
-        "Filtre talentos por localidades próximas e convide-os diretamente via mensagem.",
-      category: "TALENTOS",
-    },
-  ],
-  Profissional: [
-    {
-      title: "Aposte em histórias reais",
-      content:
-        "Compartilhe cases de sucesso no feed de vagas para despertar identificação.",
-      category: "MARCA",
-    },
-    {
-      title: "Automatize respostas",
-      content:
-        "Use templates personalizados para informar candidatos sobre cada etapa.",
-      category: "PROCESSO",
-    },
-    {
-      title: "Monitore canais locais",
-      content:
-        "Inclua critérios como língua e experiência com projetos do arquipélago.",
-      category: "TALENTOS",
-    },
-  ],
-  PRO: [
-    {
-      title: "Equipe em sincronia",
-      content:
-        "Funcionalidade futura em desenvolvimento: integração do painel com CRM e feedbacks dos líderes de negócio, brevemente.",
-      category: "GESTÃO",
-    },
-    {
-      title: "Insights da IA",
-      content:
-        "Funcionalidade futura em desenvolvimento: análise dos talentos que mais aplicam e direcionamento de campanhas regionais, brevemente.",
-      category: "INTELIGÊNCIA",
-    },
-    {
-      title: "Retenção de talentos",
-      content:
-        "Funcionalidade futura em desenvolvimento: trilhas rápidas de desenvolvimento para os contratados, brevemente.",
-      category: "CULTURA",
-    },
-  ],
-  default: [
-    {
-      title: "Foque na experiência do candidato",
-      content:
-        "Responda rápido e destaque benefícios claros para criar confiança.",
-      category: "CANDIDATO",
-    },
-  ],
-};
+const DASHBOARD_HIRING_TIPS = [
+  {
+    title: 'Taxa de resposta alta',
+    content:
+      'Responda às candidaturas em menos de 48h para melhorar a retenção.',
+    category: 'PROCESSO',
+  },
+  {
+    title: 'Descrições detalhadas',
+    content:
+      'Vagas com descrição completa recebem 2x mais candidatos qualificados.',
+    category: 'QUALIDADE',
+  },
+];
 
 const icons = {
   badge: (
@@ -343,10 +292,8 @@ const icons = {
 
 const normalizePlan = (plan) => {
   const normalizedPlanId = normalizeEmpresaPlanId(plan);
-  return getEmpresaPlanFeatures(normalizedPlanId).name || "Básico";
+  return getEmpresaPlanFeatures(normalizedPlanId).name || 'Básico';
 };
-
-const getHiringTips = (plan) => TIP_LIBRARY[plan] || TIP_LIBRARY.default;
 
 const Sidebar = ({
   activeTab,
@@ -360,10 +307,12 @@ const Sidebar = ({
   <aside className={styles.sidebar}>
     <div className={styles.sidebarLogo}>
       <Link href="/" className={styles.sidebarLogoLink}>
-        <img
+        <Image
           src="/assets/Emprego STP Logo (2) 1.png"
           alt="EmpregoSTP Logo"
           className={styles.sidebarLogoImg}
+          width={180}
+          height={42}
         />
       </Link>
     </div>
@@ -374,15 +323,15 @@ const Sidebar = ({
         <button
           key={item.id}
           type="button"
-          className={`${styles.navButton} ${activeTab === item.id ? styles.navActive : ""}`}
+          className={`${styles.navButton} ${activeTab === item.id ? styles.navActive : ''}`}
           onClick={() => setActiveTab(item.id)}
         >
           <span className={styles.navIcon}>{icons[item.icon]}</span>
           <span className={styles.navLabel}>{item.label}</span>
-          {item.id === "applications" && pendingApplicationsCount > 0 && (
+          {item.id === 'applications' && pendingApplicationsCount > 0 && (
             <span className={styles.navBadge}>{pendingApplicationsCount}</span>
           )}
-          {item.id === "messages" && unreadMessages > 0 && (
+          {item.id === 'messages' && unreadMessages > 0 && (
             <span className={styles.navBadge}>{unreadMessages}</span>
           )}
         </button>
@@ -418,19 +367,19 @@ const Sidebar = ({
           <div>
             <p className={styles.sidebarPlanCardTitle}>Plano {currentPlan}</p>
             <p className={styles.sidebarPlanCardDesc}>
-              {currentPlan === "Básico"
-                ? "Recursos limitados"
-                : currentPlan === "Profissional"
-                  ? "Mais alcance e automação"
-                  : "Acesso completo"}
+              {currentPlan === 'Básico'
+                ? 'Recursos limitados'
+                : currentPlan === 'Profissional'
+                  ? 'Mais alcance e automação'
+                  : 'Acesso completo'}
             </p>
           </div>
         </div>
-        {currentPlan === "Básico" && (
+        {currentPlan === 'Básico' && (
           <button
             type="button"
             className={styles.upgradeButton}
-            onClick={() => setActiveTab("plans")}
+            onClick={() => setActiveTab('plans')}
           >
             Fazer Upgrade
           </button>
@@ -447,17 +396,17 @@ const TopBar = ({
   notifications = [],
   notificationsOpen = false,
   notificationsLoading = false,
-  notificationsError = "",
+  notificationsError = '',
   onToggleNotifications,
   onNotificationClick,
   onMarkAllNotificationsRead,
 }) => {
   const today = new Date();
-  const formattedDate = today.toLocaleDateString("pt-PT", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
+  const formattedDate = today.toLocaleDateString('pt-PT', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
   });
 
   return (
@@ -518,7 +467,7 @@ const TopBar = ({
                 Erro: {notificationsError}
               </div>
             ) : notificationsLoading ? (
-              <div className={styles.notificationsEmpty}>Carregando...</div>
+              <div className={styles.notificationsEmpty}>A carregar...</div>
             ) : notifications.length === 0 ? (
               <div className={styles.notificationsEmpty}>
                 Nenhuma notificação recente.
@@ -529,17 +478,17 @@ const TopBar = ({
                   <button
                     key={notif.id}
                     type="button"
-                    className={`${styles.notificationItem} ${notif.read ? "" : styles.notificationItemUnread}`}
+                    className={`${styles.notificationItem} ${notif.read ? '' : styles.notificationItemUnread}`}
                     onClick={() => onNotificationClick?.(notif)}
-                    title={notif.message || notif.title || "Notificação"}
+                    title={notif.message || notif.title || 'Notificação'}
                   >
                     <span className={styles.notificationIcon}>
-                      {notif.icon || "🔔"}
+                      {notif.icon || '🔔'}
                     </span>
                     <div className={styles.notificationBody}>
                       <div className={styles.notificationTitleRow}>
                         <strong className={styles.notificationTitle}>
-                          {notif.title || "Notificação"}
+                          {notif.title || 'Notificação'}
                         </strong>
                         {!notif.read && (
                           <span className={styles.notificationUnreadDot} />
@@ -552,8 +501,8 @@ const TopBar = ({
                       )}
                       <span className={styles.notificationTime}>
                         {notif.createdAt
-                          ? new Date(notif.createdAt).toLocaleString("pt-PT")
-                          : ""}
+                          ? new Date(notif.createdAt).toLocaleString('pt-PT')
+                          : ''}
                       </span>
                     </div>
                   </button>
@@ -570,12 +519,12 @@ const TopBar = ({
   );
 };
 
-const StatisticCard = ({ label, value, trend, icon, color = "#2057d7" }) => (
+const StatisticCard = ({ label, value, trend, icon, color = '#2057d7' }) => (
   <div className={styles.statCard}>
     <div className={styles.statHeader}>
       <div
         className={`${styles.statIcon} ${styles.statIconAccent}`}
-        style={{ "--accent-bg": `${color}15`, "--accent-color": color }}
+        style={{ '--accent-bg': `${color}15`, '--accent-color': color }}
       >
         {icon || icons.badge}
       </div>
@@ -587,7 +536,7 @@ const StatisticCard = ({ label, value, trend, icon, color = "#2057d7" }) => (
 );
 
 const JobCard = ({ job }) => {
-  const isActive = job.status === "active";
+  const isActive = job.status === 'active';
   const daysLeft = job.dataFecho
     ? Math.ceil((new Date(job.dataFecho) - new Date()) / (1000 * 60 * 60 * 24))
     : null;
@@ -599,7 +548,7 @@ const JobCard = ({ job }) => {
         <span
           className={`${styles.jobStatus} ${isActive ? styles.jobStatusActive : styles.jobStatusClosed}`}
         >
-          {isActive ? "Ativa" : "Fechada"}
+          {isActive ? 'Ativa' : 'Fechada'}
         </span>
       </div>
       <div className={styles.jobDetails}>
@@ -614,7 +563,7 @@ const JobCard = ({ job }) => {
             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
             <circle cx="12" cy="10" r="3" />
           </svg>
-          {job.localizacao || "Local não informado"}
+          {job.localizacao || 'Local não informado'}
         </span>
         <span className={styles.jobMeta}>
           <svg
@@ -627,7 +576,7 @@ const JobCard = ({ job }) => {
             <rect x="2" y="7" width="20" height="14" rx="2" />
             <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" />
           </svg>
-          {job.tipoContrato || "Tipo não informado"}
+          {job.tipoContrato || 'Tipo não informado'}
         </span>
         {job.remoto && <span className={styles.jobBadge}>Remoto</span>}
       </div>
@@ -645,7 +594,7 @@ const JobCard = ({ job }) => {
         {daysLeft !== null && isActive && (
           <div className={styles.jobStat}>
             <span
-              className={`${styles.jobStatValue} ${daysLeft <= 3 ? styles.jobStatUrgent : ""}`}
+              className={`${styles.jobStatValue} ${daysLeft <= 3 ? styles.jobStatUrgent : ''}`}
             >
               {daysLeft > 0 ? daysLeft : 0}
             </span>
@@ -674,91 +623,91 @@ const ApplicationCard = ({
 
   const statusColors = {
     pending: {
-      bg: "rgba(217, 255, 47, 0.2)",
-      text: "#1e2b4d",
-      border: "rgba(217, 255, 47, 0.35)",
+      bg: 'rgba(217, 255, 47, 0.2)',
+      text: '#1e2b4d',
+      border: 'rgba(217, 255, 47, 0.35)',
     },
     analysis: {
-      bg: "rgba(32, 87, 215, 0.15)",
-      text: "#2057d7",
-      border: "rgba(32, 87, 215, 0.3)",
+      bg: 'rgba(32, 87, 215, 0.15)',
+      text: '#2057d7',
+      border: 'rgba(32, 87, 215, 0.3)',
     },
     interview: {
-      bg: "rgba(95, 184, 245, 0.18)",
-      text: "#1e2b4d",
-      border: "rgba(95, 184, 245, 0.3)",
+      bg: 'rgba(95, 184, 245, 0.18)',
+      text: '#1e2b4d',
+      border: 'rgba(95, 184, 245, 0.3)',
     },
     approved: {
-      bg: "rgba(217, 255, 47, 0.2)",
-      text: "#1e2b4d",
-      border: "rgba(217, 255, 47, 0.35)",
+      bg: 'rgba(217, 255, 47, 0.2)',
+      text: '#1e2b4d',
+      border: 'rgba(217, 255, 47, 0.35)',
     },
     rejected: {
-      bg: "rgba(239, 68, 68, 0.15)",
-      text: "#f87171",
-      border: "rgba(239, 68, 68, 0.3)",
+      bg: 'rgba(239, 68, 68, 0.15)',
+      text: '#f87171',
+      border: 'rgba(239, 68, 68, 0.3)',
     },
   };
 
   const statusLabels = {
-    pending: "Pendente",
-    analysis: "Em Analise",
-    interview: "Entrevista",
-    approved: "Aprovado",
-    rejected: "Rejeitado",
+    pending: 'Pendente',
+    analysis: 'Em Analise',
+    interview: 'Entrevista',
+    approved: 'Aprovado',
+    rejected: 'Rejeitado',
   };
 
-  const status = application.status || "pending";
+  const status = application.status || 'pending';
   const colors = statusColors[status] || statusColors.pending;
-  const statusLabel = statusLabels[status] || "Pendente";
+  const statusLabel = statusLabels[status] || 'Pendente';
   const interviewStatus = String(
-    application.interviewDetails?.status || "scheduled",
+    application.interviewDetails?.status || 'scheduled',
   ).toLowerCase();
   const interviewStatusLabel = getInterviewStatusLabelPt(interviewStatus);
   const showRescheduleReason =
-    interviewStatus === "reschedule_requested" &&
-    String(application.interviewDetails?.rescheduleReason || "").trim();
+    interviewStatus === 'reschedule_requested' &&
+    String(application.interviewDetails?.rescheduleReason || '').trim();
   const premiumBadges = [
     application.priorityApplied
-      ? { key: "priority", label: "Prioritária", tone: "priority" }
+      ? { key: 'priority', label: 'Prioritária', tone: 'priority' }
       : null,
     application.applicationHighlighted
-      ? { key: "highlight", label: "Destaque", tone: "highlight" }
+      ? { key: 'highlight', label: 'Destaque', tone: 'highlight' }
       : null,
     application.premiumOnlyJob
-      ? { key: "premium-job", label: "Vaga premium", tone: "premium" }
+      ? { key: 'premium-job', label: 'Vaga premium', tone: 'premium' }
       : null,
     application.accessedDuringEarlyWindow
-      ? { key: "early-access", label: "Acesso antecipado", tone: "early" }
+      ? { key: 'early-access', label: 'Acesso antecipado', tone: 'early' }
       : null,
     application.coverLetter
-      ? { key: "cover-letter", label: "Carta incluída", tone: "neutral" }
+      ? { key: 'cover-letter', label: 'Carta incluída', tone: 'neutral' }
       : null,
   ].filter(Boolean);
   const coverLetterPreview = application.coverLetter
-    ? `${String(application.coverLetter).trim().slice(0, 220)}${String(application.coverLetter).trim().length > 220 ? "..." : ""}`
-    : "";
+    ? `${String(application.coverLetter).trim().slice(0, 220)}${String(application.coverLetter).trim().length > 220 ? '...' : ''}`
+    : '';
 
   const handleStatusUpdate = async (newStatus) => {
     if (updating) return;
     setUpdating(true);
 
     try {
-      const { getAuth } = await import("firebase/auth");
+      const { getAuth } = await import('firebase/auth');
       const auth = getAuth();
       const token = await auth.currentUser?.getIdToken();
 
       if (!token) {
-        alert("Sessao expirada. Por favor, faca login novamente.");
+        alert('A sessão expirou. Inicie sessão novamente.');
         return;
       }
 
       const response = await fetch(
         `/api/applications/${application.id}/status`,
         {
-          method: "PATCH",
+          method: 'PATCH',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ status: newStatus }),
@@ -775,11 +724,11 @@ const ApplicationCard = ({
           );
         }
       } else {
-        alert(data.error || "Erro ao atualizar status");
+        alert(data.error || 'Erro ao atualizar status');
       }
     } catch (error) {
-      console.error("Erro ao atualizar status:", error);
-      alert("Erro ao atualizar status. Tente novamente.");
+      console.error('Erro ao atualizar status:', error);
+      alert('Erro ao atualizar status. Tente novamente.');
     } finally {
       setUpdating(false);
     }
@@ -793,13 +742,13 @@ const ApplicationCard = ({
             href={`/dashboard/empresa/candidato/${application.candidateId}`}
             className={styles.applicationTitle}
           >
-            {application.candidateName || "Candidato"}
+            {application.candidateName || 'Candidato'}
           </Link>
           <p className={styles.applicationMeta}>
-            {application.jobTitle || "Vaga desconhecida"}
+            {application.jobTitle || 'Vaga desconhecida'}
           </p>
           <p className={styles.applicationMeta}>
-            {application.candidateEmail || ""}
+            {application.candidateEmail || ''}
           </p>
           {premiumBadges.length > 0 && (
             <div className={styles.applicationBadgeRow}>
@@ -818,17 +767,17 @@ const ApplicationCard = ({
           <span
             className={`${styles.applicationStatus} ${styles.applicationStatusAccent}`}
             style={{
-              "--status-bg": colors.bg,
-              "--status-text": colors.text,
-              "--status-border": colors.border,
+              '--status-bg': colors.bg,
+              '--status-text': colors.text,
+              '--status-border': colors.border,
             }}
           >
-            {updating ? "Atualizando..." : statusLabel}
+            {updating ? 'Atualizando...' : statusLabel}
           </span>
           <span className={styles.applicationDate}>
             {new Date(
               application.appliedAt || application.createdAt || Date.now(),
-            ).toLocaleDateString("pt-PT")}
+            ).toLocaleDateString('pt-PT')}
           </span>
         </div>
       </div>
@@ -840,37 +789,37 @@ const ApplicationCard = ({
             {formatInterviewDateTime(application.interviewDetails.scheduledAt)}
           </p>
           <span>
-            {application.interviewDetails.mode === "presencial"
-              ? application.interviewDetails.location || "Local a confirmar"
-              : application.interviewDetails.link || "Link a confirmar"}
+            {application.interviewDetails.mode === 'presencial'
+              ? application.interviewDetails.location || 'Local a confirmar'
+              : application.interviewDetails.link || 'Link a confirmar'}
           </span>
           <p className={styles.interviewSummaryResponse}>
-            Resposta do candidato:{" "}
+            Resposta do candidato:{' '}
             <strong className={styles.interviewStatusHighlight}>
               {interviewStatusLabel}
             </strong>
           </p>
           {showRescheduleReason && (
             <p className={styles.interviewReason}>
-              Motivo:{" "}
+              Motivo:{' '}
               {String(
-                application.interviewDetails.rescheduleReason || "",
+                application.interviewDetails.rescheduleReason || '',
               ).trim()}
             </p>
           )}
         </div>
       )}
 
-      {(typeof application.compatibilityScore === "number" ||
+      {(typeof application.compatibilityScore === 'number' ||
         application.compatibilityReasons?.length) && (
         <div className={styles.applicationInsightBox}>
           <strong>Compatibilidade com a vaga</strong>
-          {typeof application.compatibilityScore === "number" && (
-            <p>Score registado: {application.compatibilityScore}%</p>
+          {typeof application.compatibilityScore === 'number' && (
+            <p>Compatibilidade registada: {application.compatibilityScore}%</p>
           )}
           {application.compatibilityReasons?.length > 0 && (
             <span>
-              {application.compatibilityReasons.slice(0, 2).join(" • ")}
+              {application.compatibilityReasons.slice(0, 2).join(' • ')}
             </span>
           )}
         </div>
@@ -889,9 +838,9 @@ const ApplicationCard = ({
         <div className={styles.statusButtonsGroup}>
           <button
             type="button"
-            className={`${styles.statusBtn} ${styles.statusBtnAnalysis} ${status === "analysis" ? styles.statusBtnActive : ""}`}
-            onClick={() => handleStatusUpdate("analysis")}
-            disabled={updating || status === "analysis"}
+            className={`${styles.statusBtn} ${styles.statusBtnAnalysis} ${status === 'analysis' ? styles.statusBtnActive : ''}`}
+            onClick={() => handleStatusUpdate('analysis')}
+            disabled={updating || status === 'analysis'}
             title="Enviar para analise"
           >
             {icons.eye}
@@ -899,19 +848,19 @@ const ApplicationCard = ({
           </button>
           <button
             type="button"
-            className={`${styles.statusBtn} ${styles.statusBtnInterview} ${status === "interview" ? styles.statusBtnActive : ""}`}
+            className={`${styles.statusBtn} ${styles.statusBtnInterview} ${status === 'interview' ? styles.statusBtnActive : ''}`}
             onClick={() => onOpenInterviewScheduler?.(application)}
             disabled={updating}
             title="Marcar entrevista"
           >
             {icons.users}
-            <span>{status === "interview" ? "Reagendar" : "Entrevista"}</span>
+            <span>{status === 'interview' ? 'Reagendar' : 'Entrevista'}</span>
           </button>
           <button
             type="button"
-            className={`${styles.statusBtn} ${styles.statusBtnApproved} ${status === "approved" ? styles.statusBtnActive : ""}`}
-            onClick={() => handleStatusUpdate("approved")}
-            disabled={updating || status === "approved"}
+            className={`${styles.statusBtn} ${styles.statusBtnApproved} ${status === 'approved' ? styles.statusBtnActive : ''}`}
+            onClick={() => handleStatusUpdate('approved')}
+            disabled={updating || status === 'approved'}
             title="Aceitar candidato"
           >
             {icons.check}
@@ -919,9 +868,9 @@ const ApplicationCard = ({
           </button>
           <button
             type="button"
-            className={`${styles.statusBtn} ${styles.statusBtnRejected} ${status === "rejected" ? styles.statusBtnActive : ""}`}
-            onClick={() => handleStatusUpdate("rejected")}
-            disabled={updating || status === "rejected"}
+            className={`${styles.statusBtn} ${styles.statusBtnRejected} ${status === 'rejected' ? styles.statusBtnActive : ''}`}
+            onClick={() => handleStatusUpdate('rejected')}
+            disabled={updating || status === 'rejected'}
             title="Rejeitar candidato"
           >
             {icons.x}
@@ -961,7 +910,7 @@ const ApplicationCard = ({
 const TalentCard = ({ talent, locked }) => {
   return (
     <article
-      className={`${styles.talentCard} ${locked ? styles.talentLocked : ""}`}
+      className={`${styles.talentCard} ${locked ? styles.talentLocked : ''}`}
     >
       {talent.verified && (
         <div className={styles.talentVerifiedSeal}>
@@ -971,10 +920,17 @@ const TalentCard = ({ talent, locked }) => {
       <div className={styles.talentCardHeader}>
         <div className={styles.talentAvatar}>
           {talent.avatar ? (
-            <img src={talent.avatar} alt={talent.name} />
+            <Image
+              src={talent.avatar}
+              alt={talent.name}
+              width={48}
+              height={48}
+              sizes="48px"
+              unoptimized
+            />
           ) : (
             <div className={styles.talentAvatarFallback}>
-              {(talent.name || "?").slice(0, 1).toUpperCase()}
+              {(talent.name || '?').slice(0, 1).toUpperCase()}
             </div>
           )}
         </div>
@@ -1020,11 +976,11 @@ const TalentCard = ({ talent, locked }) => {
         )}
       </div>
       {locked ? (
-        <button type="button" className={styles.talentAction} disabled>
-          Plano PRO necessário
-        </button>
+        <Link href="/premium/empresa" className={styles.talentAction}>
+          Desbloquear com o plano PRO
+        </Link>
       ) : (
-        <Link href={talent.profileUrl || "#"} className={styles.talentAction}>
+        <Link href={talent.profileUrl || '#'} className={styles.talentAction}>
           Ver perfil
         </Link>
       )}
@@ -1037,7 +993,7 @@ const AnalyticsCard = ({ title, value, subtitle, color, icon, change }) => (
     <div className={styles.analyticsCardHeader}>
       <div
         className={`${styles.analyticsCardIcon} ${styles.analyticsCardIconAccent}`}
-        style={{ "--accent-bg": `${color}15`, "--accent-color": color }}
+        style={{ '--accent-bg': `${color}15`, '--accent-color': color }}
       >
         {icon}
       </div>
@@ -1045,7 +1001,7 @@ const AnalyticsCard = ({ title, value, subtitle, color, icon, change }) => (
         <span
           className={`${styles.analyticsChange} ${change >= 0 ? styles.analyticsChangeUp : styles.analyticsChangeDown}`}
         >
-          {change >= 0 ? "+" : ""}
+          {change >= 0 ? '+' : ''}
           {change}%
         </span>
       )}
@@ -1075,10 +1031,25 @@ export default function EmpresaDashboard({
   publicCandidates = [],
   publicCandidateSummary,
   verifiedCandidateIds = [],
+  weeklyApplications = [],
 }) {
   const { user, logout } = useAuth();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const openTab = useCallback(
+    (tab) => {
+      setActiveTab(tab);
+      if (!router.isReady) return;
+
+      const query = { ...router.query };
+      if (tab === 'dashboard') delete query.tab;
+      else query.tab = tab;
+      void router.push({ pathname: router.pathname, query }, undefined, {
+        shallow: true,
+      });
+    },
+    [router],
+  );
   const normalizedCompanyPlanId = useMemo(
     () =>
       normalizeEmpresaPlanId(
@@ -1091,32 +1062,34 @@ export default function EmpresaDashboard({
   const [planState, setPlanState] = useState(
     normalizePlan(normalizedCompanyPlanId),
   );
-  const [hiringTips, setHiringTips] = useState(getHiringTips(planState));
+  const hiringTips = DASHBOARD_HIRING_TIPS;
   const [analytics, setAnalytics] = useState(null);
   const [loadingAnalytics, setLoadingAnalytics] = useState(false);
-  const [analyticsError, setAnalyticsError] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [applicationFilter, setApplicationFilter] = useState("all");
-  const [jobFilter, setJobFilter] = useState("all");
+  const [analyticsError, setAnalyticsError] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [talentAreaFilter, setTalentAreaFilter] = useState('all');
+  const [applicationFilter, setApplicationFilter] = useState('all');
+  const [jobFilter, setJobFilter] = useState('all');
   const [applicationsData, setApplicationsData] = useState(recentApplications);
+  const [updatingApplicationId, setUpdatingApplicationId] = useState(null);
   const [talentPoolData, setTalentPoolData] = useState([]);
   const [loadingTalentPool, setLoadingTalentPool] = useState(false);
-  const [talentPoolError, setTalentPoolError] = useState("");
+  const [talentPoolError, setTalentPoolError] = useState('');
   const [exportingCsv, setExportingCsv] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [notificationsLoading, setNotificationsLoading] = useState(false);
-  const [notificationsError, setNotificationsError] = useState("");
+  const [notificationsError, setNotificationsError] = useState('');
   const [conversations, setConversations] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [messages, setMessages] = useState([]);
-  const [messageInput, setMessageInput] = useState("");
+  const [messageInput, setMessageInput] = useState('');
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [loadingConversations, setLoadingConversations] = useState(false);
   const [sendingMessage, setSendingMessage] = useState(false);
-  const [messagesError, setMessagesError] = useState("");
-  const [planLoadingId, setPlanLoadingId] = useState("");
-  const [planError, setPlanError] = useState("");
+  const [messagesError, setMessagesError] = useState('');
+  const [planLoadingId, setPlanLoadingId] = useState('');
+  const [planError, setPlanError] = useState('');
   const [planPaymentInstructions, setPlanPaymentInstructions] = useState(null);
   const [pendingPaymentRequest, setPendingPaymentRequest] = useState(null);
   const [interviewModal, setInterviewModal] = useState({
@@ -1124,22 +1097,22 @@ export default function EmpresaDashboard({
     application: null,
   });
   const [interviewForm, setInterviewForm] = useState({
-    interviewDate: "",
-    interviewMode: "online",
-    interviewLocation: "",
-    interviewLink: "",
-    interviewNotes: "",
+    interviewDate: '',
+    interviewMode: 'online',
+    interviewLocation: '',
+    interviewLink: '',
+    interviewNotes: '',
   });
   const [interviewSubmitting, setInterviewSubmitting] = useState(false);
-  const [interviewError, setInterviewError] = useState("");
+  const [interviewError, setInterviewError] = useState('');
   const [hrRequests, setHrRequests] = useState([]);
   const [hrLoading, setHrLoading] = useState(false);
   const [hrSubmitting, setHrSubmitting] = useState(false);
   const [hrFeedback, setHrFeedback] = useState(null);
   const [hrForm, setHrForm] = useState({
     serviceType: HR_SERVICE_TYPES[0],
-    title: "",
-    description: "",
+    title: '',
+    description: '',
     documents: [emptyHrDocument()],
   });
   const messagesEndRef = useRef(null);
@@ -1189,12 +1162,12 @@ export default function EmpresaDashboard({
   const fetchPendingPaymentRequest = useCallback(async () => {
     if (!user) return;
     try {
-      const { getAuth } = await import("firebase/auth");
+      const { getAuth } = await import('firebase/auth');
       const auth = getAuth();
       const token = await auth.currentUser?.getIdToken();
       if (!token) return;
 
-      const response = await fetch("/api/subscription-requests/current", {
+      const response = await fetch('/api/subscription-requests/current', {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json().catch(() => ({}));
@@ -1209,24 +1182,24 @@ export default function EmpresaDashboard({
   const fetchNotifications = useCallback(async () => {
     if (!user) return;
     setNotificationsLoading(true);
-    setNotificationsError("");
+    setNotificationsError('');
     try {
-      const { getAuth } = await import("firebase/auth");
+      const { getAuth } = await import('firebase/auth');
       const auth = getAuth();
       const token = await auth.currentUser?.getIdToken();
-      if (!token) throw new Error("Sessão expirada");
+      if (!token) throw new Error('Sessão expirada');
 
-      const response = await fetch("/api/notifications", {
+      const response = await fetch('/api/notifications', {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok)
-        throw new Error(data.error || "Erro ao buscar notificações");
+        throw new Error(data.error || 'Erro ao carregar notificações');
       setNotifications(
         Array.isArray(data.notifications) ? data.notifications : [],
       );
     } catch (error) {
-      setNotificationsError(error?.message || "Erro ao buscar notificações");
+      setNotificationsError(error?.message || 'Erro ao carregar notificações');
     } finally {
       setNotificationsLoading(false);
     }
@@ -1236,15 +1209,15 @@ export default function EmpresaDashboard({
     async (notificationId) => {
       if (!notificationId || !user) return;
       try {
-        const { getAuth } = await import("firebase/auth");
+        const { getAuth } = await import('firebase/auth');
         const auth = getAuth();
         const token = await auth.currentUser?.getIdToken();
         if (!token) return;
 
-        const response = await fetch("/api/notifications", {
-          method: "PATCH",
+        const response = await fetch('/api/notifications', {
+          method: 'PATCH',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ notificationId }),
@@ -1266,15 +1239,15 @@ export default function EmpresaDashboard({
   const markAllNotificationsRead = useCallback(async () => {
     if (!user) return;
     try {
-      const { getAuth } = await import("firebase/auth");
+      const { getAuth } = await import('firebase/auth');
       const auth = getAuth();
       const token = await auth.currentUser?.getIdToken();
       if (!token) return;
 
-      const response = await fetch("/api/notifications", {
-        method: "PATCH",
+      const response = await fetch('/api/notifications', {
+        method: 'PATCH',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ markAll: true }),
@@ -1294,15 +1267,15 @@ export default function EmpresaDashboard({
         await markNotificationRead(notif.id);
       }
       // Bring the company back to applications list for interview-related notifications.
-      if (notif.type === "interview_response" || notif.type === "application") {
-        setActiveTab("applications");
+      if (notif.type === 'interview_response' || notif.type === 'application') {
+        openTab('applications');
       }
-      if (String(notif.type || "").startsWith("HR_SERVICE_")) {
-        setActiveTab("hr-services");
+      if (String(notif.type || '').startsWith('HR_SERVICE_')) {
+        openTab('hr-services');
       }
       setNotificationsOpen(false);
     },
-    [markNotificationRead],
+    [markNotificationRead, openTab],
   );
 
   useEffect(() => {
@@ -1311,21 +1284,23 @@ export default function EmpresaDashboard({
 
   useEffect(() => {
     if (!router.isReady) return;
-    const requestedTab =
-      typeof router.query.tab === "string" ? router.query.tab : "";
-    if (
-      requestedTab &&
-      MENU_ITEMS.some((item) => item.id === requestedTab) &&
-      requestedTab !== activeTab
-    ) {
-      setActiveTab(requestedTab);
-    }
-  }, [router.isReady, router.query.tab, activeTab]);
+    const requestedTab = resolveDashboardTab(router.query.tab, EMPRESA_TAB_IDS);
+    setActiveTab((currentTab) =>
+      currentTab === requestedTab ? currentTab : requestedTab,
+    );
+  }, [router.isReady, router.query.tab]);
 
   useEffect(() => {
     if (!user) return;
     fetchNotifications();
-    const intervalId = setInterval(fetchNotifications, 30000);
+    const intervalId = setInterval(() => {
+      if (
+        typeof document !== 'undefined' &&
+        document.visibilityState === 'hidden'
+      )
+        return;
+      fetchNotifications();
+    }, 30000);
     return () => clearInterval(intervalId);
   }, [user, fetchNotifications]);
 
@@ -1335,30 +1310,71 @@ export default function EmpresaDashboard({
         app.id === applicationId
           ? {
               ...app,
-              ...(typeof updates === "string" ? { status: updates } : updates),
+              ...(typeof updates === 'string' ? { status: updates } : updates),
             }
           : app,
       ),
     );
   };
 
+  // Aceitar/rejeitar/analisar candidaturas diretamente da lista. A entrevista
+  // usa o modal dedicado (openInterviewScheduler) e o backend valida o plano.
+  const handleApplicationStatusChange = async (applicationId, newStatus) => {
+    if (updatingApplicationId) return;
+    setUpdatingApplicationId(applicationId);
+    try {
+      const { getAuth } = await import('firebase/auth');
+      const auth = getAuth();
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) {
+        alert('A sessão expirou. Inicie sessão novamente.');
+        return;
+      }
+      const response = await fetch(
+        `/api/applications/${applicationId}/status`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ status: newStatus }),
+        },
+      );
+      const data = await response.json().catch(() => ({}));
+      if (response.ok) {
+        handleApplicationStatusUpdate(
+          applicationId,
+          data.application || { status: newStatus },
+        );
+      } else {
+        alert(data.error || 'Não foi possível atualizar a candidatura.');
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar candidatura:', error);
+      alert('Erro ao atualizar candidatura. Tente novamente.');
+    } finally {
+      setUpdatingApplicationId(null);
+    }
+  };
+
   const openInterviewScheduler = (application) => {
     const currentInterview = application?.interviewDetails || {};
     setInterviewForm({
       interviewDate: toDateTimeLocalValue(currentInterview.scheduledAt),
-      interviewMode: currentInterview.mode || "online",
-      interviewLocation: currentInterview.location || "",
-      interviewLink: currentInterview.link || "",
-      interviewNotes: currentInterview.notes || "",
+      interviewMode: currentInterview.mode || 'online',
+      interviewLocation: currentInterview.location || '',
+      interviewLink: currentInterview.link || '',
+      interviewNotes: currentInterview.notes || '',
     });
-    setInterviewError("");
+    setInterviewError('');
     setInterviewModal({ open: true, application });
   };
 
   const closeInterviewScheduler = () => {
     if (interviewSubmitting) return;
     setInterviewModal({ open: false, application: null });
-    setInterviewError("");
+    setInterviewError('');
   };
 
   const handleInterviewFieldChange = (field, value) => {
@@ -1369,28 +1385,28 @@ export default function EmpresaDashboard({
     if (!interviewModal.application || interviewSubmitting) return;
 
     setInterviewSubmitting(true);
-    setInterviewError("");
+    setInterviewError('');
 
     try {
-      const { getAuth } = await import("firebase/auth");
+      const { getAuth } = await import('firebase/auth');
       const auth = getAuth();
       const token = await auth.currentUser?.getIdToken();
 
       if (!token) {
-        setInterviewError("Sessão expirada. Faça login novamente.");
+        setInterviewError('Sessão expirada. Faça login novamente.');
         return;
       }
 
       const response = await fetch(
         `/api/applications/${interviewModal.application.id}/status`,
         {
-          method: "PATCH",
+          method: 'PATCH',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            status: "interview",
+            status: 'interview',
             interviewDate: interviewForm.interviewDate,
             interviewMode: interviewForm.interviewMode,
             interviewLocation: interviewForm.interviewLocation,
@@ -1405,7 +1421,7 @@ export default function EmpresaDashboard({
         setInterviewError(
           data.upgradeMessage ||
             data.error ||
-            "Não foi possível agendar a entrevista.",
+            'Não foi possível agendar a entrevista.',
         );
         return;
       }
@@ -1413,7 +1429,7 @@ export default function EmpresaDashboard({
       handleApplicationStatusUpdate(
         interviewModal.application.id,
         data.application || {
-          status: "interview",
+          status: 'interview',
           interviewDetails: {
             scheduledAt: interviewForm.interviewDate,
             mode: interviewForm.interviewMode,
@@ -1424,10 +1440,10 @@ export default function EmpresaDashboard({
         },
       );
       setInterviewModal({ open: false, application: null });
-      setInterviewError("");
+      setInterviewError('');
     } catch (error) {
-      console.error("Erro ao agendar entrevista:", error);
-      setInterviewError("Não foi possível agendar a entrevista.");
+      console.error('Erro ao agendar entrevista:', error);
+      setInterviewError('Não foi possível agendar a entrevista.');
     } finally {
       setInterviewSubmitting(false);
     }
@@ -1437,44 +1453,44 @@ export default function EmpresaDashboard({
     try {
       const result = await logout();
       if (result.success) {
-        router.push("/login");
+        router.push(buildLoginUrl(router.asPath));
       } else {
-        alert("Erro ao fazer logout. Tente novamente.");
+        alert('Erro ao fazer logout. Tente novamente.');
       }
     } catch (error) {
-      console.error("Erro ao fazer logout:", error);
-      alert("Erro ao fazer logout.");
+      console.error('Erro ao fazer logout:', error);
+      alert('Erro ao fazer logout.');
     }
   };
 
   const fetchConversations = useCallback(async ({ silent = false } = {}) => {
     if (!silent) {
       setLoadingConversations(true);
-      setMessagesError("");
+      setMessagesError('');
     }
     try {
-      const { getAuth } = await import("firebase/auth");
+      const { getAuth } = await import('firebase/auth');
       const auth = getAuth();
       const token = await auth.currentUser?.getIdToken();
       if (!token) return;
 
-      const response = await fetch("/api/messages", {
+      const response = await fetch('/api/messages', {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
         setMessagesError(
-          data.error || "Não foi possível carregar as conversas.",
+          data.error || 'Não foi possível carregar as conversas.',
         );
         return;
       }
 
       setConversations(data.conversations || []);
     } catch (error) {
-      console.error("Erro ao buscar conversas:", error);
+      console.error('Erro ao buscar conversas:', error);
       if (!silent) {
-        setMessagesError("Não foi possível carregar as conversas.");
+        setMessagesError('Não foi possível carregar as conversas.');
       }
     } finally {
       if (!silent) {
@@ -1484,20 +1500,20 @@ export default function EmpresaDashboard({
   }, []);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
 
     const handleRealtimeEvent = async (event) => {
       fetchNotifications();
-      const payloadType = event?.detail?.payload?.data?.type || "";
-      if (payloadType === "message" || payloadType === "direct_message") {
+      const payloadType = event?.detail?.payload?.data?.type || '';
+      if (payloadType === 'message' || payloadType === 'direct_message') {
         fetchConversations({ silent: true });
       }
     };
 
-    window.addEventListener("app-notification-received", handleRealtimeEvent);
+    window.addEventListener('app-notification-received', handleRealtimeEvent);
     return () =>
       window.removeEventListener(
-        "app-notification-received",
+        'app-notification-received',
         handleRealtimeEvent,
       );
   }, [fetchNotifications, fetchConversations]);
@@ -1506,15 +1522,15 @@ export default function EmpresaDashboard({
     async (participantId) => {
       if (!participantId) return null;
       try {
-        const { getAuth } = await import("firebase/auth");
+        const { getAuth } = await import('firebase/auth');
         const auth = getAuth();
         const token = await auth.currentUser?.getIdToken();
         if (!token) return null;
 
-        const response = await fetch("/api/messages", {
-          method: "POST",
+        const response = await fetch('/api/messages', {
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ participantId }),
@@ -1525,7 +1541,7 @@ export default function EmpresaDashboard({
           alert(
             data.upgradeMessage ||
               data.error ||
-              "Não foi possível abrir a conversa.",
+              'Não foi possível abrir a conversa.',
           );
           if (data.upgradeUrl) {
             router.push(data.upgradeUrl);
@@ -1538,47 +1554,52 @@ export default function EmpresaDashboard({
           return data.conversationId;
         }
       } catch (error) {
-        console.error("Erro ao abrir conversa:", error);
-        alert("Não foi possível abrir a conversa.");
+        console.error('Erro ao abrir conversa:', error);
+        alert('Não foi possível abrir a conversa.');
       }
       return null;
     },
     [router],
   );
 
-  const fetchHrRequests = useCallback(async ({ silent = false } = {}) => {
-    if (!user) return;
-    if (!silent) {
-      setHrLoading(true);
-      setHrFeedback(null);
-    }
-    try {
-      const { getAuth } = await import("firebase/auth");
-      const auth = getAuth();
-      const token = await auth.currentUser?.getIdToken();
-      if (!token) return;
-
-      const response = await fetch("/api/hr-services", {
-        cache: "no-store",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(data.error || "Não foi possível carregar os serviços RH.");
-      }
-      setHrRequests(Array.isArray(data.requests) ? data.requests : []);
-    } catch (error) {
-      console.error("Erro ao carregar serviços RH:", error);
+  const fetchHrRequests = useCallback(
+    async ({ silent = false } = {}) => {
+      if (!user) return;
       if (!silent) {
-        setHrFeedback({
-          type: "error",
-          text: error?.message || "Não foi possível carregar os serviços RH.",
-        });
+        setHrLoading(true);
+        setHrFeedback(null);
       }
-    } finally {
-      if (!silent) setHrLoading(false);
-    }
-  }, [user]);
+      try {
+        const { getAuth } = await import('firebase/auth');
+        const auth = getAuth();
+        const token = await auth.currentUser?.getIdToken();
+        if (!token) return;
+
+        const response = await fetch('/api/hr-services', {
+          cache: 'no-store',
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(
+            data.error || 'Não foi possível carregar os serviços RH.',
+          );
+        }
+        setHrRequests(Array.isArray(data.requests) ? data.requests : []);
+      } catch (error) {
+        console.error('Erro ao carregar serviços RH:', error);
+        if (!silent) {
+          setHrFeedback({
+            type: 'error',
+            text: error?.message || 'Não foi possível carregar os serviços RH.',
+          });
+        }
+      } finally {
+        if (!silent) setHrLoading(false);
+      }
+    },
+    [user],
+  );
 
   const updateHrForm = (field, value) => {
     setHrForm((prev) => ({ ...prev, [field]: value }));
@@ -1620,22 +1641,22 @@ export default function EmpresaDashboard({
     setHrSubmitting(true);
     setHrFeedback(null);
     try {
-      const { getAuth } = await import("firebase/auth");
+      const { getAuth } = await import('firebase/auth');
       const auth = getAuth();
       const token = await auth.currentUser?.getIdToken();
-      if (!token) throw new Error("Sessão expirada. Faça login novamente.");
+      if (!token) throw new Error('Sessão expirada. Faça login novamente.');
 
       const documents = hrForm.documents
         .map((doc) => ({
-          label: (doc.label || "").trim(),
-          url: (doc.url || "").trim(),
+          label: (doc.label || '').trim(),
+          url: (doc.url || '').trim(),
         }))
         .filter((doc) => doc.url);
 
-      const response = await fetch("/api/hr-services", {
-        method: "POST",
+      const response = await fetch('/api/hr-services', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
@@ -1647,24 +1668,25 @@ export default function EmpresaDashboard({
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        throw new Error(data.error || "Não foi possível enviar o pedido.");
+        throw new Error(data.error || 'Não foi possível enviar o pedido.');
       }
 
       setHrForm({
         serviceType: HR_SERVICE_TYPES[0],
-        title: "",
-        description: "",
+        title: '',
+        description: '',
         documents: [emptyHrDocument()],
       });
       setHrFeedback({
-        type: "success",
-        text: data.message || "Pedido enviado para análise do admin.",
+        type: 'success',
+        text:
+          data.message || 'Pedido enviado para análise da equipa EmpregoSTP.',
       });
       await fetchHrRequests({ silent: true });
     } catch (error) {
       setHrFeedback({
-        type: "error",
-        text: error?.message || "Não foi possível enviar o pedido.",
+        type: 'error',
+        text: error?.message || 'Não foi possível enviar o pedido.',
       });
     } finally {
       setHrSubmitting(false);
@@ -1672,7 +1694,7 @@ export default function EmpresaDashboard({
   };
 
   const activeJobs = useMemo(
-    () => jobs.filter((job) => job.status === "active"),
+    () => jobs.filter((job) => job.status === 'active'),
     [jobs],
   );
 
@@ -1681,26 +1703,22 @@ export default function EmpresaDashboard({
   }, [normalizedCompanyPlanId]);
 
   useEffect(() => {
-    setHiringTips(getHiringTips(planState));
-  }, [planState]);
-
-  useEffect(() => {
-    if (activeTab !== "messages") return;
+    if (activeTab !== 'messages') return;
     fetchConversations();
   }, [activeTab, fetchConversations]);
 
   useEffect(() => {
-    if (activeTab !== "hr-services") return;
+    if (activeTab !== 'hr-services') return;
     fetchHrRequests();
   }, [activeTab, fetchHrRequests]);
 
   useEffect(() => {
-    if (activeTab !== "messages") return undefined;
+    if (activeTab !== 'messages') return undefined;
 
     const intervalId = setInterval(() => {
       if (
-        typeof document !== "undefined" &&
-        document.visibilityState === "hidden"
+        typeof document !== 'undefined' &&
+        document.visibilityState === 'hidden'
       )
         return;
       fetchConversations({ silent: true });
@@ -1710,9 +1728,9 @@ export default function EmpresaDashboard({
   }, [activeTab, fetchConversations]);
 
   useEffect(() => {
-    if (activeTab !== "messages" || !router.isReady) return;
+    if (activeTab !== 'messages' || !router.isReady) return;
     const candidateId =
-      typeof router.query.candidate === "string" ? router.query.candidate : "";
+      typeof router.query.candidate === 'string' ? router.query.candidate : '';
     if (!candidateId || lastOpenedCandidateRef.current === candidateId) return;
 
     lastOpenedCandidateRef.current = candidateId;
@@ -1737,7 +1755,7 @@ export default function EmpresaDashboard({
   }, [activeTab, router, createOrOpenConversation, fetchConversations]);
 
   useEffect(() => {
-    if (activeTab !== "messages") return undefined;
+    if (activeTab !== 'messages') return undefined;
     if (!selectedConversation) {
       setMessages([]);
       return;
@@ -1746,10 +1764,10 @@ export default function EmpresaDashboard({
     const fetchMessages = async ({ silent = false } = {}) => {
       if (!silent) {
         setLoadingMessages(true);
-        setMessagesError("");
+        setMessagesError('');
       }
       try {
-        const { getAuth } = await import("firebase/auth");
+        const { getAuth } = await import('firebase/auth');
         const auth = getAuth();
         const token = await auth.currentUser?.getIdToken();
         if (!token) return;
@@ -1762,7 +1780,7 @@ export default function EmpresaDashboard({
         if (!response.ok) {
           if (!silent) {
             setMessagesError(
-              data.error || "Não foi possível carregar as mensagens.",
+              data.error || 'Não foi possível carregar as mensagens.',
             );
           }
           return;
@@ -1777,9 +1795,9 @@ export default function EmpresaDashboard({
           ),
         );
       } catch (error) {
-        console.error("Erro ao buscar mensagens:", error);
+        console.error('Erro ao buscar mensagens:', error);
         if (!silent) {
-          setMessagesError("Não foi possível carregar as mensagens.");
+          setMessagesError('Não foi possível carregar as mensagens.');
         }
       } finally {
         if (!silent) {
@@ -1792,8 +1810,8 @@ export default function EmpresaDashboard({
 
     const intervalId = setInterval(() => {
       if (
-        typeof document !== "undefined" &&
-        document.visibilityState === "hidden"
+        typeof document !== 'undefined' &&
+        document.visibilityState === 'hidden'
       )
         return;
       fetchMessages({ silent: true });
@@ -1803,39 +1821,39 @@ export default function EmpresaDashboard({
   }, [activeTab, selectedConversation]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   useEffect(() => {
     const fetchAnalytics = async () => {
       if (
-        activeTab !== "analytics" ||
+        activeTab !== 'analytics' ||
         !user ||
         !companyPlanFeatures.canAccessAnalytics
       )
         return;
       setLoadingAnalytics(true);
-      setAnalyticsError("");
+      setAnalyticsError('');
       try {
-        const { getAuth } = await import("firebase/auth");
+        const { getAuth } = await import('firebase/auth');
         const auth = getAuth();
         const token = await auth.currentUser?.getIdToken();
         if (!token) return;
-        const response = await fetch("/api/analytics", {
+        const response = await fetch('/api/analytics', {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await response.json();
         if (!response.ok) {
           setAnalytics(null);
           setAnalyticsError(
-            data.error || "Não foi possível carregar analytics",
+            data.error || 'Não foi possível carregar analytics',
           );
           return;
         }
         setAnalytics(data);
       } catch (error) {
-        console.error("Erro ao buscar analytics:", error);
-        setAnalyticsError("Não foi possível carregar analytics");
+        console.error('Erro ao buscar analytics:', error);
+        setAnalyticsError('Não foi possível carregar analytics');
       } finally {
         setLoadingAnalytics(false);
       }
@@ -1846,45 +1864,45 @@ export default function EmpresaDashboard({
   useEffect(() => {
     const fetchTalentPool = async () => {
       if (
-        activeTab !== "candidates" ||
+        activeTab !== 'candidates' ||
         !user ||
         !companyPlanFeatures.accessTalentPool
       )
         return;
       setLoadingTalentPool(true);
-      setTalentPoolError("");
+      setTalentPoolError('');
       try {
-        const { getAuth } = await import("firebase/auth");
+        const { getAuth } = await import('firebase/auth');
         const auth = getAuth();
         const token = await auth.currentUser?.getIdToken();
         if (!token) return;
 
-        const response = await fetch("/api/talent-pool?limit=30", {
+        const response = await fetch('/api/talent-pool?limit=30', {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await response.json();
         if (!response.ok) {
           setTalentPoolData([]);
           setTalentPoolError(
-            data.error || "Não foi possível carregar o banco de talentos",
+            data.error || 'Não foi possível carregar o banco de talentos',
           );
           return;
         }
 
         const mappedTalents = (data.candidates || []).map((candidate) => ({
           id: candidate.id,
-          name: candidate.fullName || "Candidato",
-          headline: candidate.headline || "Perfil disponível",
-          skills: String(candidate.skillsHard || "")
-            .split(",")
+          name: candidate.fullName || 'Candidato',
+          headline: candidate.headline || 'Perfil disponível',
+          skills: String(candidate.skillsHard || '')
+            .split(',')
             .map((skill) => skill.trim())
             .filter(Boolean)
             .slice(0, 4),
           experience: candidate.availableForWork
-            ? "Disponível para trabalho"
-            : "Perfil ativo",
-          location: candidate.location || "São Tomé e Príncipe",
-          avatar: candidate.photoUrl || "",
+            ? 'Disponível para trabalho'
+            : 'Perfil ativo',
+          location: candidate.location || 'São Tomé e Príncipe',
+          avatar: candidate.photoUrl || '',
           profileUrl: `/dashboard/empresa/candidato/${candidate.id}`,
           verified: Boolean(candidate.verified),
           highlighted: Boolean(candidate.highlighted),
@@ -1894,8 +1912,8 @@ export default function EmpresaDashboard({
 
         setTalentPoolData(mappedTalents);
       } catch (error) {
-        console.error("Erro ao buscar banco de talentos:", error);
-        setTalentPoolError("Não foi possível carregar o banco de talentos");
+        console.error('Erro ao buscar banco de talentos:', error);
+        setTalentPoolError('Não foi possível carregar o banco de talentos');
       } finally {
         setLoadingTalentPool(false);
       }
@@ -1907,32 +1925,32 @@ export default function EmpresaDashboard({
   const statsList = useMemo(
     () => [
       {
-        label: "Vagas Ativas",
+        label: 'Vagas Ativas',
         value: activeJobs.length,
         trend: `+${jobs.length} total`,
         icon: icons.briefcase,
-        color: "#2057d7",
+        color: '#2057d7',
       },
       {
-        label: "Candidaturas",
+        label: 'Candidaturas',
         value: totalApplications,
         trend: `${stats?.pendingApplications || 0} novas`,
         icon: icons.inbox,
-        color: "#5fb8f5",
+        color: '#5fb8f5',
       },
       {
-        label: "Vagas Destacadas",
+        label: 'Vagas Destacadas',
         value: highlightedJobsCount,
         trend: !companyPlanFeatures.canHighlightJobs
-          ? "Upgrade para destacar vagas"
+          ? 'Upgrade para destacar vagas'
           : companyPlanFeatures.maxHighlightedJobs === null
-            ? "Plano com destaques ilimitados"
+            ? 'Plano com destaques ilimitados'
             : `${highlightedJobsCount}/${companyPlanFeatures.maxHighlightedJobs || 0} utilizadas`,
         icon: icons.crown,
-        color: "#5fb8f5",
+        color: '#5fb8f5',
       },
       {
-        label: "Taxa Conversão",
+        label: 'Taxa Conversão',
         value: `${
           totalApplications > 0
             ? (
@@ -1945,9 +1963,9 @@ export default function EmpresaDashboard({
               ).toFixed(1)
             : 0
         }%`,
-        trend: "Apps/Views",
+        trend: 'Apps/Views',
         icon: icons.trending,
-        color: "#2057d7",
+        color: '#2057d7',
       },
     ],
     [
@@ -1962,18 +1980,39 @@ export default function EmpresaDashboard({
   );
 
   const chartData = useMemo(() => {
-    const dayLabels = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-    const counts = {};
-    recentApplications.forEach((app) => {
-      const date = app.appliedAt ? new Date(app.appliedAt) : new Date();
-      const key = date.getDay();
-      counts[key] = (counts[key] || 0) + 1;
+    if (weeklyApplications.length === 6) {
+      return weeklyApplications;
+    }
+
+    const now = new Date();
+    return Array.from({ length: 6 }, (_, index) => {
+      const weeksAgo = 5 - index;
+      const start = new Date(now);
+      start.setHours(0, 0, 0, 0);
+      start.setDate(start.getDate() - weeksAgo * 7 - start.getDay());
+      const end = new Date(start);
+      end.setDate(end.getDate() + 7);
+
+      const value = applicationsData.filter((application) => {
+        const rawDate =
+          application.appliedAt ||
+          application.appliedDate ||
+          application.createdAt;
+        if (!rawDate) return false;
+        const appliedAt = new Date(rawDate);
+        return (
+          !Number.isNaN(appliedAt.getTime()) &&
+          appliedAt >= start &&
+          appliedAt < end
+        );
+      }).length;
+
+      return {
+        name: `S${index + 1}`,
+        value,
+      };
     });
-    return dayLabels.map((day, index) => ({
-      name: day,
-      value: counts[index] || 0,
-    }));
-  }, [recentApplications]);
+  }, [applicationsData, weeklyApplications]);
 
   const fallbackTalentPool = useMemo(() => {
     const byCandidate = new Map();
@@ -1982,15 +2021,15 @@ export default function EmpresaDashboard({
         return;
       byCandidate.set(application.candidateId, {
         id: application.candidateId,
-        name: application.candidateName || "Candidato",
+        name: application.candidateName || 'Candidato',
         headline: application.jobTitle
           ? `Interessado em ${application.jobTitle}`
-          : "Perfil disponível",
+          : 'Perfil disponível',
         skills: [],
         experience:
-          application.status === "interview" ? "Em entrevista" : "Perfil ativo",
-        location: application.jobLocation || "São Tomé e Príncipe",
-        avatar: "",
+          application.status === 'interview' ? 'Em entrevista' : 'Perfil ativo',
+        location: application.jobLocation || 'São Tomé e Príncipe',
+        avatar: '',
         profileUrl: `/dashboard/empresa/candidato/${application.candidateId}`,
         verified: verifiedCandidateIdSet.has(application.candidateId),
         highlighted: false,
@@ -2012,23 +2051,62 @@ export default function EmpresaDashboard({
     fallbackTalentPool,
   ]);
 
+  const talentAreaOptions = useMemo(() => {
+    const areas = new Set(
+      talentPool
+        .map((talent) =>
+          String(
+            talent.area ||
+              talent.category ||
+              talent.profession ||
+              talent.headline ||
+              '',
+          ).trim(),
+        )
+        .filter(Boolean),
+    );
+
+    return Array.from(areas).sort((left, right) =>
+      left.localeCompare(right, 'pt-PT'),
+    );
+  }, [talentPool]);
+
   const filteredTalents = useMemo(
     () =>
       talentPool.filter((talent) => {
-        return (
-          talent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          talent.headline.toLowerCase().includes(searchQuery.toLowerCase())
-        );
+        const query = searchQuery.trim().toLocaleLowerCase('pt-PT');
+        const area = String(
+          talent.area ||
+            talent.category ||
+            talent.profession ||
+            talent.headline ||
+            '',
+        ).trim();
+        const searchableContent = [
+          talent.name,
+          talent.headline,
+          talent.location,
+          ...(talent.skills || []),
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLocaleLowerCase('pt-PT');
+
+        const matchesQuery = !query || searchableContent.includes(query);
+        const matchesArea =
+          talentAreaFilter === 'all' || area === talentAreaFilter;
+
+        return matchesQuery && matchesArea;
       }),
-    [searchQuery, talentPool],
+    [searchQuery, talentAreaFilter, talentPool],
   );
 
   const filteredApplications = useMemo(() => {
     return applicationsData
       .filter((app) => {
-        if (applicationFilter === "all") return true;
-        if (applicationFilter === "pending")
-          return !app.status || app.status === "pending";
+        if (applicationFilter === 'all') return true;
+        if (applicationFilter === 'pending')
+          return !app.status || app.status === 'pending';
         return app.status === applicationFilter;
       })
       .sort((a, b) => {
@@ -2050,28 +2128,28 @@ export default function EmpresaDashboard({
   }, [applicationsData, applicationFilter]);
 
   const filteredJobs = useMemo(() => {
-    if (jobFilter === "all") return jobs;
+    if (jobFilter === 'all') return jobs;
     return jobs.filter((job) => job.status === jobFilter);
   }, [jobs, jobFilter]);
 
   const handleSubscribePlan = async (planId) => {
     try {
       setPlanLoadingId(planId);
-      setPlanError("");
+      setPlanError('');
       setPlanPaymentInstructions(null);
 
-      const { getAuth } = await import("firebase/auth");
+      const { getAuth } = await import('firebase/auth');
       const auth = getAuth();
       const token = await auth.currentUser?.getIdToken();
       if (!token) {
-        router.push("/login");
-        return;
+        router.push(buildLoginUrl(router.asPath));
+        return { ok: false, status: 'unauthenticated' };
       }
 
-      const response = await fetch("/api/subscribe-plan", {
-        method: "POST",
+      const response = await fetch('/api/subscribe-plan', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ planId }),
@@ -2080,32 +2158,35 @@ export default function EmpresaDashboard({
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
         setPlanError(
-          data.message || data.error || "Não foi possível processar o plano.",
+          data.message || data.error || 'Não foi possível processar o plano.',
         );
-        return;
+        return { ok: false, status: 'error' };
       }
 
-      if (data.status === "approved") {
+      if (data.status === 'approved') {
         router.replace(router.asPath);
-        return;
+        return { ok: true, status: 'approved' };
       }
 
-      if (data.status === "awaiting_payment") {
+      if (data.status === 'awaiting_payment') {
         setPlanPaymentInstructions(data.paymentInstructions || null);
         setPendingPaymentRequest({
           id: data.requestId,
           planId,
           planName: plans.find((plan) => plan.id === planId)?.name || planId,
           price: plans.find((plan) => plan.id === planId)?.price || 0,
-          status: "pending",
+          status: 'pending',
           paymentInstructions: data.paymentInstructions || null,
         });
+        return { ok: true, status: 'awaiting_payment' };
       }
+      return { ok: true, status: data.status || 'pending' };
     } catch (error) {
-      console.error("Erro ao assinar plano:", error);
-      setPlanError("Não foi possível processar o plano.");
+      console.error('Erro ao assinar plano:', error);
+      setPlanError('Não foi possível processar o plano.');
+      return { ok: false, status: 'error' };
     } finally {
-      setPlanLoadingId("");
+      setPlanLoadingId('');
     }
   };
 
@@ -2113,15 +2194,15 @@ export default function EmpresaDashboard({
     if (exportingCsv) return;
     setExportingCsv(true);
     try {
-      const { getAuth } = await import("firebase/auth");
+      const { getAuth } = await import('firebase/auth');
       const auth = getAuth();
       const token = await auth.currentUser?.getIdToken();
       if (!token) {
-        alert("Sessão expirada. Faça login novamente.");
+        alert('Sessão expirada. Faça login novamente.');
         return;
       }
 
-      const response = await fetch("/api/export/applications", {
+      const response = await fetch('/api/export/applications', {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -2130,21 +2211,21 @@ export default function EmpresaDashboard({
         alert(
           errorData.upgradeMessage ||
             errorData.error ||
-            "Não foi possível exportar as candidaturas.",
+            'Não foi possível exportar as candidaturas.',
         );
         return;
       }
 
       const blob = await response.blob();
       const contentDisposition =
-        response.headers.get("content-disposition") || "";
+        response.headers.get('content-disposition') || '';
       const match = contentDisposition.match(/filename="(.+)"/);
       const filename =
         match?.[1] ||
         `candidaturas_${new Date().toISOString().slice(0, 10)}.csv`;
 
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
+      const a = document.createElement('a');
       a.href = url;
       a.download = filename;
       document.body.appendChild(a);
@@ -2152,8 +2233,8 @@ export default function EmpresaDashboard({
       a.remove();
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("Erro ao exportar candidaturas:", error);
-      alert("Erro ao exportar candidaturas.");
+      console.error('Erro ao exportar candidaturas:', error);
+      alert('Erro ao exportar candidaturas.');
     } finally {
       setExportingCsv(false);
     }
@@ -2163,20 +2244,20 @@ export default function EmpresaDashboard({
     if (!messageInput.trim() || !selectedConversation || sendingMessage) return;
 
     const text = messageInput.trim();
-    setMessageInput("");
+    setMessageInput('');
     setSendingMessage(true);
 
     try {
-      const { getAuth } = await import("firebase/auth");
+      const { getAuth } = await import('firebase/auth');
       const auth = getAuth();
       const currentUser = auth.currentUser;
       const token = await currentUser?.getIdToken();
       if (!token || !currentUser) return;
 
       const response = await fetch(`/api/messages/${selectedConversation}`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ text }),
@@ -2188,7 +2269,7 @@ export default function EmpresaDashboard({
         alert(
           data.upgradeMessage ||
             data.error ||
-            "Não foi possível enviar a mensagem.",
+            'Não foi possível enviar a mensagem.',
         );
         if (data.upgradeUrl) {
           router.push(data.upgradeUrl);
@@ -2217,9 +2298,9 @@ export default function EmpresaDashboard({
         ),
       );
     } catch (error) {
-      console.error("Erro ao enviar mensagem:", error);
+      console.error('Erro ao enviar mensagem:', error);
       setMessageInput(text);
-      alert("Não foi possível enviar a mensagem.");
+      alert('Não foi possível enviar a mensagem.');
     } finally {
       setSendingMessage(false);
     }
@@ -2227,14 +2308,15 @@ export default function EmpresaDashboard({
 
   const renderContent = () => {
     switch (activeTab) {
-      case "dashboard": {
+      case 'dashboard': {
         const companyName =
-          profile?.companyName || profile?.name || user?.name || "Empresa";
+          profile?.companyName || profile?.name || user?.name || 'Empresa';
         const pendingCount = applicationsData.filter(
-          (a) => a.status === "pending",
+          (a) => a.status === 'pending',
         ).length;
         const interviewsCount = applicationsData.filter(
-          (a) => a.status === "interview" || a.interviewDate || a.interviewStatus,
+          (a) =>
+            a.status === 'interview' || a.interviewDate || a.interviewStatus,
         ).length;
         const totalViews = jobs.reduce((sum, job) => sum + (job.views || 0), 0);
         const recentApps = [...applicationsData]
@@ -2244,27 +2326,27 @@ export default function EmpresaDashboard({
               new Date(a.createdAt || 0).getTime(),
           )
           .slice(0, 5);
-        const topJobs = (activeJobs.length ? activeJobs : jobs).slice(0, 4);
+        const topJobs = (activeJobs.length ? activeJobs : jobs).slice(0, 3);
         const appStatusBadge = (status) => {
           switch (status) {
-            case "approved":
-            case "accepted":
-              return { label: "Aprovado", cls: "badge-success" };
-            case "interview":
-              return { label: "Entrevista", cls: "badge-pending" };
-            case "rejected":
-              return { label: "Rejeitado", cls: "badge-closed" };
+            case 'approved':
+            case 'accepted':
+              return { label: 'Aprovado', cls: 'badge-success' };
+            case 'interview':
+              return { label: 'Entrevista', cls: 'badge-pending' };
+            case 'rejected':
+              return { label: 'Rejeitado', cls: 'badge-closed' };
             default:
-              return { label: "Pendente", cls: "badge-active" };
+              return { label: 'Pendente', cls: 'badge-active' };
           }
         };
         const initialsOf = (name) =>
-          (name || "?")
-            .split(" ")
+          (name || '?')
+            .split(' ')
             .map((w) => w[0])
             .filter(Boolean)
             .slice(0, 2)
-            .join("")
+            .join('')
             .toUpperCase();
 
         return (
@@ -2272,28 +2354,35 @@ export default function EmpresaDashboard({
             <div className="header-card">
               <div>
                 <div className="header-eyebrow">Empresa · Dashboard</div>
-                <h1 className="header-title">Olá, {companyName}! 👋</h1>
+                <h1 className="header-title">
+                  Olá, {companyName}! <span aria-hidden="true">👋</span>
+                </h1>
                 <p className="header-sub">
-                  Tens{" "}
+                  Tens{' '}
                   <strong>
-                    {activeJobs.length} vaga{activeJobs.length !== 1 ? "s" : ""} activa
-                    {activeJobs.length !== 1 ? "s" : ""}
-                  </strong>{" "}
-                  e{" "}
+                    {activeJobs.length} vaga{activeJobs.length !== 1 ? 's' : ''}{' '}
+                    activa
+                    {activeJobs.length !== 1 ? 's' : ''}
+                  </strong>{' '}
+                  e{' '}
                   <strong>
-                    {totalApplications} candidatura{totalApplications !== 1 ? "s" : ""}
-                  </strong>{" "}
+                    {totalApplications} candidatura
+                    {totalApplications !== 1 ? 's' : ''}
+                  </strong>{' '}
                   para rever.
                 </p>
               </div>
               <div className="header-actions">
-                <Link href="/dashboard/empresa/vaga/criar-vaga" className="btn btn-lime">
+                <Link
+                  href="/dashboard/empresa/vaga/criar-vaga"
+                  className="btn btn-lime"
+                >
                   <FiPlusCircle /> Nova vaga
                 </Link>
                 <button
                   type="button"
                   className="btn btn-primary"
-                  onClick={() => setActiveTab("candidates")}
+                  onClick={() => openTab('candidates')}
                 >
                   <FiUsers /> Ver talentos
                 </button>
@@ -2303,9 +2392,17 @@ export default function EmpresaDashboard({
             <div className="stats-grid">
               <div
                 className="stat-card"
-                style={{ "--accent": "rgba(32,87,215,0.85)", "--accent-shadow": "rgba(32,87,215,0.28)" }}
+                style={{
+                  '--accent': 'rgba(32,87,215,0.85)',
+                  '--accent-shadow': 'rgba(32,87,215,0.28)',
+                }}
               >
-                <div className="stat-icon" style={{ background: "linear-gradient(135deg,#2057d7,#4f8ef7)" }}>
+                <div
+                  className="stat-icon"
+                  style={{
+                    background: 'linear-gradient(135deg,#2057d7,#4f8ef7)',
+                  }}
+                >
                   <FiBriefcase />
                 </div>
                 <div className="stat-value">{activeJobs.length}</div>
@@ -2314,11 +2411,17 @@ export default function EmpresaDashboard({
               </div>
               <div
                 className="stat-card"
-                style={{ "--accent": "rgba(186,230,39,0.9)", "--accent-shadow": "rgba(186,230,39,0.28)" }}
+                style={{
+                  '--accent': 'rgba(186,230,39,0.9)',
+                  '--accent-shadow': 'rgba(186,230,39,0.28)',
+                }}
               >
                 <div
                   className="stat-icon"
-                  style={{ background: "linear-gradient(135deg,#d9ff2f,#bae619)", color: "#162a55" }}
+                  style={{
+                    background: 'linear-gradient(135deg,#d9ff2f,#bae619)',
+                    color: '#162a55',
+                  }}
                 >
                   <FiInbox />
                 </div>
@@ -2328,9 +2431,17 @@ export default function EmpresaDashboard({
               </div>
               <div
                 className="stat-card"
-                style={{ "--accent": "rgba(95,184,245,0.9)", "--accent-shadow": "rgba(95,184,245,0.28)" }}
+                style={{
+                  '--accent': 'rgba(95,184,245,0.9)',
+                  '--accent-shadow': 'rgba(95,184,245,0.28)',
+                }}
               >
-                <div className="stat-icon" style={{ background: "linear-gradient(135deg,#5fb8f5,#7dceff)" }}>
+                <div
+                  className="stat-icon"
+                  style={{
+                    background: 'linear-gradient(135deg,#5fb8f5,#7dceff)',
+                  }}
+                >
                   <FiCalendar />
                 </div>
                 <div className="stat-value">{interviewsCount}</div>
@@ -2339,14 +2450,22 @@ export default function EmpresaDashboard({
               </div>
               <div
                 className="stat-card"
-                style={{ "--accent": "rgba(61,187,122,0.9)", "--accent-shadow": "rgba(61,187,122,0.28)" }}
+                style={{
+                  '--accent': 'rgba(61,187,122,0.9)',
+                  '--accent-shadow': 'rgba(61,187,122,0.28)',
+                }}
               >
-                <div className="stat-icon" style={{ background: "linear-gradient(135deg,#3dbb7a,#22c55e)" }}>
+                <div
+                  className="stat-icon"
+                  style={{
+                    background: 'linear-gradient(135deg,#3dbb7a,#22c55e)',
+                  }}
+                >
                   <FiEye />
                 </div>
                 <div className="stat-value">{totalViews}</div>
                 <div className="stat-label">Vistas às vagas</div>
-                <div className="stat-delta up">Acumulado</div>
+                <div className="stat-delta up">Esta semana</div>
               </div>
             </div>
 
@@ -2358,7 +2477,7 @@ export default function EmpresaDashboard({
                 </div>
                 <div className="item-list">
                   {recentApps.length === 0 ? (
-                    <div className="dash-muted" style={{ padding: "12px 0" }}>
+                    <div className="dash-muted" style={{ padding: '12px 0' }}>
                       Ainda sem candidaturas.
                     </div>
                   ) : (
@@ -2366,21 +2485,47 @@ export default function EmpresaDashboard({
                       const badge = appStatusBadge(app.status);
                       return (
                         <div key={app.id || i} className="list-item">
-                          <div className="list-item-icon">{initialsOf(app.candidateName)}</div>
+                          <div className="list-item-icon">
+                            {initialsOf(app.candidateName)}
+                          </div>
                           <div className="list-item-body">
                             <div className="list-item-title">
-                              {app.candidateName || "Candidato"}
+                              {app.candidateName || 'Candidato'}
                             </div>
-                            <div className="list-item-meta">{app.jobTitle || "Vaga"}</div>
+                            <div className="list-item-meta">
+                              {app.jobTitle || 'Vaga'}
+                            </div>
                           </div>
-                          <span className={`badge ${badge.cls}`}>{badge.label}</span>
+                          <span className={`badge ${badge.cls}`}>
+                            {badge.label}
+                          </span>
                         </div>
                       );
                     })
                   )}
                 </div>
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-sm"
+                  style={{ width: '100%', marginTop: 12 }}
+                  onClick={() => openTab('applications')}
+                >
+                  Ver todas as candidaturas
+                </button>
               </div>
 
+              <div className="panel">
+                <div className="panel-title">
+                  Candidaturas por semana
+                  <span className="panel-badge">6 semanas</span>
+                </div>
+                <div style={{ minHeight: 240 }}>
+                  <EmpresaApplicationsChart data={chartData} />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid-2">
               <div className="panel">
                 <div className="panel-title">
                   Vagas activas
@@ -2388,36 +2533,57 @@ export default function EmpresaDashboard({
                 </div>
                 <div className="item-list">
                   {topJobs.length === 0 ? (
-                    <div className="dash-muted" style={{ padding: "12px 0" }}>
+                    <div className="dash-muted" style={{ padding: '12px 0' }}>
                       Sem vagas publicadas.
                     </div>
                   ) : (
                     topJobs.map((job, i) => {
                       const featured = job.featured || job.destaque;
                       return (
-                        <div
+                        <Link
                           key={job.id || i}
+                          href={
+                            job.id
+                              ? `/dashboard/empresa/vaga/${encodeURIComponent(job.id)}`
+                              : '/dashboard/empresa?tab=jobs'
+                          }
                           className="list-item"
-                          style={{ display: "block" }}
+                          style={{ display: 'block', textDecoration: 'none' }}
                         >
                           <div className="dash-flex-between">
-                            <div className="list-item-title">{job.titulo || "Vaga"}</div>
-                            <span className={`badge ${featured ? "badge-empresa" : "badge-active"}`}>
-                              {featured ? "DESTAQUE" : "ACTIVA"}
+                            <div className="list-item-title">
+                              {job.titulo || 'Vaga'}
+                            </div>
+                            <span
+                              className={`badge ${featured ? 'badge-empresa' : 'badge-active'}`}
+                            >
+                              {featured ? 'DESTAQUE' : 'ACTIVA'}
                             </span>
                           </div>
                           <div
                             className="list-item-meta"
-                            style={{ marginTop: 8, display: "flex", gap: 16 }}
+                            style={{ marginTop: 8, display: 'flex', gap: 16 }}
                           >
-                            <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
+                            <span
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 5,
+                              }}
+                            >
                               <FiSend /> {job.applications || 0} candidaturas
                             </span>
-                            <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
+                            <span
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 5,
+                              }}
+                            >
                               <FiEye /> {job.views || 0} vistas
                             </span>
                           </div>
-                        </div>
+                        </Link>
                       );
                     })
                   )}
@@ -2425,27 +2591,15 @@ export default function EmpresaDashboard({
                 <Link
                   href="/dashboard/empresa/vaga/criar-vaga"
                   className="btn btn-lime"
-                  style={{ width: "100%", marginTop: 12 }}
+                  style={{ width: '100%', marginTop: 12 }}
                 >
                   <FiPlusCircle /> Publicar nova vaga
                 </Link>
               </div>
-            </div>
-
-            <div className="grid-2">
-              <div className="panel">
-                <div className="panel-title">
-                  Fluxo de candidaturas
-                  <span className="panel-badge">Últimos 7 dias</span>
-                </div>
-                <div style={{ minHeight: 240 }}>
-                  <EmpresaApplicationsChart data={chartData} />
-                </div>
-              </div>
               <div className="panel">
                 <div className="panel-title">
                   Insights de recrutamento
-                  <span className="panel-badge">✨ IA</span>
+                  <span className="panel-badge">IA</span>
                 </div>
                 {hiringTips.map((tip) => (
                   <div key={tip.title} className="advisor-item">
@@ -2459,30 +2613,30 @@ export default function EmpresaDashboard({
           </>
         );
       }
-      case "jobs": {
+      case 'jobs': {
         const jobsViews = jobs.reduce((sum, job) => sum + (job.views || 0), 0);
         const deleteJob = async (jobId) => {
           if (
             !window.confirm(
-              "Eliminar esta vaga? Esta ação não pode ser revertida.",
+              'Eliminar esta vaga? Esta ação não pode ser revertida.',
             )
           )
             return;
           try {
-            const { getAuth } = await import("firebase/auth");
+            const { getAuth } = await import('firebase/auth');
             const token = await getAuth().currentUser?.getIdToken();
             const res = await fetch(`/api/jobs/${jobId}`, {
-              method: "DELETE",
+              method: 'DELETE',
               headers: { Authorization: `Bearer ${token}` },
             });
             if (res.ok) {
               router.reload();
             } else {
               const data = await res.json().catch(() => ({}));
-              alert(data.error || "Erro ao eliminar vaga");
+              alert(data.error || 'Erro ao eliminar vaga');
             }
           } catch (error) {
-            alert("Erro ao eliminar vaga");
+            alert('Erro ao eliminar vaga');
           }
         };
 
@@ -2493,42 +2647,91 @@ export default function EmpresaDashboard({
                 <div className="header-eyebrow">Empresa · Vagas</div>
                 <h1 className="header-title">Minhas vagas</h1>
                 <p className="header-sub">
-                  {activeJobs.length} vaga{activeJobs.length !== 1 ? "s" : ""} activa
-                  {activeJobs.length !== 1 ? "s" : ""} publicada
-                  {activeJobs.length !== 1 ? "s" : ""}
+                  {activeJobs.length} vaga{activeJobs.length !== 1 ? 's' : ''}{' '}
+                  ativa
+                  {activeJobs.length !== 1 ? 's' : ''} publicada
+                  {activeJobs.length !== 1 ? 's' : ''}
                 </p>
               </div>
               <div className="header-actions">
-                <Link href="/dashboard/empresa/vaga/criar-vaga" className="btn btn-lime">
+                <Link
+                  href="/dashboard/empresa/vaga/criar-vaga"
+                  className="btn btn-lime"
+                >
                   <FiPlusCircle /> Nova vaga
                 </Link>
               </div>
             </div>
 
             <div className="stats-grid">
-              <div className="stat-card" style={{ "--accent": "rgba(61,187,122,0.9)", "--accent-shadow": "rgba(61,187,122,0.28)" }}>
-                <div className="stat-icon" style={{ background: "linear-gradient(135deg,#3dbb7a,#22c55e)" }}>
+              <div
+                className="stat-card"
+                style={{
+                  '--accent': 'rgba(61,187,122,0.9)',
+                  '--accent-shadow': 'rgba(61,187,122,0.28)',
+                }}
+              >
+                <div
+                  className="stat-icon"
+                  style={{
+                    background: 'linear-gradient(135deg,#3dbb7a,#22c55e)',
+                  }}
+                >
                   <FiCheckCircle />
                 </div>
                 <div className="stat-value">{activeJobs.length}</div>
-                <div className="stat-label">Activas</div>
+                <div className="stat-label">Ativas</div>
               </div>
-              <div className="stat-card" style={{ "--accent": "rgba(32,87,215,0.85)", "--accent-shadow": "rgba(32,87,215,0.28)" }}>
-                <div className="stat-icon" style={{ background: "linear-gradient(135deg,#2057d7,#4f8ef7)" }}>
+              <div
+                className="stat-card"
+                style={{
+                  '--accent': 'rgba(32,87,215,0.85)',
+                  '--accent-shadow': 'rgba(32,87,215,0.28)',
+                }}
+              >
+                <div
+                  className="stat-icon"
+                  style={{
+                    background: 'linear-gradient(135deg,#2057d7,#4f8ef7)',
+                  }}
+                >
                   <FiInbox />
                 </div>
                 <div className="stat-value">{totalApplications}</div>
                 <div className="stat-label">Candidaturas</div>
               </div>
-              <div className="stat-card" style={{ "--accent": "rgba(95,184,245,0.9)", "--accent-shadow": "rgba(95,184,245,0.28)" }}>
-                <div className="stat-icon" style={{ background: "linear-gradient(135deg,#5fb8f5,#7dceff)" }}>
+              <div
+                className="stat-card"
+                style={{
+                  '--accent': 'rgba(95,184,245,0.9)',
+                  '--accent-shadow': 'rgba(95,184,245,0.28)',
+                }}
+              >
+                <div
+                  className="stat-icon"
+                  style={{
+                    background: 'linear-gradient(135deg,#5fb8f5,#7dceff)',
+                  }}
+                >
                   <FiEye />
                 </div>
                 <div className="stat-value">{jobsViews}</div>
                 <div className="stat-label">Vistas totais</div>
               </div>
-              <div className="stat-card" style={{ "--accent": "rgba(186,230,39,0.9)", "--accent-shadow": "rgba(186,230,39,0.28)" }}>
-                <div className="stat-icon" style={{ background: "linear-gradient(135deg,#d9ff2f,#bae619)", color: "#162a55" }}>
+              <div
+                className="stat-card"
+                style={{
+                  '--accent': 'rgba(186,230,39,0.9)',
+                  '--accent-shadow': 'rgba(186,230,39,0.28)',
+                }}
+              >
+                <div
+                  className="stat-icon"
+                  style={{
+                    background: 'linear-gradient(135deg,#d9ff2f,#bae619)',
+                    color: '#162a55',
+                  }}
+                >
                   <FiStar />
                 </div>
                 <div className="stat-value">{highlightedJobsCount}</div>
@@ -2537,13 +2740,25 @@ export default function EmpresaDashboard({
             </div>
 
             <div className="tabs">
-              <button type="button" className={`tab${jobFilter === "all" ? " active" : ""}`} onClick={() => setJobFilter("all")}>
+              <button
+                type="button"
+                className={`tab${jobFilter === 'all' ? ' active' : ''}`}
+                onClick={() => setJobFilter('all')}
+              >
                 Todas
               </button>
-              <button type="button" className={`tab${jobFilter === "active" ? " active" : ""}`} onClick={() => setJobFilter("active")}>
-                Activas
+              <button
+                type="button"
+                className={`tab${jobFilter === 'active' ? ' active' : ''}`}
+                onClick={() => setJobFilter('active')}
+              >
+                Ativas
               </button>
-              <button type="button" className={`tab${jobFilter === "closed" ? " active" : ""}`} onClick={() => setJobFilter("closed")}>
+              <button
+                type="button"
+                className={`tab${jobFilter === 'closed' ? ' active' : ''}`}
+                onClick={() => setJobFilter('closed')}
+              >
                 Fechadas
               </button>
             </div>
@@ -2553,12 +2768,15 @@ export default function EmpresaDashboard({
                 <div className="empty-state-icon">📋</div>
                 <p>
                   {jobs.length === 0
-                    ? "Ainda não publicou nenhuma vaga."
-                    : "Nenhuma vaga corresponde ao filtro."}
+                    ? 'Ainda não publicou nenhuma vaga.'
+                    : 'Nenhuma vaga corresponde ao filtro.'}
                 </p>
                 {jobs.length === 0 && (
                   <div style={{ marginTop: 16 }}>
-                    <Link href="/dashboard/empresa/vaga/criar-vaga" className="btn btn-primary">
+                    <Link
+                      href="/dashboard/empresa/vaga/criar-vaga"
+                      className="btn btn-primary"
+                    >
                       <FiPlusCircle /> Criar primeira vaga
                     </Link>
                   </div>
@@ -2566,7 +2784,12 @@ export default function EmpresaDashboard({
               </div>
             ) : (
               <div className="table-shell">
-                <div className="table-scroll">
+                <div
+                  className="table-scroll"
+                  role="region"
+                  aria-label="Vagas publicadas pela empresa"
+                  tabIndex={0}
+                >
                   <table>
                     <thead>
                       <tr>
@@ -2580,39 +2803,50 @@ export default function EmpresaDashboard({
                     </thead>
                     <tbody>
                       {filteredJobs.map((job) => {
-                        const isActive = job.status === "active";
+                        const isActive = job.status === 'active';
                         const featured = job.featured || job.destaque;
                         return (
                           <tr key={job.id}>
                             <td className="td-strong">
-                              <div>{job.titulo || "Vaga"}</div>
+                              <div>{job.titulo || 'Vaga'}</div>
                               {featured && (
                                 <div
                                   style={{
-                                    display: "inline-flex",
-                                    alignItems: "center",
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
                                     gap: 5,
                                     marginTop: 4,
-                                    fontSize: "0.72rem",
+                                    fontSize: '0.72rem',
                                     fontWeight: 800,
-                                    color: "#7a9000",
+                                    color: '#7a9000',
                                   }}
                                 >
-                                  <FiStar style={{ color: "#bae619" }} /> Destaque
+                                  <FiStar style={{ color: '#bae619' }} />{' '}
+                                  Destaque
                                 </div>
                               )}
                             </td>
-                            <td className="td-muted">{job.categoria || "—"}</td>
-                            <td className="td-strong">{job.applicationCount || 0}</td>
+                            <td className="td-muted">{job.categoria || '—'}</td>
+                            <td className="td-strong">
+                              {job.applicationCount || 0}
+                            </td>
                             <td className="td-muted">{job.views || 0}</td>
                             <td>
-                              <span className={`badge ${isActive ? "badge-active" : "badge-closed"}`}>
+                              <span
+                                className={`badge ${isActive ? 'badge-active' : 'badge-closed'}`}
+                              >
                                 <span className="badge-dot" />
-                                {isActive ? "Activa" : "Fechada"}
+                                {isActive ? 'Ativa' : 'Fechada'}
                               </span>
                             </td>
                             <td className="td-right">
-                              <div style={{ display: "inline-flex", gap: 6, justifyContent: "flex-end" }}>
+                              <div
+                                style={{
+                                  display: 'inline-flex',
+                                  gap: 6,
+                                  justifyContent: 'flex-end',
+                                }}
+                              >
                                 <Link
                                   href={`/dashboard/empresa/vaga/${job.id}`}
                                   className="btn btn-ghost btn-sm"
@@ -2651,14 +2885,14 @@ export default function EmpresaDashboard({
           </>
         );
       }
-      case "candidates": {
+      case 'candidates': {
         const initialsOf = (name) =>
-          (name || "?")
-            .split(" ")
+          (name || '?')
+            .split(' ')
             .map((w) => w[0])
             .filter(Boolean)
             .slice(0, 2)
-            .join("")
+            .join('')
             .toUpperCase();
         return (
           <>
@@ -2681,19 +2915,49 @@ export default function EmpresaDashboard({
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
                 />
-                <select className="form-select" style={{ maxWidth: 200 }} aria-label="Área" disabled>
-                  <option>Todas as áreas</option>
+                <select
+                  className="form-select"
+                  style={{ maxWidth: 200 }}
+                  aria-label="Área profissional"
+                  value={talentAreaFilter}
+                  onChange={(event) => setTalentAreaFilter(event.target.value)}
+                >
+                  <option value="all">Todas as áreas</option>
+                  {talentAreaOptions.map((area) => (
+                    <option key={area} value={area}>
+                      {area}
+                    </option>
+                  ))}
                 </select>
-                <button type="button" className="btn btn-lime">
-                  <FiFilter /> Filtrar
+                <button
+                  type="button"
+                  className="btn btn-lime"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setTalentAreaFilter('all');
+                  }}
+                  disabled={!searchQuery && talentAreaFilter === 'all'}
+                >
+                  {searchQuery || talentAreaFilter !== 'all' ? (
+                    <FiX />
+                  ) : (
+                    <FiFilter />
+                  )}
+                  Limpar filtros
                 </button>
               </div>
 
               {!companyPlanFeatures.accessTalentPool && (
-                <div className="dash-muted" style={{ marginBottom: 14, fontSize: "0.84rem" }}>
+                <div
+                  className="dash-muted"
+                  style={{ marginBottom: 14, fontSize: '0.84rem' }}
+                >
                   Plano Básico: visualização limitada aos candidatos que já se
-                  candidataram.{" "}
-                  <Link href="/premium/empresa" style={{ color: "var(--blue)", fontWeight: 700 }}>
+                  candidataram.{' '}
+                  <Link
+                    href="/premium/empresa"
+                    style={{ color: 'var(--blue)', fontWeight: 700 }}
+                  >
                     Desbloquear banco completo
                   </Link>
                 </div>
@@ -2702,7 +2966,7 @@ export default function EmpresaDashboard({
                 <p className="dash-muted">A carregar banco de talentos…</p>
               )}
               {companyPlanFeatures.accessTalentPool && talentPoolError && (
-                <p className="dash-muted" style={{ color: "var(--danger)" }}>
+                <p className="dash-muted" style={{ color: 'var(--danger)' }}>
                   {talentPoolError}
                 </p>
               )}
@@ -2734,7 +2998,11 @@ export default function EmpresaDashboard({
                           <div style={{ minWidth: 0 }}>
                             <div
                               className="list-item-title"
-                              style={{ display: "flex", alignItems: "center", gap: 6 }}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 6,
+                              }}
                             >
                               {talent.name}
                               {talent.verified && (
@@ -2744,7 +3012,7 @@ export default function EmpresaDashboard({
                             <div className="list-item-meta">
                               {[talent.headline, talent.location]
                                 .filter(Boolean)
-                                .join(" · ")}
+                                .join(' · ')}
                             </div>
                           </div>
                         </div>
@@ -2755,20 +3023,33 @@ export default function EmpresaDashboard({
                             </span>
                           ))}
                           {(!talent.skills || talent.skills.length === 0) && (
-                            <span className="dash-chip" style={{ background: "var(--surface-3)", color: "var(--text-3)" }}>
+                            <span
+                              className="dash-chip"
+                              style={{
+                                background: 'var(--surface-3)',
+                                color: 'var(--text-3)',
+                              }}
+                            >
                               Perfil pronto
                             </span>
                           )}
                         </div>
                         {locked ? (
-                          <button type="button" className="btn btn-ghost" style={{ width: "100%" }} disabled>
-                            Plano PRO necessário
-                          </button>
+                          <Link
+                            href="/premium/empresa"
+                            className="btn btn-ghost"
+                            style={{ width: '100%' }}
+                          >
+                            <FiStar /> Desbloquear perfil
+                          </Link>
                         ) : (
                           <Link
-                            href={talent.profileUrl || `/dashboard/empresa/candidato/${talent.id}`}
+                            href={
+                              talent.profileUrl ||
+                              `/dashboard/empresa/candidato/${talent.id}`
+                            }
                             className="btn btn-ghost"
-                            style={{ width: "100%" }}
+                            style={{ width: '100%' }}
                           >
                             <FiMail /> Contactar
                           </Link>
@@ -2782,47 +3063,47 @@ export default function EmpresaDashboard({
           </>
         );
       }
-      case "applications": {
+      case 'applications': {
         const pendingCount = applicationsData.filter(
-          (a) => !a.status || a.status === "pending",
+          (a) => !a.status || a.status === 'pending',
         ).length;
         const analysisCount = applicationsData.filter(
-          (a) => a.status === "analysis",
+          (a) => a.status === 'analysis',
         ).length;
         const interviewCount = applicationsData.filter(
-          (a) => a.status === "interview",
+          (a) => a.status === 'interview',
         ).length;
         const approvedCount = applicationsData.filter(
-          (a) => a.status === "approved",
+          (a) => a.status === 'approved',
         ).length;
         const appTabs = [
-          { key: "all", label: "Todas", count: applicationsData.length },
-          { key: "pending", label: "Novas", count: pendingCount },
-          { key: "interview", label: "Entrevistas", count: interviewCount },
-          { key: "approved", label: "Aprovadas", count: approvedCount },
+          { key: 'all', label: 'Todas', count: applicationsData.length },
+          { key: 'pending', label: 'Novas', count: pendingCount },
+          { key: 'interview', label: 'Entrevistas', count: interviewCount },
+          { key: 'approved', label: 'Aprovadas', count: approvedCount },
         ];
         const appMeta = (status) => {
           switch (status) {
-            case "analysis":
-              return { label: "Em análise", cls: "badge-pending" };
-            case "interview":
-              return { label: "Entrevista", cls: "badge-pending" };
-            case "approved":
-            case "accepted":
-              return { label: "Aprovado", cls: "badge-success" };
-            case "rejected":
-              return { label: "Rejeitado", cls: "badge-closed" };
+            case 'analysis':
+              return { label: 'Em análise', cls: 'badge-pending' };
+            case 'interview':
+              return { label: 'Entrevista', cls: 'badge-pending' };
+            case 'approved':
+            case 'accepted':
+              return { label: 'Aprovado', cls: 'badge-success' };
+            case 'rejected':
+              return { label: 'Rejeitado', cls: 'badge-closed' };
             default:
-              return { label: "Nova", cls: "badge-warn" };
+              return { label: 'Nova', cls: 'badge-warn' };
           }
         };
         const initialsOf = (name) =>
-          (name || "?")
-            .split(" ")
+          (name || '?')
+            .split(' ')
             .map((w) => w[0])
             .filter(Boolean)
             .slice(0, 2)
-            .join("")
+            .join('')
             .toUpperCase();
 
         return (
@@ -2833,7 +3114,7 @@ export default function EmpresaDashboard({
                 <h1 className="header-title">Candidaturas recebidas</h1>
                 <p className="header-sub">
                   {applicationsData.length} candidatura
-                  {applicationsData.length !== 1 ? "s" : ""} no total
+                  {applicationsData.length !== 1 ? 's' : ''} no total
                 </p>
               </div>
               <div className="header-actions">
@@ -2843,35 +3124,79 @@ export default function EmpresaDashboard({
                   onClick={handleExportApplications}
                   disabled={exportingCsv}
                 >
-                  <FiDownload /> {exportingCsv ? "A exportar…" : "Exportar CSV"}
+                  <FiDownload /> {exportingCsv ? 'A exportar…' : 'Exportar CSV'}
                 </button>
               </div>
             </div>
 
             <div className="stats-grid">
-              <div className="stat-card" style={{ "--accent": "rgba(32,87,215,0.85)", "--accent-shadow": "rgba(32,87,215,0.28)" }}>
-                <div className="stat-icon" style={{ background: "linear-gradient(135deg,#2057d7,#4f8ef7)" }}>
+              <div
+                className="stat-card"
+                style={{
+                  '--accent': 'rgba(32,87,215,0.85)',
+                  '--accent-shadow': 'rgba(32,87,215,0.28)',
+                }}
+              >
+                <div
+                  className="stat-icon"
+                  style={{
+                    background: 'linear-gradient(135deg,#2057d7,#4f8ef7)',
+                  }}
+                >
                   <FiInbox />
                 </div>
                 <div className="stat-value">{pendingCount}</div>
                 <div className="stat-label">Novas</div>
               </div>
-              <div className="stat-card" style={{ "--accent": "rgba(217,106,61,0.9)", "--accent-shadow": "rgba(217,106,61,0.28)" }}>
-                <div className="stat-icon" style={{ background: "linear-gradient(135deg,#f59e0b,#d9773d)" }}>
+              <div
+                className="stat-card"
+                style={{
+                  '--accent': 'rgba(217,106,61,0.9)',
+                  '--accent-shadow': 'rgba(217,106,61,0.28)',
+                }}
+              >
+                <div
+                  className="stat-icon"
+                  style={{
+                    background: 'linear-gradient(135deg,#f59e0b,#d9773d)',
+                  }}
+                >
                   <FiClock />
                 </div>
                 <div className="stat-value">{analysisCount}</div>
                 <div className="stat-label">Em análise</div>
               </div>
-              <div className="stat-card" style={{ "--accent": "rgba(95,184,245,0.9)", "--accent-shadow": "rgba(95,184,245,0.28)" }}>
-                <div className="stat-icon" style={{ background: "linear-gradient(135deg,#5fb8f5,#7dceff)" }}>
+              <div
+                className="stat-card"
+                style={{
+                  '--accent': 'rgba(95,184,245,0.9)',
+                  '--accent-shadow': 'rgba(95,184,245,0.28)',
+                }}
+              >
+                <div
+                  className="stat-icon"
+                  style={{
+                    background: 'linear-gradient(135deg,#5fb8f5,#7dceff)',
+                  }}
+                >
                   <FiVideo />
                 </div>
                 <div className="stat-value">{interviewCount}</div>
                 <div className="stat-label">Entrevistas</div>
               </div>
-              <div className="stat-card" style={{ "--accent": "rgba(61,187,122,0.9)", "--accent-shadow": "rgba(61,187,122,0.28)" }}>
-                <div className="stat-icon" style={{ background: "linear-gradient(135deg,#3dbb7a,#22c55e)" }}>
+              <div
+                className="stat-card"
+                style={{
+                  '--accent': 'rgba(61,187,122,0.9)',
+                  '--accent-shadow': 'rgba(61,187,122,0.28)',
+                }}
+              >
+                <div
+                  className="stat-icon"
+                  style={{
+                    background: 'linear-gradient(135deg,#3dbb7a,#22c55e)',
+                  }}
+                >
                   <FiCheckCircle />
                 </div>
                 <div className="stat-value">{approvedCount}</div>
@@ -2884,7 +3209,7 @@ export default function EmpresaDashboard({
                 <button
                   key={tab.key}
                   type="button"
-                  className={`tab${applicationFilter === tab.key ? " active" : ""}`}
+                  className={`tab${applicationFilter === tab.key ? ' active' : ''}`}
                   onClick={() => setApplicationFilter(tab.key)}
                 >
                   {tab.label} ({tab.count})
@@ -2897,8 +3222,8 @@ export default function EmpresaDashboard({
                 <div className="empty-state-icon">📨</div>
                 <p>
                   {applicationsData.length === 0
-                    ? "As candidaturas aparecerão à medida que os talentos se inscreverem."
-                    : "Nenhuma candidatura neste filtro."}
+                    ? 'As candidaturas aparecerão à medida que os talentos se inscreverem.'
+                    : 'Nenhuma candidatura neste filtro.'}
                 </p>
               </div>
             ) : (
@@ -2906,11 +3231,9 @@ export default function EmpresaDashboard({
                 {filteredApplications.map((application) => {
                   const meta = appMeta(application.status);
                   const score = application.compatibilityScore;
-                  const hasScore = typeof score === "number";
-                  const canSchedule =
-                    !application.status ||
-                    application.status === "pending" ||
-                    application.status === "analysis";
+                  const hasScore = typeof score === 'number';
+                  const appStatus = application.status || 'pending';
+                  const isUpdating = updatingApplicationId === application.id;
                   return (
                     <div key={application.id} className="list-item">
                       <div className="list-item-icon">
@@ -2918,26 +3241,41 @@ export default function EmpresaDashboard({
                       </div>
                       <div className="list-item-body">
                         <div className="list-item-title">
-                          {application.candidateName || "Candidato"}
+                          {application.candidateName || 'Candidato'}
                         </div>
                         <div className="list-item-meta">
-                          {application.jobTitle || "Vaga"}
+                          {application.jobTitle || 'Vaga'}
                         </div>
                       </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 12,
+                        }}
+                      >
                         {hasScore && (
                           <span
                             style={{
                               fontWeight: 800,
-                              fontSize: "0.84rem",
-                              color: score >= 90 ? "#3dbb7a" : "#2057d7",
+                              fontSize: '0.84rem',
+                              color: score >= 90 ? '#3dbb7a' : '#2057d7',
                             }}
                           >
                             {score}% match
                           </span>
                         )}
-                        <span className={`badge ${meta.cls}`}>{meta.label}</span>
-                        <div style={{ display: "inline-flex", gap: 6 }}>
+                        <span className={`badge ${meta.cls}`}>
+                          {meta.label}
+                        </span>
+                        <div
+                          style={{
+                            display: 'inline-flex',
+                            gap: 6,
+                            flexWrap: 'wrap',
+                            justifyContent: 'flex-end',
+                          }}
+                        >
                           <Link
                             href={`/dashboard/empresa/candidato/${application.candidateId}`}
                             className="btn btn-ghost btn-sm"
@@ -2946,15 +3284,79 @@ export default function EmpresaDashboard({
                           >
                             <FiEye />
                           </Link>
-                          {canSchedule && (
+                          <button
+                            type="button"
+                            className="btn btn-lime btn-sm"
+                            title="Aceitar candidatura"
+                            aria-label="Aceitar candidatura"
+                            disabled={isUpdating || appStatus === 'approved'}
+                            onClick={() =>
+                              handleApplicationStatusChange(
+                                application.id,
+                                'approved',
+                              )
+                            }
+                          >
+                            <FiCheck />
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-ghost btn-sm"
+                            title="Rejeitar candidatura"
+                            aria-label="Rejeitar candidatura"
+                            disabled={isUpdating || appStatus === 'rejected'}
+                            onClick={() =>
+                              handleApplicationStatusChange(
+                                application.id,
+                                'rejected',
+                              )
+                            }
+                          >
+                            <FiX />
+                          </button>
+                          {companyPlanFeatures.canScheduleInterviews ? (
                             <button
                               type="button"
-                              className="btn btn-lime btn-sm"
+                              className="btn btn-primary btn-sm"
                               title="Agendar entrevista"
                               aria-label="Agendar entrevista"
-                              onClick={() => openInterviewScheduler?.(application)}
+                              onClick={() =>
+                                openInterviewScheduler?.(application)
+                              }
                             >
                               <FiCalendar />
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              className="btn btn-ghost btn-sm"
+                              title="Agendar entrevista está disponível nos planos Profissional e PRO"
+                              aria-label="Agendar entrevista (requer plano Profissional ou PRO)"
+                              onClick={() => openTab('plans')}
+                            >
+                              <FiCalendar />
+                              <FiLock />
+                            </button>
+                          )}
+                          {companyPlanFeatures.canSendDirectMessages ? (
+                            <Link
+                              href={`/dashboard/empresa?tab=messages&candidate=${application.candidateId}`}
+                              className="btn btn-ghost btn-sm"
+                              title="Enviar mensagem"
+                              aria-label="Enviar mensagem"
+                            >
+                              <FiMail />
+                            </Link>
+                          ) : (
+                            <button
+                              type="button"
+                              className="btn btn-ghost btn-sm"
+                              title="Enviar mensagem direta está disponível no plano PRO"
+                              aria-label="Enviar mensagem (requer plano PRO)"
+                              onClick={() => openTab('plans')}
+                            >
+                              <FiMail />
+                              <FiLock />
                             </button>
                           )}
                         </div>
@@ -2967,34 +3369,34 @@ export default function EmpresaDashboard({
           </>
         );
       }
-      case "interviews": {
+      case 'interviews': {
         const scheduled = applicationsData.filter(
-          (a) => a.interviewDetails?.scheduledAt || a.status === "interview",
+          (a) => a.interviewDetails?.scheduledAt || a.status === 'interview',
         );
         const initialsOf = (name) =>
-          (name || "?")
-            .split(" ")
+          (name || '?')
+            .split(' ')
             .map((w) => w[0])
             .filter(Boolean)
             .slice(0, 2)
-            .join("")
+            .join('')
             .toUpperCase();
         const guide = [
           {
-            title: "Prepare as perguntas",
-            text: "Prepare 8–10 perguntas relevantes para cada posição.",
+            title: 'Prepare as perguntas',
+            text: 'Prepare 8–10 perguntas relevantes para cada posição.',
           },
           {
-            title: "Avalie com critérios",
-            text: "Use uma escala de 1–5 para competências técnicas e soft skills.",
+            title: 'Avalie com critérios',
+            text: 'Use uma escala de 1–5 para competências técnicas e soft skills.',
           },
           {
-            title: "Feedback rápido",
-            text: "Dê feedback em 48h para manter a reputação da empresa.",
+            title: 'Feedback rápido',
+            text: 'Dê feedback em 48h para manter a reputação da empresa.',
           },
           {
-            title: "Painel diversificado",
-            text: "Inclua pelo menos 2 avaliadores por entrevista.",
+            title: 'Painel diversificado',
+            text: 'Inclua pelo menos 2 avaliadores por entrevista.',
           },
         ];
         return (
@@ -3004,15 +3406,16 @@ export default function EmpresaDashboard({
                 <div className="header-eyebrow">Empresa · Entrevistas</div>
                 <h1 className="header-title">Entrevistas agendadas</h1>
                 <p className="header-sub">
-                  {scheduled.length} entrevista{scheduled.length !== 1 ? "s" : ""}{" "}
-                  agendada{scheduled.length !== 1 ? "s" : ""} esta semana.
+                  {scheduled.length} entrevista
+                  {scheduled.length !== 1 ? 's' : ''} agendada
+                  {scheduled.length !== 1 ? 's' : ''} esta semana.
                 </p>
               </div>
               <div className="header-actions">
                 <button
                   type="button"
                   className="btn btn-lime"
-                  onClick={() => setActiveTab("applications")}
+                  onClick={() => openTab('applications')}
                 >
                   <FiCalendar /> Agendar
                 </button>
@@ -3028,7 +3431,10 @@ export default function EmpresaDashboard({
                 {scheduled.length === 0 ? (
                   <div className="empty-state">
                     <div className="empty-state-icon">📅</div>
-                    <p>Nenhuma entrevista agendada. Marque uma a partir de uma candidatura.</p>
+                    <p>
+                      Nenhuma entrevista agendada. Marque uma a partir de uma
+                      candidatura.
+                    </p>
                   </div>
                 ) : (
                   <div className="item-list">
@@ -3036,42 +3442,54 @@ export default function EmpresaDashboard({
                       const details = app.interviewDetails || {};
                       const when = details.scheduledAt
                         ? formatInterviewDateTime(details.scheduledAt)
-                        : "Data a confirmar";
-                      const isPresential = details.mode === "presencial";
+                        : 'Data a confirmar';
+                      const isPresential = details.mode === 'presencial';
                       const modeLabel = isPresential
-                        ? `Presencial · ${details.location || "Escritório"}`
-                        : `Online${details.provider ? ` · ${details.provider}` : ""}`;
+                        ? `Presencial · ${details.location || 'Escritório'}`
+                        : `Online${details.provider ? ` · ${details.provider}` : ''}`;
                       return (
-                        <div key={app.id} className="list-item" style={{ display: "block" }}>
-                          <div className="dash-flex" style={{ marginBottom: 8 }}>
+                        <div
+                          key={app.id}
+                          className="list-item"
+                          style={{ display: 'block' }}
+                        >
+                          <div
+                            className="dash-flex"
+                            style={{ marginBottom: 8 }}
+                          >
                             <div className="list-item-icon">
                               {initialsOf(app.candidateName)}
                             </div>
                             <div style={{ minWidth: 0 }}>
                               <div className="list-item-title">
-                                {app.candidateName || "Candidato"}
+                                {app.candidateName || 'Candidato'}
                               </div>
                               <div className="list-item-meta">
-                                {app.jobTitle || "Vaga"}
+                                {app.jobTitle || 'Vaga'}
                               </div>
                             </div>
                           </div>
                           <div
                             style={{
-                              color: "var(--blue)",
+                              color: 'var(--blue)',
                               fontWeight: 700,
-                              fontSize: "0.82rem",
-                              display: "flex",
-                              alignItems: "center",
+                              fontSize: '0.82rem',
+                              display: 'flex',
+                              alignItems: 'center',
                               gap: 6,
                             }}
                           >
                             <FiCalendar /> {when}
                           </div>
-                          <div className="list-item-meta" style={{ marginTop: 2 }}>
+                          <div
+                            className="list-item-meta"
+                            style={{ marginTop: 2 }}
+                          >
                             {modeLabel}
                           </div>
-                          <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                          <div
+                            style={{ display: 'flex', gap: 8, marginTop: 12 }}
+                          >
                             {!isPresential && details.link ? (
                               <a
                                 href={details.link}
@@ -3082,7 +3500,11 @@ export default function EmpresaDashboard({
                                 <FiVideo /> Entrar
                               </a>
                             ) : (
-                              <button type="button" className="btn btn-primary btn-sm" disabled>
+                              <button
+                                type="button"
+                                className="btn btn-primary btn-sm"
+                                disabled
+                              >
                                 <FiVideo /> Entrar
                               </button>
                             )}
@@ -3114,7 +3536,7 @@ export default function EmpresaDashboard({
           </>
         );
       }
-      case "messages":
+      case 'messages':
         const activeConversation = conversations.find(
           (conversation) => conversation.id === selectedConversation,
         );
@@ -3132,7 +3554,7 @@ export default function EmpresaDashboard({
                 <span className={styles.filterTab}>
                   {unreadMessages > 0
                     ? `${unreadMessages} não lida(s)`
-                    : "Caixa organizada"}
+                    : 'Caixa organizada'}
                 </span>
               ) : (
                 <Link href="/premium/empresa" className={styles.actionLink}>
@@ -3176,32 +3598,36 @@ export default function EmpresaDashboard({
                     </p>
                   ) : (
                     conversations.map((conversation) => {
-                      const initials = (conversation.participant.name || "U")
+                      const initials = (conversation.participant.name || 'U')
                         .charAt(0)
                         .toUpperCase();
                       const timeLabel = conversation.lastMessageAt
                         ? new Date(
                             conversation.lastMessageAt,
-                          ).toLocaleDateString("pt-PT", {
-                            day: "2-digit",
-                            month: "2-digit",
+                          ).toLocaleDateString('pt-PT', {
+                            day: '2-digit',
+                            month: '2-digit',
                           })
-                        : "";
+                        : '';
 
                       return (
                         <button
                           key={conversation.id}
                           type="button"
-                          className={`${styles.messageItem} ${selectedConversation === conversation.id ? styles.selectedMessageItem : ""}`}
+                          className={`${styles.messageItem} ${selectedConversation === conversation.id ? styles.selectedMessageItem : ''}`}
                           onClick={() =>
                             setSelectedConversation(conversation.id)
                           }
                         >
                           <div className={styles.messageAvatarWrapper}>
                             {conversation.participant.avatar ? (
-                              <img
+                              <Image
                                 src={conversation.participant.avatar}
                                 alt={conversation.participant.name}
+                                width={40}
+                                height={40}
+                                sizes="40px"
+                                unoptimized
                               />
                             ) : (
                               <div className={styles.messageAvatarInitials}>
@@ -3216,7 +3642,7 @@ export default function EmpresaDashboard({
                           </div>
                           <div className={styles.messageBody}>
                             <strong>{conversation.participant.name}</strong>
-                            <p>{conversation.lastMessage || "Sem mensagens"}</p>
+                            <p>{conversation.lastMessage || 'Sem mensagens'}</p>
                           </div>
                           <span className={styles.messageTime}>
                             {timeLabel}
@@ -3264,11 +3690,11 @@ export default function EmpresaDashboard({
                                   {message.createdAt
                                     ? new Date(
                                         message.createdAt,
-                                      ).toLocaleTimeString("pt-PT", {
-                                        hour: "2-digit",
-                                        minute: "2-digit",
+                                      ).toLocaleTimeString('pt-PT', {
+                                        hour: '2-digit',
+                                        minute: '2-digit',
                                       })
-                                    : ""}
+                                    : ''}
                                 </time>
                               </div>
                             );
@@ -3284,7 +3710,7 @@ export default function EmpresaDashboard({
                             setMessageInput(event.target.value)
                           }
                           onKeyDown={(event) => {
-                            if (event.key === "Enter" && !event.shiftKey) {
+                            if (event.key === 'Enter' && !event.shiftKey) {
                               event.preventDefault();
                               handleSendMessage();
                             }
@@ -3300,7 +3726,7 @@ export default function EmpresaDashboard({
                           onClick={handleSendMessage}
                           disabled={sendingMessage || !messageInput.trim()}
                         >
-                          {sendingMessage ? "…" : "Enviar"}
+                          {sendingMessage ? '…' : 'Enviar'}
                         </button>
                       </div>
                     </>
@@ -3315,7 +3741,7 @@ export default function EmpresaDashboard({
             )}
           </section>
         );
-      case "analytics": {
+      case 'analytics': {
         if (!companyPlanFeatures.canAccessAnalytics) {
           return (
             <>
@@ -3323,7 +3749,9 @@ export default function EmpresaDashboard({
                 <div>
                   <div className="header-eyebrow">Empresa · Analytics</div>
                   <h1 className="header-title">Desempenho das vagas</h1>
-                  <p className="header-sub">Análise detalhada das suas publicações.</p>
+                  <p className="header-sub">
+                    Análise detalhada das suas publicações.
+                  </p>
                 </div>
               </div>
               <div className="empty-state">
@@ -3356,29 +3784,29 @@ export default function EmpresaDashboard({
         const timeToHire = analytics?.avgTimeToHire;
         const statusBuckets = [
           {
-            name: "Pendentes",
+            name: 'Pendentes',
             value: applicationsData.filter(
-              (app) => !app.status || app.status === "pending",
+              (app) => !app.status || app.status === 'pending',
             ).length,
-            color: "#2057d7",
+            color: '#2057d7',
           },
           {
-            name: "Em análise",
-            value: applicationsData.filter((app) => app.status === "analysis")
+            name: 'Em análise',
+            value: applicationsData.filter((app) => app.status === 'analysis')
               .length,
-            color: "#5fb8f5",
+            color: '#5fb8f5',
           },
           {
-            name: "Entrevista",
-            value: applicationsData.filter((app) => app.status === "interview")
+            name: 'Entrevista',
+            value: applicationsData.filter((app) => app.status === 'interview')
               .length,
-            color: "#d9ff2f",
+            color: '#d9ff2f',
           },
           {
-            name: "Aprovadas",
-            value: applicationsData.filter((app) => app.status === "approved")
+            name: 'Aprovadas',
+            value: applicationsData.filter((app) => app.status === 'approved')
               .length,
-            color: "#3dbb7a",
+            color: '#3dbb7a',
           },
         ];
         const totalBucketValues =
@@ -3391,7 +3819,7 @@ export default function EmpresaDashboard({
           .sort((a, b) => (b.views || 0) - (a.views || 0))
           .slice(0, 5);
         const maxViews = Math.max(...topViewJobs.map((j) => j.views || 0), 1);
-        const shortName = (title) => (title || "Vaga").split(" ")[0];
+        const shortName = (title) => (title || 'Vaga').split(' ')[0];
 
         return (
           <>
@@ -3399,7 +3827,9 @@ export default function EmpresaDashboard({
               <div>
                 <div className="header-eyebrow">Empresa · Analytics</div>
                 <h1 className="header-title">Desempenho das vagas</h1>
-                <p className="header-sub">Análise detalhada das suas publicações.</p>
+                <p className="header-sub">
+                  Análise detalhada das suas publicações.
+                </p>
               </div>
               <div className="header-actions">
                 <button
@@ -3408,7 +3838,7 @@ export default function EmpresaDashboard({
                   onClick={handleExportApplications}
                   disabled={exportingCsv}
                 >
-                  <FiDownload /> {exportingCsv ? "A exportar…" : "Exportar"}
+                  <FiDownload /> {exportingCsv ? 'A exportar…' : 'Exportar'}
                 </button>
               </div>
             </div>
@@ -3426,33 +3856,84 @@ export default function EmpresaDashboard({
             ) : (
               <>
                 <div className="stats-grid">
-                  <div className="stat-card" style={{ "--accent": "rgba(186,230,39,0.9)", "--accent-shadow": "rgba(186,230,39,0.28)" }}>
-                    <div className="stat-icon" style={{ background: "linear-gradient(135deg,#d9ff2f,#bae619)", color: "#162a55" }}>
+                  <div
+                    className="stat-card"
+                    style={{
+                      '--accent': 'rgba(186,230,39,0.9)',
+                      '--accent-shadow': 'rgba(186,230,39,0.28)',
+                    }}
+                  >
+                    <div
+                      className="stat-icon"
+                      style={{
+                        background: 'linear-gradient(135deg,#d9ff2f,#bae619)',
+                        color: '#162a55',
+                      }}
+                    >
                       <FiTrendingUp />
                     </div>
-                    <div className="stat-value">{conversionRate.toFixed(1)}%</div>
+                    <div className="stat-value">
+                      {conversionRate.toFixed(1)}%
+                    </div>
                     <div className="stat-label">Taxa de conversão</div>
                   </div>
-                  <div className="stat-card" style={{ "--accent": "rgba(32,87,215,0.85)", "--accent-shadow": "rgba(32,87,215,0.28)" }}>
-                    <div className="stat-icon" style={{ background: "linear-gradient(135deg,#2057d7,#4f8ef7)" }}>
+                  <div
+                    className="stat-card"
+                    style={{
+                      '--accent': 'rgba(32,87,215,0.85)',
+                      '--accent-shadow': 'rgba(32,87,215,0.28)',
+                    }}
+                  >
+                    <div
+                      className="stat-icon"
+                      style={{
+                        background: 'linear-gradient(135deg,#2057d7,#4f8ef7)',
+                      }}
+                    >
                       <FiClock />
                     </div>
-                    <div className="stat-value">{timeToHire ? `${timeToHire}d` : "—"}</div>
+                    <div className="stat-value">
+                      {timeToHire ? `${timeToHire}d` : '—'}
+                    </div>
                     <div className="stat-label">Tempo médio p/ contratar</div>
                   </div>
-                  <div className="stat-card" style={{ "--accent": "rgba(95,184,245,0.9)", "--accent-shadow": "rgba(95,184,245,0.28)" }}>
-                    <div className="stat-icon" style={{ background: "linear-gradient(135deg,#5fb8f5,#7dceff)" }}>
+                  <div
+                    className="stat-card"
+                    style={{
+                      '--accent': 'rgba(95,184,245,0.9)',
+                      '--accent-shadow': 'rgba(95,184,245,0.28)',
+                    }}
+                  >
+                    <div
+                      className="stat-icon"
+                      style={{
+                        background: 'linear-gradient(135deg,#5fb8f5,#7dceff)',
+                      }}
+                    >
                       <FiUsers />
                     </div>
                     <div className="stat-value">{avgAppsPerJob}</div>
                     <div className="stat-label">Candidatos por vaga</div>
                   </div>
-                  <div className="stat-card" style={{ "--accent": "rgba(61,187,122,0.9)", "--accent-shadow": "rgba(61,187,122,0.28)" }}>
-                    <div className="stat-icon" style={{ background: "linear-gradient(135deg,#3dbb7a,#22c55e)" }}>
+                  <div
+                    className="stat-card"
+                    style={{
+                      '--accent': 'rgba(61,187,122,0.9)',
+                      '--accent-shadow': 'rgba(61,187,122,0.28)',
+                    }}
+                  >
+                    <div
+                      className="stat-icon"
+                      style={{
+                        background: 'linear-gradient(135deg,#3dbb7a,#22c55e)',
+                      }}
+                    >
                       <FiAward />
                     </div>
-                    <div className="stat-value">{qualityScore.toFixed(1)}/10</div>
-                    <div className="stat-label">Score de qualidade</div>
+                    <div className="stat-value">
+                      {qualityScore.toFixed(1)}/10
+                    </div>
+                    <div className="stat-label">Índice de qualidade</div>
                   </div>
                 </div>
 
@@ -3460,7 +3941,7 @@ export default function EmpresaDashboard({
                   <div className="panel">
                     <div className="panel-title">Vistas por vaga</div>
                     {topViewJobs.length === 0 ? (
-                      <div className="dash-muted" style={{ padding: "12px 0" }}>
+                      <div className="dash-muted" style={{ padding: '12px 0' }}>
                         Sem dados de visualizações.
                       </div>
                     ) : (
@@ -3472,9 +3953,11 @@ export default function EmpresaDashboard({
                           );
                           return (
                             <div className="chart-bar-wrap" key={job.id}>
-                              <div className="chart-bar-val">{job.views || 0}</div>
+                              <div className="chart-bar-val">
+                                {job.views || 0}
+                              </div>
                               <div
-                                className={`chart-bar${i % 2 ? " lime" : ""}`}
+                                className={`chart-bar${i % 2 ? ' lime' : ''}`}
                                 style={{ height: `${height}%` }}
                               />
                               <div className="chart-bar-label">
@@ -3488,7 +3971,9 @@ export default function EmpresaDashboard({
                   </div>
 
                   <div className="panel">
-                    <div className="panel-title">Distribuição das candidaturas</div>
+                    <div className="panel-title">
+                      Distribuição das candidaturas
+                    </div>
                     <div className="metric-list">
                       {sourceData.map((source) => (
                         <div className="metric-row" key={source.name}>
@@ -3496,7 +3981,10 @@ export default function EmpresaDashboard({
                           <div className="metric-track">
                             <div
                               className="metric-fill"
-                              style={{ width: `${source.value}%`, background: source.color }}
+                              style={{
+                                width: `${source.value}%`,
+                                background: source.color,
+                              }}
                             />
                           </div>
                           <div className="metric-val">{source.value}%</div>
@@ -3510,7 +3998,7 @@ export default function EmpresaDashboard({
           </>
         );
       }
-      case "company-profile":
+      case 'company-profile':
         return (
           <section className={styles.sectionBlock}>
             <div className={styles.profileSection}>
@@ -3524,7 +4012,7 @@ export default function EmpresaDashboard({
               ) : null}
               <div className={styles.profileDetails}>
                 <div className={styles.profileHeaderRow}>
-                  <h2>{profile.name || profile.fullName || "Sua empresa"}</h2>
+                  <h2>{profile.name || profile.fullName || 'Sua empresa'}</h2>
                   <Link
                     href="/dashboard/empresa/profile"
                     className={styles.actionLink}
@@ -3536,13 +4024,13 @@ export default function EmpresaDashboard({
                   <h3>Resumo da empresa</h3>
                   <p>
                     {profile.description ||
-                      "Complete o perfil para ganhar destaque com um resumo claro da missão, cultura e principais serviços da empresa."}
+                      'Complete o perfil para ganhar destaque com um resumo claro da missão, cultura e principais serviços da empresa.'}
                   </p>
                 </div>
                 <div className={styles.profileStatsGrid}>
                   <div className={styles.profileStat}>
                     <span>Localização</span>
-                    <strong>{profile.location || "São Tomé, STP"}</strong>
+                    <strong>{profile.location || 'São Tomé, STP'}</strong>
                   </div>
                   <div className={styles.profileStat}>
                     <span>Setor de atuação</span>
@@ -3550,7 +4038,7 @@ export default function EmpresaDashboard({
                       {profile.industry ||
                         profile.segment ||
                         profile.area ||
-                        "Não informado"}
+                        'Não informado'}
                     </strong>
                   </div>
                   <div className={styles.profileStat}>
@@ -3559,7 +4047,7 @@ export default function EmpresaDashboard({
                       {profile.contact ||
                         profile.phone ||
                         profile.email ||
-                        "Não informado"}
+                        'Não informado'}
                     </strong>
                   </div>
                   <div className={styles.profileStat}>
@@ -3572,7 +4060,7 @@ export default function EmpresaDashboard({
                       {profile.employees ||
                         profile.companySize ||
                         profile.size ||
-                        "Não informado"}
+                        'Não informado'}
                     </strong>
                   </div>
                   <div className={styles.profileStat}>
@@ -3586,17 +4074,21 @@ export default function EmpresaDashboard({
             </div>
           </section>
         );
-      case "hr-services": {
-        const pendingHr = hrRequests.filter((request) => request.status === "pending").length;
-        const completedHr = hrRequests.filter((request) => request.status === "completed").length;
+      case 'hr-services': {
+        const pendingHr = hrRequests.filter(
+          (request) => request.status === 'pending',
+        ).length;
+        const completedHr = hrRequests.filter(
+          (request) => request.status === 'completed',
+        ).length;
         const formatHrDate = (value) => {
-          if (!value) return "Data não disponível";
+          if (!value) return 'Data não disponível';
           const date = new Date(value);
-          if (Number.isNaN(date.getTime())) return "Data não disponível";
-          return date.toLocaleDateString("pt-PT", {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
+          if (Number.isNaN(date.getTime())) return 'Data não disponível';
+          return date.toLocaleDateString('pt-PT', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
           });
         };
 
@@ -3607,50 +4099,52 @@ export default function EmpresaDashboard({
                 <div className="header-eyebrow">Empresa · Serviço RH</div>
                 <h1 className="header-title">Solicitar apoio da equipa RH</h1>
                 <p className="header-sub">
-                  Indique o serviço pretendido, detalhe a necessidade, anexe links dos documentos e acompanhe a resposta do admin.
+                  Indique o serviço pretendido, detalhe a necessidade, anexe os
+                  documentos e acompanhe a resposta da equipa EmpregoSTP.
                 </p>
               </div>
               <div className="header-actions">
-                <span className="badge badge-active">{pendingHr} em análise</span>
-                <span className="badge badge-success">{completedHr} concluído{completedHr === 1 ? "" : "s"}</span>
+                <span className="badge badge-active">
+                  {pendingHr} em análise
+                </span>
+                <span className="badge badge-success">
+                  {completedHr} concluído{completedHr === 1 ? '' : 's'}
+                </span>
               </div>
             </div>
 
             {hrFeedback ? (
               <div
-                style={{
-                  marginBottom: 16,
-                  padding: "12px 14px",
-                  borderRadius: 12,
-                  border:
-                    hrFeedback.type === "success"
-                      ? "1px solid rgba(61,187,122,0.28)"
-                      : "1px solid rgba(220,106,124,0.28)",
-                  background:
-                    hrFeedback.type === "success"
-                      ? "rgba(61,187,122,0.1)"
-                      : "rgba(220,106,124,0.1)",
-                  color: hrFeedback.type === "success" ? "#15803d" : "#b91c1c",
-                  fontWeight: 700,
-                }}
+                className={`${styles.hrFeedback} ${
+                  hrFeedback.type === 'success'
+                    ? styles.hrFeedbackSuccess
+                    : styles.hrFeedbackError
+                }`}
+                role={hrFeedback.type === 'success' ? 'status' : 'alert'}
               >
                 {hrFeedback.text}
               </div>
             ) : null}
 
-            <div className="grid-2" style={{ alignItems: "start" }}>
-              <form className="panel" onSubmit={submitHrRequest}>
+            <div className={styles.hrGrid}>
+              <form
+                className={`panel ${styles.hrPanel}`}
+                onSubmit={submitHrRequest}
+              >
                 <div className="panel-title">
                   Novo pedido
-                  <span className="panel-badge">Admin analisa</span>
+                  <span className="panel-badge">Análise administrativa</span>
                 </div>
 
                 <div className="form-group">
-                  <label>Serviço pretendido</label>
+                  <label htmlFor="hr-service-type">Serviço pretendido</label>
                   <select
+                    id="hr-service-type"
                     className="form-input"
                     value={hrForm.serviceType}
-                    onChange={(event) => updateHrForm("serviceType", event.target.value)}
+                    onChange={(event) =>
+                      updateHrForm('serviceType', event.target.value)
+                    }
                     required
                   >
                     {HR_SERVICE_TYPES.map((type) => (
@@ -3662,11 +4156,14 @@ export default function EmpresaDashboard({
                 </div>
 
                 <div className="form-group">
-                  <label>Assunto</label>
+                  <label htmlFor="hr-request-title">Assunto</label>
                   <input
+                    id="hr-request-title"
                     className="form-input"
                     value={hrForm.title}
-                    onChange={(event) => updateHrForm("title", event.target.value)}
+                    onChange={(event) =>
+                      updateHrForm('title', event.target.value)
+                    }
                     minLength={4}
                     maxLength={120}
                     placeholder="Ex.: Triagem para vaga de contabilista"
@@ -3675,11 +4172,16 @@ export default function EmpresaDashboard({
                 </div>
 
                 <div className="form-group">
-                  <label>Informações e detalhes</label>
+                  <label htmlFor="hr-request-description">
+                    Informações e detalhes
+                  </label>
                   <textarea
+                    id="hr-request-description"
                     className="form-input"
                     value={hrForm.description}
-                    onChange={(event) => updateHrForm("description", event.target.value)}
+                    onChange={(event) =>
+                      updateHrForm('description', event.target.value)
+                    }
                     minLength={15}
                     maxLength={3000}
                     rows={7}
@@ -3688,32 +4190,33 @@ export default function EmpresaDashboard({
                   />
                 </div>
 
-                <div className="form-group">
-                  <label>Links dos documentos</label>
-                  <div style={{ display: "grid", gap: 10 }}>
+                <fieldset className={styles.hrDocumentsFieldset}>
+                  <legend>Links dos documentos</legend>
+                  <p className={styles.hrFieldHint}>
+                    Adicione apenas ligações que a equipa possa consultar.
+                  </p>
+                  <div className={styles.hrDocumentsList}>
                     {hrForm.documents.map((doc, index) => (
-                      <div
-                        key={index}
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns: "minmax(0, 0.8fr) minmax(0, 1.4fr) auto",
-                          gap: 8,
-                          alignItems: "center",
-                        }}
-                      >
+                      <div key={index} className={styles.hrDocumentRow}>
                         <input
                           className="form-input"
                           value={doc.label}
-                          onChange={(event) => updateHrDocument(index, "label", event.target.value)}
-                          placeholder="Nome"
+                          onChange={(event) =>
+                            updateHrDocument(index, 'label', event.target.value)
+                          }
+                          placeholder="Nome do documento"
                           maxLength={120}
+                          aria-label={`Nome do documento ${index + 1}`}
                         />
                         <input
                           className="form-input"
                           value={doc.url}
-                          onChange={(event) => updateHrDocument(index, "url", event.target.value)}
+                          onChange={(event) =>
+                            updateHrDocument(index, 'url', event.target.value)
+                          }
                           placeholder="https://..."
                           type="url"
+                          aria-label={`Link do documento ${index + 1}`}
                         />
                         <button
                           type="button"
@@ -3729,53 +4232,71 @@ export default function EmpresaDashboard({
                   <button
                     type="button"
                     className="btn btn-ghost btn-sm"
-                    style={{ marginTop: 10 }}
                     onClick={addHrDocument}
+                    disabled={hrForm.documents.length >= 10}
                   >
                     <FiFileText /> Adicionar documento
                   </button>
-                </div>
+                </fieldset>
 
-                <button type="submit" className="btn btn-primary" disabled={hrSubmitting}>
-                  <FiSend /> {hrSubmitting ? "A enviar..." : "Enviar para análise"}
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={hrSubmitting}
+                >
+                  <FiSend />{' '}
+                  {hrSubmitting ? 'A enviar...' : 'Enviar para análise'}
                 </button>
               </form>
 
-              <div className="panel">
+              <div className={`panel ${styles.hrPanel}`}>
                 <div className="panel-title">
                   Pedidos enviados
                   <span className="panel-badge">{hrRequests.length}</span>
                 </div>
                 {hrLoading ? (
-                  <div className="dash-muted" style={{ padding: "12px 0" }}>
-                    A carregar pedidos...
+                  <div className={styles.hrLoading} role="status">
+                    A carregar pedidos
                   </div>
                 ) : hrRequests.length === 0 ? (
                   <EmptyState
                     icon={<FiFileText />}
                     title="Sem pedidos RH"
-                    message="Quando enviar um pedido, o estado e a resposta do admin aparecem aqui."
+                    message="Quando enviar um pedido, o estado e a resposta da equipa aparecem aqui."
                   />
                 ) : (
                   <div className="item-list">
                     {hrRequests.map((request) => {
-                      const meta = HR_STATUS_META[request.status] || HR_STATUS_META.pending;
+                      const meta =
+                        HR_STATUS_META[request.status] ||
+                        HR_STATUS_META.pending;
                       return (
-                        <article key={request.id} className="list-item" style={{ display: "block" }}>
-                          <div className="dash-flex-between" style={{ gap: 12, alignItems: "flex-start" }}>
+                        <article
+                          key={request.id}
+                          className={`list-item ${styles.hrRequest}`}
+                        >
+                          <div className={styles.hrRequestHeader}>
                             <div>
-                              <div className="advisor-cat">{request.serviceType}</div>
-                              <div className="list-item-title">{request.title}</div>
-                              <div className="list-item-meta">Enviado em {formatHrDate(request.createdAt)}</div>
+                              <div className="advisor-cat">
+                                {request.serviceType}
+                              </div>
+                              <div className="list-item-title">
+                                {request.title}
+                              </div>
+                              <div className="list-item-meta">
+                                Enviado em {formatHrDate(request.createdAt)}
+                              </div>
                             </div>
-                            <span className={`badge ${meta.className}`}>{meta.label}</span>
+                            <span className={`badge ${meta.className}`}>
+                              {meta.label}
+                            </span>
                           </div>
-                          <p className="dash-muted" style={{ margin: "10px 0 0", whiteSpace: "pre-line" }}>
+                          <p className={styles.hrRequestDescription}>
                             {request.description}
                           </p>
 
                           {request.documents?.length > 0 ? (
-                            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10 }}>
+                            <div className={styles.hrDocumentLinks}>
                               {request.documents.map((doc, index) => (
                                 <a
                                   key={index}
@@ -3784,30 +4305,24 @@ export default function EmpresaDashboard({
                                   rel="noopener noreferrer"
                                   className="btn btn-ghost btn-sm"
                                 >
-                                  <FiFileText /> {doc.label || "Documento"}
+                                  <FiFileText /> {doc.label || 'Documento'}
                                 </a>
                               ))}
                             </div>
                           ) : null}
 
                           {request.adminResponse ? (
-                            <div
-                              style={{
-                                marginTop: 12,
-                                padding: 12,
-                                borderRadius: 12,
-                                background: "var(--surface-2)",
-                                border: "1px solid var(--border)",
-                              }}
-                            >
+                            <div className={styles.hrResponse}>
                               <div className="advisor-cat">
-                                {request.status === "completed" ? "Resposta final" : "Resposta do admin"}
+                                {request.status === 'completed'
+                                  ? 'Resposta final'
+                                  : 'Resposta da equipa'}
                               </div>
-                              <p className="dash-muted" style={{ margin: "6px 0 0", whiteSpace: "pre-line" }}>
+                              <p className={styles.hrResponseText}>
                                 {request.adminResponse}
                               </p>
                               {request.resultDocuments?.length > 0 ? (
-                                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10 }}>
+                                <div className={styles.hrDocumentLinks}>
                                   {request.resultDocuments.map((doc, index) => (
                                     <a
                                       key={index}
@@ -3816,7 +4331,7 @@ export default function EmpresaDashboard({
                                       rel="noopener noreferrer"
                                       className="btn btn-lime btn-sm"
                                     >
-                                      <FiDownload /> {doc.label || "Resultado"}
+                                      <FiDownload /> {doc.label || 'Resultado'}
                                     </a>
                                   ))}
                                 </div>
@@ -3833,13 +4348,17 @@ export default function EmpresaDashboard({
           </section>
         );
       }
-      case "plans":
+      case 'plans':
         return (
           <section className={styles.sectionBlock}>
             <EmpresaPlansCatalog
               plans={plans}
-              currentPlanId={normalizedCompanyPlanId}
-              currentPlanName={planState}
+              currentPlanId={
+                profile?.planId ||
+                profile?.currentPlan ||
+                normalizedCompanyPlanId
+              }
+              currentPlanName={profile?.planName || planState}
               loadingPlanId={planLoadingId}
               error={planError}
               paymentInstructions={planPaymentInstructions}
@@ -3849,18 +4368,20 @@ export default function EmpresaDashboard({
             />
           </section>
         );
-      case "affiliate":
+      case 'affiliate':
         return (
           <section className={styles.sectionBlock}>
             <AffiliateSection
               role="empresa"
               user={user}
               defaults={{
-                fullName: profile?.companyName || profile?.name || user?.name || "",
-                email: profile?.email || user?.email || "",
-                phone: profile?.phone || profile?.contact || "",
-                location: profile?.location || "",
-                occupation: profile?.industry || profile?.segment || profile?.area || "",
+                fullName:
+                  profile?.companyName || profile?.name || user?.name || '',
+                email: profile?.email || user?.email || '',
+                phone: profile?.phone || profile?.contact || '',
+                location: profile?.location || '',
+                occupation:
+                  profile?.industry || profile?.segment || profile?.area || '',
               }}
             />
           </section>
@@ -3874,78 +4395,115 @@ export default function EmpresaDashboard({
     MENU_ITEMS.find((item) => item.id === activeTab)?.label || activeTab;
 
   const pendingApplicationsCount = applicationsData.filter(
-    (a) => a.status === "pending",
+    (a) => a.status === 'pending',
   ).length;
   const empresaPlanLabel =
-    typeof planState === "string" ? planState : planState?.planName || "Gratuito";
+    typeof planState === 'string'
+      ? planState
+      : planState?.planName || 'Gratuito';
   const companyName =
-    profile?.companyName || profile?.name || user?.name || "Empresa";
+    profile?.companyName || profile?.name || user?.name || 'Empresa';
   const scheduledInterviewsCount = applicationsData.filter(
-    (a) => a.interviewDetails?.scheduledAt || a.status === "interview",
+    (a) => a.interviewDetails?.scheduledAt || a.status === 'interview',
   ).length;
   const topbarSubMap = {
     dashboard: `${companyName} · Plano ${empresaPlanLabel}`,
-    jobs: "Gestão de publicações",
+    jobs: 'Gestão de publicações',
     applications: `${applicationsData.length} candidaturas recebidas`,
-    candidates: "Candidatos verificados disponíveis",
+    candidates: 'Candidatos verificados disponíveis',
     interviews: `${scheduledInterviewsCount} entrevistas agendadas`,
-    analytics: "Desempenho das suas vagas",
-    "hr-services": "Pedidos de serviço RH e respostas do admin",
-    messages: "Conversas com candidatos",
-    "company-profile": "Perfil público da empresa",
-    plans: "Gestão do seu plano",
-    affiliate: "Programa de afiliados EmpregoSTP",
+    analytics: 'Análise do desempenho das suas vagas',
+    'hr-services': 'Pedidos de serviço RH e respostas da equipa',
+    messages: 'Conversas com candidatos',
+    'company-profile': 'Perfil público da empresa',
+    plans: 'Gestão do seu plano',
+    affiliate: 'Programa de afiliados EmpregoSTP',
   };
   const empresaNav = [
     {
-      label: "Menu Principal",
+      label: 'Menu Principal',
       items: [
-        { key: "dashboard", label: "Visão geral", icon: "home", onClick: () => setActiveTab("dashboard") },
         {
-          key: "jobs",
-          label: "Minhas vagas",
-          icon: "briefcase",
-          onClick: () => setActiveTab("jobs"),
+          key: 'dashboard',
+          label: 'Visão geral',
+          icon: 'home',
+          onClick: () => openTab('dashboard'),
+        },
+        {
+          key: 'jobs',
+          label: 'Minhas vagas',
+          icon: 'briefcase',
+          onClick: () => openTab('jobs'),
           badge: activeJobs.length || undefined,
         },
         {
-          key: "applications",
-          label: "Candidaturas",
-          icon: "inbox",
-          onClick: () => setActiveTab("applications"),
+          key: 'applications',
+          label: 'Candidaturas',
+          icon: 'inbox',
+          onClick: () => openTab('applications'),
           badge: totalApplications || undefined,
         },
-        { key: "candidates", label: "Banco de talentos", icon: "users", onClick: () => setActiveTab("candidates") },
         {
-          key: "interviews",
-          label: "Entrevistas",
-          icon: "calendar",
-          onClick: () => setActiveTab("interviews"),
-          badge: scheduledInterviewsCount || undefined,
-          badgeStyle: "lime",
+          key: 'candidates',
+          label: 'Banco de talentos',
+          icon: 'users',
+          onClick: () => openTab('candidates'),
         },
         {
-          key: "messages",
-          label: "Mensagens",
-          icon: "messages",
-          onClick: () => setActiveTab("messages"),
+          key: 'interviews',
+          label: 'Entrevistas',
+          icon: 'calendar',
+          onClick: () => openTab('interviews'),
+          badge: scheduledInterviewsCount || undefined,
+          badgeStyle: 'lime',
+        },
+      ],
+    },
+    {
+      label: 'Análise',
+      items: [
+        {
+          key: 'analytics',
+          label: 'Analytics',
+          icon: 'chart',
+          onClick: () => openTab('analytics'),
+        },
+      ],
+    },
+    {
+      label: 'Conta',
+      items: [
+        {
+          key: 'plans',
+          label: 'Planos',
+          icon: 'star',
+          onClick: () => openTab('plans'),
+        },
+      ],
+    },
+    {
+      label: 'Mais',
+      items: [
+        {
+          key: 'messages',
+          label: 'Mensagens',
+          icon: 'messages',
+          onClick: () => openTab('messages'),
           badge: unreadMessages || undefined,
         },
-      ],
-    },
-    {
-      label: "Análise",
-      items: [
-        { key: "analytics", label: "Analytics", icon: "chart", onClick: () => setActiveTab("analytics") },
-        { key: "hr-services", label: "Serviço RH", icon: "briefcase", onClick: () => setActiveTab("hr-services") },
-      ],
-    },
-    {
-      label: "Conta",
-      items: [
-        { key: "company-profile", label: "Perfil empresa", icon: "user", href: "/dashboard/empresa/profile" },
-        { key: "plans", label: "Planos", icon: "star", onClick: () => setActiveTab("plans") },
-        { key: "affiliate", label: "Ser Afiliado", icon: "star", badgeStyle: "lime", onClick: () => setActiveTab("affiliate") },
+        {
+          key: 'hr-services',
+          label: 'Serviço RH',
+          icon: 'briefcase',
+          onClick: () => openTab('hr-services'),
+        },
+        {
+          key: 'affiliate',
+          label: 'Ser afiliado',
+          icon: 'star',
+          badgeStyle: 'lime',
+          onClick: () => openTab('affiliate'),
+        },
       ],
     },
   ];
@@ -3953,18 +4511,26 @@ export default function EmpresaDashboard({
   return (
     <>
       <Head>
-        <title>Dashboard Empresa | EmpregoSTP</title>
+        <title>Painel da empresa | EmpregoSTP</title>
         <meta
           name="description"
-          content="Gerencie suas vagas e candidatos no painel empresarial do EmpregoSTP"
+          content="Gira vagas e candidatos no painel empresarial do EmpregoSTP"
         />
       </Head>
       <DashboardShell
         role="empresa"
         active={activeTab}
         title={activeLabel}
-        subtitle={topbarSubMap[activeTab] || `${companyName} · Plano ${empresaPlanLabel}`}
-        searchPlaceholder="Pesquisar candidatos..."
+        subtitle={
+          topbarSubMap[activeTab] || `${companyName}, plano ${empresaPlanLabel}`
+        }
+        searchPlaceholder={
+          activeTab === 'candidates'
+            ? 'Pesquisar no banco de talentos...'
+            : undefined
+        }
+        searchValue={activeTab === 'candidates' ? searchQuery : ''}
+        onSearchChange={activeTab === 'candidates' ? setSearchQuery : undefined}
         nav={empresaNav}
         onLogout={handleLogout}
         topbarActions={
@@ -3986,7 +4552,11 @@ export default function EmpresaDashboard({
               {unreadNotifications > 0 && <span className="dash-notif-dot" />}
             </button>
             {notificationsOpen && (
-              <div className="dash-notif-panel" role="dialog" aria-label="Notificações">
+              <div
+                className="dash-notif-panel"
+                role="dialog"
+                aria-label="Notificações"
+              >
                 <div className="dash-notif-head">
                   <strong>Notificações</strong>
                   <button
@@ -4000,28 +4570,42 @@ export default function EmpresaDashboard({
                 </div>
                 <div className="dash-notif-list">
                   {notificationsError ? (
-                    <div className="dash-notif-empty">Erro: {notificationsError}</div>
+                    <div className="dash-notif-empty">
+                      Erro: {notificationsError}
+                    </div>
                   ) : notificationsLoading ? (
                     <div className="dash-notif-empty">A carregar…</div>
                   ) : notifications.length === 0 ? (
-                    <div className="dash-notif-empty">Nenhuma notificação recente.</div>
+                    <div className="dash-notif-empty">
+                      Nenhuma notificação recente.
+                    </div>
                   ) : (
                     notifications.slice(0, 10).map((notif) => (
                       <button
                         key={notif.id}
                         type="button"
-                        className={`dash-notif-row${notif.read ? "" : " unread"}`}
+                        className={`dash-notif-row${notif.read ? '' : ' unread'}`}
                         onClick={() => handleNotificationClick?.(notif)}
-                        title={notif.message || notif.title || "Notificação"}
+                        title={notif.message || notif.title || 'Notificação'}
                       >
-                        <span className="dash-notif-ic">{notif.icon || "🔔"}</span>
+                        <span className="dash-notif-ic" aria-hidden="true">
+                          <FiBell />
+                        </span>
                         <div className="dash-notif-txt">
-                          <div className="dash-notif-row-title">{notif.title || "Notificação"}</div>
-                          {notif.message && <p className="dash-notif-row-msg">{notif.message}</p>}
+                          <div className="dash-notif-row-title">
+                            {notif.title || 'Notificação'}
+                          </div>
+                          {notif.message && (
+                            <p className="dash-notif-row-msg">
+                              {notif.message}
+                            </p>
+                          )}
                           <span className="dash-notif-time">
                             {notif.createdAt
-                              ? new Date(notif.createdAt).toLocaleString("pt-PT")
-                              : ""}
+                              ? new Date(notif.createdAt).toLocaleString(
+                                  'pt-PT',
+                                )
+                              : ''}
                           </span>
                         </div>
                       </button>
@@ -4033,58 +4617,15 @@ export default function EmpresaDashboard({
           </div>
         }
         profile={{
-          name: profile?.companyName || profile?.name || user?.name || "Empresa",
-          role: "Empresa",
+          name:
+            profile?.companyName || profile?.name || user?.name || 'Empresa',
+          role: 'Empresa',
           plan:
-            empresaPlanLabel && empresaPlanLabel.toLowerCase() !== "gratuito"
+            empresaPlanLabel && empresaPlanLabel.toLowerCase() !== 'gratuito'
               ? empresaPlanLabel
               : undefined,
           avatarUrl: profile?.logoUrl || profile?.photoUrl || undefined,
         }}
-        sidebarTop={
-          <div style={{ padding: "0 12px 6px" }}>
-            <Link
-              href="/dashboard/empresa/vaga/criar-vaga"
-              className="btn btn-primary btn-sm"
-              style={{ width: "100%" }}
-            >
-              <FiPlusCircle /> Publicar vaga
-            </Link>
-          </div>
-        }
-        sidebarFooter={
-          empresaPlanLabel.toLowerCase() === "gratuito" ? (
-            <div
-              style={{
-                margin: "0 0 12px",
-                padding: 14,
-                borderRadius: 16,
-                background: "var(--surface-2)",
-                border: "1px solid var(--border)",
-              }}
-            >
-              <div className="dash-flex" style={{ marginBottom: 10 }}>
-                <FiStar style={{ color: "#bae619" }} />
-                <div>
-                  <div style={{ fontSize: "0.82rem", fontWeight: 800, color: "var(--text-1)" }}>
-                    Plano Gratuito
-                  </div>
-                  <div style={{ fontSize: "0.7rem", color: "var(--text-3)" }}>
-                    Amplie o seu alcance
-                  </div>
-                </div>
-              </div>
-              <button
-                type="button"
-                className="btn btn-lime btn-sm"
-                style={{ width: "100%" }}
-                onClick={() => setActiveTab("plans")}
-              >
-                Fazer upgrade
-              </button>
-            </div>
-          ) : null
-        }
       >
         {renderContent()}
       </DashboardShell>
@@ -4098,8 +4639,8 @@ export default function EmpresaDashboard({
               <div>
                 <h3>Agendar entrevista</h3>
                 <p>
-                  {interviewModal.application?.candidateName || "Candidato"} •{" "}
-                  {interviewModal.application?.jobTitle || "Vaga"}
+                  {interviewModal.application?.candidateName || 'Candidato'},{' '}
+                  {interviewModal.application?.jobTitle || 'Vaga'}
                 </p>
               </div>
               <button
@@ -4119,7 +4660,7 @@ export default function EmpresaDashboard({
                   value={interviewForm.interviewDate}
                   onChange={(event) =>
                     handleInterviewFieldChange(
-                      "interviewDate",
+                      'interviewDate',
                       event.target.value,
                     )
                   }
@@ -4132,7 +4673,7 @@ export default function EmpresaDashboard({
                   value={interviewForm.interviewMode}
                   onChange={(event) =>
                     handleInterviewFieldChange(
-                      "interviewMode",
+                      'interviewMode',
                       event.target.value,
                     )
                   }
@@ -4142,7 +4683,7 @@ export default function EmpresaDashboard({
                 </select>
               </label>
 
-              {interviewForm.interviewMode === "online" ? (
+              {interviewForm.interviewMode === 'online' ? (
                 <label
                   className={`${styles.modalField} ${styles.modalFieldFull}`}
                 >
@@ -4153,7 +4694,7 @@ export default function EmpresaDashboard({
                     value={interviewForm.interviewLink}
                     onChange={(event) =>
                       handleInterviewFieldChange(
-                        "interviewLink",
+                        'interviewLink',
                         event.target.value,
                       )
                     }
@@ -4170,7 +4711,7 @@ export default function EmpresaDashboard({
                     value={interviewForm.interviewLocation}
                     onChange={(event) =>
                       handleInterviewFieldChange(
-                        "interviewLocation",
+                        'interviewLocation',
                         event.target.value,
                       )
                     }
@@ -4188,7 +4729,7 @@ export default function EmpresaDashboard({
                   value={interviewForm.interviewNotes}
                   onChange={(event) =>
                     handleInterviewFieldChange(
-                      "interviewNotes",
+                      'interviewNotes',
                       event.target.value,
                     )
                   }
@@ -4199,7 +4740,7 @@ export default function EmpresaDashboard({
             {interviewError && (
               <div className={styles.modalErrorBox}>
                 <p>{interviewError}</p>
-                {interviewError.toLowerCase().includes("upgrade") && (
+                {interviewError.toLowerCase().includes('upgrade') && (
                   <Link href="/premium/empresa" className={styles.actionLink}>
                     Ver planos
                   </Link>
@@ -4221,7 +4762,7 @@ export default function EmpresaDashboard({
                 onClick={handleScheduleInterview}
                 disabled={interviewSubmitting}
               >
-                {interviewSubmitting ? "A guardar..." : "Confirmar entrevista"}
+                {interviewSubmitting ? 'A guardar...' : 'Confirmar entrevista'}
               </button>
             </div>
           </div>
@@ -4233,21 +4774,21 @@ export default function EmpresaDashboard({
 
 function safeTimestampToMillis(timestamp) {
   if (!timestamp) return null;
-  if (typeof timestamp.toMillis === "function") return timestamp.toMillis();
-  if (typeof timestamp === "number") return timestamp;
-  if (typeof timestamp === "string") return new Date(timestamp).getTime();
+  if (typeof timestamp.toMillis === 'function') return timestamp.toMillis();
+  if (typeof timestamp === 'number') return timestamp;
+  if (typeof timestamp === 'string') return new Date(timestamp).getTime();
   return null;
 }
 
 function sanitizeFirestoreValue(value) {
   if (!value) return value;
-  if (typeof value.toMillis === "function") {
+  if (typeof value.toMillis === 'function') {
     return value.toMillis();
   }
   if (Array.isArray(value)) {
     return value.map((item) => sanitizeFirestoreValue(item));
   }
-  if (value && typeof value === "object") {
+  if (value && typeof value === 'object') {
     const sanitized = {};
     Object.keys(value).forEach((key) => {
       sanitized[key] = sanitizeFirestoreValue(value[key]);
@@ -4269,26 +4810,26 @@ function normalizeJobDates(job) {
 }
 
 export async function getServerSideProps(context) {
-  const { admin } = await import("../../../lib/firebaseAdmin");
+  const { admin } = await import('../../../lib/firebaseAdmin');
   try {
     const cookies = nookies.get(context);
     if (!cookies.token) {
-      return { redirect: { destination: "/login", permanent: false } };
+      return redirectToLogin(context);
     }
     const token = await admin.auth().verifyIdToken(cookies.token);
     const { uid } = token;
 
-    const userDoc = await admin.firestore().collection("users").doc(uid).get();
+    const userDoc = await admin.firestore().collection('users').doc(uid).get();
     if (!userDoc.exists) {
-      return { redirect: { destination: "/login", permanent: false } };
+      return redirectToLogin(context);
     }
     const userData = userDoc.data();
-    if (userData.userType !== "empresa") {
-      return { redirect: { destination: "/dashboard", permanent: false } };
+    if (userData.userType !== 'empresa') {
+      return { redirect: { destination: '/dashboard', permanent: false } };
     }
 
     const profile = {
-      ...userData,
+      ...sanitizeFirestoreValue(userData),
       planEndDate: safeTimestampToMillis(userData.planEndDate),
       planStartDate: safeTimestampToMillis(userData.planStartDate),
       monthlyJobsResetDate: safeTimestampToMillis(
@@ -4318,13 +4859,13 @@ export async function getServerSideProps(context) {
       await Promise.all([
         admin
           .firestore()
-          .collection("jobs")
-          .where("companyId", "==", uid)
+          .collection('jobs')
+          .where('companyId', '==', uid)
           .get(),
         admin
           .firestore()
-          .collection("applications")
-          .where("companyId", "==", uid)
+          .collection('applications')
+          .where('companyId', '==', uid)
           .get(),
         fetchActiveEmpresaPlans(admin),
         fetchVerifiedCandidates(admin, publicViewerAccess),
@@ -4355,7 +4896,7 @@ export async function getServerSideProps(context) {
         candidateEmail: data.candidateEmail || null,
         jobTitle: data.jobTitle || null,
         company: data.company || null,
-        status: data.status || "pending",
+        status: data.status || 'pending',
         interviewDetails: data.interviewDetails
           ? {
               ...sanitizeFirestoreValue(data.interviewDetails),
@@ -4376,7 +4917,7 @@ export async function getServerSideProps(context) {
         statusNotes: data.statusNotes || null,
         jobLocation: data.jobLocation || null,
         jobType: data.jobType || null,
-        coverLetter: data.coverLetter || "",
+        coverLetter: data.coverLetter || '',
         priorityApplied: Boolean(data.priorityApplied),
         applicationHighlighted: Boolean(data.applicationHighlighted),
         priorityLevel: Number(data.priorityLevel) || 0,
@@ -4417,6 +4958,29 @@ export async function getServerSideProps(context) {
       return dateB - dateA;
     });
 
+    const weeklyApplications = Array.from({ length: 6 }, (_, index) => {
+      const now = new Date();
+      const weeksAgo = 5 - index;
+      const start = new Date(now);
+      start.setHours(0, 0, 0, 0);
+      start.setDate(start.getDate() - weeksAgo * 7 - start.getDay());
+      const end = new Date(start);
+      end.setDate(end.getDate() + 7);
+
+      return {
+        name: `S${index + 1}`,
+        value: recentApplications.filter((application) => {
+          if (!application.appliedAt) return false;
+          const appliedAt = new Date(application.appliedAt);
+          return (
+            !Number.isNaN(appliedAt.getTime()) &&
+            appliedAt >= start &&
+            appliedAt < end
+          );
+        }).length,
+      };
+    });
+
     const jobsWithCounts = jobs.map((job) => ({
       ...job,
       applicationCount: appCounts[job.id] || 0,
@@ -4425,10 +4989,10 @@ export async function getServerSideProps(context) {
     const stats = {
       totalApplications: appsSnap.size,
       pendingApplications: recentApplications.filter(
-        (a) => a.status === "pending" || !a.status,
+        (a) => a.status === 'pending' || !a.status,
       ).length,
       approvedApplications: recentApplications.filter(
-        (a) => a.status === "approved",
+        (a) => a.status === 'approved',
       ).length,
     };
     const publicCandidateSummary =
@@ -4441,6 +5005,7 @@ export async function getServerSideProps(context) {
         totalApplications: appsSnap.size,
         recentApplications: recentApplications.slice(0, 10),
         stats,
+        weeklyApplications,
         plans,
         publicCandidates: publicCandidatesData.slice(0, 6),
         publicCandidateSummary,
@@ -4450,7 +5015,7 @@ export async function getServerSideProps(context) {
       },
     };
   } catch (error) {
-    console.error("Erro no getServerSideProps:", error);
-    return { redirect: { destination: "/login", permanent: false } };
+    console.error('Erro no getServerSideProps:', error);
+    return redirectToLogin(context);
   }
 }

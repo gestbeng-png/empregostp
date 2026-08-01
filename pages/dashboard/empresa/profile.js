@@ -1,37 +1,37 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useAuth } from '../../../context/AuthContext';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '../../../lib/firebase';
 import { getFirebaseStorageErrorMessage } from '../../../lib/firebaseStorageError';
-import { FiArrowLeft } from 'react-icons/fi';
+import {
+  FiAlertCircle,
+  FiArrowLeft,
+  FiBriefcase,
+  FiCheckCircle,
+  FiEye,
+  FiFacebook,
+  FiFileText,
+  FiGlobe,
+  FiImage,
+  FiInstagram,
+  FiLinkedin,
+  FiMail,
+  FiMapPin,
+  FiPhone,
+  FiSave,
+  FiShare2,
+  FiUploadCloud,
+  FiUsers,
+  FiX,
+} from 'react-icons/fi';
 import DashboardShell from '../../../components/dashboard/DashboardShell';
+import { COMPANY_SIZES, INDUSTRY_SECTORS } from '../../../lib/companyOptions';
 import styles from '../../../styles/EmpresaProfilePage.module.css';
-
-const COMPANY_SIZES = [
-  '1-10 funcionários',
-  '11-50 funcionários',
-  '51-200 funcionários',
-  '201-500 funcionários',
-  '501-1000 funcionários',
-  '1001+ funcionários'
-];
-
-const INDUSTRY_SECTORS = [
-  'Tecnologia',
-  'Saúde',
-  'Educação',
-  'Finanças',
-  'Varejo',
-  'Indústria',
-  'Serviços',
-  'Alimentação',
-  'Construção',
-  'Turismo',
-  'Outro'
-];
+import { buildLoginUrl } from '../../../lib/loginRedirect';
 
 export default function CompanyProfilePage() {
   const { user, loading: authLoading } = useAuth();
@@ -56,7 +56,7 @@ export default function CompanyProfilePage() {
     coverImageUrl: '',
     linkedin: '',
     facebook: '',
-    instagram: ''
+    instagram: '',
   });
 
   const uploading = uploadingLogo || uploadingCover;
@@ -64,7 +64,7 @@ export default function CompanyProfilePage() {
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
-      router.push('/login');
+      router.push(buildLoginUrl(router.asPath));
       return;
     }
 
@@ -73,8 +73,8 @@ export default function CompanyProfilePage() {
         const token = await user.getIdToken();
         const response = await fetch('/api/empresa', {
           headers: {
-            Authorization: `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         });
 
         if (!response.ok) {
@@ -96,7 +96,7 @@ export default function CompanyProfilePage() {
           coverImageUrl: data.coverImageUrl || '',
           linkedin: data.socialMedia?.linkedin || data.linkedin || '',
           facebook: data.socialMedia?.facebook || data.facebook || '',
-          instagram: data.socialMedia?.instagram || data.instagram || ''
+          instagram: data.socialMedia?.instagram || data.instagram || '',
         });
       } catch (e) {
         setError('Erro ao carregar perfil');
@@ -143,9 +143,9 @@ export default function CompanyProfilePage() {
         socialMedia: {
           linkedin: form.linkedin,
           facebook: form.facebook,
-          instagram: form.instagram
+          instagram: form.instagram,
         },
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
 
       const token = await user.getIdToken();
@@ -153,9 +153,9 @@ export default function CompanyProfilePage() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(dataToUpdate)
+        body: JSON.stringify(dataToUpdate),
       });
 
       const result = await response.json();
@@ -163,16 +163,13 @@ export default function CompanyProfilePage() {
         throw new Error(result.message || 'Erro ao salvar perfil');
       }
 
-      setSuccess('✅ Perfil atualizado com sucesso!');
-
-      setTimeout(() => {
-        router.push('/dashboard/empresa');
-      }, 2000);
+      setSuccess('Perfil atualizado com sucesso.');
     } catch (e) {
       let errorMessage = 'Erro ao salvar perfil. ';
 
       if (e.code === 'permission-denied') {
-        errorMessage += 'Sem permissão para atualizar. Verifique as regras do Firestore.';
+        errorMessage +=
+          'Sem permissão para atualizar. Verifique as regras do Firestore.';
       } else if (e.code === 'not-found') {
         errorMessage += 'Documento não encontrado.';
       } else {
@@ -238,7 +235,7 @@ export default function CompanyProfilePage() {
     } catch (err) {
       const errorMessage = getFirebaseStorageErrorMessage(
         err,
-        `Erro ao enviar ${isLogo ? 'logo' : 'imagem de capa'}.`
+        `Erro ao enviar ${isLogo ? 'logo' : 'imagem de capa'}.`,
       );
 
       setError(errorMessage);
@@ -257,7 +254,7 @@ export default function CompanyProfilePage() {
       ...prev,
       industrySectors: prev.industrySectors.includes(sector)
         ? prev.industrySectors.filter((s) => s !== sector)
-        : [...prev.industrySectors, sector]
+        : [...prev.industrySectors, sector],
     }));
   }
 
@@ -267,10 +264,12 @@ export default function CompanyProfilePage() {
         <Head>
           <title>Perfil da Empresa - EmpregoSTP</title>
         </Head>
-        <main className={styles.loadingPage}>
+        <div className={styles.loadingPage} aria-busy="true">
           <div className={styles.loadingSpinner} aria-hidden="true" />
-          <p className={styles.loadingText}>Carregando perfil...</p>
-        </main>
+          <p className={styles.loadingText} role="status">
+            A carregar perfil...
+          </p>
+        </div>
       </>
     );
   }
@@ -286,171 +285,310 @@ export default function CompanyProfilePage() {
         active="company-profile"
         title="Perfil empresa"
         subtitle="Perfil público da empresa"
-        profile={{ name: user?.displayName || "Empresa", role: "Empresa" }}
+        profile={{
+          name: form.name || user?.displayName || 'Empresa',
+          role: 'Empresa',
+          avatarUrl: form.logoUrl,
+        }}
       >
         <div className="dash-page">
-          <Link href="/dashboard/empresa" className="dash-back">
-            <FiArrowLeft /> Voltar ao dashboard
-          </Link>
-          <header className={styles.hero}>
-            <div className={styles.heroCopy}>
-              <span className={styles.eyebrow}>Marca empregadora</span>
-              <h1 className={styles.title}>Perfil da Empresa</h1>
-              <p className={styles.description}>Atualize as informações da sua empresa para atrair os melhores talentos</p>
+          <header className={styles.pageHeader}>
+            <div className={styles.pageHeaderCopy}>
+              <Link href="/dashboard/empresa" className={styles.backLink}>
+                <FiArrowLeft aria-hidden="true" />
+                Voltar ao dashboard
+              </Link>
+              <span className={styles.eyebrow}>Configurações da empresa</span>
+              <h1 className={styles.title}>Perfil da empresa</h1>
+              <p className={styles.description}>
+                Gira a presença da sua empresa no portal. Estas informações
+                serão apresentadas aos candidatos.
+              </p>
             </div>
+
+            {user?.uid ? (
+              <Link
+                href={`/empresas/${user.uid}`}
+                className={styles.publicProfileAction}
+              >
+                <FiEye aria-hidden="true" />
+                Ver perfil público
+              </Link>
+            ) : null}
           </header>
 
           {success ? (
-            <div className={`${styles.banner} ${styles.bannerSuccess}`}>
-              <span>✅</span>
+            <div
+              className={`${styles.banner} ${styles.bannerSuccess}`}
+              role="status"
+              aria-live="polite"
+            >
+              <FiCheckCircle className={styles.bannerIcon} aria-hidden="true" />
               <span>{success}</span>
             </div>
           ) : null}
 
           {error ? (
-            <div className={`${styles.banner} ${styles.bannerError}`}>
-              <span>⚠️</span>
+            <div
+              className={`${styles.banner} ${styles.bannerError}`}
+              role="alert"
+            >
+              <FiAlertCircle className={styles.bannerIcon} aria-hidden="true" />
               <span>{error}</span>
             </div>
           ) : null}
 
           <form className={styles.formLayout} onSubmit={handleSave}>
-            <FormSection title="Imagens da Empresa">
-              <div className={styles.mediaGrid}>
-                <UploadCard
-                  title="Logo da Empresa"
-                  note="Formatos: JPG, PNG. Máximo: 5MB"
-                  imageUrl={form.logoUrl}
-                  imageAlt="Logo"
-                  imageClassName={styles.logoPreview}
-                  buttonTone="green"
-                  buttonLabel={uploadingLogo ? 'Enviando...' : 'Escolher Logo'}
+            <nav
+              className={styles.sectionNav}
+              aria-label="Secções do perfil da empresa"
+            >
+              <a href="#marca">
+                <FiImage aria-hidden="true" />
+                Marca
+              </a>
+              <a href="#informacoes-basicas">
+                <FiBriefcase aria-hidden="true" />
+                Informações básicas
+              </a>
+              <a href="#sobre-a-empresa">
+                <FiFileText aria-hidden="true" />
+                Sobre a empresa
+              </a>
+              <a href="#redes-sociais">
+                <FiShare2 aria-hidden="true" />
+                Redes sociais
+              </a>
+            </nav>
+
+            <div className={styles.formColumns}>
+              <aside className={styles.brandColumn}>
+                <FormSection
+                  id="marca"
+                  title="Gestão de marca"
+                  description="Mantenha a identidade visual da empresa atualizada."
+                  icon={FiImage}
                 >
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleFileUpload(e, 'logoUrl')}
-                    className={styles.hiddenInput}
-                    disabled={uploadingLogo}
-                  />
-                </UploadCard>
+                  <UploadCard
+                    title="Logo da Empresa"
+                    note="JPG ou PNG quadrado. Máximo 5 MB."
+                    imageUrl={form.logoUrl}
+                    imageAlt={`Logo de ${form.name || 'empresa'}`}
+                    variant="logo"
+                    buttonLabel={uploadingLogo ? 'A enviar...' : 'Alterar logo'}
+                  >
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileUpload(e, 'logoUrl')}
+                      className={styles.hiddenInput}
+                      disabled={uploadingLogo}
+                    />
+                  </UploadCard>
 
-                <UploadCard
-                  title="Imagem de Capa"
-                  note="Formatos: JPG, PNG. Máximo: 5MB. Recomendado: 1200x400px"
-                  imageUrl={form.coverImageUrl}
-                  imageAlt="Capa"
-                  imageClassName={styles.coverPreview}
-                  buttonTone="blue"
-                  buttonLabel={uploadingCover ? 'Enviando...' : 'Escolher Capa'}
+                  <UploadCard
+                    title="Imagem de Capa"
+                    note="Recomendado: 1200 x 400 px. Máximo 5 MB."
+                    imageUrl={form.coverImageUrl}
+                    imageAlt={`Capa de ${form.name || 'empresa'}`}
+                    variant="cover"
+                    buttonLabel={
+                      uploadingCover ? 'A enviar...' : 'Carregar imagem'
+                    }
+                  >
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileUpload(e, 'coverImageUrl')}
+                      className={styles.hiddenInput}
+                      disabled={uploadingCover}
+                    />
+                  </UploadCard>
+                </FormSection>
+              </aside>
+
+              <div className={styles.detailsColumn}>
+                <FormSection
+                  id="informacoes-basicas"
+                  title="Informações básicas"
+                  description="Dados principais usados no perfil público e nas vagas."
+                  icon={FiBriefcase}
                 >
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleFileUpload(e, 'coverImageUrl')}
-                    className={styles.hiddenInput}
-                    disabled={uploadingCover}
+                  <div className={styles.gridTwo}>
+                    <InputField
+                      label="Nome da empresa *"
+                      value={form.name}
+                      onChange={(e) =>
+                        setForm({ ...form, name: e.target.value })
+                      }
+                      placeholder="Nome da sua empresa"
+                      required
+                      icon={FiBriefcase}
+                      className={styles.spanTwo}
+                    />
+                    <InputField
+                      label="Email de contacto"
+                      type="email"
+                      value={form.email}
+                      disabled
+                      icon={FiMail}
+                    />
+                    <InputField
+                      label="Telefone *"
+                      value={form.phone}
+                      onChange={(e) =>
+                        setForm({ ...form, phone: e.target.value })
+                      }
+                      placeholder="+239 XXX XXXX"
+                      required
+                      icon={FiPhone}
+                    />
+                    <SelectField
+                      label="Tamanho da empresa"
+                      value={form.companySize}
+                      onChange={(e) =>
+                        setForm({ ...form, companySize: e.target.value })
+                      }
+                      options={[
+                        { value: '', label: 'Selecione...' },
+                        ...COMPANY_SIZES.map((size) => ({
+                          value: size,
+                          label: size,
+                        })),
+                      ]}
+                      icon={FiUsers}
+                    />
+                    <InputField
+                      label="Website"
+                      value={form.website}
+                      onChange={(e) =>
+                        setForm({ ...form, website: e.target.value })
+                      }
+                      placeholder="https://..."
+                      icon={FiGlobe}
+                    />
+                    <InputField
+                      label="Localização"
+                      value={form.location}
+                      onChange={(e) =>
+                        setForm({ ...form, location: e.target.value })
+                      }
+                      placeholder="Cidade, distrito"
+                      icon={FiMapPin}
+                      className={styles.spanTwo}
+                    />
+                  </div>
+                </FormSection>
+
+                <FormSection
+                  id="sobre-a-empresa"
+                  title="Sobre a empresa"
+                  description="Apresente a organização, a cultura e os seus principais setores."
+                  icon={FiFileText}
+                >
+                  <TextAreaField
+                    id="company-description"
+                    label="Descrição"
+                    value={form.description}
+                    onChange={(e) =>
+                      setForm({ ...form, description: e.target.value })
+                    }
+                    placeholder="Conte sobre a história, missão e valores da sua empresa..."
+                    rows={6}
+                    maxLength={2000}
                   />
-                </UploadCard>
-              </div>
-            </FormSection>
 
-            <FormSection title="Informações Básicas">
-              <div className={styles.gridTwo}>
-                <InputField
-                  label="Nome da Empresa *"
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  placeholder="Nome da sua empresa"
-                />
-                <InputField label="Email" type="email" value={form.email} disabled />
-                <InputField
-                  label="Telefone *"
-                  value={form.phone}
-                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  placeholder="+239 XXX XXXX"
-                />
-                <SelectField
-                  label="Tamanho da Empresa"
-                  value={form.companySize}
-                  onChange={(e) => setForm({ ...form, companySize: e.target.value })}
-                  options={[{ value: '', label: 'Selecione...' }, ...COMPANY_SIZES.map((size) => ({ value: size, label: size }))]}
-                />
-                <InputField
-                  label="Website"
-                  value={form.website}
-                  onChange={(e) => setForm({ ...form, website: e.target.value })}
-                  placeholder="https://..."
-                />
-                <InputField
-                  label="Localização *"
-                  value={form.location}
-                  onChange={(e) => setForm({ ...form, location: e.target.value })}
-                  placeholder="Cidade, Distrito"
-                />
-              </div>
+                  <div className={styles.sectorGroup}>
+                    <div className={styles.subsectionHeader}>
+                      <div>
+                        <h3>Setores de atuação</h3>
+                        <p>
+                          Selecione as áreas que melhor representam a empresa.
+                        </p>
+                      </div>
+                      <span>{form.industrySectors.length} selecionado(s)</span>
+                    </div>
 
-              <TextAreaField
-                label="Sobre a Empresa *"
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                placeholder="Conte sobre a história, missão e valores da sua empresa..."
-                rows={6}
-              />
-            </FormSection>
+                    <div className={styles.sectorGrid}>
+                      {INDUSTRY_SECTORS.map((sector) => {
+                        const active = form.industrySectors.includes(sector);
+                        return (
+                          <label
+                            key={sector}
+                            className={`${styles.sectorChip} ${active ? styles.sectorChipActive : ''}`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={active}
+                              onChange={() => toggleSector(sector)}
+                              className={styles.sectorInput}
+                            />
+                            <span>{sector}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </FormSection>
 
-            <FormSection title="Setores de Atuação">
-              <div className={styles.sectorGrid}>
-                {INDUSTRY_SECTORS.map((sector) => {
-                  const active = form.industrySectors.includes(sector);
-                  return (
-                    <label
-                      key={sector}
-                      className={`${styles.sectorChip} ${active ? styles.sectorChipActive : ''}`}
-                      onClick={() => toggleSector(sector)}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={active}
-                        onChange={() => {}}
-                        className={styles.sectorInput}
-                      />
-                      <span>{sector}</span>
-                    </label>
-                  );
-                })}
+                <FormSection
+                  id="redes-sociais"
+                  title="Redes sociais"
+                  description="Adicione apenas os canais oficiais da empresa."
+                  icon={FiShare2}
+                >
+                  <div className={styles.socialGrid}>
+                    <InputField
+                      label="LinkedIn"
+                      value={form.linkedin}
+                      onChange={(e) =>
+                        setForm({ ...form, linkedin: e.target.value })
+                      }
+                      placeholder="https://linkedin.com/company/..."
+                      icon={FiLinkedin}
+                    />
+                    <InputField
+                      label="Facebook"
+                      value={form.facebook}
+                      onChange={(e) =>
+                        setForm({ ...form, facebook: e.target.value })
+                      }
+                      placeholder="https://facebook.com/..."
+                      icon={FiFacebook}
+                    />
+                    <InputField
+                      label="Instagram"
+                      value={form.instagram}
+                      onChange={(e) =>
+                        setForm({ ...form, instagram: e.target.value })
+                      }
+                      placeholder="https://instagram.com/..."
+                      icon={FiInstagram}
+                    />
+                  </div>
+                </FormSection>
               </div>
-            </FormSection>
-
-            <FormSection title="Redes Sociais">
-              <div className={styles.gridThree}>
-                <InputField
-                  label="LinkedIn"
-                  value={form.linkedin}
-                  onChange={(e) => setForm({ ...form, linkedin: e.target.value })}
-                  placeholder="https://linkedin.com/company/..."
-                />
-                <InputField
-                  label="Facebook"
-                  value={form.facebook}
-                  onChange={(e) => setForm({ ...form, facebook: e.target.value })}
-                  placeholder="https://facebook.com/..."
-                />
-                <InputField
-                  label="Instagram"
-                  value={form.instagram}
-                  onChange={(e) => setForm({ ...form, instagram: e.target.value })}
-                  placeholder="https://instagram.com/..."
-                />
-              </div>
-            </FormSection>
+            </div>
 
             <div className={styles.footerActions}>
-              <Link href="/dashboard/empresa" className={styles.secondaryAction}>
+              <Link
+                href="/dashboard/empresa"
+                className={styles.secondaryAction}
+              >
+                <FiX aria-hidden="true" />
                 Cancelar
               </Link>
-              <button type="submit" disabled={saving || uploading} className={styles.primaryAction}>
-                {saving ? 'Salvando...' : uploading ? 'Aguarde o upload...' : 'Salvar Perfil'}
+              <button
+                type="submit"
+                disabled={saving || uploading}
+                className={styles.primaryAction}
+              >
+                <FiSave aria-hidden="true" />
+                {saving
+                  ? 'A guardar...'
+                  : uploading
+                    ? 'Aguarde o upload...'
+                    : 'Guardar alterações'}
               </button>
             </div>
           </form>
@@ -460,79 +598,160 @@ export default function CompanyProfilePage() {
   );
 }
 
-function FormSection({ title, children }) {
+function FormSection({ id, title, description, icon: Icon, children }) {
   return (
-    <section className={styles.section}>
-      <h2 className={styles.sectionTitle}>{title}</h2>
+    <section id={id} className={styles.section} aria-labelledby={`${id}-title`}>
+      <header className={styles.sectionHeader}>
+        <span className={styles.sectionIcon} aria-hidden="true">
+          <Icon />
+        </span>
+        <div>
+          <h2 id={`${id}-title`} className={styles.sectionTitle}>
+            {title}
+          </h2>
+          <p className={styles.sectionDescription}>{description}</p>
+        </div>
+      </header>
       <div className={styles.sectionBody}>{children}</div>
     </section>
   );
 }
 
-function UploadCard({ title, note, imageUrl, imageAlt, imageClassName, buttonTone, buttonLabel, children }) {
+function UploadCard({
+  title,
+  note,
+  imageUrl,
+  imageAlt,
+  variant,
+  buttonLabel,
+  children,
+}) {
+  const isLogo = variant === 'logo';
+
   return (
-    <div className={styles.uploadCard}>
+    <div className={styles.uploadField}>
       <div className={styles.uploadHeader}>
         <h3 className={styles.uploadTitle}>{title}</h3>
-        <p className={styles.uploadNote}>{note}</p>
       </div>
 
-      {imageUrl ? (
-        <img src={imageUrl} alt={imageAlt} className={`${styles.uploadPreview} ${imageClassName}`} loading="lazy" />
-      ) : (
-        <div className={`${styles.uploadPlaceholder} ${imageClassName}`}>Sem imagem carregada</div>
-      )}
+      <div
+        className={isLogo ? styles.logoUploadLayout : styles.coverUploadLayout}
+      >
+        <div
+          className={`${styles.uploadPreviewFrame} ${isLogo ? styles.logoFrame : styles.coverFrame}`}
+        >
+          {imageUrl ? (
+            <Image
+              src={imageUrl}
+              alt={imageAlt}
+              width={isLogo ? 320 : 1200}
+              height={isLogo ? 320 : 400}
+              sizes={isLogo ? '112px' : '(max-width: 1040px) 100vw, 320px'}
+              className={`${styles.uploadPreview} ${isLogo ? styles.logoPreview : styles.coverPreview}`}
+              unoptimized
+            />
+          ) : (
+            <div className={styles.uploadPlaceholder}>
+              <FiImage aria-hidden="true" />
+              <span>Sem imagem</span>
+            </div>
+          )}
+        </div>
 
-      <label className={`${styles.uploadButton} ${buttonTone === 'green' ? styles.uploadButtonGreen : styles.uploadButtonBlue}`}>
-        <span>{buttonLabel}</span>
-        {children}
+        <div className={styles.uploadActions}>
+          <p className={styles.uploadNote}>{note}</p>
+          <label className={styles.uploadButton}>
+            <FiUploadCloud aria-hidden="true" />
+            <span>{buttonLabel}</span>
+            {children}
+          </label>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function InputField({
+  label,
+  value,
+  onChange,
+  type = 'text',
+  placeholder = '',
+  disabled = false,
+  required = false,
+  icon: Icon,
+  className = '',
+}) {
+  return (
+    <label className={`${styles.field} ${className}`}>
+      <span className={styles.label}>{label}</span>
+      <span className={styles.inputShell}>
+        {Icon ? <Icon className={styles.fieldIcon} aria-hidden="true" /> : null}
+        <input
+          type={type}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          disabled={disabled}
+          required={required}
+          aria-required={required || undefined}
+          className={`${styles.input} ${Icon ? styles.inputWithIcon : ''} ${disabled ? styles.inputDisabled : ''}`}
+        />
+      </span>
+    </label>
+  );
+}
+
+function SelectField({ label, value, onChange, options, icon: Icon }) {
+  return (
+    <label className={styles.field}>
+      <span className={styles.label}>{label}</span>
+      <span className={styles.inputShell}>
+        {Icon ? <Icon className={styles.fieldIcon} aria-hidden="true" /> : null}
+        <select
+          value={value}
+          onChange={onChange}
+          className={`${styles.input} ${Icon ? styles.inputWithIcon : ''}`}
+        >
+          {options.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      </span>
+    </label>
+  );
+}
+
+function TextAreaField({
+  id,
+  label,
+  value,
+  onChange,
+  placeholder = '',
+  rows = 4,
+  maxLength,
+}) {
+  return (
+    <div className={styles.field}>
+      <label className={styles.label} htmlFor={id}>
+        {label}
       </label>
-    </div>
-  );
-}
-
-function InputField({ label, value, onChange, type = 'text', placeholder = '', disabled = false }) {
-  return (
-    <div className={styles.field}>
-      <label className={styles.label}>{label}</label>
-      <input
-        type={type}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        disabled={disabled}
-        className={`${styles.input} ${disabled ? styles.inputDisabled : ''}`}
-      />
-    </div>
-  );
-}
-
-function SelectField({ label, value, onChange, options }) {
-  return (
-    <div className={styles.field}>
-      <label className={styles.label}>{label}</label>
-      <select value={value} onChange={onChange} className={styles.input}>
-        {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-}
-
-function TextAreaField({ label, value, onChange, placeholder = '', rows = 4 }) {
-  return (
-    <div className={styles.field}>
-      <label className={styles.label}>{label}</label>
       <textarea
+        id={id}
         value={value}
         onChange={onChange}
         placeholder={placeholder}
         rows={rows}
+        maxLength={maxLength}
         className={`${styles.input} ${styles.textarea}`}
       />
+      {maxLength ? (
+        <span className={styles.characterCount}>
+          {value.length} / {maxLength} caracteres
+        </span>
+      ) : null}
     </div>
   );
 }

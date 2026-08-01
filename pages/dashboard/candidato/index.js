@@ -1,34 +1,65 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/router";
-import Head from "next/head";
-import Link from "next/link";
-import dynamic from "next/dynamic";
-import { useAuth } from "../../../context/AuthContext";
-import { getCareerAdvice } from "../../../lib/geminiService";
-import { extractLinkedInProfileHints } from "../../../lib/linkedin";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter } from 'next/router';
+import Head from 'next/head';
+import Image from 'next/image';
+import Link from 'next/link';
+import dynamic from 'next/dynamic';
+import { useAuth } from '../../../context/AuthContext';
+import { getCareerAdvice } from '../../../lib/geminiService';
+import { extractLinkedInProfileHints } from '../../../lib/linkedin';
 import {
   downloadInterviewICS,
   isLikelyUrl,
-} from "../../../lib/interviewClient";
-import { VERIFICATION_TYPE_CONFIG } from "../../../lib/candidateVerification";
-import { getFirebaseStorageErrorMessage } from "../../../lib/firebaseStorageError";
-import { FiSearch, FiStar, FiFileText, FiBell } from "react-icons/fi";
-import DashboardShell from "../../../components/dashboard/DashboardShell";
-import AffiliateSection from "../../../components/affiliate/AffiliateSection";
-import styles from "../../../styles/DashboardCandidato.module.css";
+} from '../../../lib/interviewClient';
+import { VERIFICATION_TYPE_CONFIG } from '../../../lib/candidateVerification';
+import { getFirebaseStorageErrorMessage } from '../../../lib/firebaseStorageError';
+import { resolveDashboardTab } from '../../../lib/dashboardNavigation';
+import {
+  FiAlertCircle,
+  FiArrowRight,
+  FiAward,
+  FiBell,
+  FiBookOpen,
+  FiBookmark,
+  FiBriefcase,
+  FiCamera,
+  FiCalendar,
+  FiCheckCircle,
+  FiEdit2,
+  FiFileText,
+  FiGlobe,
+  FiInbox,
+  FiLock,
+  FiMapPin,
+  FiMessageCircle,
+  FiPlus,
+  FiPlusCircle,
+  FiSearch,
+  FiTarget,
+  FiUploadCloud,
+  FiUser,
+  FiX,
+  FiZap,
+} from 'react-icons/fi';
+import DashboardShell from '../../../components/dashboard/DashboardShell';
+import CandidateDashboardOverview from '../../../components/dashboard/CandidateDashboardOverview';
+import AffiliateSection from '../../../components/affiliate/AffiliateSection';
+import styles from '../../../styles/DashboardCandidato.module.css';
+import ps from '../../../styles/CandidateProfileSettings.module.css';
+import { buildLoginUrl } from '../../../lib/loginRedirect';
 
 const CandidateApplicationsChart = dynamic(
-  () => import("../../../components/charts/CandidateApplicationsChart"),
+  () => import('../../../components/charts/CandidateApplicationsChart'),
   {
     ssr: false,
     loading: () => (
       <div
         className={styles.chartWrapper}
         style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "#94a3b8",
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#94a3b8',
         }}
       >
         Carregando gráfico...
@@ -38,17 +69,25 @@ const CandidateApplicationsChart = dynamic(
 );
 
 const CandidatePremiumPlansExperience = dynamic(
-  () => import("../../../components/CandidatePremiumPlansExperience"),
+  () => import('../../../components/CandidatePremiumPlansExperience'),
   {
     ssr: false,
     loading: () => (
       <div
         className={styles.planCard}
-        style={{ padding: "1rem", color: "#94a3b8" }}
+        style={{ padding: '1rem', color: '#94a3b8' }}
       >
         Carregando planos...
       </div>
     ),
+  },
+);
+
+const CandidateSettings = dynamic(
+  () => import('../../../components/candidates/CandidateSettings'),
+  {
+    ssr: false,
+    loading: () => <CandidateLoadingState />,
   },
 );
 
@@ -151,32 +190,32 @@ const icons = {
 };
 
 const STATUS_LABELS = {
-  pending: "Pendente",
-  analysis: "Em Analise",
-  interview: "Entrevista",
-  approved: "Aprovada",
-  rejected: "Rejeitada",
+  pending: 'Pendente',
+  analysis: 'Em Analise',
+  interview: 'Entrevista',
+  approved: 'Aprovada',
+  rejected: 'Rejeitada',
 };
 
-const getInitials = (value = "") =>
+const getInitials = (value = '') =>
   String(value)
     .trim()
     .split(/\s+/)
     .filter(Boolean)
     .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() || "")
-    .join("") || "U";
+    .map((part) => part[0]?.toUpperCase() || '')
+    .join('') || 'U';
 
 const AVATAR_PALETTE = [
-  { background: "rgba(32,87,215,0.14)", color: "#2057d7" },
-  { background: "rgba(30,43,77,0.12)", color: "#1e2b4d" },
-  { background: "rgba(139,92,246,0.14)", color: "#7c3aed" },
-  { background: "rgba(217,255,47,0.22)", color: "#7a9000" },
-  { background: "rgba(61,187,122,0.16)", color: "#15803d" },
+  { background: 'rgba(32,87,215,0.14)', color: '#2057d7' },
+  { background: 'rgba(30,43,77,0.12)', color: '#1e2b4d' },
+  { background: 'rgba(139,92,246,0.14)', color: '#7c3aed' },
+  { background: 'rgba(217,255,47,0.22)', color: '#7a9000' },
+  { background: 'rgba(61,187,122,0.16)', color: '#15803d' },
 ];
 
-const getAvatarColor = (seed = "") => {
-  const str = String(seed || "");
+const getAvatarColor = (seed = '') => {
+  const str = String(seed || '');
   let hash = 0;
   for (let i = 0; i < str.length; i += 1) {
     hash = (hash * 31 + str.charCodeAt(i)) % 997;
@@ -185,63 +224,63 @@ const getAvatarColor = (seed = "") => {
 };
 
 const getCompletionHeadline = (score) => {
-  if (score >= 90) return "Perfil completo!";
-  if (score >= 65) return "Bom progresso!";
-  if (score >= 40) return "A continuar bem!";
-  return "Vamos começar!";
+  if (score >= 90) return 'Perfil completo!';
+  if (score >= 65) return 'Bom progresso!';
+  if (score >= 40) return 'A continuar bem!';
+  return 'Vamos começar!';
 };
 
 const VERIFICATION_TYPE_ORDER = [
-  "identity",
-  "certificates",
-  "academic",
-  "experience",
-  "competencies",
+  'identity',
+  'certificates',
+  'academic',
+  'experience',
+  'competencies',
 ];
 
 const VERIFICATION_STATUS_META = {
   draft: {
-    label: "Nao iniciado",
-    toneClass: "verificationStatusMuted",
-    summary: "Ainda nao existe um pedido completo para revisao.",
+    label: 'Não iniciado',
+    toneClass: 'verificationStatusMuted',
+    summary: 'Ainda não existe um pedido completo para revisão.',
   },
   not_requested: {
-    label: "Disponivel",
-    toneClass: "verificationStatusMuted",
-    summary: "Este bloco ainda nao foi solicitado.",
+    label: 'Disponivel',
+    toneClass: 'verificationStatusMuted',
+    summary: 'Este bloco ainda não foi solicitado.',
   },
   pending: {
-    label: "Em analise",
-    toneClass: "verificationStatusPending",
-    summary: "A equipa esta a rever este bloco de verificacao.",
+    label: 'Em análise',
+    toneClass: 'verificationStatusPending',
+    summary: 'A equipa está a rever este bloco de verificação.',
   },
   approved: {
-    label: "Aprovado",
-    toneClass: "verificationStatusApproved",
-    summary: "Este bloco ja foi validado com sucesso.",
+    label: 'Aprovado',
+    toneClass: 'verificationStatusApproved',
+    summary: 'Este bloco já foi validado com sucesso.',
   },
   verified: {
-    label: "Verificado",
-    toneClass: "verificationStatusApproved",
-    summary: "Este bloco ja foi validado com sucesso.",
+    label: 'Verificado',
+    toneClass: 'verificationStatusApproved',
+    summary: 'Este bloco já foi validado com sucesso.',
   },
   rejected: {
-    label: "Rejeitado",
-    toneClass: "verificationStatusRejected",
-    summary: "Faltam ajustes ou novos comprovativos para este bloco.",
+    label: 'Rejeitado',
+    toneClass: 'verificationStatusRejected',
+    summary: 'Faltam ajustes ou novos comprovativos para este bloco.',
   },
   partial: {
-    label: "Parcial",
-    toneClass: "verificationStatusMixed",
-    summary: "Ha blocos aprovados e outros que exigem correcao.",
+    label: 'Parcial',
+    toneClass: 'verificationStatusMixed',
+    summary: 'Há blocos aprovados e outros que exigem correção.',
   },
 };
 
 const formatDate = (value) => {
-  if (!value) return "-";
+  if (!value) return '-';
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "-";
-  return date.toLocaleDateString("pt-PT");
+  if (Number.isNaN(date.getTime())) return '-';
+  return date.toLocaleDateString('pt-PT');
 };
 
 const getVerificationStatusMeta = (status) => {
@@ -250,14 +289,14 @@ const getVerificationStatusMeta = (status) => {
 };
 
 const createVerificationForm = (profileData, userState) => ({
-  contactEmail: profileData?.email || userState?.email || "",
-  contactPhone: profileData?.phone || userState?.phone || "",
-  certificationsText: profileData?.certifications || "",
-  educationSummary: profileData?.education || "",
-  experienceSummary: "",
-  portfolioUrl: profileData?.website || "",
-  linkedin: profileData?.linkedin || "",
-  competencyNotes: "",
+  contactEmail: profileData?.email || userState?.email || '',
+  contactPhone: profileData?.phone || userState?.phone || '',
+  certificationsText: profileData?.certifications || '',
+  educationSummary: profileData?.education || '',
+  experienceSummary: '',
+  portfolioUrl: profileData?.website || '',
+  linkedin: profileData?.linkedin || '',
+  competencyNotes: '',
   identityDocument: null,
   selfieDocument: null,
   certificateDocuments: [],
@@ -268,123 +307,159 @@ const createVerificationForm = (profileData, userState) => ({
 });
 
 const formatInterviewDate = (value) => {
-  if (!value) return "";
+  if (!value) return '';
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  return date.toLocaleString("pt-PT", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleString('pt-PT', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   });
 };
 
+const formatRelativeTime = (value) => {
+  if (!value) return '';
+  const date = value?.toDate ? value.toDate() : new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  const days = Math.floor((Date.now() - date.getTime()) / 86400000);
+  if (days <= 0) return 'Hoje';
+  if (days === 1) return 'Ontem';
+  if (days < 7) return `Há ${days} dias`;
+  const weeks = Math.floor(days / 7);
+  if (days < 30) return weeks === 1 ? 'Há 1 semana' : `Há ${weeks} semanas`;
+  const months = Math.floor(days / 30);
+  if (days < 365) return months === 1 ? 'Há 1 mês' : `Há ${months} meses`;
+  const years = Math.floor(days / 365);
+  return years === 1 ? 'Há 1 ano' : `Há ${years} anos`;
+};
+
+const formatJobSalary = (job) => {
+  const raw =
+    job?.salarioDe ?? job?.salario ?? job?.salary ?? job?.salarioMin ?? null;
+  const num = Number(raw);
+  if (raw === null || raw === '' || Number.isNaN(num) || num <= 0) {
+    return 'A combinar';
+  }
+  return `${num.toLocaleString('pt-PT')} Db`;
+};
+
+const OVERVIEW_STATUS_CLASS = {
+  analysis: 'statusAnalysis',
+  interview: 'statusInterview',
+  approved: 'statusApproved',
+  rejected: 'statusRejected',
+  pending: 'statusPending',
+};
+
 const NAV_MENU = [
-  { id: "dashboard", label: "Visão geral", icon: "dashboard" },
-  { id: "profile", label: "Meu perfil", icon: "profile" },
-  { id: "applications", label: "Candidaturas", icon: "applications" },
-  { id: "saved", label: "Vagas guardadas", icon: "saved" },
-  { id: "interviews", label: "Entrevistas", icon: "mic" },
-  { id: "messages", label: "Mensagens", icon: "messages" },
-  { id: "notifications", label: "Notificações", icon: "notifications" },
-  { id: "verification", label: "Verificação", icon: "verification" },
-  { id: "plans", label: "Planos premium", icon: "plans" },
-  { id: "affiliate", label: "Ser Afiliado", icon: "trophy" },
+  { id: 'dashboard', label: 'Visão geral', icon: 'dashboard' },
+  { id: 'profile', label: 'Meu perfil', icon: 'profile' },
+  { id: 'applications', label: 'Candidaturas', icon: 'applications' },
+  { id: 'saved', label: 'Vagas guardadas', icon: 'saved' },
+  { id: 'interviews', label: 'Entrevistas', icon: 'mic' },
+  { id: 'messages', label: 'Mensagens', icon: 'messages' },
+  { id: 'notifications', label: 'Notificações', icon: 'notifications' },
+  { id: 'settings', label: 'Configurações', icon: 'settings' },
+  { id: 'verification', label: 'Verificação', icon: 'verification' },
+  { id: 'plans', label: 'Planos premium', icon: 'plans' },
+  { id: 'affiliate', label: 'Ser Afiliado', icon: 'trophy' },
 ];
+const CANDIDATE_TAB_IDS = new Set(NAV_MENU.map((item) => item.id));
 
 const getPlanFeatureList = (features) => {
   if (Array.isArray(features)) {
     return features;
   }
 
-  if (!features || typeof features !== "object") {
-    return ["Recursos padrão"];
+  if (!features || typeof features !== 'object') {
+    return ['Recursos padrão'];
   }
 
   const list = [];
   if (features.maxApplicationsPerMonth !== undefined) {
     if (features.maxApplicationsPerMonth === null) {
-      list.push("Candidaturas ilimitadas");
+      list.push('Candidaturas ilimitadas');
     } else {
       list.push(`Até ${features.maxApplicationsPerMonth} candidaturas/mês`);
     }
   }
   if (features.canSaveJobs) {
-    list.push("Salvar vagas favoritas");
+    list.push('Salvar vagas favoritas');
   }
   if (features.canApplyToFeaturedJobs) {
-    list.push("Candidaturas a vagas em destaque");
+    list.push('Candidaturas a vagas em destaque');
   }
   if (features.canUploadCertificates) {
-    list.push("Upload seguro de certificados");
+    list.push('Upload seguro de certificados');
   }
   if (features.prioritySupport) {
-    list.push("Suporte prioritário");
+    list.push('Suporte prioritário');
   }
   if (list.length === 0 && features.name) {
     list.push(features.name);
   }
 
-  return list.length ? list : ["Recursos padrão"];
+  return list.length ? list : ['Recursos padrão'];
 };
 
-const emptyExperience = { company: "", role: "", period: "", description: "" };
+const emptyExperience = { company: '', role: '', period: '', description: '' };
 
 const buildProfileForm = (profileData, userState) => {
   const skillsArray = profileData?.skillsHard || userState?.skills || [];
   const experiences = profileData?.experience || userState?.experience || [];
 
   const normalizedSkills = Array.isArray(skillsArray)
-    ? skillsArray.join(", ")
-    : typeof skillsArray === "string"
+    ? skillsArray.join(', ')
+    : typeof skillsArray === 'string'
       ? skillsArray
-      : "";
+      : '';
 
   const sanitizedExperiences = experiences.length
     ? experiences.map((exp) => ({
-        company: exp?.company || "",
-        role: exp?.role || "",
-        period: exp?.period || "",
-        description: exp?.description || "",
+        company: exp?.company || '',
+        role: exp?.role || '',
+        period: exp?.period || '',
+        description: exp?.description || '',
       }))
     : [{ ...emptyExperience }];
 
   return {
-    name: profileData?.fullName || userState?.name || "",
+    name: profileData?.fullName || userState?.name || '',
     headline:
       profileData?.headline ||
       profileData?.profession ||
       userState?.headline ||
-      "",
-    bio: profileData?.bio || userState?.bio || "",
-    location: profileData?.city || userState?.location || "",
-    phone: profileData?.phone || userState?.phone || "",
+      '',
+    bio: profileData?.bio || userState?.bio || '',
+    location: profileData?.city || userState?.location || '',
+    phone: profileData?.phone || userState?.phone || '',
     skills: normalizedSkills,
     experiences: sanitizedExperiences,
     // Extended Form Fields
-    birthDate: profileData?.birthDate || "",
-    nationality: profileData?.nationality || "",
-    gender: profileData?.gender || "",
-    maritalStatus: profileData?.maritalStatus || "",
-    linkedin: profileData?.linkedin || "",
-    website: profileData?.website || "",
-    objectiveArea: profileData?.objectiveArea || "",
-    objectiveType: profileData?.objectiveType || "",
-    objectiveAspiration: profileData?.objectiveAspiration || "",
-    skillsSoft: profileData?.skillsSoft || "",
+    birthDate: profileData?.birthDate || '',
+    nationality: profileData?.nationality || '',
+    gender: profileData?.gender || '',
+    maritalStatus: profileData?.maritalStatus || '',
+    linkedin: profileData?.linkedin || '',
+    website: profileData?.website || '',
+    objectiveArea: profileData?.objectiveArea || '',
+    objectiveType: profileData?.objectiveType || '',
+    objectiveAspiration: profileData?.objectiveAspiration || '',
+    skillsSoft: profileData?.skillsSoft || '',
     digitalSkills: profileData?.digitalSkills || [],
-    education: profileData?.education || "",
-    languages: profileData?.languages || "",
-    certifications: profileData?.certifications || "",
+    education: profileData?.education || '',
+    languages: profileData?.languages || '',
+    certifications: profileData?.certifications || '',
     certificateFiles: profileData?.certificateFiles || [],
   };
 };
 
 const SUBLABEL_TONE_STYLES = {
-  positive: { background: "rgba(34,197,94,0.14)", color: "#16a34a" },
-  neutral: { background: "rgba(95,184,245,0.12)", color: "#2057d7" },
-  warning: { background: "rgba(239,68,68,0.15)", color: "#f87171" },
+  positive: { background: 'rgba(34,197,94,0.14)', color: '#16a34a' },
+  neutral: { background: 'rgba(95,184,245,0.12)', color: '#2057d7' },
+  warning: { background: 'rgba(239,68,68,0.15)', color: '#f87171' },
 };
 
 const StatCard = ({
@@ -393,12 +468,12 @@ const StatCard = ({
   change,
   trend,
   icon,
-  color = "#2057d7",
+  color = '#2057d7',
   sublabel,
   sublabelWarning,
   sublabelTone,
 }) => {
-  const tone = sublabelWarning ? "warning" : sublabelTone || "neutral";
+  const tone = sublabelWarning ? 'warning' : sublabelTone || 'neutral';
   const toneStyle = SUBLABEL_TONE_STYLES[tone] || SUBLABEL_TONE_STYLES.neutral;
 
   return (
@@ -412,18 +487,18 @@ const StatCard = ({
         </div>
         {change !== undefined && (
           <span
-            className={`${styles.statTrend} ${trend === "up" ? styles.up : trend === "down" ? styles.down : ""}`}
+            className={`${styles.statTrend} ${trend === 'up' ? styles.up : trend === 'down' ? styles.down : ''}`}
           >
-            {trend === "up" ? "+" : trend === "down" ? "-" : ""}
+            {trend === 'up' ? '+' : trend === 'down' ? '-' : ''}
             {change}%
           </span>
         )}
         {sublabel !== undefined && (
           <span
             style={{
-              fontSize: "0.7rem",
-              padding: "2px 7px",
-              borderRadius: "6px",
+              fontSize: '0.7rem',
+              padding: '2px 7px',
+              borderRadius: '6px',
               fontWeight: 600,
               background: toneStyle.background,
               color: toneStyle.color,
@@ -459,7 +534,9 @@ const ProgressRing = ({ value = 0, size = 92 }) => {
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={offset}
-          style={{ transition: "stroke-dashoffset 1s cubic-bezier(0.22,1,0.36,1)" }}
+          style={{
+            transition: 'stroke-dashoffset 1s cubic-bezier(0.22,1,0.36,1)',
+          }}
         />
       </svg>
       <div className="progress-ring-val">{clamped}%</div>
@@ -470,6 +547,9 @@ const ProgressRing = ({ value = 0, size = 92 }) => {
 const ApplicationTable = ({ applications }) => (
   <div className={styles.tableContainer}>
     <table className={styles.applicationTable}>
+      <caption className={styles.srOnly}>
+        Lista das candidaturas enviadas
+      </caption>
       <thead>
         <tr>
           <th>Cargo</th>
@@ -482,19 +562,21 @@ const ApplicationTable = ({ applications }) => (
       <tbody>
         {applications.map((app) => (
           <tr key={app.id} className={styles.tableRow}>
-            <td>{app.jobTitle}</td>
-            <td>{app.company}</td>
-            <td>
+            <td data-label="Cargo">{app.jobTitle || 'Vaga'}</td>
+            <td data-label="Empresa">
+              {app.company || 'Empresa não indicada'}
+            </td>
+            <td data-label="Estado">
               <span
-                className={`${styles.statusPill} ${styles[app.status?.toLowerCase()] || ""}`}
+                className={`${styles.statusPill} ${styles[app.status?.toLowerCase()] || ''}`}
               >
-                {STATUS_LABELS[app.status?.toLowerCase()] || "Pendente"}
+                {STATUS_LABELS[app.status?.toLowerCase()] || 'Pendente'}
               </span>
             </td>
-            <td>
+            <td data-label="Data">
               {formatDate(app.appliedAt || app.appliedDate || app.createdAt)}
             </td>
-            <td>
+            <td data-label="Ação">
               {app.interviewDetails?.scheduledAt ? (
                 <Link
                   className={styles.secondaryLink}
@@ -502,13 +584,15 @@ const ApplicationTable = ({ applications }) => (
                 >
                   Entrevista
                 </Link>
-              ) : (
+              ) : app.jobId ? (
                 <Link
                   className={styles.secondaryLink}
-                  href={`/vaga/${app.jobId || ""}`}
+                  href={`/vaga/${app.jobId}`}
                 >
-                  Ver
+                  Ver vaga
                 </Link>
+              ) : (
+                <span className={styles.unavailableLabel}>Indisponível</span>
               )}
             </td>
           </tr>
@@ -521,10 +605,10 @@ const ApplicationTable = ({ applications }) => (
 function InterviewPlaceOrLink({ interviewDetails }) {
   if (!interviewDetails) return null;
   const mode = interviewDetails?.mode;
-  if (mode === "presencial") {
-    return <span>{interviewDetails?.location || "Local a confirmar"}</span>;
+  if (mode === 'presencial') {
+    return <span>{interviewDetails?.location || 'Local a confirmar'}</span>;
   }
-  const value = interviewDetails?.link || "";
+  const value = interviewDetails?.link || '';
   if (!value) return <span>Link a confirmar</span>;
   return isLikelyUrl(value) ? (
     <a
@@ -532,9 +616,9 @@ function InterviewPlaceOrLink({ interviewDetails }) {
       target="_blank"
       rel="noreferrer noopener"
       style={{
-        color: "#2057d7",
-        textDecoration: "underline",
-        wordBreak: "break-word",
+        color: '#2057d7',
+        textDecoration: 'underline',
+        wordBreak: 'break-word',
       }}
     >
       {value}
@@ -544,12 +628,98 @@ function InterviewPlaceOrLink({ interviewDetails }) {
   );
 }
 
+function CandidateSectionHeader({
+  eyebrow,
+  title,
+  description,
+  count,
+  action,
+}) {
+  return (
+    <header className={styles.candidateSectionHeader}>
+      <div className={styles.candidateSectionCopy}>
+        {eyebrow ? (
+          <span className={styles.candidateSectionEyebrow}>{eyebrow}</span>
+        ) : null}
+        <div className={styles.candidateSectionTitleRow}>
+          <h2>{title}</h2>
+          {count !== undefined ? (
+            <span className={styles.candidateSectionCount}>{count}</span>
+          ) : null}
+        </div>
+        {description ? <p>{description}</p> : null}
+      </div>
+      {action ? (
+        <div className={styles.candidateSectionAction}>{action}</div>
+      ) : null}
+    </header>
+  );
+}
+
+function CandidateEmptyState({
+  icon: Icon = FiInbox,
+  title,
+  description,
+  actionHref,
+  actionLabel,
+  onAction,
+}) {
+  const actionContent = (
+    <>
+      <span>{actionLabel}</span>
+      <FiArrowRight aria-hidden="true" />
+    </>
+  );
+
+  return (
+    <div className={styles.candidateEmptyState} role="status">
+      <span className={styles.candidateEmptyIcon} aria-hidden="true">
+        <Icon />
+      </span>
+      <div className={styles.candidateEmptyCopy}>
+        <h3>{title}</h3>
+        <p>{description}</p>
+      </div>
+      {actionHref ? (
+        <Link href={actionHref} className={styles.candidateEmptyAction}>
+          {actionContent}
+        </Link>
+      ) : onAction ? (
+        <button
+          type="button"
+          className={styles.candidateEmptyAction}
+          onClick={onAction}
+        >
+          {actionContent}
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+function CandidateLoadingState() {
+  return (
+    <div className={styles.candidateLoadingState} aria-live="polite">
+      <div className={styles.candidateLoadingHeader}>
+        <span />
+        <span />
+      </div>
+      <div className={styles.candidateLoadingGrid} aria-hidden="true">
+        {Array.from({ length: 4 }, (_, index) => (
+          <span key={index} />
+        ))}
+      </div>
+      <span className={styles.srOnly}>A carregar dados do dashboard.</span>
+    </div>
+  );
+}
 
 const CandidateDashboard = () => {
   const router = useRouter();
   const { user, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [loading, setLoading] = useState(true);
+  const [dashboardError, setDashboardError] = useState('');
   const [profile, setProfile] = useState(null);
   const [applications, setApplications] = useState([]);
   const [recommendedJobs, setRecommendedJobs] = useState([]);
@@ -566,16 +736,16 @@ const CandidateDashboard = () => {
   const [loadingTips, setLoadingTips] = useState(false);
   const [conversations, setConversations] = useState([]);
   const [messages, setMessages] = useState([]);
-  const [messageInput, setMessageInput] = useState("");
+  const [messageInput, setMessageInput] = useState('');
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [sendingMessage, setSendingMessage] = useState(false);
   const messagesEndRef = useRef(null);
   const [cvState, setCvState] = useState({
-    url: "",
-    name: "",
+    url: '',
+    name: '',
     uploading: false,
-    message: "",
-    type: "success",
+    message: '',
+    type: 'success',
   });
   const [selectedConversation, setSelectedConversation] = useState(null);
 
@@ -590,16 +760,34 @@ const CandidateDashboard = () => {
   const [verificationLoading, setVerificationLoading] = useState(false);
   const [verificationMessage, setVerificationMessage] = useState(null);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [settingsSearchQuery, setSettingsSearchQuery] = useState('');
+  const [dashboardSearchQuery, setDashboardSearchQuery] = useState('');
+
+  const openTab = useCallback(
+    (tab) => {
+      setActiveTab(tab);
+      if (!router.isReady) return;
+
+      const query = { ...router.query };
+      if (tab === 'dashboard') delete query.tab;
+      else query.tab = tab;
+      void router.push({ pathname: router.pathname, query }, undefined, {
+        shallow: true,
+      });
+    },
+    [router],
+  );
 
   useEffect(() => {
     if (!router.isReady) return;
-    const requestedTab = String(router.query.tab || "").toLowerCase();
-    if (!requestedTab) return;
-    if (!NAV_MENU.some((item) => item.id === requestedTab)) return;
-    if (requestedTab !== activeTab) {
-      setActiveTab(requestedTab);
-    }
-  }, [router.isReady, router.query.tab, activeTab]);
+    const requestedTab = resolveDashboardTab(
+      router.query.tab,
+      CANDIDATE_TAB_IDS,
+    );
+    setActiveTab((currentTab) =>
+      currentTab === requestedTab ? currentTab : requestedTab,
+    );
+  }, [router.isReady, router.query.tab]);
 
   // Profile Photos State
   const [avatarUploading, setAvatarUploading] = useState(false);
@@ -614,20 +802,25 @@ const CandidateDashboard = () => {
       profile?.fullName ||
       profile?.name ||
       user?.name ||
-      user?.email?.split("@")[0] ||
-      "Candidato",
+      user?.email?.split('@')[0] ||
+      'Candidato',
     [profile, user],
   );
-  const profileCoverUrl = String(profile?.coverUrl || user?.cover || "").trim();
+  const profileCoverUrl = String(profile?.coverUrl || user?.cover || '').trim();
   const hasProfileCover = profileCoverUrl.length > 0;
-  const profileAvatarUrl = String(profile?.photoUrl || user?.avatar || "").trim();
+  const profileAvatarUrl = String(
+    profile?.photoUrl || user?.avatar || '',
+  ).trim();
   const hasProfileAvatar = profileAvatarUrl.length > 0;
   const profileAvatarInitials = useMemo(
     () => getInitials(profileDisplayName),
     [profileDisplayName],
   );
   const firstName = useMemo(
-    () => String(profileDisplayName || "Candidato").trim().split(/\s+/)[0] || "Candidato",
+    () =>
+      String(profileDisplayName || 'Candidato')
+        .trim()
+        .split(/\s+/)[0] || 'Candidato',
     [profileDisplayName],
   );
   const allInterviews = useMemo(
@@ -659,7 +852,10 @@ const CandidateDashboard = () => {
           const timeB = rawB?.toDate
             ? rawB.toDate().getTime()
             : new Date(rawB || 0).getTime();
-          return (Number.isNaN(timeB) ? 0 : timeB) - (Number.isNaN(timeA) ? 0 : timeA);
+          return (
+            (Number.isNaN(timeB) ? 0 : timeB) -
+            (Number.isNaN(timeA) ? 0 : timeA)
+          );
         })
         .slice(0, 5),
     [applications],
@@ -668,7 +864,7 @@ const CandidateDashboard = () => {
   const fetchRecommended = useCallback(async (token) => {
     if (!token) return;
     try {
-      const response = await fetch("/api/recommendations", {
+      const response = await fetch('/api/recommendations', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -682,7 +878,7 @@ const CandidateDashboard = () => {
 
       setRecommendedJobs(data.recommendations || []);
     } catch (err) {
-      console.error("Erro ao buscar vagas recomendadas:", err);
+      console.error('Erro ao buscar vagas recomendadas:', err);
       setRecommendedJobs([]);
     }
   }, []);
@@ -703,14 +899,14 @@ const CandidateDashboard = () => {
 
         const data = await response.json().catch(() => ({}));
         if (!response.ok) {
-          throw new Error(data.error || "Erro ao carregar verificacao");
+          throw new Error(data.error || 'Erro ao carregar verificacao');
         }
 
         const latestVerification = data.verifications?.[0] || null;
         setVerificationRecord(latestVerification);
         return latestVerification;
       } catch (error) {
-        console.error("Erro ao carregar verificacao tipada:", error);
+        console.error('Erro ao carregar verificacao tipada:', error);
         setVerificationRecord(null);
         return null;
       } finally {
@@ -724,12 +920,12 @@ const CandidateDashboard = () => {
 
   const fetchNotificationsRealtime = useCallback(async () => {
     try {
-      const { getAuth } = await import("firebase/auth");
+      const { getAuth } = await import('firebase/auth');
       const auth = getAuth();
       const token = await auth.currentUser?.getIdToken();
       if (!token) return;
 
-      const response = await fetch("/api/notifications", {
+      const response = await fetch('/api/notifications', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -739,18 +935,18 @@ const CandidateDashboard = () => {
       const data = await response.json();
       setNotifications(data.notifications || []);
     } catch (error) {
-      console.error("Erro ao buscar notificações:", error);
+      console.error('Erro ao buscar notificações:', error);
     }
   }, []);
 
   const fetchConversationsRealtime = useCallback(async () => {
     try {
-      const { getAuth } = await import("firebase/auth");
+      const { getAuth } = await import('firebase/auth');
       const auth = getAuth();
       const currentUser = auth.currentUser;
       if (!currentUser) return;
       const token = await currentUser.getIdToken();
-      const response = await fetch("/api/messages", {
+      const response = await fetch('/api/messages', {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) return;
@@ -758,7 +954,7 @@ const CandidateDashboard = () => {
       const data = await response.json();
       setConversations(data.conversations || []);
     } catch (error) {
-      console.error("Erro ao buscar conversas:", error);
+      console.error('Erro ao buscar conversas:', error);
     }
   }, []);
 
@@ -774,7 +970,7 @@ const CandidateDashboard = () => {
       }
 
       try {
-        const { getAuth } = await import("firebase/auth");
+        const { getAuth } = await import('firebase/auth');
         const auth = getAuth();
         const currentUser = auth.currentUser;
         if (!currentUser) return;
@@ -794,7 +990,7 @@ const CandidateDashboard = () => {
           ),
         );
       } catch (error) {
-        console.error("Erro ao buscar mensagens:", error);
+        console.error('Erro ao buscar mensagens:', error);
       } finally {
         if (!silent) {
           setLoadingMessages(false);
@@ -807,8 +1003,8 @@ const CandidateDashboard = () => {
   useEffect(() => {
     const handleRealtimeEvent = (event) => {
       fetchNotificationsRealtime();
-      const payloadType = event?.detail?.payload?.data?.type || "";
-      if (payloadType === "message" || payloadType === "direct_message") {
+      const payloadType = event?.detail?.payload?.data?.type || '';
+      if (payloadType === 'message' || payloadType === 'direct_message') {
         fetchConversationsRealtime();
         if (selectedConversation) {
           fetchConversationMessagesRealtime(selectedConversation, {
@@ -818,10 +1014,10 @@ const CandidateDashboard = () => {
       }
     };
 
-    window.addEventListener("app-notification-received", handleRealtimeEvent);
+    window.addEventListener('app-notification-received', handleRealtimeEvent);
     return () =>
       window.removeEventListener(
-        "app-notification-received",
+        'app-notification-received',
         handleRealtimeEvent,
       );
   }, [
@@ -836,11 +1032,12 @@ const CandidateDashboard = () => {
 
     async function initialize() {
       try {
-        const { getAuth } = await import("firebase/auth");
+        setDashboardError('');
+        const { getAuth } = await import('firebase/auth');
         const auth = getAuth();
         const userInstance = auth.currentUser;
         if (!userInstance) {
-          router.push("/login");
+          router.push(buildLoginUrl(router.asPath));
           return;
         }
 
@@ -853,8 +1050,11 @@ const CandidateDashboard = () => {
           },
         });
         if (profileRes.status === 401) {
-          router.push("/login");
+          router.push(buildLoginUrl(router.asPath));
           return;
+        }
+        if (!profileRes.ok) {
+          throw new Error('Não foi possível obter os dados do perfil.');
         }
         const profileJson = await profileRes.json();
         if (!isMounted) return;
@@ -867,20 +1067,27 @@ const CandidateDashboard = () => {
           profileData.headline ||
           profileData.profession ||
           user?.headline ||
-          "";
-        const planData = await fetchPlanStatus(token);
+          '';
+        const planPromise = fetchPlanStatus(token);
+        const independentDataPromise = Promise.all([
+          fetchVerificationRecord(token, uid),
+          fetchSavedJobs(token),
+          fetchCareerTips(headlineFallback, token),
+        ]);
+        const planData = await planPromise;
         await Promise.all([
+          independentDataPromise,
           planData?.plan?.features?.canReceiveRecommendations
             ? fetchRecommended(token)
             : Promise.resolve(setRecommendedJobs([])),
-          fetchVerificationRecord(token, uid),
-          fetchSavedJobs(token),
-          fetchNotifications(token),
-          fetchCareerTips(headlineFallback),
         ]);
       } catch (err) {
-        console.error("Erro ao carregar dashboard do candidato:", err);
+        console.error('Erro ao carregar dashboard do candidato:', err);
         setProfile(null);
+        setDashboardError(
+          err?.message ||
+            'Não foi possível carregar o dashboard. Verifique a ligação e tente novamente.',
+        );
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -889,7 +1096,7 @@ const CandidateDashboard = () => {
     const fetchSavedJobs = async (token) => {
       if (!token) return;
       try {
-        const response = await fetch("/api/saved-jobs", {
+        const response = await fetch('/api/saved-jobs', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -899,14 +1106,14 @@ const CandidateDashboard = () => {
           setSavedJobs(data.savedJobs || []);
         }
       } catch (err) {
-        console.error("Erro ao buscar vagas salvas:", err);
+        console.error('Erro ao buscar vagas salvas:', err);
       }
     };
 
     const fetchPlanStatus = async (token) => {
       if (!token) return;
       try {
-        const response = await fetch("/api/candidate/plan-status", {
+        const response = await fetch('/api/candidate/plan-status', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -917,35 +1124,18 @@ const CandidateDashboard = () => {
           return data;
         }
       } catch (err) {
-        console.error("Erro ao buscar status do plano:", err);
+        console.error('Erro ao buscar status do plano:', err);
       }
       return null;
     };
 
-    const fetchNotifications = async (token) => {
-      if (!token) return;
-      try {
-        const response = await fetch("/api/notifications", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (response.ok) {
-          const data = await response.json();
-          if (isMounted) setNotifications(data.notifications || []);
-        }
-      } catch (err) {
-        console.error("Erro ao buscar notificações:", err);
-      }
-    };
-
-    const fetchCareerTips = async (headline) => {
+    const fetchCareerTips = async (headline, token) => {
       setLoadingTips(true);
       try {
-        const tips = await getCareerAdvice(headline);
+        const tips = await getCareerAdvice(headline, token);
         if (isMounted) setCareerTips(tips);
       } catch (err) {
-        console.error("Erro ao buscar dicas de carreira:", err);
+        console.error('Erro ao buscar dicas de carreira:', err);
       } finally {
         if (isMounted) setLoadingTips(false);
       }
@@ -960,12 +1150,12 @@ const CandidateDashboard = () => {
 
   const refreshPlanStatus = useCallback(async () => {
     try {
-      const { getAuth } = await import("firebase/auth");
+      const { getAuth } = await import('firebase/auth');
       const auth = getAuth();
       const currentUser = auth.currentUser;
       const token = await currentUser?.getIdToken();
       if (!token) return;
-      const response = await fetch("/api/candidate/plan-status", {
+      const response = await fetch('/api/candidate/plan-status', {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) return;
@@ -979,13 +1169,13 @@ const CandidateDashboard = () => {
   useEffect(() => {
     setVerificationForm((prev) => ({
       ...prev,
-      contactEmail: prev.contactEmail || profile?.email || user?.email || "",
-      contactPhone: prev.contactPhone || profile?.phone || user?.phone || "",
+      contactEmail: prev.contactEmail || profile?.email || user?.email || '',
+      contactPhone: prev.contactPhone || profile?.phone || user?.phone || '',
       certificationsText:
-        prev.certificationsText || profile?.certifications || "",
-      educationSummary: prev.educationSummary || profile?.education || "",
-      portfolioUrl: prev.portfolioUrl || profile?.website || "",
-      linkedin: prev.linkedin || profile?.linkedin || "",
+        prev.certificationsText || profile?.certifications || '',
+      educationSummary: prev.educationSummary || profile?.education || '',
+      portfolioUrl: prev.portfolioUrl || profile?.website || '',
+      linkedin: prev.linkedin || profile?.linkedin || '',
     }));
   }, [profile, user]);
 
@@ -993,13 +1183,13 @@ const CandidateDashboard = () => {
     try {
       const result = await logout();
       if (result.success) {
-        router.push("/login");
+        router.push(buildLoginUrl(router.asPath));
       } else {
-        alert("Erro ao fazer logout. Tente novamente.");
+        alert('Erro ao fazer logout. Tente novamente.');
       }
     } catch (error) {
-      console.error("Erro ao fazer logout:", error);
-      alert("Erro ao fazer logout.");
+      console.error('Erro ao fazer logout:', error);
+      alert('Erro ao fazer logout.');
     }
   };
 
@@ -1012,8 +1202,8 @@ const CandidateDashboard = () => {
   useEffect(() => {
     setCvState((prev) => ({
       ...prev,
-      url: profile?.cvUrl || "",
-      name: profile?.cvName || "",
+      url: profile?.cvUrl || '',
+      name: profile?.cvName || '',
     }));
   }, [profile]);
 
@@ -1046,17 +1236,17 @@ const CandidateDashboard = () => {
 
   // Fetch conversations when messages tab becomes active
   useEffect(() => {
-    if (activeTab !== "messages") return;
+    if (activeTab !== 'messages') return;
     fetchConversationsRealtime();
   }, [activeTab, fetchConversationsRealtime]);
 
   useEffect(() => {
-    if (activeTab !== "messages") return undefined;
+    if (activeTab !== 'messages') return undefined;
 
     const intervalId = setInterval(() => {
       if (
-        typeof document !== "undefined" &&
-        document.visibilityState === "hidden"
+        typeof document !== 'undefined' &&
+        document.visibilityState === 'hidden'
       )
         return;
       fetchConversationsRealtime();
@@ -1067,7 +1257,7 @@ const CandidateDashboard = () => {
 
   // Fetch messages when a conversation is selected
   useEffect(() => {
-    if (activeTab !== "messages") return undefined;
+    if (activeTab !== 'messages') return undefined;
     if (!selectedConversation) {
       setMessages([]);
       return;
@@ -1076,8 +1266,8 @@ const CandidateDashboard = () => {
 
     const intervalId = setInterval(() => {
       if (
-        typeof document !== "undefined" &&
-        document.visibilityState === "hidden"
+        typeof document !== 'undefined' &&
+        document.visibilityState === 'hidden'
       )
         return;
       fetchConversationMessagesRealtime(selectedConversation, { silent: true });
@@ -1093,8 +1283,8 @@ const CandidateDashboard = () => {
 
     const intervalId = setInterval(() => {
       if (
-        typeof document !== "undefined" &&
-        document.visibilityState === "hidden"
+        typeof document !== 'undefined' &&
+        document.visibilityState === 'hidden'
       )
         return;
       fetchNotificationsRealtime();
@@ -1105,24 +1295,24 @@ const CandidateDashboard = () => {
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   const handleSendMessage = async () => {
     if (!messageInput.trim() || !selectedConversation || sendingMessage) return;
     const text = messageInput.trim();
-    setMessageInput("");
+    setMessageInput('');
     setSendingMessage(true);
     try {
-      const { getAuth } = await import("firebase/auth");
+      const { getAuth } = await import('firebase/auth');
       const auth = getAuth();
       const currentUser = auth.currentUser;
       if (!currentUser) return;
       const token = await currentUser.getIdToken();
       const res = await fetch(`/api/messages/${selectedConversation}`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ text }),
@@ -1152,7 +1342,7 @@ const CandidateDashboard = () => {
         setMessageInput(text);
       }
     } catch (err) {
-      console.error("Erro ao enviar mensagem:", err);
+      console.error('Erro ao enviar mensagem:', err);
       setMessageInput(text);
     } finally {
       setSendingMessage(false);
@@ -1176,25 +1366,25 @@ const CandidateDashboard = () => {
     );
 
     try {
-      const { getAuth } = await import("firebase/auth");
+      const { getAuth } = await import('firebase/auth');
       const auth = getAuth();
       const token = await auth.currentUser?.getIdToken();
       if (!token) return;
 
-      const response = await fetch("/api/notifications", {
-        method: "PATCH",
+      const response = await fetch('/api/notifications', {
+        method: 'PATCH',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ notificationId }),
       });
 
       if (!response.ok) {
-        throw new Error("Falha ao marcar notificação como lida");
+        throw new Error('Falha ao marcar notificação como lida');
       }
     } catch (error) {
-      console.error("Erro ao marcar notificação como lida:", error);
+      console.error('Erro ao marcar notificação como lida:', error);
       setNotifications((prev) =>
         prev.map((notification) =>
           notification.id === notificationId
@@ -1216,25 +1406,25 @@ const CandidateDashboard = () => {
     );
 
     try {
-      const { getAuth } = await import("firebase/auth");
+      const { getAuth } = await import('firebase/auth');
       const auth = getAuth();
       const token = await auth.currentUser?.getIdToken();
       if (!token) return;
 
-      const response = await fetch("/api/notifications", {
-        method: "PATCH",
+      const response = await fetch('/api/notifications', {
+        method: 'PATCH',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ markAll: true }),
       });
 
       if (!response.ok) {
-        throw new Error("Falha ao marcar todas as notificações");
+        throw new Error('Falha ao marcar todas as notificações');
       }
     } catch (error) {
-      console.error("Erro ao marcar todas as notificações:", error);
+      console.error('Erro ao marcar todas as notificações:', error);
       setNotifications((prev) =>
         prev.map((notification) =>
           unreadIds.includes(notification.id)
@@ -1246,7 +1436,7 @@ const CandidateDashboard = () => {
   };
 
   const chartData = useMemo(() => {
-    const dayLabels = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"];
+    const dayLabels = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
     const counts = { Dom: 0, Seg: 0, Ter: 0, Qua: 0, Qui: 0, Sex: 0, Sab: 0 };
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
@@ -1267,8 +1457,8 @@ const CandidateDashboard = () => {
   }, [applications]);
 
   const activePlan = planStatus?.plan || {
-    planId: "basic_candidato",
-    planName: "Básico",
+    planId: 'basic_candidato',
+    planName: 'Básico',
     price: 0,
     isActive: true,
     daysRemaining: null,
@@ -1283,13 +1473,16 @@ const CandidateDashboard = () => {
 
   const planHeading =
     activePlan.price === 0
-      ? "Plano Grátis"
-      : activePlan.planName || "Plano EmpregoSTP";
+      ? 'Plano Grátis'
+      : activePlan.planName || 'Plano EmpregoSTP';
   const planFeatureList = getPlanFeatureList(activePlan.features);
-  const profileViewers = planStatus?.profileViewers || [];
+  const profileViewers = useMemo(
+    () => planStatus?.profileViewers || [],
+    [planStatus?.profileViewers],
+  );
   const profileCompletion = planStatus?.profileCompletion || {
     score: 0,
-    label: "Perfil inicial",
+    label: 'Perfil inicial',
     isProfileComplete: false,
     checklist: [],
     nextSteps: [],
@@ -1299,22 +1492,30 @@ const CandidateDashboard = () => {
   };
   const profileVisibility = planStatus?.visibility || {
     highlighted: false,
-    verified: profile?.verificationStatus === "verified",
+    verified: profile?.verificationStatus === 'verified',
     completionScore: profileCompletion.score,
     isProfileComplete: profileCompletion.isProfileComplete,
     priorityInSearch: false,
   };
-  const profileViewsSummary = planStatus?.profileViewsSummary || {
-    total: planResources?.profileViews?.current || 0,
-    uniqueCompanies: profileViewers.length,
-    canSeeDetailedViewers: false,
-  };
+  const profileViewsSummary = useMemo(
+    () =>
+      planStatus?.profileViewsSummary || {
+        total: planResources?.profileViews?.current || 0,
+        uniqueCompanies: profileViewers.length,
+        canSeeDetailedViewers: false,
+      },
+    [
+      planStatus?.profileViewsSummary,
+      planResources?.profileViews,
+      profileViewers.length,
+    ],
+  );
   const optimizationInsights = planStatus?.optimizationInsights || {
     employabilityScore: 0,
-    employabilityLabel: "Perfil inicial",
+    employabilityLabel: 'Perfil inicial',
     averageTopMatch: 0,
     bestMatchScore: 0,
-    summarySuggestion: "",
+    summarySuggestion: '',
     strengths: [],
     improvementActions: [],
     marketSkillGaps: [],
@@ -1344,64 +1545,78 @@ const CandidateDashboard = () => {
       return !Number.isNaN(date.getTime()) && date >= sevenDaysAgo;
     }).length;
 
-    const totalViews = profileViewsSummary?.total ?? planStatus?.plan?.views ?? 0;
+    const totalViews =
+      profileViewsSummary?.total ?? planStatus?.plan?.views ?? 0;
 
     return [
       {
-        label: "Candidaturas activas",
+        label: 'Candidaturas activas',
         value: applications.length,
         icon: icons.applications,
-        color: "#2057d7",
+        color: '#2057d7',
         sublabel:
-          appliedThisMonth > 0 ? `+${appliedThisMonth} este mês` : "Sem novas este mês",
-        sublabelTone: appliedThisMonth > 0 ? "positive" : "neutral",
+          appliedThisMonth > 0
+            ? `+${appliedThisMonth} este mês`
+            : 'Sem novas este mês',
+        sublabelTone: appliedThisMonth > 0 ? 'positive' : 'neutral',
       },
       {
-        label: "Vagas guardadas",
+        label: 'Vagas guardadas',
         value: savedJobs.length,
         icon: icons.saved,
-        color: "#5fb8f5",
-        sublabel: "Sem alteração",
-        sublabelTone: "neutral",
+        color: '#5fb8f5',
+        sublabel: 'Sem alteração',
+        sublabelTone: 'neutral',
       },
       {
-        label: "Entrevistas agendadas",
+        label: 'Entrevistas agendadas',
         value: allInterviews.length,
         icon: icons.calendar,
-        color: "#eab308",
-        sublabel: "Esta semana",
-        sublabelTone: "neutral",
+        color: '#eab308',
+        sublabel: 'Esta semana',
+        sublabelTone: 'neutral',
       },
       {
-        label: "Vistas ao perfil",
+        label: 'Vistas ao perfil',
         value: totalViews,
         icon: icons.eye,
-        color: "#16a34a",
-        sublabel: viewsThisWeek > 0 ? `+${viewsThisWeek} esta semana` : "Esta semana",
-        sublabelTone: viewsThisWeek > 0 ? "positive" : "neutral",
+        color: '#16a34a',
+        sublabel:
+          viewsThisWeek > 0 ? `+${viewsThisWeek} esta semana` : 'Esta semana',
+        sublabelTone: viewsThisWeek > 0 ? 'positive' : 'neutral',
       },
     ];
-  }, [applications, savedJobs, allInterviews, profileViewers, profileViewsSummary, planStatus]);
+  }, [
+    applications,
+    savedJobs,
+    allInterviews,
+    profileViewers,
+    profileViewsSummary,
+    planStatus,
+  ]);
 
   const profileCategoryBreakdown = useMemo(() => {
     const checklist = profileCompletion.checklist || [];
     const groups = [
       {
-        id: "basic",
-        label: "Informações básicas",
-        ids: ["name", "headline", "location", "contact", "photo", "bio"],
+        id: 'basic',
+        label: 'Informações básicas',
+        ids: ['name', 'headline', 'location', 'contact', 'photo', 'bio'],
       },
       {
-        id: "experience",
-        label: "Experiência profissional",
-        ids: ["objective", "experience", "cv"],
+        id: 'experience',
+        label: 'Experiência profissional',
+        ids: ['objective', 'experience', 'cv'],
       },
-      { id: "skills", label: "Competências", ids: ["skills"] },
+      { id: 'skills', label: 'Competências', ids: ['skills'] },
     ];
 
     return groups.map((group) => {
       const items = checklist.filter((item) => group.ids.includes(item.id));
-      const totalWeight = items.reduce((sum, item) => sum + (item.weight || 0), 0);
+      const totalWeight = items.reduce(
+        (sum, item) => sum + (item.weight || 0),
+        0,
+      );
       const completedWeight = items.reduce(
         (sum, item) => sum + (item.completed ? item.weight || 0 : 0),
         0,
@@ -1415,12 +1630,14 @@ const CandidateDashboard = () => {
   const completionHintText = useMemo(() => {
     const missing = profileCompletion.nextSteps || [];
     if (!missing.length) {
-      return "O seu perfil está completo. Continue a mantê-lo atualizado.";
+      return 'O seu perfil está completo. Continue a mantê-lo atualizado.';
     }
     const labels = missing
       .slice(0, 2)
-      .map((item) => String(item.label || "").replace(/^./, (c) => c.toLowerCase()));
-    return `Adicione ${labels.join(" e ")}.`;
+      .map((item) =>
+        String(item.label || '').replace(/^./, (c) => c.toLowerCase()),
+      );
+    return `Adicione ${labels.join(' e ')}.`;
   }, [profileCompletion.nextSteps]);
 
   const verificationSummary = useMemo(
@@ -1428,13 +1645,13 @@ const CandidateDashboard = () => {
       verificationRecord?.summary ||
       profile?.verificationSummary || {
         status:
-          profile?.verificationStatus === "verified"
-            ? "approved"
-            : profile?.verificationStatus === "pending"
-              ? "pending"
-              : profile?.verificationStatus === "rejected"
-                ? "rejected"
-                : "draft",
+          profile?.verificationStatus === 'verified'
+            ? 'approved'
+            : profile?.verificationStatus === 'pending'
+              ? 'pending'
+              : profile?.verificationStatus === 'rejected'
+                ? 'rejected'
+                : 'draft',
         requestedCount: 0,
         approvedCount: 0,
         pendingCount: 0,
@@ -1462,14 +1679,14 @@ const CandidateDashboard = () => {
         return {
           type,
           label: config?.label || type,
-          description: config?.description || "",
+          description: config?.description || '',
           requested:
             detailedItem?.requested ?? fallbackSummary?.requested ?? false,
           status:
-            detailedItem?.status || fallbackSummary?.status || "not_requested",
+            detailedItem?.status || fallbackSummary?.status || 'not_requested',
           checklist: detailedItem?.checklist || [],
           evidence: detailedItem?.evidence || [],
-          reviewReason: detailedItem?.reviewReason || "",
+          reviewReason: detailedItem?.reviewReason || '',
           reviewedAt: detailedItem?.reviewedAt || null,
           submittedAt:
             detailedItem?.submittedAt ||
@@ -1492,14 +1709,14 @@ const CandidateDashboard = () => {
 
   const canRequestVerification = Boolean(activePlan.features?.canVerifyProfile);
   const verificationOverallStatus =
-    verificationRecord?.status || verificationSummary?.status || "draft";
+    verificationRecord?.status || verificationSummary?.status || 'draft';
   const verificationOverallMeta = getVerificationStatusMeta(
     verificationOverallStatus,
   );
 
   useEffect(() => {
     const availableTypes = verificationItems
-      .filter((item) => item.status !== "approved")
+      .filter((item) => item.status !== 'approved')
       .map((item) => item.type);
 
     if (!availableTypes.length) {
@@ -1516,16 +1733,16 @@ const CandidateDashboard = () => {
   const handleVerificationSubmit = async () => {
     if (!canRequestVerification) {
       setVerificationMessage({
-        type: "error",
-        text: "A verificacao de perfil esta disponivel nos planos Verificacao e Premium.",
+        type: 'error',
+        text: 'A verificacao de perfil esta disponivel nos planos Verificacao e Premium.',
       });
       return;
     }
 
     if (!selectedVerificationTypes.length) {
       setVerificationMessage({
-        type: "error",
-        text: "Selecione pelo menos um bloco de verificacao para enviar.",
+        type: 'error',
+        text: 'Selecione pelo menos um bloco de verificacao para enviar.',
       });
       return;
     }
@@ -1538,54 +1755,54 @@ const CandidateDashboard = () => {
     ].filter(Boolean).length;
     const validationMessages = [];
 
-    if (selectedTypesSet.has("identity")) {
+    if (selectedTypesSet.has('identity')) {
       if (!verificationForm.contactEmail || !verificationForm.contactPhone) {
         validationMessages.push(
-          "Preencha email e telefone para enviar Identidade.",
+          'Preencha email e telefone para enviar Identidade.',
         );
       }
       if (!verificationForm.identityDocument) {
         validationMessages.push(
-          "Anexe o documento de identidade para enviar Identidade.",
+          'Anexe o documento de identidade para enviar Identidade.',
         );
       }
       if (!verificationForm.selfieDocument) {
         validationMessages.push(
-          "Anexe a selfie com documento para enviar Identidade.",
+          'Anexe a selfie com documento para enviar Identidade.',
         );
       }
     }
 
-    if (selectedTypesSet.has("certificates")) {
+    if (selectedTypesSet.has('certificates')) {
       const hasCertificatesContext =
         verificationForm.certificateDocuments.length > 0 ||
-        Boolean(String(verificationForm.certificationsText || "").trim()) ||
+        Boolean(String(verificationForm.certificationsText || '').trim()) ||
         Boolean(profile?.certificateFiles?.length) ||
-        Boolean(String(profile?.certifications || "").trim());
+        Boolean(String(profile?.certifications || '').trim());
 
       if (!hasCertificatesContext) {
         validationMessages.push(
-          "Adicione certificados ou um resumo antes de enviar Certificados.",
+          'Adicione certificados ou um resumo antes de enviar Certificados.',
         );
       }
     }
 
-    if (selectedTypesSet.has("academic")) {
+    if (selectedTypesSet.has('academic')) {
       const hasAcademicContext =
-        Boolean(String(verificationForm.educationSummary || "").trim()) ||
+        Boolean(String(verificationForm.educationSummary || '').trim()) ||
         Boolean(verificationForm.academicDocument) ||
-        Boolean(String(profile?.education || "").trim());
+        Boolean(String(profile?.education || '').trim());
 
       if (!hasAcademicContext) {
         validationMessages.push(
-          "Informe a formação ou anexe um comprovativo antes de enviar Académica.",
+          'Informe a formação ou anexe um comprovativo antes de enviar Académica.',
         );
       }
     }
 
-    if (selectedTypesSet.has("experience")) {
+    if (selectedTypesSet.has('experience')) {
       const hasExperienceContext =
-        Boolean(String(verificationForm.experienceSummary || "").trim()) ||
+        Boolean(String(verificationForm.experienceSummary || '').trim()) ||
         Boolean(profile?.experience?.length);
       const hasExperienceProof =
         Boolean(verificationForm.employmentProof) ||
@@ -1594,29 +1811,29 @@ const CandidateDashboard = () => {
 
       if (!hasExperienceContext || !hasExperienceProof) {
         validationMessages.push(
-          "Para Experiência, informe histórico profissional e anexe CV ou comprovativo.",
+          'Para Experiência, informe histórico profissional e anexe CV ou comprovativo.',
         );
       }
     }
 
-    if (selectedTypesSet.has("competencies")) {
+    if (selectedTypesSet.has('competencies')) {
       const hasCompetencyContext =
-        Boolean(String(verificationForm.competencyNotes || "").trim()) ||
-        Boolean(String(verificationForm.portfolioUrl || "").trim()) ||
-        Boolean(String(verificationForm.linkedin || "").trim()) ||
+        Boolean(String(verificationForm.competencyNotes || '').trim()) ||
+        Boolean(String(verificationForm.portfolioUrl || '').trim()) ||
+        Boolean(String(verificationForm.linkedin || '').trim()) ||
         Boolean(verificationForm.competencyDocument) ||
         profileSkillsCount >= 3;
 
       if (!hasCompetencyContext) {
         validationMessages.push(
-          "Adicione competências, links ou comprovativo antes de enviar Competências.",
+          'Adicione competências, links ou comprovativo antes de enviar Competências.',
         );
       }
     }
 
     if (validationMessages.length > 0) {
       setVerificationMessage({
-        type: "error",
+        type: 'error',
         text: validationMessages[0],
       });
       return;
@@ -1626,15 +1843,15 @@ const CandidateDashboard = () => {
     setVerificationMessage(null);
 
     try {
-      const { getAuth } = await import("firebase/auth");
+      const { getAuth } = await import('firebase/auth');
       const { ref, uploadBytesResumable, getDownloadURL } =
-        await import("firebase/storage");
-      const { storage } = await import("../../../lib/firebase");
+        await import('firebase/storage');
+      const { storage } = await import('../../../lib/firebase');
 
       const auth = getAuth();
       const currentUser = auth.currentUser;
       if (!currentUser) {
-        throw new Error("Utilizador nao autenticado.");
+        throw new Error('Utilizador nao autenticado.');
       }
 
       const uploadSingleFile = async (file, path) => {
@@ -1646,13 +1863,13 @@ const CandidateDashboard = () => {
         try {
           await new Promise((resolve, reject) => {
             const uploadTask = uploadBytesResumable(storageRef, file);
-            uploadTask.on("state_changed", null, reject, resolve);
+            uploadTask.on('state_changed', null, reject, resolve);
           });
         } catch (error) {
           throw new Error(
             getFirebaseStorageErrorMessage(
               error,
-              "Erro ao enviar ficheiro de verificacao.",
+              'Erro ao enviar ficheiro de verificacao.',
             ),
           );
         }
@@ -1662,7 +1879,7 @@ const CandidateDashboard = () => {
           label: file.name,
           url,
           fileName: file.name,
-          type: "file",
+          type: 'file',
         };
       };
 
@@ -1680,52 +1897,52 @@ const CandidateDashboard = () => {
         cvDocument,
         competencyDocument,
       ] = await Promise.all([
-        selectedVerificationTypes.includes("identity")
+        selectedVerificationTypes.includes('identity')
           ? uploadSingleFile(
               verificationForm.identityDocument,
-              "verification/identity",
+              'verification/identity',
             )
           : Promise.resolve(null),
-        selectedVerificationTypes.includes("identity")
+        selectedVerificationTypes.includes('identity')
           ? uploadSingleFile(
               verificationForm.selfieDocument,
-              "verification/selfie",
+              'verification/selfie',
             )
           : Promise.resolve(null),
-        selectedVerificationTypes.includes("certificates")
+        selectedVerificationTypes.includes('certificates')
           ? uploadMultipleFiles(
               verificationForm.certificateDocuments,
-              "verification/certificates",
+              'verification/certificates',
             )
           : Promise.resolve([]),
-        selectedVerificationTypes.includes("academic")
+        selectedVerificationTypes.includes('academic')
           ? uploadSingleFile(
               verificationForm.academicDocument,
-              "verification/academic",
+              'verification/academic',
             )
           : Promise.resolve(null),
-        selectedVerificationTypes.includes("experience")
+        selectedVerificationTypes.includes('experience')
           ? uploadSingleFile(
               verificationForm.employmentProof,
-              "verification/experience",
+              'verification/experience',
             )
           : Promise.resolve(null),
-        selectedVerificationTypes.includes("experience")
-          ? uploadSingleFile(verificationForm.cvDocument, "verification/cv")
+        selectedVerificationTypes.includes('experience')
+          ? uploadSingleFile(verificationForm.cvDocument, 'verification/cv')
           : Promise.resolve(null),
-        selectedVerificationTypes.includes("competencies")
+        selectedVerificationTypes.includes('competencies')
           ? uploadSingleFile(
               verificationForm.competencyDocument,
-              "verification/competencies",
+              'verification/competencies',
             )
           : Promise.resolve(null),
       ]);
 
       const token = await currentUser.getIdToken();
-      const response = await fetch("/api/verifications", {
-        method: "POST",
+      const response = await fetch('/api/verifications', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
@@ -1747,9 +1964,9 @@ const CandidateDashboard = () => {
               cvDocument ||
               (profile?.cvUrl
                 ? {
-                    label: profile?.cvName || "CV atual",
+                    label: profile?.cvName || 'CV atual',
                     url: profile.cvUrl,
-                    fileName: profile?.cvName || "",
+                    fileName: profile?.cvName || '',
                   }
                 : null),
             experienceSummary: verificationForm.experienceSummary,
@@ -1764,8 +1981,8 @@ const CandidateDashboard = () => {
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
         setVerificationMessage({
-          type: "error",
-          text: data.error || "Erro ao solicitar verificacao",
+          type: 'error',
+          text: data.error || 'Erro ao solicitar verificacao',
         });
         return;
       }
@@ -1780,12 +1997,12 @@ const CandidateDashboard = () => {
       const nextSummary =
         latestRecord?.summary || data.verification?.summary || null;
       const nextPublicStatus = nextSummary?.publicVerified
-        ? "verified"
+        ? 'verified'
         : nextSummary?.pendingCount > 0
-          ? "pending"
+          ? 'pending'
           : nextSummary?.rejectedCount > 0
-            ? "rejected"
-            : "unverified";
+            ? 'rejected'
+            : 'unverified';
 
       setProfile((prev) => ({
         ...prev,
@@ -1810,18 +2027,18 @@ const CandidateDashboard = () => {
       }));
 
       setVerificationMessage({
-        type: "success",
-        text: data.message || "Pedido de verificacao enviado com sucesso.",
+        type: 'success',
+        text: data.message || 'Pedido de verificacao enviado com sucesso.',
       });
     } catch (err) {
-      console.error("Erro na verificacao:", err);
+      console.error('Erro na verificacao:', err);
       setVerificationMessage({
-        type: "error",
+        type: 'error',
         text:
           getFirebaseStorageErrorMessage(
             err,
-            "Erro ao enviar verificacao. Tente novamente.",
-          ) || "Erro ao enviar verificacao. Tente novamente.",
+            'Erro ao enviar verificacao. Tente novamente.',
+          ) || 'Erro ao enviar verificacao. Tente novamente.',
       });
     } finally {
       setVerificationLoading(false);
@@ -1840,16 +2057,16 @@ const CandidateDashboard = () => {
   const handleCvChange = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    setCvState((prev) => ({ ...prev, uploading: true, message: "" }));
+    setCvState((prev) => ({ ...prev, uploading: true, message: '' }));
 
     try {
-      const { getAuth } = await import("firebase/auth");
+      const { getAuth } = await import('firebase/auth');
       const { ref, uploadBytesResumable, getDownloadURL } =
-        await import("firebase/storage");
-      const { storage } = await import("../../../lib/firebase");
+        await import('firebase/storage');
+      const { storage } = await import('../../../lib/firebase');
       const auth = getAuth();
       const currentUser = auth.currentUser;
-      if (!currentUser) throw new Error("Usuário não autenticado.");
+      if (!currentUser) throw new Error('Usuário não autenticado.');
 
       const storageRef = ref(
         storage,
@@ -1857,15 +2074,15 @@ const CandidateDashboard = () => {
       );
       await new Promise((resolve, reject) => {
         const uploadTask = uploadBytesResumable(storageRef, file);
-        uploadTask.on("state_changed", null, reject, resolve);
+        uploadTask.on('state_changed', null, reject, resolve);
       });
       const downloadUrl = await getDownloadURL(storageRef);
       const token = await currentUser.getIdToken();
 
-      const response = await fetch("/api/profile/upload-cv", {
-        method: "POST",
+      const response = await fetch('/api/profile/upload-cv', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
@@ -1876,7 +2093,7 @@ const CandidateDashboard = () => {
 
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || "Falha ao atualizar CV");
+        throw new Error(data.error || 'Falha ao atualizar CV');
       }
 
       setProfile(data.profile);
@@ -1886,14 +2103,14 @@ const CandidateDashboard = () => {
         url: downloadUrl,
         name: file.name,
         uploading: false,
-        message: "CV enviado com sucesso!",
+        message: 'CV enviado com sucesso!',
       });
     } catch (err) {
-      console.error("Erro ao enviar CV:", err);
+      console.error('Erro ao enviar CV:', err);
       setCvState((prev) => ({
         ...prev,
         uploading: false,
-        message: getFirebaseStorageErrorMessage(err, "Erro ao enviar CV"),
+        message: getFirebaseStorageErrorMessage(err, 'Erro ao enviar CV'),
       }));
     }
   };
@@ -1903,20 +2120,20 @@ const CandidateDashboard = () => {
     if (!file) return;
 
     const setLoading =
-      type === "avatar" ? setAvatarUploading : setCoverUploading;
+      type === 'avatar' ? setAvatarUploading : setCoverUploading;
     setLoading(true);
 
     try {
-      const { getAuth } = await import("firebase/auth");
+      const { getAuth } = await import('firebase/auth');
       const { ref, uploadBytesResumable, getDownloadURL } =
-        await import("firebase/storage");
-      const { storage } = await import("../../../lib/firebase");
+        await import('firebase/storage');
+      const { storage } = await import('../../../lib/firebase');
 
       const auth = getAuth();
       const currentUser = auth.currentUser;
-      if (!currentUser) throw new Error("Usuário não autenticado.");
+      if (!currentUser) throw new Error('Usuário não autenticado.');
 
-      const path = type === "avatar" ? "photoUrl" : "company-covers"; // Using existing paths logic or generic 'covers'
+      const path = type === 'avatar' ? 'photoUrl' : 'company-covers'; // Using existing paths logic or generic 'covers'
       const timestamp = Date.now();
       const storageRef = ref(
         storage,
@@ -1927,13 +2144,13 @@ const CandidateDashboard = () => {
       const downloadUrl = await getDownloadURL(storageRef);
       const token = await currentUser.getIdToken();
       const updateData =
-        type === "avatar"
+        type === 'avatar'
           ? { photoUrl: downloadUrl }
           : { coverUrl: downloadUrl };
-      const response = await fetch("/api/profile/update", {
-        method: "POST",
+      const response = await fetch('/api/profile/update', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(updateData),
@@ -1941,26 +2158,26 @@ const CandidateDashboard = () => {
 
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || "Erro ao atualizar imagem");
+        throw new Error(data.error || 'Erro ao atualizar imagem');
       }
 
       setProfile(data.profile);
       await refreshPlanStatus();
       setProfileForm((prev) => ({
         ...prev,
-        ...(type === "avatar"
+        ...(type === 'avatar'
           ? { photoUrl: downloadUrl }
           : { coverUrl: downloadUrl }),
       }));
 
       setProfileFeedback({
-        type: "success",
-        message: `${type === "avatar" ? "Foto de perfil" : "Capa"} atualizada com sucesso!`,
+        type: 'success',
+        message: `${type === 'avatar' ? 'Foto de perfil' : 'Capa'} atualizada com sucesso!`,
       });
     } catch (err) {
       console.error(`Erro ao atualizar ${type}:`, err);
       setProfileFeedback({
-        type: "error",
+        type: 'error',
         message: getFirebaseStorageErrorMessage(
           err,
           `Erro ao atualizar ${type}.`,
@@ -2050,10 +2267,10 @@ const CandidateDashboard = () => {
       !planResources.certificates?.allowed
     ) {
       setProfileFeedback({
-        type: "error",
+        type: 'error',
         message:
           planResources.certificates?.upgradeMessage ||
-          "Upload de certificados é exclusivo dos planos Profissional e Premium.",
+          'Upload de certificados é exclusivo dos planos Profissional e Premium.',
       });
       return;
     }
@@ -2064,7 +2281,7 @@ const CandidateDashboard = () => {
         (planResources.certificates?.limit || 0)
     ) {
       setProfileFeedback({
-        type: "error",
+        type: 'error',
         message: `O seu plano permite no máximo ${planResources.certificates.limit} certificado(s).`,
       });
       return;
@@ -2072,14 +2289,14 @@ const CandidateDashboard = () => {
 
     setProfileSaving(true); // Reuse saving state or add new loading state
     try {
-      const { getAuth } = await import("firebase/auth");
+      const { getAuth } = await import('firebase/auth');
       const { ref, uploadBytesResumable, getDownloadURL } =
-        await import("firebase/storage");
-      const { storage } = await import("../../../lib/firebase");
+        await import('firebase/storage');
+      const { storage } = await import('../../../lib/firebase');
 
       const auth = getAuth();
       const currentUser = auth.currentUser;
-      if (!currentUser) throw new Error("Usuário não autenticado");
+      if (!currentUser) throw new Error('Usuário não autenticado');
 
       const uploadedUrls = [];
       for (const f of files) {
@@ -2097,16 +2314,16 @@ const CandidateDashboard = () => {
         certificateFiles: [...prev.certificateFiles, ...uploadedUrls],
       }));
       setProfileFeedback({
-        type: "success",
-        message: "Certificados adicionados!",
+        type: 'success',
+        message: 'Certificados adicionados!',
       });
     } catch (err) {
       console.error(err);
       setProfileFeedback({
-        type: "error",
+        type: 'error',
         message: getFirebaseStorageErrorMessage(
           err,
-          "Erro ao enviar certificados.",
+          'Erro ao enviar certificados.',
         ),
       });
     } finally {
@@ -2125,33 +2342,33 @@ const CandidateDashboard = () => {
     setProfileSaving(true);
     setProfileFeedback(null);
     try {
-      const { getAuth } = await import("firebase/auth");
+      const { getAuth } = await import('firebase/auth');
       const auth = getAuth();
       const currentUser = auth.currentUser;
       if (!currentUser) {
-        throw new Error("Usuário não autenticado.");
+        throw new Error('Usuário não autenticado.');
       }
       const token = await currentUser.getIdToken();
-      const skillsArray = (profileForm.skills || "")
-        .split(",")
+      const skillsArray = (profileForm.skills || '')
+        .split(',')
         .map((skill) => skill.trim())
         .filter(Boolean);
       const sanitizedExperiences = (profileForm.experiences || [])
         .map((item) => ({
-          company: (item.company || "").trim(),
-          role: (item.role || "").trim(),
-          period: (item.period || "").trim(),
-          description: (item.description || "").trim(),
+          company: (item.company || '').trim(),
+          role: (item.role || '').trim(),
+          period: (item.period || '').trim(),
+          description: (item.description || '').trim(),
         }))
         .filter(
           (item) =>
             item.company || item.role || item.period || item.description,
         );
 
-      const response = await fetch("/api/profile/update", {
-        method: "POST",
+      const response = await fetch('/api/profile/update', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
@@ -2183,7 +2400,7 @@ const CandidateDashboard = () => {
 
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || "Falha ao salvar o perfil.");
+        throw new Error(data.error || 'Falha ao salvar o perfil.');
       }
 
       const updatedUser = {
@@ -2204,15 +2421,15 @@ const CandidateDashboard = () => {
       await refreshPlanStatus();
       await fetchRecommended(token);
       setProfileFeedback({
-        type: "success",
-        message: data.message || "Perfil atualizado com sucesso.",
+        type: 'success',
+        message: data.message || 'Perfil atualizado com sucesso.',
       });
       setEditingProfile(false);
     } catch (err) {
-      console.error("Erro ao salvar perfil:", err);
+      console.error('Erro ao salvar perfil:', err);
       setProfileFeedback({
-        type: "error",
-        message: err.message || "Não foi possível salvar o perfil.",
+        type: 'error',
+        message: err.message || 'Não foi possível salvar o perfil.',
       });
     } finally {
       setProfileSaving(false);
@@ -2221,11 +2438,11 @@ const CandidateDashboard = () => {
 
   const handleImportLinkedIn = () => {
     const hints = extractLinkedInProfileHints(profileForm.linkedin);
-    if (!hints.normalizedUrl || !hints.normalizedUrl.includes("linkedin.com")) {
+    if (!hints.normalizedUrl || !hints.normalizedUrl.includes('linkedin.com')) {
       setProfileFeedback({
-        type: "error",
+        type: 'error',
         message:
-          "Informe uma URL válida do LinkedIn para importar os dados básicos.",
+          'Informe uma URL válida do LinkedIn para importar os dados básicos.',
       });
       return;
     }
@@ -2236,658 +2453,1087 @@ const CandidateDashboard = () => {
       name: prev.name || hints.inferredName || prev.name,
     }));
     setProfileFeedback({
-      type: "success",
+      type: 'success',
       message: hints.inferredName
         ? `URL do LinkedIn normalizada. Nome sugerido: ${hints.inferredName}.`
-        : "URL do LinkedIn normalizada com sucesso.",
+        : 'URL do LinkedIn normalizada com sucesso.',
     });
   };
 
   const renderContent = () => {
     if (loading) {
-      return <div className={styles.loading}>Carregando dados...</div>;
+      return <CandidateLoadingState />;
+    }
+
+    if (dashboardError) {
+      return (
+        <div className={styles.contentArea}>
+          <CandidateEmptyState
+            icon={FiAlertCircle}
+            title="Não foi possível abrir o dashboard"
+            description={dashboardError}
+            actionLabel="Tentar novamente"
+            onAction={() => router.reload()}
+          />
+        </div>
+      );
     }
 
     switch (activeTab) {
-      case "dashboard":
+      case 'dashboard':
+        return (
+          <CandidateDashboardOverview
+            firstName={firstName}
+            applications={applications}
+            savedJobs={savedJobs}
+            interviews={allInterviews}
+            profileViews={stats[3]?.value || 0}
+            recentApplications={recentApplications}
+            recommendedJobs={recommendedJobs}
+            profileCompletion={profileCompletion}
+            profileCategoryBreakdown={profileCategoryBreakdown}
+            completionHintText={completionHintText}
+            searchQuery={dashboardSearchQuery}
+            onOpenApplications={() => openTab('applications')}
+            onOpenProfile={() => openTab('profile')}
+          />
+        );
+
+      case '__legacy_dashboard':
         return (
           <div className={styles.contentArea}>
-            <div className="header-card">
-              <div>
-                <p className="header-eyebrow">Candidato · Dashboard</p>
-                <h1 className="header-title">Olá, {firstName}! 👋</h1>
-                <p className="header-sub">
-                  Tens {allInterviews.length}{" "}
-                  {allInterviews.length === 1
-                    ? "entrevista agendada"
-                    : "entrevistas agendadas"}{" "}
-                  e {applications.length}{" "}
-                  {applications.length === 1
-                    ? "candidatura em curso"
-                    : "candidaturas em curso"}
-                  .
+            <div className={styles.overviewHero}>
+              <div className={styles.overviewHeroCopy}>
+                <h1 className={styles.overviewHeroTitle}>
+                  Olá, {firstName}! <span aria-hidden="true">👋</span>
+                </h1>
+                <p className={styles.overviewHeroSub}>
+                  Bem-vindo(a) de volta. Aqui está o que está a acontecer com a
+                  sua carreira.
                 </p>
               </div>
-              <div className="header-actions">
-                <Link href="/vagas" className="btn btn-lime btn-lg">
-                  <FiSearch /> Explorar vagas
-                </Link>
-                <Link
-                  href="/recursos/gerador-cv"
-                  className="btn btn-primary btn-lg"
+              <div className={styles.overviewHeroActions}>
+                <button
+                  type="button"
+                  className={styles.overviewHeroGhost}
+                  onClick={() => openTab('profile')}
                 >
-                  <FiFileText /> Gerador de CV
+                  <FiEdit2 aria-hidden="true" /> Editar Perfil
+                </button>
+                <Link href="/vagas" className={styles.overviewHeroPrimary}>
+                  <FiSearch aria-hidden="true" /> Procurar Vagas
                 </Link>
               </div>
             </div>
 
-            <div className={styles.statsGrid}>
-              {stats.map((stat) => (
-                <StatCard key={stat.label} {...stat} />
+            <div className={styles.overviewStatsGrid}>
+              {[
+                {
+                  key: 'apps',
+                  label: 'Candidaturas Enviadas',
+                  value: applications.length,
+                  icon: icons.applications,
+                  tone: 'blue',
+                  sublabel: stats[0]?.sublabel,
+                  trend: stats[0]?.sublabelTone,
+                },
+                {
+                  key: 'saved',
+                  label: 'Vagas Salvas',
+                  value: savedJobs.length,
+                  icon: icons.saved,
+                  tone: 'amber',
+                  sublabel: 'Sem alterações',
+                  trend: 'neutral',
+                },
+                {
+                  key: 'views',
+                  label: 'Visualizações de Perfil',
+                  value: stats[3]?.value ?? 0,
+                  icon: icons.eye,
+                  tone: 'violet',
+                  sublabel: stats[3]?.sublabel,
+                  trend: stats[3]?.sublabelTone,
+                },
+              ].map((card) => (
+                <div key={card.key} className={styles.overviewStatCard}>
+                  <div className={styles.overviewStatTop}>
+                    <span
+                      className={`${styles.overviewStatIcon} ${styles[`statIcon_${card.tone}`]}`}
+                    >
+                      {card.icon}
+                    </span>
+                    {card.sublabel ? (
+                      <span
+                        className={`${styles.overviewStatTrend} ${card.trend === 'positive' ? styles.trendPositive : card.trend === 'warning' ? styles.trendWarning : styles.trendNeutral}`}
+                      >
+                        {card.sublabel}
+                      </span>
+                    ) : null}
+                  </div>
+                  <p className={styles.overviewStatValue}>
+                    {String(card.value ?? 0).padStart(2, '0')}
+                  </p>
+                  <p className={styles.overviewStatLabel}>{card.label}</p>
+                </div>
               ))}
             </div>
 
-            <div className={styles.gridTwoCols}>
-              <section className={styles.sectionBlock}>
-                <div className={styles.sectionTitle}>
-                  <span>Candidaturas recentes</span>
-                  <small>{applications.length}</small>
-                </div>
-                {recentApplications.length ? (
-                  <div className={styles.viewerList}>
-                    {recentApplications.map((app) => {
-                      const avatarColor = getAvatarColor(
-                        app.company || app.jobTitle,
-                      );
-                      return (
-                        <div
-                          key={app.id}
-                          className={styles.viewerItem}
-                          style={{ justifyContent: "space-between" }}
-                        >
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "0.8rem",
-                              minWidth: 0,
-                            }}
-                          >
-                            <div
-                              className={styles.viewerAvatar}
+            <div className={styles.overviewMainGrid}>
+              <div className={styles.overviewColMain}>
+                <section className={styles.overviewCard}>
+                  <div className={styles.overviewCardHead}>
+                    <h2 className={styles.overviewCardTitle}>
+                      Candidaturas Recentes
+                    </h2>
+                    <button
+                      type="button"
+                      className={styles.overviewSeeAll}
+                      onClick={() => openTab('applications')}
+                    >
+                      Ver todas
+                    </button>
+                  </div>
+                  {recentApplications.length ? (
+                    <div className={styles.overviewAppList}>
+                      {recentApplications.slice(0, 4).map((app) => {
+                        const statusKey = app.status?.toLowerCase();
+                        const avatarColor = getAvatarColor(
+                          app.company || app.jobTitle,
+                        );
+                        const appliedRaw =
+                          app.appliedAt || app.appliedDate || app.createdAt;
+                        const appliedLabel = formatRelativeTime(appliedRaw);
+                        return (
+                          <div key={app.id} className={styles.overviewAppRow}>
+                            <span
+                              className={styles.overviewAppAvatar}
                               style={{
                                 background: avatarColor.background,
                                 color: avatarColor.color,
                               }}
                             >
                               {getInitials(app.company || app.jobTitle)}
+                            </span>
+                            <div className={styles.overviewAppInfo}>
+                              <strong>{app.jobTitle || 'Vaga'}</strong>
+                              <span>
+                                {app.company || 'Empresa'}
+                                {appliedLabel ? ` • ${appliedLabel}` : ''}
+                              </span>
                             </div>
-                            <div className={styles.viewerContent}>
-                              <strong>{app.jobTitle || "Vaga"}</strong>
-                              <span>{app.company || "Empresa"}</span>
-                            </div>
-                          </div>
-                          <span
-                            className={`${styles.statusPill} ${styles[app.status?.toLowerCase()] || ""}`}
-                          >
-                            {STATUS_LABELS[app.status?.toLowerCase()] ||
-                              "Pendente"}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <p className={styles.tipFallback}>
-                    Ainda não enviou nenhuma candidatura.
-                  </p>
-                )}
-                <button
-                  type="button"
-                  className={styles.secondaryButton}
-                  style={{ marginTop: "0.9rem" }}
-                  onClick={() => setActiveTab("applications")}
-                >
-                  Ver todas
-                </button>
-              </section>
-
-              <section className={styles.sectionBlock}>
-                <div className={styles.sectionTitle}>
-                  <span>Perfil completo</span>
-                </div>
-                <div
-                  style={{ display: "flex", gap: "1.1rem", alignItems: "center" }}
-                >
-                  <ProgressRing value={profileCompletion.score} />
-                  <div>
-                    <p className={styles.insightEyebrow}>Completude</p>
-                    <h3
-                      style={{
-                        margin: "0 0 0.3rem",
-                        fontSize: "1.05rem",
-                        fontWeight: 800,
-                        color: "#162a55",
-                      }}
-                    >
-                      {getCompletionHeadline(profileCompletion.score)}
-                    </h3>
-                    <p className={styles.insightDescription}>
-                      {completionHintText}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  className={styles.primaryButton}
-                  style={{ marginTop: "1rem" }}
-                  onClick={() => setActiveTab("profile")}
-                >
-                  Completar perfil
-                </button>
-                <div
-                  style={{
-                    marginTop: "1.1rem",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "0.7rem",
-                  }}
-                >
-                  {profileCategoryBreakdown.map((cat) => (
-                    <div className="metric-row" key={cat.id}>
-                      <span className="metric-label">{cat.label}</span>
-                      <div className="metric-track">
-                        <div
-                          className="metric-fill"
-                          style={{ width: `${cat.percent}%` }}
-                        />
-                      </div>
-                      <span className="metric-val">{cat.percent}%</span>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            </div>
-
-            <div className={styles.insightsGrid}>
-              <section
-                className={`${styles.sectionBlock} ${styles.insightPanel}`}
-              >
-                <div className={styles.profileCompletionHeader}>
-                  <div>
-                    <p className={styles.insightEyebrow}>
-                      Visibilidade do perfil
-                    </p>
-                    <h3 className={styles.profileCompletionValue}>
-                      {profileCompletion.score}%
-                    </h3>
-                    <p className={styles.profileCompletionText}>
-                      {profileCompletion.label}
-                    </p>
-                  </div>
-                  <div className={styles.profileInsightBadges}>
-                    <span
-                      className={`${styles.profileInsightBadge} ${profileCompletion.isProfileComplete ? styles.profileInsightBadgeComplete : styles.profileInsightBadgeMuted}`}
-                    >
-                      {profileCompletion.isProfileComplete
-                        ? "Perfil completo"
-                        : "A melhorar"}
-                    </span>
-                    {profileVisibility.highlighted && (
-                      <span
-                        className={`${styles.profileInsightBadge} ${styles.profileInsightBadgeHighlight}`}
-                      >
-                        Em destaque
-                      </span>
-                    )}
-                    {(profileVisibility.verified ||
-                      profile?.verificationStatus === "verified") && (
-                      <span
-                        className={`${styles.profileInsightBadge} ${styles.profileInsightBadgeVerified}`}
-                      >
-                        Verificado
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className={styles.profileCompletionBar}>
-                  <span
-                    style={{
-                      width: `${Math.max(6, profileCompletion.score)}%`,
-                    }}
-                  />
-                </div>
-                <p className={styles.insightDescription}>
-                  {profileCompletion.completedCount} de{" "}
-                  {profileCompletion.totalItems} blocos concluídos.
-                  {profileVisibility.priorityInSearch
-                    ? " O seu plano também dá prioridade adicional nas buscas."
-                    : ""}
-                </p>
-
-                <ul className={styles.profileChecklist}>
-                  {profileCompletion.checklist.slice(0, 6).map((item) => (
-                    <li
-                      key={item.id}
-                      className={`${styles.profileChecklistItem} ${item.completed ? styles.profileChecklistDone : styles.profileChecklistPending}`}
-                    >
-                      <span>{item.completed ? "✓" : "○"}</span>
-                      <div>
-                        <strong>{item.label}</strong>
-                        {!item.completed && <small>{item.hint}</small>}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-
-                <button
-                  type="button"
-                  className={styles.secondaryButton}
-                  onClick={() => setActiveTab("profile")}
-                >
-                  {profileCompletion.isProfileComplete
-                    ? "Gerir perfil"
-                    : "Completar perfil"}
-                </button>
-              </section>
-
-              <section
-                className={`${styles.sectionBlock} ${styles.insightPanel}`}
-              >
-                <div className={styles.sectionTitle}>
-                  <span>Quem viu o seu perfil</span>
-                  <small>
-                    {profileViewsSummary.total || 0} visualização(ões)
-                  </small>
-                </div>
-
-                {activePlan.features?.canSeeWhoViewedProfile ? (
-                  profileViewers.length ? (
-                    <div className={styles.viewerList}>
-                      {profileViewers.slice(0, 5).map((viewer) => (
-                        <div key={viewer.id} className={styles.viewerItem}>
-                          <div className={styles.viewerAvatar}>
-                            {String(viewer.companyName || "E")
-                              .charAt(0)
-                              .toUpperCase()}
-                          </div>
-                          <div className={styles.viewerContent}>
-                            <strong>{viewer.companyName || "Empresa"}</strong>
-                            <span>
-                              {viewer.viewedAt
-                                ? formatDate(viewer.viewedAt)
-                                : "Data indisponível"}
+                            <span
+                              className={`${styles.overviewStatusPill} ${styles[OVERVIEW_STATUS_CLASS[statusKey]] || styles.statusPending}`}
+                            >
+                              {STATUS_LABELS[statusKey] || 'Pendente'}
                             </span>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   ) : (
-                    <div className={styles.viewerEmptyState}>
-                      Ainda não há empresas registadas nesta secção. Continue a
-                      melhorar o perfil para aumentar a visibilidade.
-                    </div>
-                  )
-                ) : (
-                  <div className={styles.viewerUpgradeBox}>
-                    <p className={styles.insightDescription}>
-                      Ver as empresas que visitaram o seu perfil é um recurso do
-                      plano Premium.
+                    <p className={styles.overviewMutedText}>
+                      Ainda não enviou nenhuma candidatura.
                     </p>
-                    <button
-                      type="button"
-                      className={styles.primaryButton}
-                      onClick={() => setActiveTab("plans")}
-                    >
-                      Ver planos
-                    </button>
-                  </div>
-                )}
-              </section>
-            </div>
+                  )}
+                </section>
 
-            <div className={styles.gridTwoCols}>
-              <section
-                className={`${styles.sectionBlock} ${styles.optimizationPanel}`}
-              >
-                <div className={styles.sectionTitle}>
-                  <span>Motor de Empregabilidade</span>
-                  <small>
-                    {optimizationInsights.activeJobsAnalyzed || 0} vaga(s)
-                    analisada(s)
-                  </small>
-                </div>
-
-                <div className={styles.optimizationScoreRow}>
-                  <div className={styles.optimizationScoreCard}>
-                    <strong className={styles.optimizationScoreValue}>
-                      {optimizationInsights.employabilityScore || 0}
-                    </strong>
-                    <span className={styles.optimizationScoreSuffix}>/100</span>
-                  </div>
-                  <div className={styles.optimizationScoreMeta}>
-                    <h3>
-                      {optimizationInsights.employabilityLabel ||
-                        "Perfil inicial"}
-                    </h3>
-                    <p>
-                      Melhor aderencia atual:{" "}
-                      {optimizationInsights.bestMatchScore || 0}%. Media das
-                      melhores vagas:{" "}
-                      {optimizationInsights.averageTopMatch || 0}%.
-                    </p>
-                  </div>
-                </div>
-
-                {optimizationInsights.strengths?.length > 0 && (
-                  <>
-                    <p className={styles.optimizationSectionLabel}>
-                      Pontos fortes
-                    </p>
-                    <div className={styles.insightChipList}>
-                      {optimizationInsights.strengths.map((strength) => (
-                        <span key={strength} className={styles.insightChip}>
-                          {strength}
-                        </span>
-                      ))}
-                    </div>
-                  </>
-                )}
-
-                {optimizationInsights.improvementActions?.length > 0 && (
-                  <>
-                    <p className={styles.optimizationSectionLabel}>
-                      Proximos ajustes
-                    </p>
-                    <div className={styles.optimizationActionList}>
-                      {optimizationInsights.improvementActions
-                        .slice(0, 3)
-                        .map((action) => (
-                          <article
-                            key={action.id || action.title}
-                            className={styles.optimizationActionItem}
-                          >
-                            <div>
-                              <strong>{action.title}</strong>
-                              <p>{action.detail}</p>
-                            </div>
-                            <span className={styles.optimizationImpactBadge}>
-                              {action.impact || "medio"}
-                            </span>
-                          </article>
-                        ))}
-                    </div>
-                  </>
-                )}
-              </section>
-
-              <section
-                className={`${styles.sectionBlock} ${styles.optimizationPanel}`}
-              >
-                <div className={styles.sectionTitle}>
-                  <span>Palavras-chave e Mercado</span>
-                  <small>Otimizar para busca e matching</small>
-                </div>
-
-                <p className={styles.optimizationSectionLabel}>
-                  Palavras-chave do seu perfil
-                </p>
-                {optimizationInsights.searchKeywords?.length ? (
-                  <div className={styles.insightChipList}>
-                    {optimizationInsights.searchKeywords
-                      .slice(0, 8)
-                      .map((keyword) => (
-                        <span
-                          key={keyword}
-                          className={`${styles.insightChip} ${styles.insightChipPrimary}`}
-                        >
-                          {keyword}
-                        </span>
-                      ))}
-                  </div>
-                ) : (
-                  <p className={styles.insightDescription}>
-                    Adicione mais competencias e objetivo profissional para
-                    gerar palavras-chave.
-                  </p>
-                )}
-
-                <p className={styles.optimizationSectionLabel}>
-                  Competencias em falta mais frequentes
-                </p>
-                {optimizationInsights.marketSkillGaps?.length ? (
-                  <div className={styles.insightChipList}>
-                    {optimizationInsights.marketSkillGaps
-                      .slice(0, 6)
-                      .map((gap) => (
-                        <span
-                          key={gap}
-                          className={`${styles.insightChip} ${styles.insightChipWarning}`}
-                        >
-                          {gap}
-                        </span>
-                      ))}
-                  </div>
-                ) : (
-                  <p className={styles.insightDescription}>
-                    Ainda nao ha lacunas claras com base no mercado atual.
-                  </p>
-                )}
-
-                {optimizationInsights.summarySuggestion && (
-                  <div className={styles.summarySuggestionBox}>
-                    <p className={styles.optimizationSectionLabel}>
-                      Resumo sugerido
-                    </p>
-                    <p>{optimizationInsights.summarySuggestion}</p>
-                  </div>
-                )}
-
-                {optimizationInsights.topMatches?.length > 0 && (
-                  <div className={styles.topMatchList}>
-                    {optimizationInsights.topMatches
-                      .slice(0, 3)
-                      .map((match) => (
-                        <Link
-                          key={match.id}
-                          href={`/vaga/${match.id}`}
-                          className={styles.topMatchItem}
-                        >
-                          <div>
-                            <strong>{match.title}</strong>
-                            <p>{match.company}</p>
-                          </div>
-                          <span>{match.matchPercent}%</span>
-                        </Link>
-                      ))}
-                  </div>
-                )}
-              </section>
-            </div>
-
-            <div className={styles.gridTwoCols}>
-              <div className={styles.chartCard}>
-                <div className={styles.sectionTitle}>
-                  <span>Fluxo de Candidaturas</span>
-                  <small>Últimos 7 dias</small>
-                </div>
-                <div className={styles.chartWrapper}>
-                  <CandidateApplicationsChart data={chartData} />
-                </div>
-              </div>
-              <div className={styles.tipsCard}>
-                <div className={styles.sectionTitle}>
-                  <span>AI Career Tips</span>
-                  <small>Baseado no seu perfil</small>
-                </div>
-                {loadingTips ? (
-                  <div className={styles.tipsLoading}>Carregando dicas...</div>
-                ) : (
-                  <div className={styles.tipsList}>
-                    {careerTips.map((tip, index) => (
-                      <div key={index} className={styles.tipItem}>
-                        <p className={styles.tipTitle}>{tip.title}</p>
-                        <p className={styles.tipContent}>{tip.content}</p>
-                      </div>
-                    ))}
-                    {!careerTips.length && (
-                      <p className={styles.tipFallback}>
-                        Ainda não há dicas personalizadas.
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {upcomingInterviews.length > 0 && (
-              <section className={styles.sectionBlock}>
-                <div className={styles.sectionTitle}>
-                  <span>Próximas entrevistas</span>
-                  <small>{upcomingInterviews.length} agendada(s)</small>
-                </div>
-                <div className={styles.jobList}>
-                  {upcomingInterviews.map((application) => (
-                    <div key={application.id} className={styles.jobCard}>
-                      <div>
-                        <p className={styles.jobTitle}>
-                          {application.jobTitle || "Vaga"}
-                        </p>
-                        <p className={styles.jobMeta}>
-                          {application.company || "Empresa"} •{" "}
-                          {formatInterviewDate(
-                            application.interviewDetails?.scheduledAt,
-                          )}
-                        </p>
-                        <p
-                          className={styles.jobMeta}
-                          style={{ marginTop: "0.35rem", color: "#2057d7" }}
-                        >
-                          <InterviewPlaceOrLink
-                            interviewDetails={application.interviewDetails}
-                          />
-                        </p>
-                        <div
-                          style={{
-                            display: "flex",
-                            gap: "0.5rem",
-                            flexWrap: "wrap",
-                            marginTop: "0.75rem",
-                          }}
-                        >
+                <div>
+                  <h2 className={styles.overviewSectionHeading}>
+                    Vagas Recomendadas
+                  </h2>
+                  {activePlan.features?.canReceiveRecommendations &&
+                  recommendedJobs.length ? (
+                    <div className={styles.overviewJobGrid}>
+                      {recommendedJobs.slice(0, 2).map((job) => {
+                        const jobTags = (
+                          Array.isArray(job.skills)
+                            ? job.skills
+                            : Array.isArray(job.requisitos)
+                              ? job.requisitos
+                              : []
+                        )
+                          .filter(Boolean)
+                          .slice(0, 2);
+                        const jobType =
+                          job.tipoContrato || job.contractType || 'Vaga';
+                        return (
                           <Link
-                            href="/dashboard/candidato/candidaturas?filter=interview"
-                            className={styles.secondaryButton}
-                            style={{ padding: "0.45rem 0.75rem" }}
+                            key={job.id}
+                            href={`/vaga/${job.id}`}
+                            className={styles.overviewJobCard}
                           >
-                            Ver detalhes
+                            <div className={styles.overviewJobTop}>
+                              <span className={styles.overviewJobIcon}>
+                                <FiBriefcase aria-hidden="true" />
+                              </span>
+                              <span className={styles.overviewJobType}>
+                                {jobType}
+                              </span>
+                            </div>
+                            <h3 className={styles.overviewJobTitle}>
+                              {job.titulo || job.title || 'Vaga'}
+                            </h3>
+                            <p className={styles.overviewJobMeta}>
+                              {job.empresa ||
+                                job.empresaNome ||
+                                job.company ||
+                                'Empresa'}{' '}
+                              • {job.localizacao || job.location || 'Local'}
+                            </p>
+                            {jobTags.length > 0 && (
+                              <div className={styles.overviewJobTags}>
+                                {jobTags.map((tag) => (
+                                  <span
+                                    key={tag}
+                                    className={styles.overviewJobTag}
+                                  >
+                                    {tag}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                            <div className={styles.overviewJobFoot}>
+                              <strong className={styles.overviewJobPrice}>
+                                {formatJobSalary(job)}
+                              </strong>
+                              <span className={styles.overviewJobApply}>
+                                Candidatar-se
+                              </span>
+                            </div>
                           </Link>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              downloadInterviewICS(application.id).catch(
-                                (err) => console.error(err),
-                              )
-                            }
-                            className={styles.secondaryButton}
-                            style={{ padding: "0.45rem 0.75rem" }}
-                          >
-                            📆 Calendário
-                          </button>
-                        </div>
-                      </div>
-                      <div className={styles.jobBadge}>Entrevista</div>
+                        );
+                      })}
                     </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            <section className={styles.sectionBlock}>
-              <div className={styles.sectionTitle}>
-                <span>Candidaturas Recentes</span>
-                <small>Gerencie seus envios</small>
-              </div>
-              <ApplicationTable applications={applications} />
-            </section>
-
-            <section className={styles.sectionBlock}>
-              <div className={styles.sectionTitle}>
-                <span>Vagas recomendadas</span>
-                <small>
-                  {recommendedJobs.length} sugestão(ões) baseada(s) no seu
-                  perfil
-                </small>
-              </div>
-              {activePlan.features?.canReceiveRecommendations ? (
-                <div className={styles.jobList}>
-                  {recommendedJobs.slice(0, 4).map((job) => (
-                    <Link
-                      key={job.id}
-                      href={`/vaga/${job.id}`}
-                      className={styles.jobCard}
-                    >
-                      <div>
-                        <p className={styles.jobTitle}>
-                          {job.titulo || job.title || "Título não disponível"}
-                        </p>
-                        <p className={styles.jobMeta}>
-                          {job.empresa ||
-                            job.empresaNome ||
-                            job.company ||
-                            "Empresa desconhecida"}{" "}
-                          •{" "}
-                          {job.localizacao ||
-                            job.location ||
-                            "Local não informado"}
-                        </p>
-                        <p
-                          className={styles.jobMeta}
-                          style={{ marginTop: "0.35rem", color: "#2057d7" }}
-                        >
-                          {job.reasons?.[0] ||
-                            "Compatibilidade com o seu perfil"}
-                        </p>
-                        {job.missingSkills?.length > 0 && (
-                          <p
-                            className={styles.jobMeta}
-                            style={{ marginTop: "0.35rem", color: "#fca5a5" }}
-                          >
-                            Falta reforcar:{" "}
-                            {job.missingSkills.slice(0, 2).join(", ")}
-                          </p>
-                        )}
-                      </div>
-                      <div className={styles.jobBadge}>
-                        {typeof job.score === "number"
-                          ? `${job.score}% match`
-                          : job.tipoContrato || job.contractType || "Contrato"}
-                      </div>
-                    </Link>
-                  ))}
-                  {!recommendedJobs.length && (
-                    <div className={styles.tipFallback}>
-                      Nenhuma sugestão disponível.
+                  ) : (
+                    <div className={styles.overviewCard}>
+                      <p className={styles.overviewMutedText}>
+                        {activePlan.features?.canReceiveRecommendations
+                          ? 'Ainda não há vagas recomendadas. Complete o seu perfil para receber sugestões.'
+                          : 'Recomendações personalizadas são um recurso dos planos Profissional e Premium.'}
+                      </p>
+                      <Link href="/vagas" className={styles.overviewJobApply}>
+                        Explorar todas as vagas →
+                      </Link>
                     </div>
                   )}
                 </div>
-              ) : (
-                <div className={styles.tipFallback}>
-                  Recomendações personalizadas são um recurso dos planos
-                  Profissional e Premium.
-                </div>
-              )}
-            </section>
+              </div>
+
+              <div className={styles.overviewColSide}>
+                <section className={styles.overviewCard}>
+                  <h2 className={styles.overviewCardTitle}>Perfil Completo</h2>
+                  <div className={styles.overviewProfileTopRow}>
+                    <span className={styles.overviewProfilePct}>
+                      {profileCompletion.score}%
+                    </span>
+                    <span className={styles.overviewProfileTag}>
+                      {getCompletionHeadline(profileCompletion.score)}
+                    </span>
+                  </div>
+                  <div className={styles.overviewProfileBar}>
+                    <span
+                      style={{
+                        width: `${Math.max(6, profileCompletion.score)}%`,
+                      }}
+                    />
+                  </div>
+                  <p className={styles.overviewProfileText}>
+                    {completionHintText}
+                  </p>
+                  <button
+                    type="button"
+                    className={styles.overviewOutlineBtn}
+                    onClick={() => openTab('profile')}
+                  >
+                    Completar Perfil
+                  </button>
+                </section>
+
+                <section className={styles.overviewPromoCard}>
+                  <h2 className={styles.overviewPromoTitle}>Destaque-se</h2>
+                  <p className={styles.overviewPromoText}>
+                    Empresas estão à procura de talentos com o seu perfil.
+                    Mantenha o seu currículo atualizado.
+                  </p>
+                  <button
+                    type="button"
+                    className={styles.overviewPromoBtn}
+                    onClick={() => openTab('profile')}
+                  >
+                    Atualizar Agora
+                  </button>
+                </section>
+
+                <section
+                  className={`${styles.overviewCard} ${styles.overviewHelpCard}`}
+                >
+                  <span className={styles.overviewHelpIcon}>
+                    <FiMessageCircle aria-hidden="true" />
+                  </span>
+                  <h3 className={styles.overviewHelpTitle}>
+                    Precisa de ajuda?
+                  </h3>
+                  <p className={styles.overviewHelpText}>
+                    Consulte a nossa central de suporte ou fale connosco.
+                  </p>
+                  <button
+                    type="button"
+                    className={styles.overviewHelpLink}
+                    onClick={() => openTab('messages')}
+                  >
+                    Central de Ajuda
+                  </button>
+                </section>
+              </div>
+            </div>
           </div>
         );
 
-      case "profile":
+      case 'profile': {
+        const strengthScore = Math.max(
+          0,
+          Math.min(100, Math.round(profileCompletion?.score ?? 0)),
+        );
+        const strengthLabel =
+          strengthScore >= 90
+            ? 'Muito Forte'
+            : strengthScore >= 70
+              ? 'Forte'
+              : strengthScore >= 40
+                ? 'Em progresso'
+                : 'Inicial';
+        const hardSkillChips = (profileForm.skills || '')
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean);
+        const softSkillChips = (profileForm.skillsSoft || '')
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean);
+        const profileEmail = profile?.email || user?.email || '';
+
+        if (activeTab === 'profile') {
+          return (
+            <div className={styles.contentArea}>
+              <div className={ps.page}>
+                <div className={ps.head}>
+                  <div>
+                    <h1 className={ps.title}>Configurações de Perfil</h1>
+                    <p className={ps.sub}>
+                      Gerencie sua identidade profissional e informações de
+                      carreira.
+                    </p>
+                  </div>
+                  <div className={ps.headActions}>
+                    <button
+                      type="button"
+                      className={`${ps.actionBtn} ${ps.btnGhost}`}
+                      onClick={handleCancelEdit}
+                      disabled={profileSaving}
+                    >
+                      Descartar
+                    </button>
+                    <button
+                      type="button"
+                      className={`${ps.actionBtn} ${ps.btnPrimary}`}
+                      onClick={handleSaveProfile}
+                      disabled={profileSaving}
+                    >
+                      {profileSaving ? 'Salvando...' : 'Salvar Alterações'}
+                    </button>
+                  </div>
+                </div>
+
+                {profileFeedback && (
+                  <div
+                    className={`${ps.feedback} ${
+                      profileFeedback.type === 'error'
+                        ? ps.feedbackError
+                        : ps.feedbackSuccess
+                    }`}
+                    role="status"
+                  >
+                    {profileFeedback.message}
+                  </div>
+                )}
+
+                <div className={ps.grid}>
+                  {/* LEFT COLUMN */}
+                  <div className={ps.col}>
+                    {/* Identity */}
+                    <section className={`${ps.card} ${ps.idCard}`}>
+                      <div className={ps.avatarWrap}>
+                        {hasProfileAvatar ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={profileAvatarUrl}
+                            alt={profileDisplayName}
+                            className={ps.avatar}
+                          />
+                        ) : (
+                          <span className={ps.avatar}>
+                            {profileAvatarInitials}
+                          </span>
+                        )}
+                        <label className={ps.cam} aria-label="Alterar foto">
+                          <FiCamera aria-hidden="true" />
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className={ps.hiddenFile}
+                            onChange={(e) => handlePhotoUpload(e, 'avatar')}
+                          />
+                        </label>
+                      </div>
+                      <div className={ps.idBody}>
+                        <input
+                          className={ps.idNameInput}
+                          value={profileForm.name}
+                          placeholder="Nome completo"
+                          aria-label="Nome completo"
+                          onChange={(e) =>
+                            handleProfileFieldChange('name', e.target.value)
+                          }
+                        />
+                        <input
+                          className={ps.idHeadlineInput}
+                          value={profileForm.headline}
+                          placeholder="Título profissional (ex.: Senior Fullstack Developer)"
+                          aria-label="Título profissional"
+                          onChange={(e) =>
+                            handleProfileFieldChange('headline', e.target.value)
+                          }
+                        />
+                        <div className={ps.idBadges}>
+                          <span className={`${ps.pill} ${ps.pillBlue}`}>
+                            {profileCompletion.isProfileComplete
+                              ? 'Perfil completo'
+                              : `${strengthScore}% completo`}
+                          </span>
+                          {(profileVisibility.verified ||
+                            profile?.verificationStatus === 'verified') && (
+                            <span className={`${ps.pill} ${ps.pillGreen}`}>
+                              Verificado
+                            </span>
+                          )}
+                          {profileVisibility.highlighted && (
+                            <span className={`${ps.pill} ${ps.pillViolet}`}>
+                              Em destaque
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </section>
+
+                    {/* Informações Pessoais */}
+                    <section className={ps.card}>
+                      <div className={ps.cardHead}>
+                        <span className={ps.cardTitle}>
+                          <span className={ps.cardIcon}>
+                            <FiUser />
+                          </span>
+                          Informações Pessoais
+                        </span>
+                      </div>
+                      <div className={ps.formGrid}>
+                        <label className={ps.field}>
+                          <span className={ps.label}>Nome Completo</span>
+                          <input
+                            className={ps.input}
+                            value={profileForm.name}
+                            onChange={(e) =>
+                              handleProfileFieldChange('name', e.target.value)
+                            }
+                          />
+                        </label>
+                        <label className={ps.field}>
+                          <span className={ps.label}>E-mail Profissional</span>
+                          <input
+                            className={ps.input}
+                            value={profileEmail}
+                            readOnly
+                          />
+                        </label>
+                        <label className={ps.field}>
+                          <span className={ps.label}>Telemóvel</span>
+                          <input
+                            className={ps.input}
+                            value={profileForm.phone}
+                            onChange={(e) =>
+                              handleProfileFieldChange('phone', e.target.value)
+                            }
+                          />
+                        </label>
+                        <label className={ps.field}>
+                          <span className={ps.label}>Localização</span>
+                          <span className={ps.inputWrap}>
+                            <FiMapPin
+                              className={ps.inputIcon}
+                              aria-hidden="true"
+                            />
+                            <input
+                              className={ps.input}
+                              value={profileForm.location}
+                              onChange={(e) =>
+                                handleProfileFieldChange(
+                                  'location',
+                                  e.target.value,
+                                )
+                              }
+                            />
+                          </span>
+                        </label>
+                        <label className={ps.field}>
+                          <span className={ps.label}>Data de Nascimento</span>
+                          <input
+                            className={ps.input}
+                            type="date"
+                            value={profileForm.birthDate}
+                            onChange={(e) =>
+                              handleProfileFieldChange(
+                                'birthDate',
+                                e.target.value,
+                              )
+                            }
+                          />
+                        </label>
+                        <label className={ps.field}>
+                          <span className={ps.label}>Nacionalidade</span>
+                          <input
+                            className={ps.input}
+                            value={profileForm.nationality}
+                            onChange={(e) =>
+                              handleProfileFieldChange(
+                                'nationality',
+                                e.target.value,
+                              )
+                            }
+                          />
+                        </label>
+                        <label className={ps.field}>
+                          <span className={ps.label}>Género</span>
+                          <select
+                            className={ps.select}
+                            value={profileForm.gender}
+                            onChange={(e) =>
+                              handleProfileFieldChange('gender', e.target.value)
+                            }
+                          >
+                            <option value="">Selecionar...</option>
+                            <option value="Masculino">Masculino</option>
+                            <option value="Feminino">Feminino</option>
+                            <option value="Outro">Outro</option>
+                          </select>
+                        </label>
+                        <label className={ps.field}>
+                          <span className={ps.label}>Estado Civil</span>
+                          <input
+                            className={ps.input}
+                            value={profileForm.maritalStatus}
+                            onChange={(e) =>
+                              handleProfileFieldChange(
+                                'maritalStatus',
+                                e.target.value,
+                              )
+                            }
+                          />
+                        </label>
+                        <label className={`${ps.field} ${ps.fieldWide}`}>
+                          <span className={ps.label}>LinkedIn</span>
+                          <span className={ps.importRow}>
+                            <input
+                              className={ps.input}
+                              placeholder="https://linkedin.com/in/…"
+                              value={profileForm.linkedin}
+                              onChange={(e) =>
+                                handleProfileFieldChange(
+                                  'linkedin',
+                                  e.target.value,
+                                )
+                              }
+                            />
+                            <button
+                              type="button"
+                              className={ps.importBtn}
+                              onClick={handleImportLinkedIn}
+                            >
+                              Importar
+                            </button>
+                          </span>
+                        </label>
+                        <label className={`${ps.field} ${ps.fieldWide}`}>
+                          <span className={ps.label}>Website / Portfólio</span>
+                          <input
+                            className={ps.input}
+                            value={profileForm.website}
+                            onChange={(e) =>
+                              handleProfileFieldChange(
+                                'website',
+                                e.target.value,
+                              )
+                            }
+                          />
+                        </label>
+                      </div>
+                    </section>
+
+                    {/* Objetivo Profissional */}
+                    <section className={ps.card}>
+                      <div className={ps.cardHead}>
+                        <span className={ps.cardTitle}>
+                          <span className={ps.cardIcon}>
+                            <FiTarget />
+                          </span>
+                          Objetivo Profissional
+                        </span>
+                      </div>
+                      <div className={ps.formGridTwo}>
+                        <label className={ps.field}>
+                          <span className={ps.label}>Área de Interesse</span>
+                          <input
+                            className={ps.input}
+                            value={profileForm.objectiveArea}
+                            onChange={(e) =>
+                              handleProfileFieldChange(
+                                'objectiveArea',
+                                e.target.value,
+                              )
+                            }
+                          />
+                        </label>
+                        <label className={ps.field}>
+                          <span className={ps.label}>
+                            Tipo (Integral, Remoto…)
+                          </span>
+                          <input
+                            className={ps.input}
+                            value={profileForm.objectiveType}
+                            onChange={(e) =>
+                              handleProfileFieldChange(
+                                'objectiveType',
+                                e.target.value,
+                              )
+                            }
+                          />
+                        </label>
+                      </div>
+                      <label className={ps.field}>
+                        <span className={ps.label}>Aspirações de carreira</span>
+                        <textarea
+                          className={ps.textarea}
+                          value={profileForm.objectiveAspiration}
+                          onChange={(e) =>
+                            handleProfileFieldChange(
+                              'objectiveAspiration',
+                              e.target.value,
+                            )
+                          }
+                        />
+                      </label>
+                    </section>
+
+                    {/* Resumo Profissional */}
+                    <section className={ps.card}>
+                      <div className={ps.cardHead}>
+                        <span className={ps.cardTitle}>
+                          <span className={ps.cardIcon}>
+                            <FiFileText />
+                          </span>
+                          Resumo Profissional
+                        </span>
+                      </div>
+                      <textarea
+                        className={ps.textarea}
+                        value={profileForm.bio}
+                        onChange={(e) =>
+                          handleProfileFieldChange('bio', e.target.value)
+                        }
+                      />
+                    </section>
+
+                    {/* Experiência Profissional */}
+                    <section className={ps.card}>
+                      <div className={ps.cardHead}>
+                        <span className={ps.cardTitle}>
+                          <span className={ps.cardIcon}>
+                            <FiBriefcase />
+                          </span>
+                          Experiência Profissional
+                        </span>
+                        <button
+                          type="button"
+                          className={ps.addLink}
+                          onClick={handleAddExperience}
+                        >
+                          <FiPlusCircle /> Adicionar
+                        </button>
+                      </div>
+                      <div className={ps.expList}>
+                        {profileForm.experiences.map((exp, index) => (
+                          <div className={ps.expItem} key={index}>
+                            <div className={ps.expGrid}>
+                              <input
+                                className={ps.input}
+                                placeholder="Cargo"
+                                value={exp.role}
+                                onChange={(e) =>
+                                  handleExperienceChange(
+                                    index,
+                                    'role',
+                                    e.target.value,
+                                  )
+                                }
+                              />
+                              <input
+                                className={ps.input}
+                                placeholder="Empresa"
+                                value={exp.company}
+                                onChange={(e) =>
+                                  handleExperienceChange(
+                                    index,
+                                    'company',
+                                    e.target.value,
+                                  )
+                                }
+                              />
+                              <input
+                                className={ps.input}
+                                placeholder="Período (ex.: 2022 - Atual)"
+                                value={exp.period}
+                                onChange={(e) =>
+                                  handleExperienceChange(
+                                    index,
+                                    'period',
+                                    e.target.value,
+                                  )
+                                }
+                              />
+                              <textarea
+                                className={ps.textarea}
+                                placeholder="Descrição"
+                                value={exp.description}
+                                onChange={(e) =>
+                                  handleExperienceChange(
+                                    index,
+                                    'description',
+                                    e.target.value,
+                                  )
+                                }
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              className={ps.removeLink}
+                              onClick={() => handleRemoveExperience(index)}
+                            >
+                              Remover
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+
+                    {/* Certificados & Comprovativos */}
+                    <section className={ps.card}>
+                      <div className={ps.cardHead}>
+                        <span className={ps.cardTitle}>
+                          <span className={ps.cardIcon}>
+                            <FiAward />
+                          </span>
+                          Certificados & Comprovativos
+                        </span>
+                      </div>
+                      <label className={ps.field}>
+                        <span className={ps.label}>
+                          Certificações (texto livre)
+                        </span>
+                        <textarea
+                          className={ps.textarea}
+                          value={profileForm.certifications}
+                          onChange={(e) =>
+                            handleProfileFieldChange(
+                              'certifications',
+                              e.target.value,
+                            )
+                          }
+                        />
+                      </label>
+                      <p className={ps.hint} style={{ marginTop: '14px' }}>
+                        Anexe comprovativos em PDF
+                      </p>
+                      {activePlan.features?.canUploadCertificates ? (
+                        <label className={ps.certUploadBtn}>
+                          <FiUploadCloud aria-hidden="true" /> Enviar
+                          certificados
+                          <input
+                            type="file"
+                            multiple
+                            accept=".pdf"
+                            className={ps.hiddenFile}
+                            onChange={handleCertUpload}
+                          />
+                        </label>
+                      ) : (
+                        <div className={ps.planWarn}>
+                          <p className={ps.planWarnText}>
+                            Upload de certificados é exclusivo dos planos
+                            Profissional e Premium.
+                          </p>
+                          <button
+                            type="button"
+                            className={ps.importBtn}
+                            onClick={() => openTab('plans')}
+                          >
+                            Fazer upgrade
+                          </button>
+                        </div>
+                      )}
+                      {profileForm.certificateFiles.length > 0 && (
+                        <ul className={ps.certList}>
+                          {profileForm.certificateFiles.map((url, i) => (
+                            <li className={ps.certItem} key={i}>
+                              <a
+                                className={ps.certLink}
+                                href={url}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                <FiFileText aria-hidden="true" /> Documento{' '}
+                                {i + 1}
+                              </a>
+                              <button
+                                type="button"
+                                className={ps.removeLink}
+                                onClick={() => removeCertificate(i)}
+                              >
+                                Remover
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </section>
+                  </div>
+
+                  {/* RIGHT COLUMN */}
+                  <div className={ps.col}>
+                    {/* Competências */}
+                    <section className={ps.card}>
+                      <div className={ps.cardHead}>
+                        <span className={ps.cardTitle}>Competências</span>
+                      </div>
+                      <div className={ps.skillsGroup}>
+                        <div className={ps.field}>
+                          <span className={ps.label}>
+                            Hard skills (separadas por vírgula)
+                          </span>
+                          <input
+                            className={ps.input}
+                            value={profileForm.skills}
+                            onChange={(e) =>
+                              handleProfileFieldChange('skills', e.target.value)
+                            }
+                          />
+                          {hardSkillChips.length > 0 && (
+                            <div className={ps.chipsPreview}>
+                              {hardSkillChips.map((s) => (
+                                <span className={ps.chip} key={s}>
+                                  {s}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <div className={ps.field}>
+                          <span className={ps.label}>
+                            Soft skills (separadas por vírgula)
+                          </span>
+                          <input
+                            className={ps.input}
+                            value={profileForm.skillsSoft}
+                            onChange={(e) =>
+                              handleProfileFieldChange(
+                                'skillsSoft',
+                                e.target.value,
+                              )
+                            }
+                          />
+                          {softSkillChips.length > 0 && (
+                            <div className={ps.chipsPreview}>
+                              {softSkillChips.map((s) => (
+                                <span
+                                  className={`${ps.chip} ${ps.chipLime}`}
+                                  key={s}
+                                >
+                                  {s}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <div className={ps.field}>
+                          <span className={ps.label}>
+                            Competências digitais
+                          </span>
+                          <form
+                            onSubmit={addDigitalSkill}
+                            className={ps.digitalForm}
+                          >
+                            <input
+                              name="skill"
+                              className={ps.input}
+                              placeholder="Adicionar ferramenta…"
+                            />
+                            <button
+                              type="submit"
+                              className={ps.addBtn}
+                              aria-label="Adicionar competência digital"
+                            >
+                              <FiPlus />
+                            </button>
+                          </form>
+                          {profileForm.digitalSkills.length > 0 && (
+                            <div className={ps.chipsPreview}>
+                              {profileForm.digitalSkills.map((s) => (
+                                <span className={ps.chip} key={s}>
+                                  {s}
+                                  <button
+                                    type="button"
+                                    className={ps.chipX}
+                                    onClick={() => removeDigitalSkill(s)}
+                                    aria-label={`Remover ${s}`}
+                                  >
+                                    <FiX />
+                                  </button>
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </section>
+
+                    {/* Educação */}
+                    <section className={ps.card}>
+                      <div className={ps.cardHead}>
+                        <span className={ps.cardTitle}>
+                          <span className={ps.cardIcon}>
+                            <FiBookOpen />
+                          </span>
+                          Educação
+                        </span>
+                      </div>
+                      <p className={ps.hint}>
+                        Linha por linha: Curso; Instituição; Ano
+                      </p>
+                      <textarea
+                        className={ps.textarea}
+                        value={profileForm.education}
+                        onChange={(e) =>
+                          handleProfileFieldChange('education', e.target.value)
+                        }
+                      />
+                    </section>
+
+                    {/* Idiomas */}
+                    <section className={ps.card}>
+                      <div className={ps.cardHead}>
+                        <span className={ps.cardTitle}>
+                          <span className={ps.cardIcon}>
+                            <FiGlobe />
+                          </span>
+                          Idiomas
+                        </span>
+                      </div>
+                      <p className={ps.hint}>Linha por linha: Idioma; Nível</p>
+                      <textarea
+                        className={ps.textarea}
+                        value={profileForm.languages}
+                        onChange={(e) =>
+                          handleProfileFieldChange('languages', e.target.value)
+                        }
+                      />
+                    </section>
+
+                    {/* Currículo */}
+                    <section className={ps.card}>
+                      <div className={ps.cardHead}>
+                        <span className={ps.cardTitle}>
+                          <span className={ps.cardIcon}>
+                            <FiFileText />
+                          </span>
+                          Currículo
+                        </span>
+                      </div>
+                      <div className={ps.cvBox}>
+                        <span className={ps.cvName}>
+                          {cvState.name || 'Nenhum CV'}
+                        </span>
+                        {cvState.url && (
+                          <a
+                            className={ps.cvLink}
+                            href={cvState.url}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            Ver CV
+                          </a>
+                        )}
+                        <label className={ps.cvBtn}>
+                          <FiUploadCloud aria-hidden="true" />
+                          {cvState.uploading ? 'Enviando...' : 'Atualizar CV'}
+                          <input
+                            type="file"
+                            accept="application/pdf"
+                            className={ps.hiddenFile}
+                            onChange={handleCvChange}
+                          />
+                        </label>
+                      </div>
+                    </section>
+
+                    {/* Força do Perfil */}
+                    <section className={ps.strengthCard}>
+                      <h3 className={ps.strengthTitle}>
+                        <FiZap aria-hidden="true" /> Força do Perfil
+                      </h3>
+                      <div className={ps.strengthRow}>
+                        <span className={ps.strengthLabel}>
+                          {strengthLabel}
+                        </span>
+                        <span className={ps.strengthPct}>{strengthScore}%</span>
+                      </div>
+                      <div className={ps.strengthTrack}>
+                        <div
+                          className={ps.strengthFill}
+                          style={{ width: `${strengthScore}%` }}
+                        />
+                      </div>
+                      <p className={ps.strengthText}>
+                        Complete o seu perfil e faça a verificação para atrair
+                        mais recrutadores.
+                      </p>
+                      <button
+                        type="button"
+                        className={ps.strengthBtn}
+                        onClick={() => openTab('verification')}
+                      >
+                        <FiZap aria-hidden="true" /> Melhorar Perfil
+                      </button>
+                    </section>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
         return (
           <div className={styles.contentArea}>
             <div className={styles.profileHeader}>
               <div
-                className={`${styles.profileCover} ${styles.profileCoverEditable} ${!hasProfileCover ? styles.profileCoverEmpty : ""}`}
+                className={`${styles.profileCover} ${styles.profileCoverEditable} ${!hasProfileCover ? styles.profileCoverEmpty : ''}`}
                 style={
                   hasProfileCover
                     ? {
@@ -2897,16 +3543,16 @@ const CandidateDashboard = () => {
                 }
               >
                 <div
-                  className={`${styles.coverOverlay} ${!hasProfileCover ? styles.coverOverlaySoft : ""}`}
+                  className={`${styles.coverOverlay} ${!hasProfileCover ? styles.coverOverlaySoft : ''}`}
                 />
                 {editingProfile && (
                   <label className={styles.editCoverBtn}>
-                    {coverUploading ? "Enviando..." : "📷 Alterar Capa"}
+                    {coverUploading ? 'Enviando...' : '📷 Alterar Capa'}
                     <input
                       type="file"
                       className={styles.hiddenFileInput}
                       accept="image/*"
-                      onChange={(e) => handlePhotoUpload(e, "cover")}
+                      onChange={(e) => handlePhotoUpload(e, 'cover')}
                     />
                   </label>
                 )}
@@ -2914,10 +3560,13 @@ const CandidateDashboard = () => {
               <div className={styles.profileInfo}>
                 <div className={styles.avatarEditWrap}>
                   {hasProfileAvatar ? (
-                    <img
+                    <Image
                       src={profileAvatarUrl}
                       alt={profileDisplayName}
                       className={styles.profileAvatar}
+                      width={144}
+                      height={144}
+                      unoptimized
                     />
                   ) : (
                     <div
@@ -2934,7 +3583,7 @@ const CandidateDashboard = () => {
                         type="file"
                         className={styles.hiddenFileInput}
                         accept="image/*"
-                        onChange={(e) => handlePhotoUpload(e, "avatar")}
+                        onChange={(e) => handlePhotoUpload(e, 'avatar')}
                       />
                     </label>
                   )}
@@ -2946,14 +3595,14 @@ const CandidateDashboard = () => {
                         className={styles.profileInput}
                         value={profileForm.name}
                         onChange={(e) =>
-                          handleProfileFieldChange("name", e.target.value)
+                          handleProfileFieldChange('name', e.target.value)
                         }
                       />
                       <input
                         className={styles.profileInput}
                         value={profileForm.headline}
                         onChange={(e) =>
-                          handleProfileFieldChange("headline", e.target.value)
+                          handleProfileFieldChange('headline', e.target.value)
                         }
                       />
                     </>
@@ -2970,7 +3619,7 @@ const CandidateDashboard = () => {
                     </>
                   )}
                   <p className={styles.profileMeta}>
-                    {profile?.city || profile?.location || user?.location} •{" "}
+                    {profile?.city || profile?.location || user?.location} •{' '}
                     {profile?.email || user?.email}
                   </p>
                   <div className={styles.profileHeaderBadges}>
@@ -2978,11 +3627,11 @@ const CandidateDashboard = () => {
                       className={`${styles.profileHeaderBadge} ${profileCompletion.isProfileComplete ? styles.profileHeaderBadgeComplete : styles.profileHeaderBadgeMuted}`}
                     >
                       {profileCompletion.isProfileComplete
-                        ? "Perfil completo"
+                        ? 'Perfil completo'
                         : `${profileCompletion.score}% completo`}
                     </span>
                     {(profileVisibility.verified ||
-                      profile?.verificationStatus === "verified") && (
+                      profile?.verificationStatus === 'verified') && (
                       <span
                         className={`${styles.profileHeaderBadge} ${styles.profileHeaderBadgeVerified}`}
                       >
@@ -3014,7 +3663,7 @@ const CandidateDashboard = () => {
                         disabled={profileSaving}
                         onClick={handleSaveProfile}
                       >
-                        {profileSaving ? "Salvando..." : "Salvar"}
+                        {profileSaving ? 'Salvando...' : 'Salvar'}
                       </button>
                     </div>
                   ) : (
@@ -3031,7 +3680,7 @@ const CandidateDashboard = () => {
               {profileFeedback && (
                 <p
                   className={
-                    profileFeedback.type === "error"
+                    profileFeedback.type === 'error'
                       ? styles.profileError
                       : styles.profileSuccess
                   }
@@ -3041,862 +3690,450 @@ const CandidateDashboard = () => {
               )}
             </div>
             <div className={styles.profileGrid}>
-              {/* EDIT MODE: FULL FORM */}
-              {editingProfile ? (
-                <div
-                  className={`${styles.profileCardWide} ${styles.profileCardWideFull}`}
-                >
-                  {/* Informações Pessoais */}
-                  <div className={styles.formSection}>
-                    <h3 className={styles.formSectionTitle}>
-                      🧑‍💼 Informações Pessoais
-                    </h3>
-                    <div className={styles.formSectionGrid}>
-                      <input
-                        className={styles.profileInput}
-                        placeholder="Nome Completo"
-                        value={profileForm.name}
-                        onChange={(e) =>
-                          handleProfileFieldChange("name", e.target.value)
-                        }
-                      />
-                      <input
-                        className={styles.profileInput}
-                        type="date"
-                        placeholder="Data de Nascimento"
-                        value={profileForm.birthDate}
-                        onChange={(e) =>
-                          handleProfileFieldChange("birthDate", e.target.value)
-                        }
-                      />
-                      <input
-                        className={styles.profileInput}
-                        placeholder="Nacionalidade"
-                        value={profileForm.nationality}
-                        onChange={(e) =>
-                          handleProfileFieldChange(
-                            "nationality",
-                            e.target.value,
-                          )
-                        }
-                      />
-                      <select
-                        className={styles.profileInput}
-                        value={profileForm.gender}
-                        onChange={(e) =>
-                          handleProfileFieldChange("gender", e.target.value)
-                        }
-                      >
-                        <option value="">Gênero...</option>
-                        <option value="Masculino">Masculino</option>
-                        <option value="Feminino">Feminino</option>
-                        <option value="Outro">Outro</option>
-                      </select>
-                      <input
-                        className={styles.profileInput}
-                        placeholder="Estado Civil"
-                        value={profileForm.maritalStatus}
-                        onChange={(e) =>
-                          handleProfileFieldChange(
-                            "maritalStatus",
-                            e.target.value,
-                          )
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  {/* Contatos */}
-                  <div className={styles.formSection}>
-                    <h3 className={styles.formSectionTitle}>📞 Contatos</h3>
-                    <div className={styles.formSectionGrid}>
-                      <input
-                        className={styles.profileInput}
-                        placeholder="Telefone"
-                        value={profileForm.phone}
-                        onChange={(e) =>
-                          handleProfileFieldChange("phone", e.target.value)
-                        }
-                      />
-                      <input
-                        className={styles.profileInput}
-                        placeholder="Localização"
-                        value={profileForm.location}
-                        onChange={(e) =>
-                          handleProfileFieldChange("location", e.target.value)
-                        }
-                      />
-                      <div className={styles.inlineActionField}>
-                        <input
-                          className={styles.profileInput}
-                          placeholder="LinkedIn URL"
-                          value={profileForm.linkedin}
-                          onChange={(e) =>
-                            handleProfileFieldChange("linkedin", e.target.value)
-                          }
-                        />
-                        <button
-                          type="button"
-                          className={styles.secondaryButton}
-                          onClick={handleImportLinkedIn}
-                        >
-                          Importar
-                        </button>
-                      </div>
-                      <input
-                        className={styles.profileInput}
-                        placeholder="Website / Portfolio"
-                        value={profileForm.website}
-                        onChange={(e) =>
-                          handleProfileFieldChange("website", e.target.value)
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  {/* Objetivo */}
-                  <div className={styles.formSection}>
-                    <h3 className={styles.formSectionTitle}>
-                      🎯 Objetivo Profissional
-                    </h3>
-                    <div className={styles.formSectionGridTwo}>
-                      <input
-                        className={styles.profileInput}
-                        placeholder="Área de Interesse"
-                        value={profileForm.objectiveArea}
-                        onChange={(e) =>
-                          handleProfileFieldChange(
-                            "objectiveArea",
-                            e.target.value,
-                          )
-                        }
-                      />
-                      <input
-                        className={styles.profileInput}
-                        placeholder="Tipo (Integral, Remoto...)"
-                        value={profileForm.objectiveType}
-                        onChange={(e) =>
-                          handleProfileFieldChange(
-                            "objectiveType",
-                            e.target.value,
-                          )
-                        }
-                      />
-                    </div>
-                    <textarea
-                      className={styles.profileTextarea}
-                      rows={3}
-                      placeholder="Aspirações de carreira..."
-                      value={profileForm.objectiveAspiration}
-                      onChange={(e) =>
-                        handleProfileFieldChange(
-                          "objectiveAspiration",
-                          e.target.value,
-                        )
-                      }
-                    />
-                  </div>
-
-                  {/* Resumo */}
-                  <div className={styles.formSection}>
-                    <h3 className={styles.formSectionTitle}>📝 Resumo (Bio)</h3>
-                    <textarea
-                      className={styles.profileTextarea}
-                      rows={4}
-                      value={profileForm.bio}
-                      onChange={(e) =>
-                        handleProfileFieldChange("bio", e.target.value)
-                      }
-                    />
-                  </div>
-
-                  {/* Formação e Idiomas (TextAreas simples conforme Profile.js) */}
-                  <div className={styles.formSection}>
-                    <div className={styles.formSectionGridWide}>
-                      <div>
-                        <h3 className={styles.formSectionTitle}>
-                          🎓 Formação Acadêmica
-                        </h3>
-                        <p className={styles.formSectionHint}>
-                          Linha por linha: Curso; Instituição; Ano
+              <>
+                <div className={styles.profileCard}>
+                  <h3>Resumo</h3>
+                  <p>{profile?.bio || user?.bio}</p>
+                  {(profile?.objectiveArea || user?.objectiveArea) && (
+                    <div className={styles.profileObjective}>
+                      <p className={styles.profileObjectiveValue}>
+                        🎯 Objetivo:{' '}
+                        <span>
+                          {profile?.objectiveArea || user?.objectiveArea}{' '}
+                          {profile?.objectiveType || user?.objectiveType
+                            ? `(${profile?.objectiveType || user?.objectiveType})`
+                            : ''}
+                        </span>
+                      </p>
+                      {(profile?.objectiveAspiration ||
+                        user?.objectiveAspiration) && (
+                        <p className={styles.profileObjectiveQuote}>
+                          &quot;
+                          {profile?.objectiveAspiration ||
+                            user?.objectiveAspiration}
+                          &quot;
                         </p>
-                        <textarea
-                          className={styles.profileTextarea}
-                          rows={5}
-                          value={profileForm.education}
-                          onChange={(e) =>
-                            handleProfileFieldChange(
-                              "education",
-                              e.target.value,
-                            )
-                          }
-                        />
-                      </div>
-                      <div>
-                        <h3 className={styles.formSectionTitle}>🗣️ Idiomas</h3>
-                        <p className={styles.formSectionHint}>
-                          Linha por linha: Idioma; Nível
-                        </p>
-                        <textarea
-                          className={styles.profileTextarea}
-                          rows={5}
-                          value={profileForm.languages}
-                          onChange={(e) =>
-                            handleProfileFieldChange(
-                              "languages",
-                              e.target.value,
-                            )
-                          }
-                        />
-                      </div>
+                      )}
                     </div>
-                  </div>
+                  )}
+                </div>
 
-                  {/* Habilidades */}
-                  <div className={styles.formSection}>
-                    <h3 className={styles.formSectionTitle}>💡 Habilidades</h3>
-                    <div className={styles.stackFields}>
-                      <div>
-                        <label className={styles.fieldLabel}>
-                          Hard Skills (separadas por vírgula)
-                        </label>
-                        <input
-                          className={styles.profileInput}
-                          value={profileForm.skills}
-                          onChange={(e) =>
-                            handleProfileFieldChange("skills", e.target.value)
-                          }
-                        />
-                      </div>
-                      <div>
-                        <label className={styles.fieldLabel}>
-                          Soft Skills (separadas por vírgula)
-                        </label>
-                        <input
-                          className={styles.profileInput}
-                          value={profileForm.skillsSoft}
-                          onChange={(e) =>
-                            handleProfileFieldChange(
-                              "skillsSoft",
-                              e.target.value,
-                            )
-                          }
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Competências Digitais */}
-                  <div className={styles.formSection}>
-                    <h3 className={styles.formSectionTitle}>
-                      💻 Competências Digitais
-                    </h3>
-                    <form
-                      onSubmit={addDigitalSkill}
-                      className={styles.digitalSkillForm}
-                    >
-                      <input
-                        name="skill"
-                        className={`${styles.profileInput} ${styles.digitalSkillInput}`}
-                        placeholder="Adicionar ferramenta..."
-                      />
-                      <button type="submit" className={styles.secondaryButton}>
-                        +
-                      </button>
-                    </form>
-                    <div className={styles.digitalSkills}>
-                      {profileForm.digitalSkills.map((s) => (
-                        <span key={s} className={styles.digitalSkillTag}>
-                          {s}{" "}
-                          <button
-                            type="button"
-                            className={styles.digitalSkillRemove}
-                            onClick={() => removeDigitalSkill(s)}
-                          >
-                            ×
-                          </button>
+                <div className={styles.profileCard}>
+                  <h3>Competências</h3>
+                  <div className={styles.skillsList}>
+                    {profile?.skillsHard &&
+                      profile.skillsHard.map((skill) => (
+                        <span key={skill}>{skill}</span>
+                      ))}
+                    {profile?.digitalSkills &&
+                      profile.digitalSkills.map((s) => (
+                        <span key={s} className={styles.skillAccent}>
+                          {s}
                         </span>
                       ))}
-                    </div>
-                  </div>
-
-                  {/* Experiência (Estruturada) */}
-                  <div>
-                    <div className={styles.profileCardWideHeader}>
-                      <h3 className={styles.formSectionTitle}>
-                        💼 Experiência Profissional
-                      </h3>
-                      <button
-                        type="button"
-                        className={styles.secondaryButton}
-                        onClick={handleAddExperience}
-                      >
-                        + Adicionar
-                      </button>
-                    </div>
-                    <div className={styles.timelineList}>
-                      {profileForm.experiences.map((exp, index) => (
-                        <div
-                          key={index}
-                          className={`${styles.experienceItem} ${styles.experienceItemExtended}`}
-                        >
-                          <div
-                            className={`${styles.experienceFields} ${styles.experienceFieldsCompact}`}
-                          >
-                            <input
-                              className={styles.profileInput}
-                              value={exp.role}
-                              placeholder="Cargo"
-                              onChange={(e) =>
-                                handleExperienceChange(
-                                  index,
-                                  "role",
-                                  e.target.value,
-                                )
-                              }
-                            />
-                            <input
-                              className={styles.profileInput}
-                              value={exp.company}
-                              placeholder="Empresa"
-                              onChange={(e) =>
-                                handleExperienceChange(
-                                  index,
-                                  "company",
-                                  e.target.value,
-                                )
-                              }
-                            />
-                            <input
-                              className={styles.profileInput}
-                              value={exp.period}
-                              placeholder="Período"
-                              onChange={(e) =>
-                                handleExperienceChange(
-                                  index,
-                                  "period",
-                                  e.target.value,
-                                )
-                              }
-                            />
-                            <textarea
-                              className={styles.profileTextarea}
-                              rows={2}
-                              value={exp.description}
-                              placeholder="Descrição"
-                              onChange={(e) =>
-                                handleExperienceChange(
-                                  index,
-                                  "description",
-                                  e.target.value,
-                                )
-                              }
-                            />
-                          </div>
-                          <button
-                            type="button"
-                            className={styles.linkButton}
-                            onClick={() => handleRemoveExperience(index)}
-                          >
-                            Remover
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Certificados Upload */}
-                  <div className={styles.sectionDividerTop}>
-                    <h3 className={styles.formSectionTitle}>📜 Certificados</h3>
-                    <p className={styles.formSectionHint}>
-                      Adicione comprovativos em PDF
-                    </p>
-                    {activePlan.features?.canUploadCertificates ? (
-                      <label
-                        className={`${styles.secondaryButton} ${styles.certificateUploadButton}`}
-                      >
-                        📤 Upload Certificados
-                        <input
-                          type="file"
-                          multiple
-                          accept=".pdf"
-                          className={styles.hiddenFileInput}
-                          onChange={handleCertUpload}
-                        />
-                      </label>
-                    ) : (
-                      <div className={styles.formSectionWarning}>
-                        <p className={styles.warningText}>
-                          Este recurso é exclusivo dos planos Profissional e
-                          Premium.
-                        </p>
-                        <button
-                          type="button"
-                          className={styles.secondaryButton}
-                          onClick={() => setActiveTab("plans")}
-                        >
-                          Fazer upgrade
-                        </button>
-                      </div>
-                    )}
-                    {profileForm.certificateFiles.length > 0 && (
-                      <ul className={styles.certificateList}>
-                        {profileForm.certificateFiles.map((url, i) => (
-                          <li key={i} className={styles.certificateListItem}>
-                            <a
-                              href={url}
-                              target="_blank"
-                              rel="noreferrer"
-                              className={styles.certificateLink}
-                            >
-                              Certificado {i + 1}
-                            </a>
-                            <button
-                              type="button"
-                              className={styles.linkButton}
-                              onClick={() => removeCertificate(i)}
-                            >
-                              Remover
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
                   </div>
                 </div>
-              ) : (
-                /* VIEW MODE: COMPACT CARDS + EXPANDED DETAILS */
-                <>
-                  <div className={styles.profileCard}>
-                    <h3>Resumo</h3>
-                    <p>{profile?.bio || user?.bio}</p>
-                    {(profile?.objectiveArea || user?.objectiveArea) && (
-                      <div className={styles.profileObjective}>
-                        <p className={styles.profileObjectiveValue}>
-                          🎯 Objetivo:{" "}
-                          <span>
-                            {profile?.objectiveArea || user?.objectiveArea}{" "}
-                            {profile?.objectiveType || user?.objectiveType
-                              ? `(${profile?.objectiveType || user?.objectiveType})`
-                              : ""}
-                          </span>
-                        </p>
-                        {(profile?.objectiveAspiration ||
-                          user?.objectiveAspiration) && (
-                          <p className={styles.profileObjectiveQuote}>
-                            &quot;
-                            {profile?.objectiveAspiration ||
-                              user?.objectiveAspiration}
-                            &quot;
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </div>
 
-                  <div className={styles.profileCard}>
-                    <h3>Competências</h3>
-                    <div className={styles.skillsList}>
-                      {profile?.skillsHard &&
-                        profile.skillsHard.map((skill) => (
-                          <span key={skill}>{skill}</span>
-                        ))}
-                      {profile?.digitalSkills &&
-                        profile.digitalSkills.map((s) => (
-                          <span key={s} className={styles.skillAccent}>
-                            {s}
-                          </span>
-                        ))}
-                    </div>
-                  </div>
-
-                  <div className={styles.profileCard}>
-                    <h3>Contato</h3>
-                    <p>📧 {profile?.email || user?.email}</p>
-                    <p>📱 {profile?.phone || user?.phone}</p>
+                <div className={styles.profileCard}>
+                  <h3>Contato</h3>
+                  <p>📧 {profile?.email || user?.email}</p>
+                  <p>📱 {profile?.phone || user?.phone}</p>
+                  <p>
+                    📍 {profile?.city || profile?.location || user?.location}
+                  </p>
+                  {profile?.linkedin && (
                     <p>
-                      📍 {profile?.city || profile?.location || user?.location}
+                      <a
+                        href={profile.linkedin}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={styles.profileExternalLink}
+                      >
+                        LinkedIn
+                      </a>
                     </p>
-                    {profile?.linkedin && (
-                      <p>
-                        <a
-                          href={profile.linkedin}
-                          target="_blank"
-                          rel="noreferrer"
-                          className={styles.profileExternalLink}
-                        >
-                          LinkedIn
-                        </a>
-                      </p>
-                    )}
-                    {profile?.website && (
-                      <p>
-                        <a
-                          href={profile.website}
-                          target="_blank"
-                          rel="noreferrer"
-                          className={styles.profileExternalLink}
-                        >
-                          Website
-                        </a>
-                      </p>
-                    )}
+                  )}
+                  {profile?.website && (
+                    <p>
+                      <a
+                        href={profile.website}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={styles.profileExternalLink}
+                      >
+                        Website
+                      </a>
+                    </p>
+                  )}
 
-                    <div
-                      className={`${styles.cvUploadSection} ${styles.cvUploadSectionStacked}`}
-                    >
-                      <p className={styles.cvLabel}>Currículo atual</p>
-                      <p className={styles.cvName}>
-                        {cvState.name || "Nenhum CV"}
-                      </p>
-                      {cvState.url && (
-                        <a
-                          href={cvState.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className={styles.cvLink}
-                        >
-                          Ver CV
-                        </a>
-                      )}
-                      <label className={styles.cvUploadButton}>
-                        <input
-                          type="file"
-                          accept="application/pdf"
-                          onChange={handleCvChange}
-                        />
-                        {cvState.uploading ? "Enviando..." : "Atualizar CV"}
-                      </label>
-                    </div>
+                  <div
+                    className={`${styles.cvUploadSection} ${styles.cvUploadSectionStacked}`}
+                  >
+                    <p className={styles.cvLabel}>Currículo atual</p>
+                    <p className={styles.cvName}>
+                      {cvState.name || 'Nenhum CV'}
+                    </p>
+                    {cvState.url && (
+                      <a
+                        href={cvState.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={styles.cvLink}
+                      >
+                        Ver CV
+                      </a>
+                    )}
+                    <label className={styles.cvUploadButton}>
+                      <input
+                        type="file"
+                        accept="application/pdf"
+                        onChange={handleCvChange}
+                      />
+                      {cvState.uploading ? 'Enviando...' : 'Atualizar CV'}
+                    </label>
                   </div>
+                </div>
 
+                <div className={styles.profileCardWide}>
+                  <h3>Experiência</h3>
+                  <div className={styles.timelineList}>
+                    {(() => {
+                      const experienceItems = Array.isArray(profile?.experience)
+                        ? profile.experience
+                        : Array.isArray(user?.experience)
+                          ? user.experience
+                          : [];
+
+                      if (!experienceItems.length) {
+                        return (
+                          <p className={styles.profileMeta}>
+                            Nenhuma experiência adicionada.
+                          </p>
+                        );
+                      }
+
+                      return experienceItems.map((exp, index) => {
+                        const role = exp?.role || exp?.title || '';
+                        const company =
+                          exp?.company ||
+                          exp?.employer ||
+                          exp?.organization ||
+                          '';
+                        const period = exp?.period || exp?.dateRange || '';
+                        const description =
+                          exp?.description || exp?.details || '';
+                        return (
+                          <article key={`${company || 'exp'}-${index}`}>
+                            <h4>{role || 'Experiência profissional'}</h4>
+                            {company || period ? (
+                              <p className={styles.profileMeta}>
+                                {[company, period].filter(Boolean).join(' • ')}
+                              </p>
+                            ) : null}
+                            {description ? <p>{description}</p> : null}
+                          </article>
+                        );
+                      });
+                    })()}
+                  </div>
+                </div>
+
+                {/* Detalhes Adicionais em Modo Visualização */}
+                {(profile?.education ||
+                  user?.education ||
+                  profile?.languages ||
+                  user?.languages ||
+                  profile?.certifications ||
+                  user?.certifications) && (
                   <div className={styles.profileCardWide}>
-                    <h3>Experiência</h3>
-                    <div className={styles.timelineList}>
-                      {(() => {
-                        const experienceItems = Array.isArray(
-                          profile?.experience,
-                        )
-                          ? profile.experience
-                          : Array.isArray(user?.experience)
-                            ? user.experience
-                            : [];
-
-                        if (!experienceItems.length) {
-                          return (
-                            <p className={styles.profileMeta}>
-                              Nenhuma experiência adicionada.
-                            </p>
-                          );
-                        }
-
-                        return experienceItems.map((exp, index) => {
-                          const role = exp?.role || exp?.title || "";
-                          const company =
-                            exp?.company ||
-                            exp?.employer ||
-                            exp?.organization ||
-                            "";
-                          const period = exp?.period || exp?.dateRange || "";
-                          const description =
-                            exp?.description || exp?.details || "";
-                          return (
-                            <article key={`${company || "exp"}-${index}`}>
-                              <h4>{role || "Experiência profissional"}</h4>
-                              {company || period ? (
-                                <p className={styles.profileMeta}>
-                                  {[company, period]
-                                    .filter(Boolean)
-                                    .join(" • ")}
-                                </p>
-                              ) : null}
-                              {description ? <p>{description}</p> : null}
-                            </article>
-                          );
-                        });
-                      })()}
+                    <div className={styles.detailGrid}>
+                      {(profile?.education || user?.education) && (
+                        <div>
+                          <h3>Formação</h3>
+                          <pre className={styles.preformattedText}>
+                            {profile?.education || user?.education}
+                          </pre>
+                        </div>
+                      )}
+                      {(profile?.languages || user?.languages) && (
+                        <div>
+                          <h3>Idiomas</h3>
+                          <pre className={styles.preformattedText}>
+                            {profile?.languages || user?.languages}
+                          </pre>
+                        </div>
+                      )}
+                      {(profile?.certifications || user?.certifications) && (
+                        <div>
+                          <h3>Certificações</h3>
+                          <pre className={styles.preformattedText}>
+                            {profile?.certifications || user?.certifications}
+                          </pre>
+                        </div>
+                      )}
                     </div>
                   </div>
-
-                  {/* Detalhes Adicionais em Modo Visualização */}
-                  {(profile?.education ||
-                    user?.education ||
-                    profile?.languages ||
-                    user?.languages ||
-                    profile?.certifications ||
-                    user?.certifications) && (
+                )}
+                {(profile?.certificateFiles || user?.certificateFiles) &&
+                  (profile?.certificateFiles || user?.certificateFiles).length >
+                    0 && (
                     <div className={styles.profileCardWide}>
-                      <div className={styles.detailGrid}>
-                        {(profile?.education || user?.education) && (
-                          <div>
-                            <h3>Formação</h3>
-                            <pre className={styles.preformattedText}>
-                              {profile?.education || user?.education}
-                            </pre>
-                          </div>
-                        )}
-                        {(profile?.languages || user?.languages) && (
-                          <div>
-                            <h3>Idiomas</h3>
-                            <pre className={styles.preformattedText}>
-                              {profile?.languages || user?.languages}
-                            </pre>
-                          </div>
-                        )}
-                        {(profile?.certifications || user?.certifications) && (
-                          <div>
-                            <h3>Certificações</h3>
-                            <pre className={styles.preformattedText}>
-                              {profile?.certifications || user?.certifications}
-                            </pre>
-                          </div>
-                        )}
+                      <h3>Comprovativos / Certificados</h3>
+                      <div className={styles.documentChips}>
+                        {(
+                          profile?.certificateFiles || user?.certificateFiles
+                        ).map((url, i) => (
+                          <a
+                            key={i}
+                            href={url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className={styles.secondaryButton}
+                          >
+                            📄 Documento {i + 1}
+                          </a>
+                        ))}
                       </div>
                     </div>
                   )}
-                  {(profile?.certificateFiles || user?.certificateFiles) &&
-                    (profile?.certificateFiles || user?.certificateFiles)
-                      .length > 0 && (
-                      <div className={styles.profileCardWide}>
-                        <h3>Comprovativos / Certificados</h3>
-                        <div className={styles.documentChips}>
-                          {(
-                            profile?.certificateFiles || user?.certificateFiles
-                          ).map((url, i) => (
-                            <a
-                              key={i}
-                              href={url}
-                              target="_blank"
-                              rel="noreferrer"
-                              className={styles.secondaryButton}
-                            >
-                              📄 Documento {i + 1}
-                            </a>
-                          ))}
+              </>
+            </div>
+          </div>
+        );
+      }
+
+      case 'messages':
+        return (
+          <div className={styles.contentArea}>
+            <CandidateSectionHeader
+              eyebrow="Conversas"
+              title="Mensagens"
+              description="Mantenha as conversas com empresas organizadas num só lugar."
+              count={unreadMessages ? `${unreadMessages} por ler` : 'Em dia'}
+            />
+            <div className={styles.messagesLayout}>
+              <div className={styles.messagesList}>
+                {conversations.length === 0 ? (
+                  <div className={styles.messagesListEmpty}>
+                    <FiMessageCircle aria-hidden="true" />
+                    <strong>Sem conversas</strong>
+                    <span>As mensagens das empresas aparecerão aqui.</span>
+                  </div>
+                ) : (
+                  conversations.map((conversation) => {
+                    const initials = (conversation.participant.name || 'U')
+                      .charAt(0)
+                      .toUpperCase();
+                    const timeLabel = conversation.lastMessageAt
+                      ? new Date(conversation.lastMessageAt).toLocaleDateString(
+                          'pt-PT',
+                          { day: '2-digit', month: '2-digit' },
+                        )
+                      : '';
+                    return (
+                      <button
+                        key={conversation.id}
+                        type="button"
+                        className={`${styles.messageItem} ${selectedConversation === conversation.id ? styles.selectedMessageItem : ''}`}
+                        onClick={() => setSelectedConversation(conversation.id)}
+                      >
+                        <div className={styles.messageAvatarWrapper}>
+                          {conversation.participant.avatar ? (
+                            <Image
+                              src={conversation.participant.avatar}
+                              alt={conversation.participant.name}
+                              width={44}
+                              height={44}
+                              unoptimized
+                            />
+                          ) : (
+                            <div className={styles.messageAvatarInitials}>
+                              {initials}
+                            </div>
+                          )}
+                          {conversation.unreadCount > 0 && (
+                            <span className={styles.messageBadge}>
+                              {conversation.unreadCount}
+                            </span>
+                          )}
                         </div>
-                      </div>
-                    )}
-                </>
-              )}
-            </div>
-          </div>
-        );
-
-      case "messages":
-        return (
-          <div className={styles.messagesLayout}>
-            <div className={styles.messagesList}>
-              {conversations.length === 0 ? (
-                <p
-                  className={`${styles.messagePlaceholder} ${styles.messagePlaceholderPadded}`}
-                >
-                  Nenhuma conversa ainda.
-                </p>
-              ) : (
-                conversations.map((conversation) => {
-                  const initials = (conversation.participant.name || "U")
-                    .charAt(0)
-                    .toUpperCase();
-                  const timeLabel = conversation.lastMessageAt
-                    ? new Date(conversation.lastMessageAt).toLocaleDateString(
-                        "pt-PT",
-                        { day: "2-digit", month: "2-digit" },
-                      )
-                    : "";
-                  return (
-                    <button
-                      key={conversation.id}
-                      type="button"
-                      className={`${styles.messageItem} ${selectedConversation === conversation.id ? styles.selectedMessageItem : ""}`}
-                      onClick={() => setSelectedConversation(conversation.id)}
-                    >
-                      <div className={styles.messageAvatarWrapper}>
-                        {conversation.participant.avatar ? (
-                          <img
-                            src={conversation.participant.avatar}
-                            alt={conversation.participant.name}
-                          />
-                        ) : (
-                          <div className={styles.messageAvatarInitials}>
-                            {initials}
-                          </div>
-                        )}
-                        {conversation.unreadCount > 0 && (
-                          <span className={styles.messageBadge}>
-                            {conversation.unreadCount}
-                          </span>
-                        )}
-                      </div>
-                      <div className={styles.messageBody}>
-                        <strong>{conversation.participant.name}</strong>
-                        <p>{conversation.lastMessage || "Sem mensagens"}</p>
-                      </div>
-                      <span className={styles.messageTime}>{timeLabel}</span>
-                    </button>
-                  );
-                })
-              )}
-            </div>
-            <div className={styles.messageDetail}>
-              {messagesContent ? (
-                <>
-                  <div className={styles.messageDetailHeader}>
-                    <h3>{messagesContent.participant.name}</h3>
-                    {messagesContent.participant.role && (
-                      <p className={styles.profileMeta}>
-                        {messagesContent.participant.role}
-                      </p>
-                    )}
-                  </div>
-                  <div className={styles.messageThread}>
-                    {loadingMessages ? (
-                      <p className={styles.messagePlaceholder}>
-                        A carregar mensagens...
-                      </p>
-                    ) : messages.length === 0 ? (
-                      <p className={styles.messagePlaceholder}>
-                        Ainda não há mensagens. Seja o primeiro a escrever!
-                      </p>
-                    ) : (
-                      messages.map((msg) => {
-                        const isOwn = msg.senderId === user?.uid;
-                        return (
-                          <div
-                            key={msg.id}
-                            className={
-                              isOwn
-                                ? styles.messageBubbleOwn
-                                : styles.messageBubble
-                            }
-                          >
-                            <span>{msg.text}</span>
-                            <time className={styles.messageBubbleTime}>
-                              {msg.createdAt
-                                ? new Date(msg.createdAt).toLocaleTimeString(
-                                    "pt-PT",
-                                    { hour: "2-digit", minute: "2-digit" },
-                                  )
-                                : ""}
-                            </time>
-                          </div>
-                        );
-                      })
-                    )}
-                    <div ref={messagesEndRef} />
-                  </div>
-                  <div className={styles.messageFooter}>
-                    <input
-                      type="text"
-                      value={messageInput}
-                      onChange={(e) => setMessageInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSendMessage();
-                        }
-                      }}
-                      placeholder="Escreva uma mensagem..."
-                      className={styles.messageTextInput}
-                      disabled={sendingMessage}
-                      maxLength={2000}
-                    />
-                    <button
-                      type="button"
-                      className={styles.messageSendBtn}
-                      onClick={handleSendMessage}
-                      disabled={sendingMessage || !messageInput.trim()}
-                    >
-                      {sendingMessage ? (
-                        "…"
-                      ) : (
-                        <svg
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          width="18"
-                          height="18"
-                        >
-                          <path d="M22 2L11 13" />
-                          <path d="M22 2L15 22l-4-9-9-4 20-7z" />
-                        </svg>
+                        <div className={styles.messageBody}>
+                          <strong>{conversation.participant.name}</strong>
+                          <p>{conversation.lastMessage || 'Sem mensagens'}</p>
+                        </div>
+                        <span className={styles.messageTime}>{timeLabel}</span>
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+              <div className={styles.messageDetail}>
+                {messagesContent ? (
+                  <>
+                    <div className={styles.messageDetailHeader}>
+                      <h3>{messagesContent.participant.name}</h3>
+                      {messagesContent.participant.role && (
+                        <p className={styles.profileMeta}>
+                          {messagesContent.participant.role}
+                        </p>
                       )}
-                    </button>
+                    </div>
+                    <div className={styles.messageThread}>
+                      {loadingMessages ? (
+                        <p className={styles.messagePlaceholder}>
+                          A carregar mensagens...
+                        </p>
+                      ) : messages.length === 0 ? (
+                        <p className={styles.messagePlaceholder}>
+                          Ainda não há mensagens. Seja o primeiro a escrever!
+                        </p>
+                      ) : (
+                        messages.map((msg) => {
+                          const isOwn = msg.senderId === user?.uid;
+                          return (
+                            <div
+                              key={msg.id}
+                              className={
+                                isOwn
+                                  ? styles.messageBubbleOwn
+                                  : styles.messageBubble
+                              }
+                            >
+                              <span>{msg.text}</span>
+                              <time className={styles.messageBubbleTime}>
+                                {msg.createdAt
+                                  ? new Date(msg.createdAt).toLocaleTimeString(
+                                      'pt-PT',
+                                      { hour: '2-digit', minute: '2-digit' },
+                                    )
+                                  : ''}
+                              </time>
+                            </div>
+                          );
+                        })
+                      )}
+                      <div ref={messagesEndRef} />
+                    </div>
+                    <div className={styles.messageFooter}>
+                      <input
+                        type="text"
+                        value={messageInput}
+                        onChange={(e) => setMessageInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSendMessage();
+                          }
+                        }}
+                        placeholder="Escreva uma mensagem..."
+                        className={styles.messageTextInput}
+                        disabled={sendingMessage}
+                        maxLength={2000}
+                      />
+                      <button
+                        type="button"
+                        className={styles.messageSendBtn}
+                        onClick={handleSendMessage}
+                        disabled={sendingMessage || !messageInput.trim()}
+                      >
+                        {sendingMessage ? (
+                          '…'
+                        ) : (
+                          <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            width="18"
+                            height="18"
+                          >
+                            <path d="M22 2L11 13" />
+                            <path d="M22 2L15 22l-4-9-9-4 20-7z" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className={styles.messageEmptyState}>
+                    <FiMessageCircle aria-hidden="true" />
+                    <strong>Selecione uma conversa</strong>
+                    <p>
+                      Escolha uma empresa na lista para consultar o histórico.
+                    </p>
                   </div>
-                </>
-              ) : (
-                <div className={styles.messageEmptyState}>
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    width="48"
-                    height="48"
-                  >
-                    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-                  </svg>
-                  <p>Selecione uma conversa para começar.</p>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         );
 
-      case "notifications":
+      case 'notifications':
         return (
-          <div className={styles.notificationsWrapper}>
-            <div className={styles.notificationsHeader}>
-              <h2
-                className={`${styles.sectionTitle} ${styles.sectionTitleNoMargin}`}
-              >
-                Notificações
-              </h2>
-              <button
-                type="button"
-                className={styles.secondaryButton}
-                onClick={markAllNotificationsAsRead}
-                disabled={!unreadNotifications}
-              >
-                Marcar todas como lidas
-              </button>
-            </div>
-            <div className={styles.notificationList}>
-              {notifications.map((notif) => (
-                <article
-                  key={notif.id}
-                  className={`${styles.notificationItem} ${notif.read ? styles.notificationRead : ""}`}
-                  onClick={() => markNotificationAsRead(notif.id)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      markNotificationAsRead(notif.id);
-                    }
-                  }}
+          <div className={styles.contentArea}>
+            <CandidateSectionHeader
+              eyebrow="Atualizações"
+              title="Notificações"
+              description="Acompanhe respostas, entrevistas e alterações importantes."
+              count={
+                unreadNotifications
+                  ? `${unreadNotifications} por ler`
+                  : 'Em dia'
+              }
+              action={
+                <button
+                  type="button"
+                  className={styles.secondaryButton}
+                  onClick={markAllNotificationsAsRead}
+                  disabled={!unreadNotifications}
                 >
-                  <div>
-                    <strong>{notif.title}</strong>
-                    <p>{notif.message}</p>
-                  </div>
-                  <span className={styles.notificationTime}>
-                    {notif.createdAt
-                      ? new Date(notif.createdAt).toLocaleString("pt-PT")
-                      : ""}
-                  </span>
-                </article>
-              ))}
-              {!notifications.length && (
-                <p className={styles.tipFallback}>
-                  Nenhuma notificação recente.
-                </p>
-              )}
+                  Marcar todas como lidas
+                </button>
+              }
+            />
+            <div className={styles.notificationsWrapper}>
+              <div className={styles.notificationsHeader}>
+                <span>Mais recentes primeiro</span>
+              </div>
+              <div className={styles.notificationList}>
+                {notifications.map((notif) => (
+                  <button
+                    type="button"
+                    key={notif.id}
+                    className={`${styles.notificationItem} ${notif.read ? styles.notificationRead : ''}`}
+                    onClick={() => markNotificationAsRead(notif.id)}
+                  >
+                    <span
+                      className={styles.notificationIndicator}
+                      aria-hidden="true"
+                    />
+                    <div>
+                      <strong>{notif.title || 'Notificação'}</strong>
+                      <p>
+                        {notif.message ||
+                          'Existe uma nova atualização na sua conta.'}
+                      </p>
+                    </div>
+                    <span className={styles.notificationTime}>
+                      {notif.createdAt
+                        ? new Date(notif.createdAt).toLocaleString('pt-PT')
+                        : ''}
+                    </span>
+                  </button>
+                ))}
+                {!notifications.length && (
+                  <CandidateEmptyState
+                    icon={FiBell}
+                    title="Está tudo em dia"
+                    description="As novas atualizações sobre candidaturas e entrevistas aparecerão aqui."
+                  />
+                )}
+              </div>
             </div>
           </div>
         );
 
-      case "plans":
+      case 'plans':
         return (
           <div className={styles.contentArea}>
             <CandidatePremiumPlansExperience
@@ -3908,58 +4145,104 @@ const CandidateDashboard = () => {
           </div>
         );
 
-      case "applications":
+      case 'applications':
         return (
           <div className={styles.contentArea}>
-            <h2 className={styles.sectionTitle}>Minhas Candidaturas</h2>
+            <CandidateSectionHeader
+              eyebrow="Acompanhamento"
+              title="Minhas candidaturas"
+              description="Consulte o estado de cada processo e prepare os próximos passos."
+              count={applications.length}
+              action={
+                <Link
+                  href="/dashboard/candidato/candidaturas"
+                  className={styles.secondaryButton}
+                >
+                  Ver histórico detalhado
+                </Link>
+              }
+            />
             {upcomingInterviews.length > 0 && (
-              <div className={`${styles.jobList} ${styles.jobListSpaced}`}>
-                {upcomingInterviews.map((application) => (
-                  <div key={application.id} className={styles.jobCard}>
-                    <div>
-                      <p className={styles.jobTitle}>
-                        {application.jobTitle || "Vaga"}
-                      </p>
-                      <p className={styles.jobMeta}>
-                        {application.company || "Empresa"} •{" "}
-                        {formatInterviewDate(
-                          application.interviewDetails?.scheduledAt,
-                        )}
-                      </p>
-                      <p
-                        className={`${styles.jobMeta} ${styles.jobMetaAccent}`}
-                      >
-                        <InterviewPlaceOrLink
-                          interviewDetails={application.interviewDetails}
-                        />
-                      </p>
-                    </div>
-                    <div className={styles.jobBadge}>Entrevista</div>
+              <section className={styles.candidateSubsection}>
+                <div className={styles.candidateSubsectionHeader}>
+                  <span className={styles.candidateSubsectionIcon}>
+                    <FiCalendar aria-hidden="true" />
+                  </span>
+                  <div>
+                    <h3>Próximas entrevistas</h3>
+                    <p>Datas que exigem a sua atenção.</p>
                   </div>
-                ))}
-              </div>
+                </div>
+                <div className={`${styles.jobList} ${styles.jobListSpaced}`}>
+                  {upcomingInterviews.map((application) => (
+                    <div key={application.id} className={styles.jobCard}>
+                      <div>
+                        <p className={styles.jobTitle}>
+                          {application.jobTitle || 'Vaga'}
+                        </p>
+                        <p className={styles.jobMeta}>
+                          {application.company || 'Empresa'} •{' '}
+                          {formatInterviewDate(
+                            application.interviewDetails?.scheduledAt,
+                          )}
+                        </p>
+                        <p
+                          className={`${styles.jobMeta} ${styles.jobMetaAccent}`}
+                        >
+                          <InterviewPlaceOrLink
+                            interviewDetails={application.interviewDetails}
+                          />
+                        </p>
+                      </div>
+                      <div className={styles.jobBadge}>Entrevista</div>
+                    </div>
+                  ))}
+                </div>
+              </section>
             )}
-            <ApplicationTable applications={applications} />
+            {applications.length ? (
+              <ApplicationTable applications={applications} />
+            ) : (
+              <CandidateEmptyState
+                icon={FiBriefcase}
+                title="Ainda não enviou candidaturas"
+                description="Explore as vagas disponíveis e candidate-se às oportunidades alinhadas com o seu perfil."
+                actionHref="/vagas"
+                actionLabel="Procurar vagas"
+              />
+            )}
           </div>
         );
 
-      case "interviews":
+      case 'interviews':
         return (
           <div className={styles.contentArea}>
-            <div className={styles.sectionTitle}>
-              <span>Entrevistas</span>
-              <small>{allInterviews.length} agendada(s)</small>
-            </div>
+            <CandidateSectionHeader
+              eyebrow="Agenda"
+              title="Entrevistas"
+              description="Consulte horários, locais e links antes de cada conversa."
+              count={allInterviews.length}
+              action={
+                allInterviews.length ? (
+                  <Link
+                    href="/dashboard/candidato/candidaturas?filter=interview"
+                    className={styles.secondaryButton}
+                  >
+                    Abrir agenda detalhada
+                  </Link>
+                ) : null
+              }
+            />
             {allInterviews.length ? (
               <div className={`${styles.jobList} ${styles.jobListSpaced}`}>
                 {allInterviews.map((application) => (
                   <div key={application.id} className={styles.jobCard}>
                     <div>
                       <p className={styles.jobTitle}>
-                        {application.jobTitle || "Vaga"}
+                        {application.jobTitle || 'Vaga'}
                       </p>
                       <p className={styles.jobMeta}>
-                        {application.company || "Empresa"} •{" "}
+                        {application.company || 'Empresa'} •{' '}
                         {formatInterviewDate(
                           application.interviewDetails?.scheduledAt,
                         )}
@@ -3973,16 +4256,16 @@ const CandidateDashboard = () => {
                       </p>
                       <div
                         style={{
-                          display: "flex",
-                          gap: "0.5rem",
-                          flexWrap: "wrap",
-                          marginTop: "0.75rem",
+                          display: 'flex',
+                          gap: '0.5rem',
+                          flexWrap: 'wrap',
+                          marginTop: '0.75rem',
                         }}
                       >
                         <Link
                           href="/dashboard/candidato/candidaturas?filter=interview"
                           className={styles.secondaryButton}
-                          style={{ padding: "0.45rem 0.75rem" }}
+                          style={{ padding: '0.45rem 0.75rem' }}
                         >
                           Ver detalhes
                         </Link>
@@ -3994,9 +4277,9 @@ const CandidateDashboard = () => {
                             )
                           }
                           className={styles.secondaryButton}
-                          style={{ padding: "0.45rem 0.75rem" }}
+                          style={{ padding: '0.45rem 0.75rem' }}
                         >
-                          📆 Calendário
+                          <FiCalendar aria-hidden="true" /> Calendário
                         </button>
                       </div>
                     </div>
@@ -4005,66 +4288,103 @@ const CandidateDashboard = () => {
                 ))}
               </div>
             ) : (
-              <p className={styles.tipFallback}>
-                Ainda não tem entrevistas agendadas.
-              </p>
+              <CandidateEmptyState
+                icon={FiCalendar}
+                title="Sem entrevistas agendadas"
+                description="Quando uma empresa marcar uma entrevista, os detalhes e ações aparecerão aqui."
+                actionHref="/dashboard/candidato?tab=applications"
+                actionLabel="Ver candidaturas"
+              />
             )}
           </div>
         );
 
-      case "saved":
+      case 'saved':
         return (
           <div className={styles.contentArea}>
-            <div className={styles.sectionTitle}>
-              <span>Vagas Salvas</span>
-              <small>
-                {savedJobs.length} {savedJobs.length === 1 ? "vaga" : "vagas"}{" "}
-                guardada(s)
-              </small>
-            </div>
+            <CandidateSectionHeader
+              eyebrow="A sua seleção"
+              title="Vagas guardadas"
+              description="Compare oportunidades e retome a candidatura quando estiver preparado."
+              count={savedJobs.length}
+              action={
+                <Link href="/vagas" className={styles.secondaryButton}>
+                  Encontrar mais vagas
+                </Link>
+              }
+            />
             {savedJobs.length ? (
               <div className={styles.savedList}>
-                {savedJobs.map((job) => (
-                  <Link
-                    key={job.id}
-                    href={`/vaga/${job.id}`}
-                    className={styles.savedCard}
-                  >
-                    <div>
-                      <h3>{job.titulo || job.name || "Título indisponível"}</h3>
-                      <p>
-                        {job.empresa || job.company || "Empresa desconhecida"}
-                      </p>
-                    </div>
-                    <span>
-                      {job.localizacao || job.location || "Local não informado"}
-                    </span>
-                  </Link>
-                ))}
+                {savedJobs.map((job) => {
+                  const jobId = job.jobId || job.vagaId || job.id;
+                  const company =
+                    job.empresa || job.company || 'Empresa não indicada';
+                  const location =
+                    job.localizacao || job.location || 'Local a confirmar';
+                  const contract =
+                    job.tipoContrato || job.contractType || job.jobType || '';
+
+                  return (
+                    <Link
+                      key={jobId}
+                      href={`/vaga/${jobId}`}
+                      className={styles.savedCard}
+                    >
+                      <div className={styles.savedCardTop}>
+                        <span
+                          className={styles.savedCardIcon}
+                          aria-hidden="true"
+                        >
+                          <FiBookmark />
+                        </span>
+                        <span className={styles.savedCardState}>Guardada</span>
+                      </div>
+                      <div className={styles.savedCardCopy}>
+                        <h3>
+                          {job.titulo || job.name || 'Título indisponível'}
+                        </h3>
+                        <p>{company}</p>
+                      </div>
+                      <div className={styles.savedCardMeta}>
+                        <span>
+                          <FiMapPin aria-hidden="true" /> {location}
+                        </span>
+                        {contract ? (
+                          <span>
+                            <FiBriefcase aria-hidden="true" /> {contract}
+                          </span>
+                        ) : null}
+                      </div>
+                      <span className={styles.savedCardAction}>
+                        Ver detalhes <FiArrowRight aria-hidden="true" />
+                      </span>
+                    </Link>
+                  );
+                })}
               </div>
             ) : (
-              <p className={styles.tipFallback}>
-                Você ainda não salvou nenhuma vaga. Explore o painel e marque as
-                favoritas.
-              </p>
+              <CandidateEmptyState
+                icon={FiBookmark}
+                title="Ainda não guardou vagas"
+                description="Use o ícone de marcador nas vagas para criar uma lista curta e voltar mais tarde."
+                actionHref="/vagas"
+                actionLabel="Explorar vagas"
+              />
             )}
           </div>
         );
 
-      case "verification":
+      case 'verification':
         return (
           <div className={styles.contentArea}>
-            <div className={styles.planGrid}>
-              <div
-                className={`${styles.planDetails} ${styles.planDetailsMain}`}
-              >
-                <h2>Verificação de Perfil</h2>
-                <p className={styles.planMeta}>
-                  Organize a sua revisao por blocos. A identidade controla o
-                  selo publico, e os outros tipos reforcam confianca, qualidade
-                  e ranking do perfil.
-                </p>
-
+            <CandidateSectionHeader
+              eyebrow="Confiança profissional"
+              title="Verificação de perfil"
+              description="Envie apenas os blocos que pretende validar. Os blocos aprovados permanecem preservados."
+              count={`${verificationSummary?.progressPercent || 0}%`}
+            />
+            <div className={styles.verificationLayout}>
+              <section className={styles.verificationWorkspace}>
                 <div className={styles.verificationPanel}>
                   <div className={styles.verificationOverview}>
                     <div>
@@ -4074,16 +4394,16 @@ const CandidateDashboard = () => {
                         {verificationOverallMeta.label}
                       </span>
                       <h3 className={styles.verificationOverviewTitle}>
-                        Revisao modular de confianca
+                        Revisão modular de confiança
                       </h3>
                       <p className={styles.verificationOverviewText}>
                         {verificationOverallMeta.summary}
                       </p>
                       <p className={styles.verificationOverviewMeta}>
-                        Ultimo envio:{" "}
+                        Último envio:{' '}
                         {verificationSummary?.lastSubmittedAt
                           ? formatDate(verificationSummary.lastSubmittedAt)
-                          : "Ainda nao submetido"}
+                          : 'Ainda não submetido'}
                       </p>
                     </div>
 
@@ -4104,7 +4424,7 @@ const CandidateDashboard = () => {
                         <strong>
                           {verificationSummary?.pendingCount || 0}
                         </strong>
-                        <span>Em analise</span>
+                        <span>Em análise</span>
                       </div>
                       <div className={styles.verificationOverviewStat}>
                         <strong>
@@ -4117,7 +4437,7 @@ const CandidateDashboard = () => {
 
                   {verificationFetching ? (
                     <p className={styles.tipFallback}>
-                      A carregar o estado da verificacao...
+                      A carregar o estado da verificação...
                     </p>
                   ) : (
                     <div className={styles.verificationTypeGrid}>
@@ -4156,17 +4476,17 @@ const CandidateDashboard = () => {
                                 {item.completedChecklistCount}/
                                 {item.totalChecklistCount || 0} requisitos
                               </span>
-                              <span>{item.evidenceCount || 0} evidencias</span>
+                              <span>{item.evidenceCount || 0} evidências</span>
                               <span>
                                 {item.submittedAt
                                   ? `Atualizado em ${formatDate(item.submittedAt)}`
-                                  : "Sem submissao"}
+                                  : 'Sem submissao'}
                               </span>
                             </div>
 
                             {item.reviewReason && (
                               <div className={styles.verificationReviewNote}>
-                                <strong>Observacao da revisao:</strong>{" "}
+                                <strong>Observação da revisão:</strong>{' '}
                                 {item.reviewReason}
                               </div>
                             )}
@@ -4185,7 +4505,7 @@ const CandidateDashboard = () => {
                                     <span
                                       className={`${styles.verificationMiniCheck} ${check.completed ? styles.verificationMiniCheckDone : styles.verificationMiniCheckPending}`}
                                     >
-                                      {check.completed ? "OK" : "!"}
+                                      {check.completed ? 'OK' : '!'}
                                     </span>
                                     <span>{check.label}</span>
                                   </li>
@@ -4193,8 +4513,8 @@ const CandidateDashboard = () => {
                               </ul>
                             ) : (
                               <p className={styles.verificationTypeHint}>
-                                Este bloco ainda nao recebeu detalhes
-                                suficientes para revisao.
+                                Este bloco ainda não recebeu detalhes
+                                suficientes para revisão.
                               </p>
                             )}
 
@@ -4215,7 +4535,7 @@ const CandidateDashboard = () => {
                                     >
                                       {evidence.label ||
                                         evidence.fileName ||
-                                        "Evidencia"}
+                                        'Evidencia'}
                                     </span>
                                   ))}
                               </div>
@@ -4228,7 +4548,7 @@ const CandidateDashboard = () => {
 
                   {verificationMessage && (
                     <p
-                      className={`${styles.verificationBanner} ${verificationMessage.type === "success" ? styles.verificationBannerSuccess : styles.verificationBannerError}`}
+                      className={`${styles.verificationBanner} ${verificationMessage.type === 'success' ? styles.verificationBannerSuccess : styles.verificationBannerError}`}
                     >
                       {verificationMessage.text}
                     </p>
@@ -4236,21 +4556,23 @@ const CandidateDashboard = () => {
 
                   {!canRequestVerification ? (
                     <div className={styles.verificationLocked}>
-                      <div className={styles.verificationLockedIcon}>🔒</div>
+                      <div className={styles.verificationLockedIcon}>
+                        <FiLock aria-hidden="true" />
+                      </div>
                       <div>
                         <h3 className={styles.verificationLockedTitle}>
                           Verificacao premium
                         </h3>
                         <p className={styles.verificationLockedText}>
-                          O envio de novos blocos de verificacao esta disponivel
-                          nos planos Verificacao e Premium. O historico atual
+                          O envio de novos blocos de verificação está disponível
+                          nos planos Verificação e Premium. O histórico atual
                           continua visivel aqui.
                         </p>
                       </div>
                       <button
                         type="button"
                         className={styles.primaryButton}
-                        onClick={() => setActiveTab("plans")}
+                        onClick={() => openTab('plans')}
                       >
                         Ver planos e fazer upgrade
                       </button>
@@ -4264,20 +4586,20 @@ const CandidateDashboard = () => {
                           </h3>
                           <p className={styles.verificationComposerText}>
                             Selecione apenas os tipos que quer rever agora. Os
-                            blocos ja aprovados ficam preservados.
+                            blocos já aprovados ficam preservados.
                           </p>
                         </div>
                         <span className={styles.verificationComposerMeta}>
-                          {selectedVerificationTypes.length}{" "}
+                          {selectedVerificationTypes.length}{' '}
                           {selectedVerificationTypes.length === 1
-                            ? "tipo selecionado"
-                            : "tipos selecionados"}
+                            ? 'tipo selecionado'
+                            : 'tipos selecionados'}
                         </span>
                       </div>
 
                       <div className={styles.verificationTypeSelector}>
                         {verificationItems.map((item) => {
-                          const disabled = item.status === "approved";
+                          const disabled = item.status === 'approved';
                           const selected = selectedVerificationTypes.includes(
                             item.type,
                           );
@@ -4289,7 +4611,7 @@ const CandidateDashboard = () => {
                             <button
                               key={`select-${item.type}`}
                               type="button"
-                              className={`${styles.verificationTypeToggle} ${selected ? styles.verificationTypeToggleActive : ""} ${disabled ? styles.verificationTypeToggleDisabled : ""}`}
+                              className={`${styles.verificationTypeToggle} ${selected ? styles.verificationTypeToggleActive : ''} ${disabled ? styles.verificationTypeToggleDisabled : ''}`}
                               onClick={() =>
                                 !disabled && toggleVerificationType(item.type)
                               }
@@ -4298,7 +4620,7 @@ const CandidateDashboard = () => {
                               <strong>{item.label}</strong>
                               <span>
                                 {disabled
-                                  ? "Ja aprovado"
+                                  ? 'Já aprovado'
                                   : itemStatusMeta.label}
                               </span>
                             </button>
@@ -4308,13 +4630,13 @@ const CandidateDashboard = () => {
 
                       {selectedVerificationTypes.length === 0 ? (
                         <div className={styles.verificationEmptySelection}>
-                          Todos os blocos editaveis ja estao aprovados. Se
-                          quiser rever novos tipos, escolha um bloco ainda nao
+                          Todos os blocos editáveis já estão aprovados. Se
+                          quiser rever novos tipos, escolha um bloco ainda não
                           aprovado.
                         </div>
                       ) : (
                         <div className={styles.verificationFormStack}>
-                          {selectedVerificationTypes.includes("identity") && (
+                          {selectedVerificationTypes.includes('identity') && (
                             <section className={styles.verificationFormCard}>
                               <div
                                 className={styles.verificationFormCardHeader}
@@ -4337,7 +4659,7 @@ const CandidateDashboard = () => {
                                     value={verificationForm.contactEmail}
                                     onChange={(event) =>
                                       handleVerificationFieldChange(
-                                        "contactEmail",
+                                        'contactEmail',
                                         event.target.value,
                                       )
                                     }
@@ -4354,7 +4676,7 @@ const CandidateDashboard = () => {
                                     value={verificationForm.contactPhone}
                                     onChange={(event) =>
                                       handleVerificationFieldChange(
-                                        "contactPhone",
+                                        'contactPhone',
                                         event.target.value,
                                       )
                                     }
@@ -4370,14 +4692,14 @@ const CandidateDashboard = () => {
                                   >
                                     {verificationForm.identityDocument
                                       ? verificationForm.identityDocument.name
-                                      : "Documento de identidade"}
+                                      : 'Documento de identidade'}
                                   </span>
                                   <input
                                     type="file"
                                     accept="image/*,.pdf"
                                     onChange={(event) =>
                                       handleVerificationFileChange(
-                                        "identityDocument",
+                                        'identityDocument',
                                         event.target.files,
                                       )
                                     }
@@ -4391,14 +4713,14 @@ const CandidateDashboard = () => {
                                   >
                                     {verificationForm.selfieDocument
                                       ? verificationForm.selfieDocument.name
-                                      : "Selfie com documento"}
+                                      : 'Selfie com documento'}
                                   </span>
                                   <input
                                     type="file"
                                     accept="image/*"
                                     onChange={(event) =>
                                       handleVerificationFileChange(
-                                        "selfieDocument",
+                                        'selfieDocument',
                                         event.target.files,
                                       )
                                     }
@@ -4409,7 +4731,7 @@ const CandidateDashboard = () => {
                           )}
 
                           {selectedVerificationTypes.includes(
-                            "certificates",
+                            'certificates',
                           ) && (
                             <section className={styles.verificationFormCard}>
                               <div
@@ -4430,7 +4752,7 @@ const CandidateDashboard = () => {
                                 value={verificationForm.certificationsText}
                                 onChange={(event) =>
                                   handleVerificationFieldChange(
-                                    "certificationsText",
+                                    'certificationsText',
                                     event.target.value,
                                   )
                                 }
@@ -4442,7 +4764,7 @@ const CandidateDashboard = () => {
                                 <span className={styles.verificationUploadText}>
                                   {verificationForm.certificateDocuments.length
                                     ? `${verificationForm.certificateDocuments.length} ficheiro(s) selecionado(s)`
-                                    : "Anexar certificados"}
+                                    : 'Anexar certificados'}
                                 </span>
                                 <input
                                   type="file"
@@ -4450,7 +4772,7 @@ const CandidateDashboard = () => {
                                   multiple
                                   onChange={(event) =>
                                     handleVerificationFileChange(
-                                      "certificateDocuments",
+                                      'certificateDocuments',
                                       event.target.files,
                                       { multiple: true },
                                     )
@@ -4475,19 +4797,19 @@ const CandidateDashboard = () => {
                             </section>
                           )}
 
-                          {selectedVerificationTypes.includes("academic") && (
+                          {selectedVerificationTypes.includes('academic') && (
                             <section className={styles.verificationFormCard}>
                               <div
                                 className={styles.verificationFormCardHeader}
                               >
-                                <h4>Formacao academica</h4>
+                                <h4>Formação académica</h4>
                                 <p>
-                                  Resuma o percurso academico e anexe
+                                  Resuma o percurso académico e anexe
                                   comprovativos se tiver.
                                 </p>
                               </div>
                               <label className={styles.verificationFieldLabel}>
-                                Resumo academico
+                                Resumo académico
                               </label>
                               <textarea
                                 className={styles.profileTextarea}
@@ -4495,7 +4817,7 @@ const CandidateDashboard = () => {
                                 value={verificationForm.educationSummary}
                                 onChange={(event) =>
                                   handleVerificationFieldChange(
-                                    "educationSummary",
+                                    'educationSummary',
                                     event.target.value,
                                   )
                                 }
@@ -4507,14 +4829,14 @@ const CandidateDashboard = () => {
                                 <span className={styles.verificationUploadText}>
                                   {verificationForm.academicDocument
                                     ? verificationForm.academicDocument.name
-                                    : "Anexar diploma ou declaracao"}
+                                    : 'Anexar diploma ou declaracao'}
                                 </span>
                                 <input
                                   type="file"
                                   accept=".pdf,.jpg,.jpeg,.png"
                                   onChange={(event) =>
                                     handleVerificationFileChange(
-                                      "academicDocument",
+                                      'academicDocument',
                                       event.target.files,
                                     )
                                   }
@@ -4523,7 +4845,7 @@ const CandidateDashboard = () => {
                             </section>
                           )}
 
-                          {selectedVerificationTypes.includes("experience") && (
+                          {selectedVerificationTypes.includes('experience') && (
                             <section className={styles.verificationFormCard}>
                               <div
                                 className={styles.verificationFormCardHeader}
@@ -4535,7 +4857,7 @@ const CandidateDashboard = () => {
                                 </p>
                               </div>
                               <label className={styles.verificationFieldLabel}>
-                                Resumo da experiencia
+                                Resumo da experiência
                               </label>
                               <textarea
                                 className={styles.profileTextarea}
@@ -4543,7 +4865,7 @@ const CandidateDashboard = () => {
                                 value={verificationForm.experienceSummary}
                                 onChange={(event) =>
                                   handleVerificationFieldChange(
-                                    "experienceSummary",
+                                    'experienceSummary',
                                     event.target.value,
                                   )
                                 }
@@ -4555,14 +4877,16 @@ const CandidateDashboard = () => {
                                   <div
                                     className={styles.verificationExistingCv}
                                   >
-                                    <span>📄</span>
+                                    <span>
+                                      <FiFileText aria-hidden="true" />
+                                    </span>
                                     <span
                                       className={
                                         styles.verificationExistingCvName
                                       }
                                     >
                                       {profile?.cvName ||
-                                        "CV atual guardado no perfil"}
+                                        'CV atual guardado no perfil'}
                                     </span>
                                     <span
                                       className={
@@ -4583,14 +4907,14 @@ const CandidateDashboard = () => {
                                   >
                                     {verificationForm.employmentProof
                                       ? verificationForm.employmentProof.name
-                                      : "Comprovativo de experiencia"}
+                                      : 'Comprovativo de experiência'}
                                   </span>
                                   <input
                                     type="file"
                                     accept=".pdf,.jpg,.jpeg,.png"
                                     onChange={(event) =>
                                       handleVerificationFileChange(
-                                        "employmentProof",
+                                        'employmentProof',
                                         event.target.files,
                                       )
                                     }
@@ -4604,14 +4928,14 @@ const CandidateDashboard = () => {
                                   >
                                     {verificationForm.cvDocument
                                       ? verificationForm.cvDocument.name
-                                      : "Novo CV em PDF (opcional)"}
+                                      : 'Novo CV em PDF (opcional)'}
                                   </span>
                                   <input
                                     type="file"
                                     accept=".pdf"
                                     onChange={(event) =>
                                       handleVerificationFileChange(
-                                        "cvDocument",
+                                        'cvDocument',
                                         event.target.files,
                                       )
                                     }
@@ -4622,7 +4946,7 @@ const CandidateDashboard = () => {
                           )}
 
                           {selectedVerificationTypes.includes(
-                            "competencies",
+                            'competencies',
                           ) && (
                             <section className={styles.verificationFormCard}>
                               <div
@@ -4635,7 +4959,7 @@ const CandidateDashboard = () => {
                                 </p>
                               </div>
                               <label className={styles.verificationFieldLabel}>
-                                Notas sobre competencias
+                                Notas sobre competências
                               </label>
                               <textarea
                                 className={styles.profileTextarea}
@@ -4643,7 +4967,7 @@ const CandidateDashboard = () => {
                                 value={verificationForm.competencyNotes}
                                 onChange={(event) =>
                                   handleVerificationFieldChange(
-                                    "competencyNotes",
+                                    'competencyNotes',
                                     event.target.value,
                                   )
                                 }
@@ -4661,7 +4985,7 @@ const CandidateDashboard = () => {
                                     value={verificationForm.portfolioUrl}
                                     onChange={(event) =>
                                       handleVerificationFieldChange(
-                                        "portfolioUrl",
+                                        'portfolioUrl',
                                         event.target.value,
                                       )
                                     }
@@ -4679,7 +5003,7 @@ const CandidateDashboard = () => {
                                     value={verificationForm.linkedin}
                                     onChange={(event) =>
                                       handleVerificationFieldChange(
-                                        "linkedin",
+                                        'linkedin',
                                         event.target.value,
                                       )
                                     }
@@ -4693,14 +5017,14 @@ const CandidateDashboard = () => {
                                 <span className={styles.verificationUploadText}>
                                   {verificationForm.competencyDocument
                                     ? verificationForm.competencyDocument.name
-                                    : "Comprovativo adicional de competencias"}
+                                    : 'Comprovativo adicional de competências'}
                                 </span>
                                 <input
                                   type="file"
                                   accept=".pdf,.jpg,.jpeg,.png"
                                   onChange={(event) =>
                                     handleVerificationFileChange(
-                                      "competencyDocument",
+                                      'competencyDocument',
                                       event.target.files,
                                     )
                                   }
@@ -4721,25 +5045,29 @@ const CandidateDashboard = () => {
                           }
                         >
                           {verificationLoading
-                            ? "A enviar..."
-                            : "Enviar para revisao"}
+                            ? 'A enviar...'
+                            : 'Enviar para revisão'}
                         </button>
                       </div>
                     </div>
                   )}
                 </div>
-              </div>
+              </section>
 
-              <div
-                className={`${styles.planResources} ${styles.planResourcesFixed}`}
-              >
+              <aside className={styles.verificationGuide}>
+                <span
+                  className={styles.verificationGuideIcon}
+                  aria-hidden="true"
+                >
+                  <FiCheckCircle />
+                </span>
                 <h3>Como funciona</h3>
                 <ul className={styles.planFeatures}>
                   <li>
-                    O selo publico depende da aprovacao do bloco de identidade.
+                    O selo público depende da aprovação do bloco de identidade.
                   </li>
                   <li>
-                    Certificados, formacao, experiencia e competencias podem ser
+                    Certificados, formação, experiência e competências podem ser
                     enviados e revistos separadamente.
                   </li>
                   <li>
@@ -4747,33 +5075,52 @@ const CandidateDashboard = () => {
                     pedido.
                   </li>
                 </ul>
-                <h3 style={{ marginTop: "1.5rem" }}>Valor para o perfil</h3>
+                <h3>Valor para o perfil</h3>
                 <ul className={styles.planFeatures}>
-                  <li>Mais confianca perante empresas e recrutadores.</li>
+                  <li>Mais confiança perante empresas e recrutadores.</li>
                   <li>Melhor leitura editorial da qualidade do perfil.</li>
                   <li>
                     Base para destaque e ranking mais forte no banco de
                     talentos.
                   </li>
                 </ul>
-              </div>
+              </aside>
             </div>
           </div>
         );
 
-      case "affiliate":
+      case 'affiliate':
         return (
           <div className={styles.contentArea}>
             <AffiliateSection
               role="candidato"
               user={user}
               defaults={{
-                fullName: profile?.fullName || profile?.name || user?.name || "",
-                email: profile?.email || user?.email || "",
-                phone: profile?.phone || "",
-                location: profile?.city || "",
-                occupation: profile?.headline || profile?.profession || "",
+                fullName:
+                  profile?.fullName || profile?.name || user?.name || '',
+                email: profile?.email || user?.email || '',
+                phone: profile?.phone || '',
+                location: profile?.city || '',
+                occupation: profile?.headline || profile?.profession || '',
               }}
+            />
+          </div>
+        );
+
+      case 'settings':
+        return (
+          <div className={styles.contentArea}>
+            <CandidateSettings
+              profile={profile}
+              user={user}
+              searchQuery={settingsSearchQuery}
+              onSettingsSaved={(nextSettings) =>
+                setProfile((current) => ({
+                  ...(current || {}),
+                  settings: nextSettings,
+                }))
+              }
+              onOpenSupport={() => openTab('messages')}
             />
           </div>
         );
@@ -4784,71 +5131,108 @@ const CandidateDashboard = () => {
   };
 
   const activeLabel =
-    NAV_MENU.find((item) => item.id === activeTab)?.label || "Dashboard";
+    NAV_MENU.find((item) => item.id === activeTab)?.label || 'Dashboard';
 
   const today = new Date();
-  const formattedDate = today.toLocaleDateString("pt-PT", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
+  const formattedDate = today.toLocaleDateString('pt-PT', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
   });
 
   const topbarSubtitle =
-    activeTab === "dashboard" ? `Bem-vindo de volta, ${firstName}` : formattedDate;
+    activeTab === 'dashboard'
+      ? `Bem-vindo de volta, ${firstName}`
+      : formattedDate;
 
-  const planName = activePlan.planName || "Gratuito";
+  const planName = activePlan.planName || 'Gratuito';
   const candidatoNav = [
     {
-      label: "Menu Principal",
+      label: 'Menu principal',
       items: [
-        { key: "dashboard", label: "Visão geral", icon: "home", onClick: () => setActiveTab("dashboard") },
-        { key: "profile", label: "Meu perfil", icon: "user", onClick: () => setActiveTab("profile") },
         {
-          key: "applications",
-          label: "Candidaturas",
-          icon: "send",
-          onClick: () => setActiveTab("applications"),
+          key: 'dashboard',
+          label: 'Visão geral',
+          icon: 'home',
+          onClick: () => openTab('dashboard'),
+        },
+        {
+          key: 'applications',
+          label: 'Candidaturas',
+          icon: 'send',
+          onClick: () => openTab('applications'),
           badge: applications.length || undefined,
         },
         {
-          key: "saved",
-          label: "Vagas guardadas",
-          icon: "bookmark",
-          onClick: () => setActiveTab("saved"),
+          key: 'saved',
+          label: 'Vagas guardadas',
+          icon: 'bookmark',
+          onClick: () => openTab('saved'),
           badge: savedJobs.length || undefined,
         },
         {
-          key: "interviews",
-          label: "Entrevistas",
-          icon: "calendar",
-          onClick: () => setActiveTab("interviews"),
+          key: 'interviews',
+          label: 'Entrevistas',
+          icon: 'calendar',
+          onClick: () => openTab('interviews'),
           badge: allInterviews.length || undefined,
-          badgeStyle: "lime",
-        },
-        {
-          key: "messages",
-          label: "Mensagens",
-          icon: "messages",
-          onClick: () => setActiveTab("messages"),
-          badge: unreadMessages || undefined,
-        },
-        {
-          key: "notifications",
-          label: "Notificações",
-          icon: "bell",
-          onClick: () => setActiveTab("notifications"),
-          badge: unreadNotifications || undefined,
+          badgeStyle: 'lime',
         },
       ],
     },
     {
-      label: "Ferramentas",
+      label: 'Ferramentas',
       items: [
-        { key: "cv-generator", label: "Gerador de CV", icon: "fileText", href: "/recursos/gerador-cv" },
-        { key: "verification", label: "Verificação", icon: "verification", onClick: () => setActiveTab("verification") },
-        { key: "plans", label: "Planos premium", icon: "star", onClick: () => setActiveTab("plans") },
-        { key: "affiliate", label: "Ser Afiliado", icon: "star", badgeStyle: "lime", onClick: () => setActiveTab("affiliate") },
+        {
+          key: 'cv-generator',
+          label: 'Gerador de CV',
+          icon: 'fileText',
+          href: '/recursos/gerador-cv',
+        },
+        {
+          key: 'verification',
+          label: 'Verificação',
+          icon: 'verification',
+          onClick: () => openTab('verification'),
+        },
+        {
+          key: 'plans',
+          label: 'Planos premium',
+          icon: 'star',
+          onClick: () => openTab('plans'),
+        },
+      ],
+    },
+    {
+      label: 'Mais',
+      items: [
+        {
+          key: 'messages',
+          label: 'Mensagens',
+          icon: 'messages',
+          onClick: () => openTab('messages'),
+          badge: unreadMessages || undefined,
+        },
+        {
+          key: 'notifications',
+          label: 'Notificações',
+          icon: 'bell',
+          onClick: () => openTab('notifications'),
+          badge: unreadNotifications || undefined,
+        },
+        {
+          key: 'settings',
+          label: 'Configurações',
+          icon: 'settings',
+          onClick: () => openTab('settings'),
+        },
+        {
+          key: 'affiliate',
+          label: 'Ser afiliado',
+          icon: 'dollar',
+          onClick: () => openTab('affiliate'),
+        },
       ],
     },
   ];
@@ -4865,11 +5249,29 @@ const CandidateDashboard = () => {
       <DashboardShell
         role="candidato"
         active={activeTab}
-        title={activeLabel}
+        title={activeTab === 'dashboard' ? 'Visão geral' : activeLabel}
         subtitle={topbarSubtitle}
-        searchPlaceholder="Pesquisar vagas..."
         nav={candidatoNav}
         onLogout={handleLogout}
+        searchPlaceholder={
+          activeTab === 'dashboard'
+            ? 'Pesquisar vagas...'
+            : activeTab === 'settings'
+              ? 'Pesquisar configurações...'
+              : undefined
+        }
+        searchValue={
+          activeTab === 'dashboard' ? dashboardSearchQuery : settingsSearchQuery
+        }
+        onSearchChange={
+          activeTab === 'dashboard'
+            ? setDashboardSearchQuery
+            : activeTab === 'settings'
+              ? setSettingsSearchQuery
+              : undefined
+        }
+        onProfileClick={() => openTab('profile')}
+        profileInTopbar
         topbarActions={
           <div className="dash-notif-wrap">
             <button
@@ -4889,7 +5291,11 @@ const CandidateDashboard = () => {
               {unreadNotifications > 0 && <span className="dash-notif-dot" />}
             </button>
             {notificationsOpen && (
-              <div className="dash-notif-panel" role="dialog" aria-label="Notificações">
+              <div
+                className="dash-notif-panel"
+                role="dialog"
+                aria-label="Notificações"
+              >
                 <div className="dash-notif-head">
                   <strong>Notificações</strong>
                   <button
@@ -4911,30 +5317,47 @@ const CandidateDashboard = () => {
                       <button
                         key={notif.id}
                         type="button"
-                        className={`dash-notif-row${notif.read ? "" : " unread"}`}
+                        className={`dash-notif-row${notif.read ? '' : ' unread'}`}
                         onClick={() => {
                           markNotificationAsRead(notif.id);
                           setNotificationsOpen(false);
                         }}
-                        title={notif.message || notif.title || "Notificação"}
+                        title={notif.message || notif.title || 'Notificação'}
                       >
                         <span className="dash-notif-ic">🔔</span>
                         <div className="dash-notif-txt">
                           <div className="dash-notif-row-title">
-                            {notif.title || "Notificação"}
+                            {notif.title || 'Notificação'}
                           </div>
                           {notif.message && (
-                            <p className="dash-notif-row-msg">{notif.message}</p>
+                            <p className="dash-notif-row-msg">
+                              {notif.message}
+                            </p>
                           )}
                           <span className="dash-notif-time">
                             {notif.createdAt
-                              ? new Date(notif.createdAt).toLocaleString("pt-PT")
-                              : ""}
+                              ? new Date(notif.createdAt).toLocaleString(
+                                  'pt-PT',
+                                )
+                              : ''}
                           </span>
                         </div>
                       </button>
                     ))
                   )}
+                </div>
+                <div className="dash-notif-footer">
+                  <button
+                    type="button"
+                    className="dash-notif-view-all"
+                    onClick={() => {
+                      setNotificationsOpen(false);
+                      openTab('notifications');
+                    }}
+                  >
+                    Ver todas as notificações
+                    <FiArrowRight aria-hidden="true" />
+                  </button>
                 </div>
               </div>
             )}
@@ -4942,48 +5365,10 @@ const CandidateDashboard = () => {
         }
         profile={{
           name: profileDisplayName,
-          role: "Candidato",
-          plan: planName === "Gratuito" ? "Free" : planName,
+          role: 'Candidato',
+          plan: planName === 'Gratuito' ? 'Free' : planName,
           avatarUrl: profile?.photoUrl || user?.avatar || undefined,
         }}
-        sidebarTop={
-          <div style={{ padding: "0 12px 6px" }}>
-            <Link href="/vagas" className="btn btn-primary btn-sm" style={{ width: "100%" }}>
-              <FiSearch /> Procurar vagas
-            </Link>
-          </div>
-        }
-        sidebarFooter={
-          planName === "Gratuito" ? (
-            <div
-              style={{
-                margin: "0 0 12px",
-                padding: 14,
-                borderRadius: 16,
-                background: "var(--surface-2)",
-                border: "1px solid var(--border)",
-              }}
-            >
-              <div className="dash-flex" style={{ marginBottom: 10 }}>
-                <FiStar style={{ color: "#bae619" }} />
-                <div>
-                  <div style={{ fontSize: "0.82rem", fontWeight: 800, color: "var(--text-1)" }}>
-                    Plano Gratuito
-                  </div>
-                  <div style={{ fontSize: "0.7rem", color: "var(--text-3)" }}>Recursos limitados</div>
-                </div>
-              </div>
-              <button
-                type="button"
-                className="btn btn-lime btn-sm"
-                style={{ width: "100%" }}
-                onClick={() => setActiveTab("plans")}
-              >
-                Fazer upgrade
-              </button>
-            </div>
-          ) : null
-        }
       >
         {renderContent()}
       </DashboardShell>

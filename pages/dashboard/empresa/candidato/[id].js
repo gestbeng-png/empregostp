@@ -2,9 +2,22 @@ import { admin } from '../../../../lib/firebaseAdmin';
 import nookies from 'nookies';
 import Link from 'next/link';
 import Head from 'next/head';
+import Image from 'next/image';
 import { useRouter } from 'next/router';
+import { useState } from 'react';
+import { openCandidateCv } from '../../../../lib/candidateCvClient';
 import { getEmpresaPlanSummary } from '../../../../lib/empresaPlanFeatures';
+import {
+  canViewerAccessCandidate,
+  getCandidatePrivacy,
+} from '../../../../lib/candidatePrivacy';
+import { collectCompanyApplicationHistory } from '../../../../lib/applicationOwnership';
+import { normalizeExternalUrl } from '../../../../lib/externalUrl';
 import styles from '../../../../styles/EmpresaCandidateProfilePage.module.css';
+import { redirectToLogin } from '../../../../lib/loginRedirect';
+
+const APPLICATION_HISTORY_LIMIT = 20;
+const APPLICATION_HISTORY_PAGE_SIZE = 100;
 
 function safeTimestampToMillis(timestamp) {
   if (!timestamp) return null;
@@ -17,13 +30,27 @@ function safeTimestampToMillis(timestamp) {
 function toPlainText(value) {
   if (value === null || value === undefined) return '';
   if (typeof value === 'string') return value.trim();
-  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  if (typeof value === 'number' || typeof value === 'boolean')
+    return String(value);
   if (Array.isArray(value)) {
-    return value.map((item) => toPlainText(item)).filter(Boolean).join(' • ');
+    return value
+      .map((item) => toPlainText(item))
+      .filter(Boolean)
+      .join(' • ');
   }
   if (typeof value === 'object') {
-    const orderedKeys = ['description', 'role', 'company', 'period', 'title', 'name', 'value'];
-    const prioritized = orderedKeys.map((key) => toPlainText(value[key])).filter(Boolean);
+    const orderedKeys = [
+      'description',
+      'role',
+      'company',
+      'period',
+      'title',
+      'name',
+      'value',
+    ];
+    const prioritized = orderedKeys
+      .map((key) => toPlainText(value[key]))
+      .filter(Boolean);
     if (prioritized.length > 0) return prioritized.join(' • ');
 
     return Object.values(value)
@@ -46,7 +73,9 @@ function normalizeStringList(value) {
       .filter(Boolean);
   }
   if (typeof value === 'object') {
-    return Object.values(value).map((item) => toPlainText(item)).filter(Boolean);
+    return Object.values(value)
+      .map((item) => toPlainText(item))
+      .filter(Boolean);
   }
   return [];
 }
@@ -58,18 +87,26 @@ function normalizeExperienceList(value) {
     .map((entry) => {
       if (typeof entry === 'string') {
         const text = toPlainText(entry);
-        return text ? { company: '', role: '', period: '', description: text } : null;
+        return text
+          ? { company: '', role: '', period: '', description: text }
+          : null;
       }
       if (!entry || typeof entry !== 'object') return null;
 
       const company = toPlainText(entry.company || entry.empresa);
       const role = toPlainText(entry.role || entry.cargo || entry.title);
-      const period = toPlainText(entry.period || entry.periodo || entry.dateRange);
-      const description = toPlainText(entry.description || entry.resumo || entry.details || '');
+      const period = toPlainText(
+        entry.period || entry.periodo || entry.dateRange,
+      );
+      const description = toPlainText(
+        entry.description || entry.resumo || entry.details || '',
+      );
 
       if (!company && !role && !period && !description) {
         const fallback = toPlainText(entry);
-        return fallback ? { company: '', role: '', period: '', description: fallback } : null;
+        return fallback
+          ? { company: '', role: '', period: '', description: fallback }
+          : null;
       }
 
       return { company, role, period, description };
@@ -77,8 +114,26 @@ function normalizeExperienceList(value) {
     .filter(Boolean);
 }
 
-export default function PerfilCandidato({ candidato, applications, contactLocked = false, messagingLocked = false }) {
+export default function PerfilCandidato({
+  candidato,
+  applications,
+  contactLocked = false,
+  contactHiddenByCandidate = false,
+  messagingLocked = false,
+}) {
   const router = useRouter();
+  const [cvOpening, setCvOpening] = useState(false);
+  const [cvError, setCvError] = useState('');
+
+  const handleOpenCv = async () => {
+    setCvError('');
+    setCvOpening(true);
+    const result = await openCandidateCv(candidato.id);
+    if (!result.success) {
+      setCvError(result.error);
+    }
+    setCvOpening(false);
+  };
 
   if (!candidato) {
     return (
@@ -86,12 +141,15 @@ export default function PerfilCandidato({ candidato, applications, contactLocked
         <Head>
           <title>Candidato não encontrado - EmpregoSTP</title>
         </Head>
-        <main className={styles.notFoundPage}>
+        <div className={styles.notFoundPage}>
           <h2 className={styles.notFoundTitle}>Candidato não encontrado</h2>
-          <Link href="/dashboard/empresa" className={styles.notFoundLink}>
-            Voltar ao Dashboard
+          <Link
+            href="/dashboard/empresa?tab=candidates"
+            className={styles.notFoundLink}
+          >
+            Voltar ao banco de talentos
           </Link>
-        </main>
+        </div>
       </>
     );
   }
@@ -124,24 +182,36 @@ export default function PerfilCandidato({ candidato, applications, contactLocked
         <title>{candidato.fullName || 'Candidato'} - EmpregoSTP</title>
       </Head>
 
-      <main className={styles.page}>
+      <div className={styles.page}>
         <div className={styles.container}>
-          <Link href="/dashboard/empresa" className={styles.backLink}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+          <Link
+            href="/dashboard/empresa?tab=candidates"
+            className={styles.backLink}
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              aria-hidden="true"
+            >
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
-            <span>Voltar ao Dashboard</span>
+            <span>Voltar ao banco de talentos</span>
           </Link>
 
           <section className={styles.hero}>
             {candidato.photoUrl ? (
-              <img
+              <Image
                 src={candidato.photoUrl}
-                alt="Foto de perfil"
+                alt={`Fotografia de ${candidato.fullName || candidato.name || 'candidato'}`}
                 className={styles.avatarImage}
                 width="120"
                 height="120"
-                loading="lazy"
+                sizes="120px"
+                unoptimized
               />
             ) : (
               <div className={styles.avatarFallback}>
@@ -151,94 +221,157 @@ export default function PerfilCandidato({ candidato, applications, contactLocked
 
             <div className={styles.heroCopy}>
               <span className={styles.eyebrow}>Perfil de talento</span>
-              <h1 className={styles.title}>{candidato.fullName || candidato.name || 'Nome não informado'}</h1>
-              {candidato.location ? <p className={styles.subtitle}>{candidato.location}</p> : null}
-              {candidato.objectiveArea ? (
-                <p className={styles.metaText}>Área de interesse: {candidato.objectiveArea}</p>
+              <h1 className={styles.title}>
+                {candidato.fullName || candidato.name || 'Nome não informado'}
+              </h1>
+              {candidato.location ? (
+                <p className={styles.subtitle}>{candidato.location}</p>
               ) : null}
-              {candidato.birthDate ? <p className={styles.metaSmall}>Nascimento: {candidato.birthDate}</p> : null}
+              {candidato.objectiveArea ? (
+                <p className={styles.metaText}>
+                  Área de interesse: {candidato.objectiveArea}
+                </p>
+              ) : null}
+              {candidato.birthDate ? (
+                <p className={styles.metaSmall}>
+                  Data de nascimento: {candidato.birthDate}
+                </p>
+              ) : null}
             </div>
 
             <div className={styles.actions}>
-              {!contactLocked && candidato.cvUrl ? (
-                <a
-                  href={candidato.cvUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+              {!contactLocked && candidato.hasCv ? (
+                <button
+                  type="button"
+                  onClick={handleOpenCv}
+                  disabled={cvOpening}
+                  aria-busy={cvOpening}
                   className={`${styles.actionButton} ${styles.actionPrimary}`}
                 >
-                  Baixar CV
-                </a>
+                  {cvOpening ? 'A abrir CV…' : 'Baixar CV'}
+                </button>
               ) : null}
 
-              {contactLocked && candidato.cvUrl ? (
-                <button type="button" onClick={() => router.push('/premium/empresa')} className={`${styles.actionButton} ${styles.actionWarning}`}>
+              {contactLocked && !contactHiddenByCandidate && candidato.hasCv ? (
+                <button
+                  type="button"
+                  onClick={() => router.push('/premium/empresa')}
+                  className={`${styles.actionButton} ${styles.actionWarning}`}
+                >
                   Desbloquear CV
                 </button>
               ) : null}
 
               {!contactLocked && candidato.email ? (
-                <a href={`mailto:${candidato.email}`} className={`${styles.actionButton} ${styles.actionSecondary}`}>
-                  Enviar Email
+                <a
+                  href={`mailto:${candidato.email}`}
+                  className={`${styles.actionButton} ${styles.actionSecondary}`}
+                >
+                  Enviar email
                 </a>
               ) : null}
 
               {!messagingLocked ? (
-                <Link href={`/dashboard/empresa?tab=messages&candidate=${candidato.id}`} className={`${styles.actionButton} ${styles.actionAccent}`}>
-                  Enviar Mensagem
+                <Link
+                  href={`/dashboard/empresa?tab=messages&candidate=${candidato.id}`}
+                  className={`${styles.actionButton} ${styles.actionAccent}`}
+                >
+                  Enviar mensagem
                 </Link>
               ) : (
-                <button type="button" onClick={() => router.push('/premium/empresa')} className={`${styles.actionButton} ${styles.actionMuted}`}>
-                  Desbloquear Mensagens
+                <button
+                  type="button"
+                  onClick={() => router.push('/premium/empresa')}
+                  className={`${styles.actionButton} ${styles.actionMuted}`}
+                >
+                  Desbloquear mensagens
                 </button>
               )}
             </div>
+
+            {cvError ? (
+              <p className={styles.actionError} role="alert">
+                {cvError}{' '}
+                <button
+                  type="button"
+                  onClick={handleOpenCv}
+                  className={styles.actionRetry}
+                >
+                  Tentar novamente
+                </button>
+              </p>
+            ) : null}
           </section>
 
           <div className={styles.layout}>
-            {(candidato.phone || candidato.email || candidato.linkedin || candidato.website || contactLocked) && (
-              <InfoSection title="Informações de Contato">
-                {contactLocked ? (
+            {(candidato.phone ||
+              candidato.email ||
+              candidato.linkedin ||
+              candidato.website ||
+              contactLocked) && (
+              <InfoSection title="Informações de contacto">
+                {contactHiddenByCandidate ? (
                   <div className={styles.lockBanner}>
-                    O seu plano atual não permite ver telefone e email do candidato. Faça upgrade para desbloquear este
-                    recurso.
+                    O candidato optou por não partilhar os seus contactos.
+                  </div>
+                ) : contactLocked ? (
+                  <div className={styles.lockBanner}>
+                    O plano atual não inclui os contactos deste candidato.
+                    Atualize o plano para consultar telefone, email e currículo.
                   </div>
                 ) : null}
 
                 <div className={styles.infoGrid}>
-                  {!contactLocked && candidato.phone ? <InfoItem label="Telefone" value={candidato.phone} /> : null}
-                  {!contactLocked && candidato.email ? <InfoItem label="Email" value={candidato.email} /> : null}
+                  {!contactLocked && candidato.phone ? (
+                    <InfoItem label="Telefone" value={candidato.phone} />
+                  ) : null}
+                  {!contactLocked && candidato.email ? (
+                    <InfoItem label="Email" value={candidato.email} />
+                  ) : null}
                   {candidato.linkedin ? (
-                    <ExternalItem label="LinkedIn" href={candidato.linkedin} text="Ver perfil" />
+                    <ExternalItem
+                      label="LinkedIn"
+                      href={candidato.linkedin}
+                      text="Ver perfil"
+                    />
                   ) : null}
                   {candidato.website ? (
-                    <ExternalItem label="Website/Portfólio" href={candidato.website} text="Visitar site" />
+                    <ExternalItem
+                      label="Website/Portfólio"
+                      href={candidato.website}
+                      text="Visitar site"
+                    />
                   ) : null}
                 </div>
               </InfoSection>
             )}
 
             {candidato.objectiveArea || candidato.objectiveAspiration ? (
-              <InfoSection title="Objetivo Profissional">
+              <InfoSection title="Objetivo profissional">
                 {candidato.objectiveArea ? (
                   <div className={styles.stack}>
-                    <div className={styles.infoLabel}>Área de Interesse</div>
+                    <div className={styles.infoLabel}>Área de interesse</div>
                     <div className={styles.infoValue}>
                       {candidato.objectiveArea}
-                      {candidato.objectiveType ? ` — ${candidato.objectiveType}` : ''}
+                      {candidato.objectiveType
+                        ? ` — ${candidato.objectiveType}`
+                        : ''}
                     </div>
                   </div>
                 ) : null}
                 {candidato.objectiveAspiration ? (
                   <div className={styles.stack}>
                     <div className={styles.infoLabel}>Aspirações</div>
-                    <p className={styles.longText}>{candidato.objectiveAspiration}</p>
+                    <p className={styles.longText}>
+                      {candidato.objectiveAspiration}
+                    </p>
                   </div>
                 ) : null}
               </InfoSection>
             ) : null}
 
-            {candidato.certificateFiles && candidato.certificateFiles.length > 0 ? (
+            {candidato.certificateFiles &&
+            candidato.certificateFiles.length > 0 ? (
               <InfoSection title="Certificados">
                 <div className={styles.fileList}>
                   {candidato.certificateFiles.map((certUrl, i) => (
@@ -249,7 +382,15 @@ export default function PerfilCandidato({ candidato, applications, contactLocked
                       rel="noopener noreferrer"
                       className={styles.fileCard}
                     >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                      <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        aria-hidden="true"
+                      >
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                         <polyline points="14 2 14 8 20 8" />
                         <line x1="16" y1="13" x2="8" y2="13" />
@@ -263,10 +404,13 @@ export default function PerfilCandidato({ candidato, applications, contactLocked
             ) : null}
 
             {education.length > 0 ? (
-              <InfoSection title="Formação Acadêmica">
+              <InfoSection title="Formação académica">
                 <div className={styles.recordList}>
                   {education.map((edu, i) => (
-                    <div key={i} className={`${styles.recordCard} ${styles.recordBlue}`}>
+                    <div
+                      key={i}
+                      className={`${styles.recordCard} ${styles.recordBlue}`}
+                    >
                       <div className={styles.recordText}>{edu}</div>
                     </div>
                   ))}
@@ -275,27 +419,60 @@ export default function PerfilCandidato({ candidato, applications, contactLocked
             ) : null}
 
             {experience.length > 0 ? (
-              <InfoSection title="Experiência Profissional">
+              <InfoSection title="Experiência profissional">
                 <div className={styles.recordList}>
                   {experience.map((exp, i) => (
-                    <div key={i} className={`${styles.recordCard} ${styles.recordGreen}`}>
-                      {exp.role ? <div className={styles.recordTitle}>{exp.role}</div> : null}
-                      {exp.company ? <div className={styles.recordAccent}>{exp.company}</div> : null}
-                      {exp.period ? <div className={styles.recordMeta}>{exp.period}</div> : null}
-                      {exp.description ? <div className={styles.recordText}>{exp.description}</div> : null}
+                    <div
+                      key={i}
+                      className={`${styles.recordCard} ${styles.recordGreen}`}
+                    >
+                      {exp.role ? (
+                        <div className={styles.recordTitle}>{exp.role}</div>
+                      ) : null}
+                      {exp.company ? (
+                        <div className={styles.recordAccent}>{exp.company}</div>
+                      ) : null}
+                      {exp.period ? (
+                        <div className={styles.recordMeta}>{exp.period}</div>
+                      ) : null}
+                      {exp.description ? (
+                        <div className={styles.recordText}>
+                          {exp.description}
+                        </div>
+                      ) : null}
                     </div>
                   ))}
                 </div>
               </InfoSection>
             ) : null}
 
-            {candidato.birthDate || candidato.nationality || candidato.gender || candidato.maritalStatus ? (
-              <InfoSection title="Dados Pessoais">
+            {candidato.birthDate ||
+            candidato.nationality ||
+            candidato.gender ||
+            candidato.maritalStatus ? (
+              <InfoSection title="Dados pessoais">
                 <div className={styles.infoGridCompact}>
-                  {candidato.birthDate ? <InfoItem label="Data de Nascimento" value={candidato.birthDate} /> : null}
-                  {candidato.nationality ? <InfoItem label="Nacionalidade" value={candidato.nationality} /> : null}
-                  {candidato.gender ? <InfoItem label="Gênero" value={candidato.gender} /> : null}
-                  {candidato.maritalStatus ? <InfoItem label="Estado Civil" value={candidato.maritalStatus} /> : null}
+                  {candidato.birthDate ? (
+                    <InfoItem
+                      label="Data de nascimento"
+                      value={candidato.birthDate}
+                    />
+                  ) : null}
+                  {candidato.nationality ? (
+                    <InfoItem
+                      label="Nacionalidade"
+                      value={candidato.nationality}
+                    />
+                  ) : null}
+                  {candidato.gender ? (
+                    <InfoItem label="Género" value={candidato.gender} />
+                  ) : null}
+                  {candidato.maritalStatus ? (
+                    <InfoItem
+                      label="Estado civil"
+                      value={candidato.maritalStatus}
+                    />
+                  ) : null}
                 </div>
               </InfoSection>
             ) : null}
@@ -316,7 +493,7 @@ export default function PerfilCandidato({ candidato, applications, contactLocked
 
             <div className={styles.twoColumnGrid}>
               {candidato.digitalSkills && candidato.digitalSkills.length > 0 ? (
-                <InfoSection title="Competências Digitais">
+                <InfoSection title="Competências digitais">
                   <SkillList items={candidato.digitalSkills} tone="violet" />
                 </InfoSection>
               ) : null}
@@ -335,7 +512,7 @@ export default function PerfilCandidato({ candidato, applications, contactLocked
             </div>
 
             {candidato.bio ? (
-              <InfoSection title="Sobre o Candidato">
+              <InfoSection title="Sobre o candidato">
                 <p className={styles.longText}>{candidato.bio}</p>
               </InfoSection>
             ) : null}
@@ -347,7 +524,10 @@ export default function PerfilCandidato({ candidato, applications, contactLocked
                     ? candidato.certifications.split('\n').filter(Boolean)
                     : candidato.certifications
                   ).map((cert, i) => (
-                    <div key={i} className={`${styles.recordCard} ${styles.recordGold}`}>
+                    <div
+                      key={i}
+                      className={`${styles.recordCard} ${styles.recordGold}`}
+                    >
                       <div className={styles.recordText}>{cert}</div>
                     </div>
                   ))}
@@ -355,24 +535,37 @@ export default function PerfilCandidato({ candidato, applications, contactLocked
               </InfoSection>
             ) : null}
 
-            <InfoSection title="Histórico de Candidaturas">
+            <InfoSection title="Histórico de candidaturas">
               {applications.length > 0 ? (
                 <div className={styles.applicationList}>
                   {applications.map((app, i) => (
                     <div key={i} className={styles.applicationCard}>
                       <div className={styles.applicationCopy}>
-                        <div className={styles.applicationTitle}>{app.jobTitle || 'Vaga não especificada'}</div>
+                        <div className={styles.applicationTitle}>
+                          {app.jobTitle || 'Vaga não especificada'}
+                        </div>
                         {app.createdAt ? (
                           <div className={styles.applicationDate}>
-                            {new Date(app.createdAt).toLocaleDateString('pt-PT', {
-                              day: '2-digit',
-                              month: 'long',
-                              year: 'numeric'
-                            })}
+                            {new Date(app.createdAt).toLocaleDateString(
+                              'pt-PT',
+                              {
+                                day: '2-digit',
+                                month: 'long',
+                                year: 'numeric',
+                              },
+                            )}
                           </div>
                         ) : null}
                       </div>
-                      <div className={`${styles.statusBadge} ${styles[`status${String(app.status || 'pending').charAt(0).toUpperCase()}${String(app.status || 'pending').slice(1)}`] || styles.statusPending}`}>
+                      <div
+                        className={`${styles.statusBadge} ${
+                          styles[
+                            `status${String(app.status || 'pending')
+                              .charAt(0)
+                              .toUpperCase()}${String(app.status || 'pending').slice(1)}`
+                          ] || styles.statusPending
+                        }`}
+                      >
                         {app.status === 'pending'
                           ? 'Pendente'
                           : app.status === 'approved'
@@ -385,12 +578,14 @@ export default function PerfilCandidato({ candidato, applications, contactLocked
                   ))}
                 </div>
               ) : (
-                <p className={styles.emptyText}>Nenhuma candidatura encontrada</p>
+                <p className={styles.emptyText}>
+                  Ainda não existem candidaturas registadas.
+                </p>
               )}
             </InfoSection>
           </div>
         </div>
-      </main>
+      </div>
     </>
   );
 }
@@ -417,7 +612,12 @@ function ExternalItem({ label, href, text }) {
   return (
     <div className={styles.infoCard}>
       <div className={styles.infoLabel}>{label}</div>
-      <a href={href} target="_blank" rel="noopener noreferrer" className={styles.externalLink}>
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={styles.externalLink}
+      >
         {text}
       </a>
     </div>
@@ -428,7 +628,10 @@ function SkillList({ items, tone }) {
   return (
     <div className={styles.skillList}>
       {items.map((skill, i) => (
-        <span key={`${skill}-${i}`} className={`${styles.skillChip} ${styles[`skill${tone[0].toUpperCase()}${tone.slice(1)}`]}`}>
+        <span
+          key={`${skill}-${i}`}
+          className={`${styles.skillChip} ${styles[`skill${tone[0].toUpperCase()}${tone.slice(1)}`]}`}
+        >
           {skill}
         </span>
       ))}
@@ -443,7 +646,7 @@ export async function getServerSideProps(context) {
     const cookies = nookies.get(context);
 
     if (!cookies.token) {
-      return { redirect: { destination: '/login', permanent: false } };
+      return redirectToLogin(context);
     }
 
     const token = await admin.auth().verifyIdToken(cookies.token);
@@ -455,30 +658,15 @@ export async function getServerSideProps(context) {
     }
 
     const userData = userDoc.data();
-    const planSummary = userData.userType === 'empresa' ? getEmpresaPlanSummary(userData) : null;
-    const contactLocked = userData.userType === 'empresa' && !planSummary?.features?.canViewCandidateContact;
-    const messagingLocked = userData.userType === 'empresa' && !planSummary?.features?.canSendDirectMessages;
-
     if (userData.userType !== 'empresa' && userData.userType !== 'admin') {
       return { redirect: { destination: '/dashboard', permanent: false } };
     }
 
-    if (userData.userType === 'empresa') {
-      const dayKey = new Date().toISOString().slice(0, 10);
-      const viewRef = admin.firestore().collection('candidateProfileViews').doc(`${id}_${uid}_${dayKey}`);
-      await viewRef.set(
-        {
-          candidateId: id,
-          companyId: uid,
-          companyName: userData.name || userData.fullName || 'Empresa',
-          dayKey,
-          viewedAt: admin.firestore.FieldValue.serverTimestamp()
-        },
-        { merge: true }
-      );
-    }
-
-    const candidatoDoc = await admin.firestore().collection('users').doc(id).get();
+    const candidatoDoc = await admin
+      .firestore()
+      .collection('users')
+      .doc(id)
+      .get();
     if (!candidatoDoc.exists) {
       return { notFound: true };
     }
@@ -489,8 +677,45 @@ export async function getServerSideProps(context) {
       return { notFound: true };
     }
 
-    const profileDoc = await admin.firestore().collection('profiles').doc(id).get();
+    const profileDoc = await admin
+      .firestore()
+      .collection('profiles')
+      .doc(id)
+      .get();
     const profileData = profileDoc.exists ? profileDoc.data() : {};
+    const privacy = getCandidatePrivacy(profileData);
+    const isAdmin = userData.userType === 'admin';
+    const isEmpresa = userData.userType === 'empresa';
+
+    const planSummary =
+      userData.userType === 'empresa' ? getEmpresaPlanSummary(userData) : null;
+    const contactHiddenByCandidate =
+      userData.userType === 'empresa' && !privacy.showContactInfo;
+    const contactLocked =
+      userData.userType === 'empresa' &&
+      (contactHiddenByCandidate ||
+        !planSummary?.features?.canViewCandidateContact);
+    const messagingLocked =
+      userData.userType === 'empresa' &&
+      !planSummary?.features?.canSendDirectMessages;
+
+    if (userData.userType === 'empresa') {
+      const dayKey = new Date().toISOString().slice(0, 10);
+      const viewRef = admin
+        .firestore()
+        .collection('candidateProfileViews')
+        .doc(`${id}_${uid}_${dayKey}`);
+      await viewRef.set(
+        {
+          candidateId: id,
+          companyId: uid,
+          companyName: userData.name || userData.fullName || 'Empresa',
+          dayKey,
+          viewedAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true },
+      );
+    }
 
     const candidato = {
       id,
@@ -507,8 +732,8 @@ export async function getServerSideProps(context) {
       nationality: profileData.nationality || '',
       gender: profileData.gender || '',
       maritalStatus: profileData.maritalStatus || '',
-      linkedin: profileData.linkedin || '',
-      website: profileData.website || '',
+      linkedin: contactLocked ? '' : normalizeExternalUrl(profileData.linkedin),
+      website: contactLocked ? '' : normalizeExternalUrl(profileData.website),
       skillsHard: profileData.skillsHard || [],
       skillsSoft: profileData.skillsSoft || [],
       digitalSkills: profileData.digitalSkills || [],
@@ -517,35 +742,103 @@ export async function getServerSideProps(context) {
       experience: profileData.experience || [],
       bio: profileData.bio || '',
       certifications: profileData.certifications || [],
-      certificateFiles: profileData.certificateFiles || [],
-      cvUrl: contactLocked ? '' : profileData.cvUrl || candidatoData.cvUrl || ''
+      certificateFiles: Array.isArray(profileData.certificateFiles)
+        ? profileData.certificateFiles
+            .map((url) => normalizeExternalUrl(url))
+            .filter(Boolean)
+        : [],
+      // Só a existência: o download passa por /api/files/candidate-cv, que
+      // reavalia a permissão e devolve um URL assinado de curta duração.
+      hasCv: Boolean(profileData.cvUrl || candidatoData.cvUrl),
     };
 
-    const applicationsSnapshot = await admin
-      .firestore()
-      .collection('applications')
-      .where('candidateId', '==', id)
-      .orderBy('createdAt', 'desc')
-      .limit(20)
-      .get();
+    const firestore = admin.firestore();
+    const applicationsCollection = firestore.collection('applications');
+    const applicationsQuery = applicationsCollection.where(
+      'candidateId',
+      '==',
+      id,
+    );
 
-    const applications = applicationsSnapshot.docs.map((doc) => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        jobTitle: data.jobTitle || '',
-        status: data.status || 'pending',
-        createdAt: safeTimestampToMillis(data.createdAt)
-      };
-    });
+    let rawApplications = [];
+
+    try {
+      if (isAdmin) {
+        const applicationsSnapshot = await applicationsQuery
+          .orderBy('createdAt', 'desc')
+          .limit(APPLICATION_HISTORY_LIMIT)
+          .get();
+
+        rawApplications = applicationsSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+      } else {
+        rawApplications = await collectCompanyApplicationHistory({
+          companyId: uid,
+          limit: APPLICATION_HISTORY_LIMIT,
+          fetchPage: async (cursor) => {
+            let query = applicationsQuery
+              .orderBy('createdAt', 'desc')
+              .limit(APPLICATION_HISTORY_PAGE_SIZE);
+
+            if (cursor) {
+              query = query.startAfter(cursor);
+            }
+
+            const snapshot = await query.get();
+            const lastDocument =
+              snapshot.docs[snapshot.docs.length - 1] || null;
+
+            return {
+              applications: snapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+              })),
+              cursor: lastDocument,
+              hasMore: snapshot.docs.length === APPLICATION_HISTORY_PAGE_SIZE,
+            };
+          },
+          fetchJob: async (jobId) => {
+            const jobDoc = await firestore.collection('jobs').doc(jobId).get();
+            return jobDoc.exists ? jobDoc.data() || {} : {};
+          },
+        });
+      }
+    } catch (historyError) {
+      console.error(
+        'Erro ao carregar histórico de candidaturas do candidato:',
+        historyError,
+      );
+      rawApplications = [];
+    }
+
+    const applications = rawApplications.map((application) => ({
+      id: application.id,
+      jobTitle: application.jobTitle || '',
+      status: application.status || 'pending',
+      createdAt: safeTimestampToMillis(application.createdAt),
+    }));
+
+    // Uma empresa pode sempre ver o perfil de quem se candidatou às suas vagas,
+    // mesmo com o perfil privado — a candidatura é o consentimento de partilha.
+    const hasCompanyApplication = isEmpresa && applications.length > 0;
+    if (
+      !isAdmin &&
+      !hasCompanyApplication &&
+      !canViewerAccessCandidate(privacy, { isAdmin, isEmpresa })
+    ) {
+      return { notFound: true };
+    }
 
     return {
       props: {
         candidato,
         applications,
         contactLocked,
-        messagingLocked
-      }
+        contactHiddenByCandidate,
+        messagingLocked,
+      },
     };
   } catch (error) {
     console.error('Erro ao carregar candidato:', error);

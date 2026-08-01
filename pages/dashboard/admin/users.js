@@ -1,14 +1,14 @@
-import { useMemo, useState } from "react";
-import Link from "next/link";
-import Head from "next/head";
-import nookies from "nookies";
-import LandingHeader from "../../../components/LandingHeader";
-import { admin } from "../../../lib/firebaseAdmin";
-import styles from "../../../styles/AdminPanel.module.css";
+import { useMemo, useState } from 'react';
+import Link from 'next/link';
+import Head from 'next/head';
+import nookies from 'nookies';
+import { admin } from '../../../lib/firebaseAdmin';
+import styles from '../../../styles/AdminPanel.module.css';
+import { redirectToLogin } from '../../../lib/loginRedirect';
 
 export default function AdminUsers({ users = [] }) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterType, setFilterType] = useState("all");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterType, setFilterType] = useState('all');
 
   const filteredUsers = useMemo(() => {
     return users.filter((user) => {
@@ -20,26 +20,25 @@ export default function AdminUsers({ users = [] }) {
         user.email?.toLowerCase().includes(query) ||
         user.phone?.toLowerCase().includes(query);
 
-      const matchesType = filterType === "all" || user.userType === filterType;
+      const matchesType = filterType === 'all' || user.userType === filterType;
       return matchesSearch && matchesType;
     });
   }, [users, searchTerm, filterType]);
 
   const stats = {
     total: users.length,
-    candidatos: users.filter((user) => user.userType === "candidato").length,
-    empresas: users.filter((user) => user.userType === "empresa").length,
-    admins: users.filter((user) => user.userType === "admin").length,
+    candidatos: users.filter((user) => user.userType === 'candidato').length,
+    empresas: users.filter((user) => user.userType === 'empresa').length,
+    admins: users.filter((user) => user.userType === 'admin').length,
   };
 
   return (
     <>
       <Head>
-        <title>Gerenciar Utilizadores - Admin</title>
+        <title>Gerir utilizadores - Admin</title>
       </Head>
-      <LandingHeader />
 
-      <main className={styles.page}>
+      <div className={styles.page}>
         <section className={styles.headerCard}>
           <div className={styles.headerCopy}>
             <Link
@@ -58,7 +57,7 @@ export default function AdminUsers({ users = [] }) {
               </svg>
               Voltar ao dashboard
             </Link>
-            <h1 className={styles.headerTitle}>Gerenciar utilizadores</h1>
+            <h1 className={styles.headerTitle}>Gerir utilizadores</h1>
             <p className={styles.headerSubtitle}>
               {filteredUsers.length} de {users.length} utilizadores encontrados.
             </p>
@@ -69,30 +68,30 @@ export default function AdminUsers({ users = [] }) {
           <StatCard
             title="Total"
             value={stats.total}
-            active={filterType === "all"}
+            active={filterType === 'all'}
             accent="#2057d7"
-            onClick={() => setFilterType("all")}
+            onClick={() => setFilterType('all')}
           />
           <StatCard
             title="Candidatos"
             value={stats.candidatos}
-            active={filterType === "candidato"}
+            active={filterType === 'candidato'}
             accent="#5fb8f5"
-            onClick={() => setFilterType("candidato")}
+            onClick={() => setFilterType('candidato')}
           />
           <StatCard
             title="Empresas"
             value={stats.empresas}
-            active={filterType === "empresa"}
+            active={filterType === 'empresa'}
             accent="#d9ff2f"
-            onClick={() => setFilterType("empresa")}
+            onClick={() => setFilterType('empresa')}
           />
           <StatCard
             title="Admins"
             value={stats.admins}
-            active={filterType === "admin"}
+            active={filterType === 'admin'}
             accent="#1e2b4d"
-            onClick={() => setFilterType("admin")}
+            onClick={() => setFilterType('admin')}
           />
         </section>
 
@@ -100,7 +99,7 @@ export default function AdminUsers({ users = [] }) {
           className={`${styles.surface} ${styles.panel} ${styles.section}`}
         >
           <div className={styles.inlineControls}>
-            <div style={{ flex: "1 1 320px" }}>
+            <div style={{ flex: '1 1 320px' }}>
               <label className={styles.chartTitle} htmlFor="admin-users-search">
                 Pesquisar
               </label>
@@ -116,7 +115,7 @@ export default function AdminUsers({ users = [] }) {
             {searchTerm ? (
               <button
                 type="button"
-                onClick={() => setSearchTerm("")}
+                onClick={() => setSearchTerm('')}
                 className={`${styles.buttonBase} ${styles.buttonGhost}`}
               >
                 Limpar
@@ -160,17 +159,17 @@ export default function AdminUsers({ users = [] }) {
                       <td
                         className={`${styles.tableCell} ${styles.tableCellStrong}`}
                       >
-                        {user.name || user.fullName || "Não informado"}
+                        {user.name || user.fullName || 'Não informado'}
                       </td>
                       <td
                         className={`${styles.tableCell} ${styles.tableCellMuted}`}
                       >
-                        {user.email || "—"}
+                        {user.email || '—'}
                       </td>
                       <td
                         className={`${styles.tableCell} ${styles.tableCellSoft}`}
                       >
-                        {user.phone || "—"}
+                        {user.phone || '—'}
                       </td>
                       <td
                         className={`${styles.tableCell} ${styles.alignCenter}`}
@@ -180,7 +179,7 @@ export default function AdminUsers({ users = [] }) {
                       <td
                         className={`${styles.tableCell} ${styles.tableCellSoft}`}
                       >
-                        {user.location || "—"}
+                        {user.location || '—'}
                       </td>
                       <td
                         className={`${styles.tableCell} ${styles.tableCellSoft} ${styles.nowrap}`}
@@ -201,9 +200,9 @@ export default function AdminUsers({ users = [] }) {
                             href={`/dashboard/admin/users/${user.id}/edit`}
                             className={`${styles.linkButton} ${styles.buttonAccent} ${styles.buttonSmall}`}
                             style={{
-                              "--button-bg": "rgba(95, 184, 245, 0.14)",
-                              "--button-border": "rgba(95, 184, 245, 0.28)",
-                              "--button-color": "#2057d7",
+                              '--button-bg': 'rgba(95, 184, 245, 0.14)',
+                              '--button-border': 'rgba(95, 184, 245, 0.28)',
+                              '--button-color': '#2057d7',
                             }}
                           >
                             Editar
@@ -217,7 +216,7 @@ export default function AdminUsers({ users = [] }) {
             </div>
           </section>
         )}
-      </main>
+      </div>
     </>
   );
 }
@@ -227,13 +226,10 @@ function StatCard({ title, value, active, accent, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={styles.statCard}
+      aria-pressed={active}
+      className={`${styles.statCard} ${active ? styles.statCardActive : ''}`}
       style={{
-        "--accent-color": accent,
-        borderColor: active ? accent : undefined,
-        background: active
-          ? `linear-gradient(180deg, #ffffff, color-mix(in srgb, ${accent} 14%, #f8fbff))`
-          : undefined,
+        '--accent-color': accent,
       }}
     >
       <p className={styles.statValue}>{value}</p>
@@ -245,37 +241,37 @@ function StatCard({ title, value, active, accent, onClick }) {
 function UserTypeBadge({ type }) {
   const palette = {
     candidato: {
-      label: "Candidato",
+      label: 'Candidato',
       style: {
-        "--badge-bg": "rgba(95, 184, 245, 0.14)",
-        "--badge-color": "#2057d7",
-        "--badge-border": "1px solid rgba(95, 184, 245, 0.24)",
+        '--badge-bg': 'rgba(95, 184, 245, 0.14)',
+        '--badge-color': '#2057d7',
+        '--badge-border': '1px solid rgba(95, 184, 245, 0.24)',
       },
     },
     empresa: {
-      label: "Empresa",
+      label: 'Empresa',
       style: {
-        "--badge-bg": "rgba(217, 255, 47, 0.22)",
-        "--badge-color": "#1e2b4d",
-        "--badge-border": "1px solid rgba(217, 255, 47, 0.3)",
+        '--badge-bg': 'rgba(217, 255, 47, 0.22)',
+        '--badge-color': '#1e2b4d',
+        '--badge-border': '1px solid rgba(217, 255, 47, 0.3)',
       },
     },
     admin: {
-      label: "Admin",
+      label: 'Admin',
       style: {
-        "--badge-bg": "rgba(30, 43, 77, 0.12)",
-        "--badge-color": "#1e2b4d",
-        "--badge-border": "1px solid rgba(30, 43, 77, 0.16)",
+        '--badge-bg': 'rgba(30, 43, 77, 0.12)',
+        '--badge-color': '#1e2b4d',
+        '--badge-border': '1px solid rgba(30, 43, 77, 0.16)',
       },
     },
   };
 
   const current = palette[type] || {
-    label: "Desconhecido",
+    label: 'Desconhecido',
     style: {
-      "--badge-bg": "rgba(123, 141, 168, 0.12)",
-      "--badge-color": "#607394",
-      "--badge-border": "1px solid rgba(123, 141, 168, 0.18)",
+      '--badge-bg': 'rgba(123, 141, 168, 0.12)',
+      '--badge-color': '#607394',
+      '--badge-border': '1px solid rgba(123, 141, 168, 0.18)',
     },
   };
 
@@ -290,15 +286,15 @@ function UserTypeBadge({ type }) {
 }
 
 function formatDateTime(value) {
-  if (!value) return "Não disponível";
+  if (!value) return 'Não disponível';
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "Não disponível";
-  return date.toLocaleString("pt-PT", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+  if (Number.isNaN(date.getTime())) return 'Não disponível';
+  return date.toLocaleString('pt-PT', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   });
 }
 
@@ -307,33 +303,27 @@ export async function getServerSideProps(context) {
     const cookies = nookies.get(context);
 
     if (!cookies.token) {
-      return { redirect: { destination: "/login", permanent: false } };
+      return redirectToLogin(context);
     }
 
     const token = await admin.auth().verifyIdToken(cookies.token);
     const { uid } = token;
 
-    const userDoc = await admin.firestore().collection("users").doc(uid).get();
+    const userDoc = await admin.firestore().collection('users').doc(uid).get();
     if (!userDoc.exists) {
-      return { redirect: { destination: "/login", permanent: false } };
+      return redirectToLogin(context);
     }
 
     const userData = userDoc.data();
 
-    if (userData.userType !== "admin") {
-      return { redirect: { destination: "/dashboard", permanent: false } };
+    if (userData.userType !== 'admin') {
+      return { redirect: { destination: '/dashboard', permanent: false } };
     }
 
-    const usersSnapshot = await admin
-      .firestore()
-      .collection("users")
-      .orderBy("createdAt", "desc")
-      .get();
-
-    const profilesSnapshot = await admin
-      .firestore()
-      .collection("profiles")
-      .get();
+    const [usersSnapshot, profilesSnapshot] = await Promise.all([
+      admin.firestore().collection('users').orderBy('createdAt', 'desc').get(),
+      admin.firestore().collection('profiles').get(),
+    ]);
     const profilesMap = {};
     profilesSnapshot.docs.forEach((doc) => {
       profilesMap[doc.id] = doc.data();
@@ -341,9 +331,9 @@ export async function getServerSideProps(context) {
 
     const serializeTs = (value) => {
       if (!value) return null;
-      if (typeof value.toMillis === "function") return value.toMillis();
-      if (typeof value.toDate === "function") return value.toDate().getTime();
-      if (typeof value === "number") return value;
+      if (typeof value.toMillis === 'function') return value.toMillis();
+      if (typeof value.toDate === 'function') return value.toDate().getTime();
+      if (typeof value === 'number') return value;
       return null;
     };
 
@@ -357,21 +347,21 @@ export async function getServerSideProps(context) {
           firestoreUser.name ||
           firestoreUser.fullName ||
           profileData.fullName ||
-          "",
+          '',
         fullName:
           firestoreUser.fullName ||
           firestoreUser.name ||
           profileData.fullName ||
-          "",
-        email: firestoreUser.email || "",
-        phone: profileData.phone || firestoreUser.phone || "",
+          '',
+        email: firestoreUser.email || '',
+        phone: profileData.phone || firestoreUser.phone || '',
         location:
           profileData.location ||
           firestoreUser.location ||
           firestoreUser.cidade ||
-          "",
-        userType: firestoreUser.userType || "",
-        photoUrl: profileData.photoUrl || firestoreUser.photoUrl || "",
+          '',
+        userType: firestoreUser.userType || '',
+        photoUrl: profileData.photoUrl || firestoreUser.photoUrl || '',
         createdAt:
           serializeTs(firestoreUser.createdAt) ||
           serializeTs(profileData.createdAt) ||
@@ -381,8 +371,8 @@ export async function getServerSideProps(context) {
           serializeTs(profileData.updatedAt) ||
           null,
         planEndDate: serializeTs(firestoreUser.planEndDate) || null,
-        currentPlan: firestoreUser.currentPlan || "",
-        provider: firestoreUser.provider || "email",
+        currentPlan: firestoreUser.currentPlan || '',
+        provider: firestoreUser.provider || 'email',
       };
     });
 
@@ -390,7 +380,7 @@ export async function getServerSideProps(context) {
       props: { users },
     };
   } catch (error) {
-    console.error("Erro no getServerSideProps de admin/users:", error);
-    return { redirect: { destination: "/login", permanent: false } };
+    console.error('Erro no getServerSideProps de admin/users:', error);
+    return redirectToLogin(context);
   }
 }

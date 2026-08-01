@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import Head from 'next/head';
 import nookies from 'nookies';
-import LandingHeader from '../../../components/LandingHeader';
 import { admin } from '../../../lib/firebaseAdmin';
 import styles from '../../../styles/AdminPanel.module.css';
+import { redirectToLogin } from '../../../lib/loginRedirect';
 
 const safePercent = (value, total) => {
   if (!total || total <= 0) return 0;
@@ -82,9 +82,8 @@ export default function AdminReports({ reports = {} }) {
       <Head>
         <title>Relatórios - Admin Dashboard</title>
       </Head>
-      <LandingHeader />
 
-      <main className={`${styles.page} ${styles.pageNarrow}`}>
+      <div className={`${styles.page} ${styles.pageNarrow}`}>
         <div className={styles.headerCard}>
           <div className={styles.headerCopy}>
             <Link
@@ -95,15 +94,15 @@ export default function AdminReports({ reports = {} }) {
               ← Voltar ao Dashboard
             </Link>
             <h1 className={`${styles.headerTitle} ${styles.headerTitleSmall}`}>Relatórios</h1>
-            <p className={styles.headerSubtitle}>Visão consolidada do sistema com distribuição de usuários, vagas e atividade recente.</p>
+            <p className={styles.headerSubtitle}>Visão consolidada do sistema com distribuição de utilizadores, vagas e atividade recente.</p>
           </div>
         </div>
 
         <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Relatório de Usuários</h2>
+          <h2 className={styles.sectionTitle}>Relatório de utilizadores</h2>
           <div className={styles.gridStats}>
             <ReportCard
-              title="Total de Usuários"
+              title="Total de utilizadores"
               value={userTotal}
               color="#3b82f6"
               icon={
@@ -145,7 +144,7 @@ export default function AdminReports({ reports = {} }) {
           </div>
 
           <div className={`${styles.surface} ${styles.panel}`} style={{ marginTop: '1.5rem' }}>
-            <h3 className={styles.chartTitle}>Distribuição de Usuários</h3>
+            <h3 className={styles.chartTitle}>Distribuição de utilizadores</h3>
             <div className={styles.metricList}>
               <div className={styles.metricRow}>
                 <span className={styles.metricLabel}>Candidatos</span>
@@ -218,7 +217,7 @@ export default function AdminReports({ reports = {} }) {
           </div>
 
           <div className={`${styles.surface} ${styles.panel}`} style={{ marginTop: '1.5rem' }}>
-            <h3 className={styles.chartTitle}>Status das Vagas</h3>
+            <h3 className={styles.chartTitle}>Estado das vagas</h3>
             <div className={styles.metricList}>
               <div className={styles.metricRow}>
                 <span className={styles.metricLabel}>Ativas</span>
@@ -279,7 +278,7 @@ export default function AdminReports({ reports = {} }) {
             )}
           </div>
         </section>
-      </main>
+      </div>
     </>
   );
 }
@@ -289,7 +288,7 @@ export async function getServerSideProps(context) {
     const cookies = nookies.get(context);
 
     if (!cookies.token) {
-      return { redirect: { destination: '/login', permanent: false } };
+      return redirectToLogin(context);
     }
 
     try {
@@ -298,12 +297,12 @@ export async function getServerSideProps(context) {
 
       const userDoc = await admin.firestore().collection('users').doc(uid).get();
       if (!userDoc.exists) {
-        return { redirect: { destination: '/login', permanent: false } };
+        return redirectToLogin(context);
       }
 
       const userData = userDoc.data();
       if (userData.userType !== 'admin') {
-        return { redirect: { destination: '/login', permanent: false } };
+        return redirectToLogin(context);
       }
 
       const [
@@ -377,10 +376,10 @@ export async function getServerSideProps(context) {
       };
     } catch (tokenError) {
       console.error('Erro ao verificar token:', tokenError);
-      return { redirect: { destination: '/login', permanent: false } };
+      return redirectToLogin(context);
     }
   } catch (error) {
     console.error('Erro no getServerSideProps:', error);
-    return { redirect: { destination: '/login', permanent: false } };
+    return redirectToLogin(context);
   }
 }
