@@ -274,6 +274,16 @@ Validação do item: falha inicial comprovou o `Error` bruto no log e a mensagem
 
 Validação do item: `npm run quality` aprovado com 44 suites e 163 testes. Nenhuma chamada ao Firebase online foi efetuada.
 
+### Log da rota de upload de CV
+
+| Item                          | Estado    | Ficheiros / evidência                                                                                                                                                                                                                    |
+| ----------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Erro bruto com dados pessoais | CORRIGIDO | `pages/api/profile/upload-cv.js` usa `logServerError('profile.cv_upload_failed', error)`; mensagens, email, URL/token de download, nome e conteúdo Base64 do CV não entram no console.                                                   |
+| Regressão com dados-canário   | CORRIGIDO | `tests/unit/security/profileCvLogging.test.ts` falhou primeiro ao receber o `Error` completo e passa exigindo apenas `{ category: 'authentication' }`, além da resposta 500 genérica já existente.                                       |
+| Minimização da resposta 200   | PENDENTE  | A rota ainda espalha todo o documento de perfil na resposta. O único consumidor substitui o perfil local inteiro e contém alterações preexistentes; reduzir para `cvUrl`/`cvName` requer contrato e merge do estado num commit separado. |
+
+Validação do item: `npm run quality` aprovado com 45 suites e 164 testes. Nenhuma chamada ao Firebase online foi efetuada.
+
 ## Inventário de veredictos
 
 As tabelas exaustivas de rotas de API e páginas serão acrescentadas nas Fases 2 e 3. Nenhuma rota ou página é marcada como validada com base apenas na auditoria histórica.

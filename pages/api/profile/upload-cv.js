@@ -1,4 +1,5 @@
 import { admin } from '../../../lib/firebaseAdmin';
+import { logServerError } from '../../../lib/serverLog';
 
 const mapPlanInfo = (userData) => ({
   currentPlan: userData.currentPlan,
@@ -77,7 +78,7 @@ export default async function handler(req, res) {
       message: 'CV atualizado com sucesso.'
     });
   } catch (error) {
-    console.error('Erro ao atualizar CV:', error);
+    logServerError('profile.cv_upload_failed', error);
     return res.status(500).json({ error: 'Erro interno ao atualizar o CV.' });
   }
 }
