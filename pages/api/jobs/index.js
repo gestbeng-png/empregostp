@@ -2,6 +2,8 @@ import { admin } from '../../../lib/firebaseAdmin';
 import { canCreateJob, canHighlightJob, getEmpresaPlanSummary, getJobExpirationDate } from '../../../lib/empresaPlanFeatures';
 import { buildJobApplicationPremiumFields } from '../../../lib/candidateApplicationPremium';
 import { getEffectiveJobStatus, syncExpiredJobStatus } from '../../../lib/jobExpiration';
+import { JOB_STATUS_PENDING_REVIEW, isJobModerationEnabled } from '../../../lib/jobModeration';
+import { logServerWarning } from '../../../lib/serverLog';
 import { normalizeSkillsAssessmentInput } from '../../../lib/skillsAssessment';
 
 function toIsoDateString(value) {
@@ -197,6 +199,7 @@ export default async function handler(req, res) {
 
     const finalCloseDate = requestedCloseDate > maxExpirationDate ? maxExpirationDate : requestedCloseDate;
     const openDate = dataAbertura || new Date().toISOString().split('T')[0];
+    const moderationEnabled = await isJobModerationEnabled(admin);
     const premiumApplicationFields = buildJobApplicationPremiumFields({
       premiumOnly,
       earlyAccessHours,
@@ -228,12 +231,12 @@ export default async function handler(req, res) {
       ...premiumApplicationFields,
       companyId: auth.uid,
       companyName: auth.userData.name || auth.userData.fullName || '',
-      status: 'active',
+      status: moderationEnabled ? JOB_STATUS_PENDING_REVIEW : 'active',
       views: 0,
       applicationCount: 0,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      publishedAt: admin.firestore.FieldValue.serverTimestamp(),
+      publishedAt: moderationEnabled ? null : admin.firestore.FieldValue.serverTimestamp(),
       expiresAt: admin.firestore.Timestamp.fromDate(finalCloseDate),
       planId
     };
@@ -242,12 +245,40 @@ export default async function handler(req, res) {
     const jobDoc = await jobRef.get();
     const job = buildJobResponse(jobDoc, jobDoc.data(), 0);
 
+    // Com a moderação ligada, os admins recebem a nova vaga na fila de
+    // revisão; uma falha aqui não impede a submissão da vaga.
+    if (moderationEnabled) {
+      try {
+        const adminsSnapshot = await admin.firestore()
+          .collection('users')
+          .where('userType', '==', 'admin')
+          .get();
+        await Promise.all(adminsSnapshot.docs.map((adminDoc) =>
+          admin.firestore().collection('notifications').add({
+            userId: adminDoc.id,
+            type: 'JOB_REVIEW',
+            title: 'Vaga aguarda revisão',
+            message: `${payload.companyName || 'Uma empresa'} submeteu a vaga "${payload.titulo}" para revisão.`,
+            icon: '📋',
+            read: false,
+            relatedId: jobRef.id,
+            relatedType: 'job',
+            actionUrl: '/dashboard/admin/jobs?status=pending_review',
+            createdAt: admin.firestore.FieldValue.serverTimestamp()
+          })));
+      } catch (notificationError) {
+        logServerWarning('jobs.moderation_admin_notification_failed', notificationError);
+      }
+    }
+
     const warning = requestedCloseDate > maxExpirationDate
       ? `A data de fecho foi ajustada para ${payload.dataFecho} com base no limite do seu plano.`
       : null;
 
     return res.status(201).json({
-      message: 'Vaga criada com sucesso',
+      message: moderationEnabled
+        ? 'Vaga submetida para revisão. Será publicada após aprovação do administrador.'
+        : 'Vaga criada com sucesso',
       warning,
       job
     });
