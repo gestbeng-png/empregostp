@@ -3,7 +3,7 @@ import { canCreateJob, canHighlightJob, getEmpresaPlanSummary, getJobExpirationD
 import { buildJobApplicationPremiumFields } from '../../../lib/candidateApplicationPremium';
 import { getEffectiveJobStatus, syncExpiredJobStatus } from '../../../lib/jobExpiration';
 import { JOB_STATUS_PENDING_REVIEW, isJobModerationEnabled } from '../../../lib/jobModeration';
-import { logServerWarning } from '../../../lib/serverLog';
+import { logServerError, logServerWarning } from '../../../lib/serverLog';
 import { normalizeSkillsAssessmentInput } from '../../../lib/skillsAssessment';
 
 function toIsoDateString(value) {
@@ -80,7 +80,7 @@ async function getAuthenticatedCompany(req, res) {
         });
       }
     } catch (error) {
-      console.error('Erro ao sincronizar plano expirado da empresa:', error);
+      logServerError('jobs.sincronizar_plano_expirado_da_empresa_failed', error);
     }
   }
 
@@ -283,7 +283,7 @@ export default async function handler(req, res) {
       job
     });
   } catch (error) {
-    console.error('Erro na API /api/jobs:', error);
+    logServerError('jobs.api_api_jobs_failed', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 }

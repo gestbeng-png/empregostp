@@ -1,5 +1,6 @@
 import { admin } from '../../../lib/firebaseAdmin';
 import { serializeVerificationTimestamps } from '../../../lib/candidateVerification';
+import { logServerError } from '../../../lib/serverLog';
 
 function getDocTime(data = {}) {
   return (
@@ -67,7 +68,7 @@ export default async function handler(req, res) {
           }
         }
       } catch (err) {
-        console.error('Error fetching user info:', err);
+        logServerError('admin_verifications.fetching_user_info_failed', err);
       }
 
       verifications.push({
@@ -87,7 +88,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ verifications });
   } catch (error) {
-    console.error('Error fetching verifications:', error);
+    logServerError('admin_verifications.fetching_verifications_failed', error);
     return res.status(500).json({ error: 'Internal server error', details: error.message });
   }
 }

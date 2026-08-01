@@ -1,5 +1,6 @@
 import { admin } from '../../../../lib/firebaseAdmin';
 import { serializeFirestoreValue } from '../../../../lib/empresaPlansCatalog';
+import { logServerError } from '../../../../lib/serverLog';
 
 export default async function handler(req, res) {
   try {
@@ -129,7 +130,7 @@ export default async function handler(req, res) {
 
     return res.status(405).json({ error: 'Método não permitido' });
   } catch (error) {
-    console.error('Erro ao processar requisição:', error);
+    logServerError('admin_subscription_requests.processar_requisicao_failed', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 } 

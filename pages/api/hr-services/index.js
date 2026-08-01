@@ -1,5 +1,6 @@
 import { admin } from '../../../lib/firebaseAdmin';
 import { createServerNotification } from '../../../lib/serverNotifications';
+import { logServerError } from '../../../lib/serverLog';
 
 const COLLECTION = 'hrServiceRequests';
 
@@ -96,7 +97,7 @@ async function notifyAdmins(payload) {
       ),
     );
   } catch (error) {
-    console.error('Erro ao notificar admins sobre pedido de serviço RH:', error);
+    logServerError('hr_services.notificar_admins_sobre_pedido_de_servico_rh_failed', error);
   }
 }
 
@@ -194,7 +195,7 @@ export default async function handler(req, res) {
     res.setHeader('Allow', 'GET, POST');
     return res.status(405).json({ error: 'Método não permitido' });
   } catch (error) {
-    console.error('Erro na API de serviços RH:', error);
+    logServerError('hr_services.api_de_servicos_rh_failed', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 }

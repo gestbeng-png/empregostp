@@ -1,4 +1,5 @@
 import { admin } from '../../../lib/firebaseAdmin';
+import { logServerError } from '../../../lib/serverLog';
 
 /**
  * Migration script to move verification data from users collection to verifications collection
@@ -25,7 +26,6 @@ export default async function handler(req, res) {
             return res.status(403).json({ error: 'Forbidden - Admin access required' });
         }
 
-        console.log('Starting verification migration...');
 
         // Find all users with verificationStatus = 'pending'
         const usersSnapshot = await admin.firestore()
@@ -33,7 +33,6 @@ export default async function handler(req, res) {
             .where('verificationStatus', '==', 'pending')
             .get();
 
-        console.log(`Found ${usersSnapshot.docs.length} users with pending verification status`);
 
         let migrated = 0;
         let skipped = 0;
@@ -52,7 +51,6 @@ export default async function handler(req, res) {
                     .get();
 
                 if (!existingVerification.empty) {
-                    console.log(`Skipping ${uid} - verification already exists`);
                     skipped++;
                     continue;
                 }
@@ -85,11 +83,10 @@ export default async function handler(req, res) {
                 // Add to verifications collection
                 await admin.firestore().collection('verifications').add(verificationData);
 
-                console.log(`Migrated verification for user ${uid}`);
                 migrated++;
 
             } catch (err) {
-                console.error(`Error migrating user ${userDoc.id}:`, err);
+                logServerError('admin_migrate_verifications.migrating_user_failed', err);
                 errors.push({ uid: userDoc.id, error: err.message });
             }
         }
@@ -103,7 +100,7 @@ export default async function handler(req, res) {
         });
 
     } catch (error) {
-        console.error('Error in migration:', error);
+        logServerError('admin_migrate_verifications.in_migration_failed', error);
         return res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 }

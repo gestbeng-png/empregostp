@@ -1,5 +1,6 @@
 import { admin } from '../../../lib/firebaseAdmin';
 import { enforceApiRateLimit, getClientIp } from '../../../lib/apiRateLimit';
+import { logServerError } from '../../../lib/serverLog';
 
 const MAX_PUBLIC = 60;
 
@@ -54,7 +55,7 @@ export default async function handler(req, res) {
 
       return res.status(200).json({ testimonials });
     } catch (error) {
-      console.error('Erro ao buscar testemunhos:', error);
+      logServerError('testimonials.buscar_testemunhos_failed', error);
       return res.status(500).json({ error: 'Erro ao carregar testemunhos' });
     }
   }
@@ -113,7 +114,7 @@ export default async function handler(req, res) {
           'Obrigado! O seu testemunho foi enviado e será publicado após revisão.',
       });
     } catch (error) {
-      console.error('Erro ao registar testemunho:', error);
+      logServerError('testimonials.registar_testemunho_failed', error);
       return res.status(500).json({ error: 'Erro ao enviar o testemunho.' });
     }
   }

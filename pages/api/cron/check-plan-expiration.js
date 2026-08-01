@@ -2,6 +2,7 @@ import { admin } from '../../../lib/firebaseAdmin';
 import { getDefaultBasicPlanForUserType } from '../../../lib/defaultPlans';
 import { createServerNotification } from '../../../lib/serverNotifications';
 import { evaluatePlanExpirationTask } from '../../../lib/subscriptionLifecycle';
+import { logServerError } from '../../../lib/serverLog';
 
 /**
  * Cron job to check and update expired plans
@@ -162,11 +163,11 @@ export default async function handler(req, res) {
             actionUrl: outcome.userType === 'empresa' ? '/premium/empresa' : '/premium/candidatos'
           });
         } catch (notificationError) {
-          console.error('Error creating plan expiration notification:', notificationError);
+          logServerError('cron_check_plan_expiration.creating_plan_expiration_notification_failed', notificationError);
         }
       } catch (error) {
         errorCount++;
-        console.error(`✗ Error processing plan expiration task ${doc.id}:`, error);
+        logServerError('cron_check_plan_expiration.error_processing_plan_expiration_task_failed', error);
       }
     }
 
@@ -190,7 +191,7 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('Critical error in plan expiration check:', error);
+    logServerError('cron_check_plan_expiration.plan_expiration_check_failed', error);
     return res.status(500).json({
       error: 'Internal server error',
       message: error.message,

@@ -1,6 +1,7 @@
 import { admin } from '../../../lib/firebaseAdmin';
 import { enforceApiRateLimit, getClientIp } from '../../../lib/apiRateLimit';
 import { sendEmail, isEmailConfigured } from '../../../lib/email';
+import { logServerError } from '../../../lib/serverLog';
 
 // Regista subscritores da newsletter e envia um email de boas-vindas.
 // Os subscritores ficam em `newsletterSubscribers` e podem depois ser usados
@@ -118,7 +119,7 @@ export default async function handler(req, res) {
       try {
         await sendEmail({ to: email, subject, html, text });
       } catch (emailError) {
-        console.error('Erro ao enviar email de boas-vindas da newsletter:', emailError);
+        logServerError('newsletter_subscribe.enviar_email_de_boas_vindas_da_newsletter_failed', emailError);
         return res.status(202).json({
           message: 'Subscrição registada! (O email de confirmação será enviado em breve.)',
           emailSent: false,
@@ -136,7 +137,7 @@ export default async function handler(req, res) {
       emailSent: true,
     });
   } catch (error) {
-    console.error('Erro ao subscrever newsletter:', error);
+    logServerError('newsletter_subscribe.subscrever_newsletter_failed', error);
     return res.status(500).json({ error: 'Não foi possível concluir a subscrição.' });
   }
 }

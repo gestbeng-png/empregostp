@@ -1,5 +1,6 @@
 import { admin } from '../../../lib/firebaseAdmin';
 import { serializeFirestoreValue } from '../../../lib/empresaPlansCatalog';
+import { logServerError } from '../../../lib/serverLog';
 
 function toMillis(value) {
   if (!value) return 0;
@@ -47,7 +48,7 @@ export default async function handler(req, res) {
       }
     });
   } catch (error) {
-    console.error('Erro ao buscar solicitação de subscrição atual:', error);
+    logServerError('subscription_requests_current.buscar_solicitacao_de_subscricao_atual_failed', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 }

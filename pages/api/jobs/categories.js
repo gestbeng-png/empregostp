@@ -1,4 +1,5 @@
 import { admin } from '../../../lib/firebaseAdmin';
+import { logServerError } from '../../../lib/serverLog';
 
 export default async function handler(req, res) {
     if (req.method !== 'GET') {
@@ -40,7 +41,7 @@ export default async function handler(req, res) {
         });
 
     } catch (error) {
-        console.error('Error fetching job categories:', error);
+        logServerError('jobs_categories.fetching_job_categories_failed', error);
         return res.status(500).json({
             error: 'Internal server error',
             details: error.message

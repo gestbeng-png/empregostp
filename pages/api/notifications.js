@@ -1,6 +1,7 @@
 import { admin } from '../../lib/firebaseAdmin';
 import { enforceApiRateLimit } from '../../lib/apiRateLimit';
 import { createServerNotification } from '../../lib/serverNotifications';
+import { logServerError } from '../../lib/serverLog';
 
 export default async function handler(req, res) {
   // Rate limit: no máximo 30 pedidos por minuto por IP
@@ -83,7 +84,6 @@ async function handleNotifications(req, res) {
         relatedId: relatedId || null
       });
 
-      console.log('✅ Notificação criada:', notification.id);
 
       return res.status(201).json({ 
         message: 'Notificação criada',
@@ -143,7 +143,7 @@ async function handleNotifications(req, res) {
     return res.status(405).json({ error: 'Método não permitido' });
 
   } catch (error) {
-    console.error('Erro na API de notificações:', error);
+    logServerError('notifications.api_de_notificacoes_failed', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 }

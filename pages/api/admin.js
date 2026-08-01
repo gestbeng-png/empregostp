@@ -1,4 +1,5 @@
 import { admin } from '../../lib/firebaseAdmin';
+import { logServerError } from '../../lib/serverLog';
 
 export default async function handler(req, res) {
   // Verificar se o método é GET
@@ -64,7 +65,7 @@ export default async function handler(req, res) {
       lastJobs: jobsData.slice(0, 5) // Últimas 5 vagas
     });
   } catch (error) {
-    console.error('Erro ao buscar dados de administrador:', error);
+    logServerError('admin.buscar_dados_de_administrador_failed', error);
     return res.status(500).json({ message: 'Erro interno do servidor', error: error.message });
   }
 }

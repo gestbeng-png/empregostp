@@ -1,4 +1,5 @@
 import { admin } from '../../lib/firebaseAdmin';
+import { logServerError } from '../../lib/serverLog';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -12,7 +13,6 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'jobId é obrigatório' });
     }
 
-    console.log('📊 Registrando visualização:', { jobId, userId, source });
 
     // Buscar vaga
     const jobRef = admin.firestore().collection('jobs').doc(jobId);
@@ -38,14 +38,13 @@ export default async function handler(req, res) {
       ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress || null
     });
 
-    console.log('✅ Visualização registrada');
 
     return res.status(200).json({ 
       message: 'Visualização registrada com sucesso' 
     });
 
   } catch (error) {
-    console.error('Erro ao registrar visualização:', error);
+    logServerError('track_view.registrar_visualizacao_failed', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 }

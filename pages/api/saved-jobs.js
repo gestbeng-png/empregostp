@@ -1,5 +1,6 @@
 import { admin } from '../../lib/firebaseAdmin';
 import { canSaveJob, isPlanActive, getPlanSummary } from '../../lib/candidatePlanFeatures';
+import { logServerError } from '../../lib/serverLog';
 
 export default async function handler(req, res) {
   try {
@@ -87,9 +88,8 @@ export default async function handler(req, res) {
             planEndDate: null,
             updatedAt: admin.firestore.FieldValue.serverTimestamp()
           });
-          console.log(`Plano expirado atualizado para básico para usuário ${uid}`);
         } catch (updateError) {
-          console.error('Erro ao atualizar plano expirado:', updateError);
+          logServerError('saved_jobs.atualizar_plano_expirado_failed', updateError);
         }
       }
 
@@ -146,7 +146,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Método não permitido' });
 
   } catch (error) {
-    console.error('Erro na API de vagas salvas:', error);
+    logServerError('saved_jobs.api_de_vagas_salvas_failed', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 }

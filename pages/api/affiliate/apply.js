@@ -1,4 +1,5 @@
 import { admin } from '../../../lib/firebaseAdmin';
+import { logServerError } from '../../../lib/serverLog';
 
 const COLLECTION = 'affiliateApplications';
 
@@ -160,7 +161,7 @@ export default async function handler(req, res) {
     res.setHeader('Allow', 'GET, POST');
     return res.status(405).json({ error: 'Método não permitido' });
   } catch (error) {
-    console.error('Erro na API de afiliados:', error);
+    logServerError('affiliate_apply.api_de_afiliados_failed', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 }

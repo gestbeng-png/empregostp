@@ -1,6 +1,7 @@
 import { admin } from '../../../../lib/firebaseAdmin';
 import { canHighlightJob, getEmpresaPlanSummary } from '../../../../lib/empresaPlanFeatures';
 import { getEffectiveJobStatus, syncExpiredJobStatus } from '../../../../lib/jobExpiration';
+import { logServerError } from '../../../../lib/serverLog';
 
 /**
  * PATCH /api/jobs/[id]/destaque
@@ -90,7 +91,7 @@ export default async function handler(req, res) {
       }
     });
   } catch (error) {
-    console.error('Error updating job destaque:', error);
+    logServerError('jobs_id_destaque.updating_job_destaque_failed', error);
     return res.status(500).json({
       error: 'Internal server error',
       message: error.message

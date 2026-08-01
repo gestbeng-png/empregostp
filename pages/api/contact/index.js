@@ -1,6 +1,7 @@
 import { admin } from '../../../lib/firebaseAdmin';
 import { enforceApiRateLimit, getClientIp } from '../../../lib/apiRateLimit';
 import { sendEmail, isEmailConfigured } from '../../../lib/email';
+import { logServerError } from '../../../lib/serverLog';
 
 // Recebe mensagens do formulário público de contacto.
 // As mensagens ficam guardadas em `contactMessages` e, quando o email estiver
@@ -160,7 +161,7 @@ export default async function handler(req, res) {
           text,
         });
       } catch (emailError) {
-        console.error('Erro ao notificar contacto por email:', emailError);
+        logServerError('contact.notificar_contacto_por_email_failed', emailError);
         return res.status(202).json({
           message:
             'Mensagem recebida! A nossa equipa vai responder assim que possível.',
@@ -175,7 +176,7 @@ export default async function handler(req, res) {
       emailSent: isEmailConfigured(),
     });
   } catch (error) {
-    console.error('Erro ao registar mensagem de contacto:', error);
+    logServerError('contact.registar_mensagem_de_contacto_failed', error);
     return res
       .status(500)
       .json({ error: 'Não foi possível enviar a mensagem. Tente novamente.' });

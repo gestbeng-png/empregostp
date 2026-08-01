@@ -2,6 +2,7 @@ import { admin } from '../../lib/firebaseAdmin';
 import { getPlanSummary } from '../../lib/candidatePlanFeatures';
 import { buildCandidateSignals } from '../../lib/candidateProfileInsights';
 import { analyzeCandidateJobFit } from '../../lib/candidateOptimizationInsights';
+import { logServerError } from '../../lib/serverLog';
 
 const serializeTimestamp = (value) => {
   if (!value) return null;
@@ -106,7 +107,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ recommendations });
   } catch (error) {
-    console.error('Erro ao gerar recomendacoes:', error);
+    logServerError('recommendations.gerar_recomendacoes_failed', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 }

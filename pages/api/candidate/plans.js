@@ -1,6 +1,7 @@
 import { admin } from '../../../lib/firebaseAdmin';
 import { serializeFirestoreValue } from '../../../lib/empresaPlansCatalog';
 import { getCandidateMarketingPlans } from '../../../lib/candidateCatalog';
+import { logServerError } from '../../../lib/serverLog';
 
 // Modelo "3 planos fixos": o candidato vê sempre exatamente os planos canónicos
 // (Verificação, Profissional, Premium). O admin pode editar nome, preço, rótulo
@@ -81,7 +82,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ plans });
   } catch (error) {
-    console.error('Erro ao listar planos de candidato:', error);
+    logServerError('candidate_plans.listar_planos_de_candidato_failed', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 }

@@ -1,5 +1,6 @@
 import { admin } from '../../../../lib/firebaseAdmin';
 import { createServerNotification } from '../../../../lib/serverNotifications';
+import { logServerError } from '../../../../lib/serverLog';
 
 const COLLECTION = 'hrServiceRequests';
 
@@ -189,7 +190,7 @@ export default async function handler(req, res) {
     res.setHeader('Allow', 'PATCH, POST, DELETE');
     return res.status(405).json({ message: 'Método não permitido' });
   } catch (error) {
-    console.error('Erro ao moderar pedido de serviço RH:', error);
+    logServerError('admin_hr_services_id.moderar_pedido_de_servico_rh_failed', error);
     return res.status(500).json({ message: 'Erro interno do servidor', error: error.message });
   }
 }

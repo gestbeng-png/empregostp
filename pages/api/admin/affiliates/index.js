@@ -1,4 +1,5 @@
 import { admin } from '../../../../lib/firebaseAdmin';
+import { logServerError } from '../../../../lib/serverLog';
 
 async function requireAdmin(req, res) {
   const authHeader = req.headers.authorization;
@@ -86,7 +87,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ affiliates, stats });
   } catch (error) {
-    console.error('Erro na API de afiliados (admin):', error);
+    logServerError('admin_affiliates.api_de_afiliados_admin_failed', error);
     return res.status(500).json({ message: 'Erro interno do servidor', error: error.message });
   }
 }

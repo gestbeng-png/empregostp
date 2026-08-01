@@ -2,6 +2,7 @@ import { admin } from '../../lib/firebaseAdmin';
 import { getPlanSummary } from '../../lib/candidatePlanFeatures';
 import { shouldNotifyCandidateForJob } from '../../lib/candidateProfileInsights';
 import { sendPushToUser } from '../../lib/serverNotifications';
+import { logServerError } from '../../lib/serverLog';
 
 function canReceiveNewJobNotification(candidateData = {}) {
   const planSummary = getPlanSummary(candidateData);
@@ -55,7 +56,6 @@ export default async function handler(req, res) {
       .limit(100)
       .get();
 
-    console.log(`📬 Criando notificações para ${candidatesSnapshot.size} candidatos...`);
 
     const candidateIds = candidatesSnapshot.docs.map((doc) => doc.id);
     const profileDocs = candidateIds.length
@@ -125,7 +125,6 @@ export default async function handler(req, res) {
           })
         )
       );
-      console.log(`✅ ${notificationCount} notificações criadas`);
     }
 
     return res.status(200).json({ 
@@ -134,7 +133,7 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('Erro ao notificar candidatos:', error);
+    logServerError('notify_candidates.notificar_candidatos_failed', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 }

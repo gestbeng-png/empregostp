@@ -12,6 +12,7 @@ import {
   syncExpiredJobStatus,
 } from "../../../lib/jobExpiration";
 import { normalizeSkillsAssessmentInput } from "../../../lib/skillsAssessment";
+import { logServerError } from '../../../lib/serverLog';
 
 function toIsoDateString(value) {
   if (!value) return null;
@@ -278,7 +279,7 @@ export default async function handler(req, res) {
       },
     });
   } catch (error) {
-    console.error("Erro na API /api/jobs/[id]:", error);
+    logServerError('jobs_id.api_api_jobs_id_failed', error);
     return res.status(500).json({ error: "Erro interno do servidor" });
   }
 }

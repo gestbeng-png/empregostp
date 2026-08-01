@@ -1,4 +1,5 @@
 import { admin } from '../../../../lib/firebaseAdmin';
+import { logServerError } from '../../../../lib/serverLog';
 
 export default async function handler(req, res) {
   const { id } = req.query;
@@ -133,7 +134,7 @@ export default async function handler(req, res) {
       return res.status(405).json({ message: 'Método não permitido' });
     }
   } catch (error) {
-    console.error('Erro ao gerenciar vaga:', error);
+    logServerError('admin_jobs_id.gerenciar_vaga_failed', error);
     return res.status(500).json({ message: 'Erro interno do servidor', error: error.message });
   }
 } 

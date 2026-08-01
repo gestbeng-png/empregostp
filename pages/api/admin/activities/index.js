@@ -1,4 +1,5 @@
 import { admin } from '../../../../lib/firebaseAdmin';
+import { logServerError } from '../../../../lib/serverLog';
 
 function toDateInputIso(value) {
   if (!value) return '';
@@ -207,7 +208,7 @@ export default async function handler(req, res) {
       nextCursorId
     });
   } catch (error) {
-    console.error('Erro ao buscar atividades:', error);
+    logServerError('admin_activities.buscar_atividades_failed', error);
     return res.status(500).json({ message: 'Erro interno do servidor', error: error.message });
   }
 }

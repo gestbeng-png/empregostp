@@ -1,4 +1,5 @@
 import { admin } from '../../lib/firebaseAdmin';
+import { logServerError } from '../../lib/serverLog';
 
 const serializeTimestamp = (value) => {
   if (!value) return null;
@@ -128,7 +129,7 @@ export default async function handler(req, res) {
       applications
     });
   } catch (error) {
-    console.error('Erro na API de perfil:', error);
+    logServerError('profile.api_de_perfil_failed', error);
     return res.status(500).json({ error: 'Erro interno do servidor.' });
   }
 }

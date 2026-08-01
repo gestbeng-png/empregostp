@@ -1,4 +1,5 @@
 import admin from '../../lib/firebaseAdmin';
+import { logServerError } from '../../lib/serverLog';
 
 const STRING_PROFILE_FIELDS = [
   'phone',
@@ -117,6 +118,7 @@ export default async function handler(req, res) {
         }
         res.status(200).json({ profile: doc.data() });
       } catch (error) {
+        logServerError('empresa.perfil_leitura_failed', error);
         res.status(500).json({ message: 'Error fetching company data.' });
       }
       break;
@@ -136,6 +138,7 @@ export default async function handler(req, res) {
         });
         res.status(200).json({ message: 'Profile updated successfully.' });
       } catch (error) {
+        logServerError('empresa.perfil_atualizacao_failed', error);
         res.status(500).json({ message: 'Error updating company data.' });
       }
       break;

@@ -1,4 +1,5 @@
 import { admin } from '../../../lib/firebaseAdmin';
+import { logServerError } from '../../../lib/serverLog';
 
 export default async function handler(req, res) {
   try {
@@ -77,7 +78,7 @@ export default async function handler(req, res) {
 
     return res.status(405).json({ error: 'Método não permitido' });
   } catch (error) {
-    console.error('Erro na API de configurações de pagamento:', error);
+    logServerError('admin_payment_settings.api_de_configuracoes_de_pagamento_failed', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 }

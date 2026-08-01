@@ -4,6 +4,7 @@ import {
   parseJobCloseDate,
   syncExpiredJobStatus,
 } from '../../../../lib/jobExpiration';
+import { logServerError } from '../../../../lib/serverLog';
 
 const serializeTimestamp = (value) => {
   if (!value) return null;
@@ -314,7 +315,7 @@ export default async function handler(req, res) {
       return res.status(405).json({ message: 'Método não permitido' });
     }
   } catch (error) {
-    console.error('Erro na API de vagas admin:', error);
+    logServerError('admin_jobs.api_de_vagas_admin_failed', error);
     return res
       .status(500)
       .json({ message: 'Erro interno do servidor', error: error.message });

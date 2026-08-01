@@ -2,6 +2,7 @@ import { admin } from '../../../lib/firebaseAdmin';
 import { getDefaultBasicPlanForUserType } from '../../../lib/defaultPlans';
 import { enforceApiRateLimit } from '../../../lib/apiRateLimit';
 import { isValidEmail, isStrongPassword, normalizeEmail } from '../../../lib/validation';
+import { logServerError } from '../../../lib/serverLog';
 
 const ALLOWED_USER_TYPES = new Set(['candidato', 'empresa']);
 
@@ -135,7 +136,7 @@ export default async function handler(req, res) {
       uid: userRecord.uid 
     });
   } catch (error) {
-    console.error('Erro ao registrar usuário:', error);
+    logServerError('auth_register.registrar_usuario_failed', error);
     return res.status(500).json({ error: 'Erro ao registrar usuário' });
   }
 } 

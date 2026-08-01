@@ -1,4 +1,5 @@
 import { admin } from '../../../../lib/firebaseAdmin';
+import { logServerError } from '../../../../lib/serverLog';
 
 async function requireAdmin(req, res) {
   const authHeader = req.headers.authorization;
@@ -72,7 +73,7 @@ export default async function handler(req, res) {
     res.setHeader('Allow', 'PATCH, POST, DELETE');
     return res.status(405).json({ message: 'Método não permitido' });
   } catch (error) {
-    console.error('Erro ao moderar afiliado:', error);
+    logServerError('admin_affiliates_id.moderar_afiliado_failed', error);
     return res.status(500).json({ message: 'Erro interno do servidor', error: error.message });
   }
 }

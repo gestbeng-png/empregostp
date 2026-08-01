@@ -1,6 +1,7 @@
 import { admin } from '../../../lib/firebaseAdmin';
 import { canUploadCertificate, getPlanSummary } from '../../../lib/candidatePlanFeatures';
 import { extractLinkedInProfileHints, normalizeLinkedInUrl } from '../../../lib/linkedin';
+import { logServerError } from '../../../lib/serverLog';
 
 const normalizeSkills = (value) => {
   if (Array.isArray(value)) {
@@ -197,7 +198,7 @@ export default async function handler(req, res) {
       message: 'Perfil atualizado com sucesso.'
     });
   } catch (error) {
-    console.error('Erro ao atualizar perfil:', error);
+    logServerError('profile_update.atualizar_perfil_failed', error);
     return res.status(500).json({ error: 'Erro interno ao atualizar o perfil.' });
   }
 }

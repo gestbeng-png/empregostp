@@ -2,6 +2,7 @@ import { admin } from '../../../lib/firebaseAdmin';
 import { getPlanSummary, canApplyToJob, canSaveJob, canUploadCertificate, canUseCvGenerator } from '../../../lib/candidatePlanFeatures';
 import { buildCandidateVisibility, calculateCandidateProfileCompletion } from '../../../lib/candidateProfileInsights';
 import { buildCandidateOptimizationInsights } from '../../../lib/candidateOptimizationInsights';
+import { logServerError } from '../../../lib/serverLog';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -43,9 +44,8 @@ export default async function handler(req, res) {
           planEndDate: null, // Plano básico não tem prazo
           updatedAt: admin.firestore.FieldValue.serverTimestamp()
         });
-        console.log(`Plano expirado atualizado para básico para usuário ${uid}`);
       } catch (updateError) {
-        console.error('Erro ao atualizar plano expirado:', updateError);
+        logServerError('candidate_plan_status.atualizar_plano_expirado_failed', updateError);
         // Continuar mesmo se falhar a atualização
       }
     }
@@ -163,7 +163,7 @@ export default async function handler(req, res) {
       isPlanActive: planSummary.isActive // Usar o isActive do planSummary que já trata plano básico
     });
   } catch (error) {
-    console.error('Erro ao verificar status do plano:', error);
+    logServerError('candidate_plan_status.verificar_status_do_plano_failed', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 }

@@ -1,4 +1,5 @@
 import { admin } from '../../../../lib/firebaseAdmin';
+import { logServerError } from '../../../../lib/serverLog';
 
 const COLLECTION = 'hrServiceRequests';
 
@@ -84,7 +85,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ requests, stats });
   } catch (error) {
-    console.error('Erro na API de serviços RH (admin):', error);
+    logServerError('admin_hr_services.api_de_servicos_rh_admin_failed', error);
     return res.status(500).json({ message: 'Erro interno do servidor', error: error.message });
   }
 }

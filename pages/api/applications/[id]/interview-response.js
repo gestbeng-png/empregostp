@@ -1,6 +1,7 @@
 import { admin as adminApp } from '../../../../lib/firebaseAdmin';
 import * as firebaseAdmin from 'firebase-admin';
 import { sendPushToUser } from '../../../../lib/serverNotifications';
+import { logServerError } from '../../../../lib/serverLog';
 
 function serializeTimestamp(value) {
   if (!value) return null;
@@ -181,7 +182,7 @@ export default async function handler(req, res) {
         : null
     });
   } catch (error) {
-    console.error('Erro ao responder entrevista:', error);
+    logServerError('applications_id_interview_response.responder_entrevista_failed', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 }

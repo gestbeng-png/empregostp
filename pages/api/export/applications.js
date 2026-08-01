@@ -1,5 +1,6 @@
 import { admin } from '../../../lib/firebaseAdmin';
 import { canExportApplications, getEmpresaPlanSummary } from '../../../lib/empresaPlanFeatures';
+import { logServerError } from '../../../lib/serverLog';
 
 /**
  * GET /api/export/applications
@@ -87,7 +88,7 @@ export default async function handler(req, res) {
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     return res.status(200).send('\uFEFF' + csv); // BOM for Excel UTF-8
   } catch (error) {
-    console.error('Erro ao exportar candidaturas:', error);
+    logServerError('export_applications.exportar_candidaturas_failed', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 }

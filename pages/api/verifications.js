@@ -8,6 +8,7 @@ import {
   serializeVerificationTimestamps,
   validateVerificationRecord,
 } from '../../lib/candidateVerification';
+import { logServerError } from '../../lib/serverLog';
 
 async function isAdminUser(uid) {
   if (!uid) return false;
@@ -117,7 +118,7 @@ export default async function handler(req, res) {
 
     return res.status(405).json({ error: 'Método não permitido' });
   } catch (error) {
-    console.error('Erro na API de verificações:', error);
+    logServerError('verifications.api_de_verificacoes_failed', error);
     return res.status(500).json({ error: 'Erro interno do servidor', details: error.message });
   }
 }
@@ -175,7 +176,7 @@ async function handlePost(req, res, decodedToken) {
           });
         }
       } catch (planSyncError) {
-        console.error('Erro ao sincronizar plano para verificação:', planSyncError);
+        logServerError('verifications.sincronizar_plano_para_verificacao_failed', planSyncError);
       }
     }
 
@@ -284,7 +285,7 @@ async function handlePost(req, res, decodedToken) {
       verification: savedRecord,
     });
   } catch (error) {
-    console.error('Erro ao criar verificação:', error);
+    logServerError('verifications.criar_verificacao_failed', error);
     return res.status(500).json({ error: 'Erro ao solicitar verificação' });
   }
 }
@@ -338,7 +339,7 @@ async function handleGet(req, res, decodedToken) {
 
     return res.status(200).json({ verifications });
   } catch (error) {
-    console.error('Erro ao buscar verificações:', error);
+    logServerError('verifications.buscar_verificacoes_failed', error);
     return res.status(500).json({ error: 'Erro ao buscar verificações' });
   }
 }
@@ -420,7 +421,7 @@ async function handlePut(req, res, decodedToken) {
       verification: savedRecord,
     });
   } catch (error) {
-    console.error('Erro ao atualizar verificação:', error);
+    logServerError('verifications.atualizar_verificacao_failed', error);
     return res.status(500).json({ error: 'Erro ao atualizar verificação' });
   }
 }

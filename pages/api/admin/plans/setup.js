@@ -1,5 +1,6 @@
 import { admin } from '../../../../lib/firebaseAdmin';
 import { DEFAULT_EMPRESA_PLANS, DEFAULT_CANDIDATO_PLANS } from '../../../../lib/defaultPlans';
+import { logServerError } from '../../../../lib/serverLog';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -29,7 +30,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ message: 'Planos configurados com sucesso' });
   } catch (error) {
-    console.error('Erro ao configurar planos:', error);
+    logServerError('admin_plans_setup.configurar_planos_failed', error);
     return res.status(500).json({ error: 'Erro ao configurar planos' });
   }
 } 

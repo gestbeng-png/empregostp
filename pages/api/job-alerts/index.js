@@ -2,6 +2,7 @@ import { admin } from '../../../lib/firebaseAdmin';
 import { enforceApiRateLimit, getClientIp } from '../../../lib/apiRateLimit';
 import { sendEmail, isEmailConfigured } from '../../../lib/email';
 import { filterPublishedJobs, buildJobAlertEmail } from '../../../lib/jobAlertEmail';
+import { logServerError } from '../../../lib/serverLog';
 
 // Regista a subscrição do alerta e envia de imediato um email com todas as
 // vagas publicadas que correspondem aos filtros. O envio periódico de futuras
@@ -123,7 +124,7 @@ export default async function handler(req, res) {
     try {
       await sendEmail({ to: email, subject, html, text });
     } catch (emailError) {
-      console.error('Erro ao enviar email de alerta:', emailError);
+      logServerError('job_alerts.enviar_email_de_alerta_failed', emailError);
       return res.status(202).json({
         message:
           'Alerta guardado, mas não foi possível enviar o email agora. Vamos tentar de novo mais tarde.',
@@ -141,7 +142,7 @@ export default async function handler(req, res) {
       matches: matchingJobs.length,
     });
   } catch (error) {
-    console.error('Erro ao registar alerta de vagas:', error);
+    logServerError('job_alerts.registar_alerta_de_vagas_failed', error);
     return res.status(500).json({ error: 'Não foi possível ativar o alerta.' });
   }
 }

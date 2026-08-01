@@ -7,6 +7,7 @@ import {
   VERIFICATION_TYPE_CONFIG,
 } from '../../../lib/candidateVerification';
 import { createServerNotification } from '../../../lib/serverNotifications';
+import { logServerError } from '../../../lib/serverLog';
 
 async function syncVerificationState(uid, verificationId, record) {
   const publicState = derivePublicVerificationState(record);
@@ -157,7 +158,7 @@ export default async function handler(req, res) {
         actionUrl: '/dashboard/candidato?tab=verification',
       });
     } catch (notifError) {
-      console.error('Error creating notification:', notifError);
+      logServerError('admin_verify_action.creating_notification_failed', notifError);
     }
 
     return res.status(200).json({
@@ -167,7 +168,7 @@ export default async function handler(req, res) {
       verification: savedRecord,
     });
   } catch (error) {
-    console.error('Error processing verification action:', error);
+    logServerError('admin_verify_action.processing_verification_action_failed', error);
     return res.status(500).json({ error: 'Internal server error', details: error.message });
   }
 }
