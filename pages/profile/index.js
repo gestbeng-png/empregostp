@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { db } from '../../lib/firebase';
 import RedirectGate from '../../components/auth/RedirectGate';
 import { buildLoginUrl } from '../../lib/loginRedirect';
+import { requireSession } from '../../lib/serverSession';
 
 export default function ProfileRedirect() {
   const router = useRouter();
@@ -62,4 +63,13 @@ export default function ProfileRedirect() {
       />
     </>
   );
+}
+
+// Alinha esta rota com os dashboards de empresa e admin, que já bloqueavam no
+// servidor: sem sessão, o utilizador deixa de ver a shell antes de ser
+// redirecionado, e o destino pretendido é preservado.
+export async function getServerSideProps(context) {
+  const guard = await requireSession(context);
+  if (guard) return guard;
+  return { props: {} };
 }

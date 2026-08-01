@@ -47,6 +47,7 @@ import AffiliateSection from '../../../components/affiliate/AffiliateSection';
 import styles from '../../../styles/DashboardCandidato.module.css';
 import ps from '../../../styles/CandidateProfileSettings.module.css';
 import { buildLoginUrl } from '../../../lib/loginRedirect';
+import { requireSession } from '../../../lib/serverSession';
 
 const CandidateApplicationsChart = dynamic(
   () => import('../../../components/charts/CandidateApplicationsChart'),
@@ -5377,3 +5378,12 @@ const CandidateDashboard = () => {
 };
 
 export default CandidateDashboard;
+
+// Alinha esta rota com os dashboards de empresa e admin, que já bloqueavam no
+// servidor: sem sessão, o utilizador deixa de ver a shell antes de ser
+// redirecionado, e o destino pretendido é preservado.
+export async function getServerSideProps(context) {
+  const guard = await requireSession(context);
+  if (guard) return guard;
+  return { props: {} };
+}
