@@ -1,4 +1,5 @@
 import { admin } from '../../../lib/firebaseAdmin';
+import { logServerError } from '../../../lib/serverLog';
 import { buildPushSubscriptionId } from '../../../lib/serverNotifications';
 
 export default async function handler(req, res) {
@@ -47,7 +48,7 @@ export default async function handler(req, res) {
 
     return res.status(405).json({ error: 'Método não permitido' });
   } catch (error) {
-    console.error('Erro na API de push web:', error);
+    logServerError('push_subscription.request_failed', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 }

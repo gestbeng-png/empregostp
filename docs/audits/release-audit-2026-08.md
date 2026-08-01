@@ -264,6 +264,16 @@ Validação do item: `npm run quality` aprovado com 40 suites e 148 testes; `npm
 
 Validação do item: falha inicial comprovou o `Error` bruto no log e a mensagem privada no 500; testes dirigidos aprovados (14/14), `npm run quality` aprovado com 43 suites e 162 testes e `npm run build` concluído com 27 páginas estáticas. Permanecem apenas os avisos transitivos de `punycode` do baseline. Nenhuma chamada ao Firebase online foi efetuada.
 
+### Log da rota de subscrições push
+
+| Item                                | Estado    | Ficheiros / evidência                                                                                                                                                                    |
+| ----------------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Falha de autenticação/Firestore/FCM | CORRIGIDO | `pages/api/push-subscriptions/index.js` usa `logServerError` e conserva apenas a categoria do erro; token FCM, bearer, email e objetos internos não chegam ao console.                   |
+| Regressão com dados-canário         | CORRIGIDO | `tests/unit/security/pushSubscriptionsLogging.test.ts` falhou primeiro ao receber o `Error` completo e passou após a migração; também confirma a resposta 500 genérica.                  |
+| Autorização da remoção por `DELETE` | PENDENTE  | A rota calcula o documento apenas a partir do token recebido. A prova de propriedade e a idempotência serão tratadas num item de IDOR separado, sem misturar contrato com esta correção. |
+
+Validação do item: `npm run quality` aprovado com 44 suites e 163 testes. Nenhuma chamada ao Firebase online foi efetuada.
+
 ## Inventário de veredictos
 
 As tabelas exaustivas de rotas de API e páginas serão acrescentadas nas Fases 2 e 3. Nenhuma rota ou página é marcada como validada com base apenas na auditoria histórica.
