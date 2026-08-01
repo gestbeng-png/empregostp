@@ -3,13 +3,23 @@ import { inspect } from 'node:util';
 import { admin } from '../../../lib/firebaseAdmin';
 import pushSubscriptionsHandler from '../../../pages/api/push-subscriptions';
 
-jest.mock('../../../lib/firebaseAdmin', () => ({
-  admin: {
-    auth: jest.fn(),
-  },
-}));
+jest.mock('../../../lib/firebaseAdmin', () => {
+  const firestore = Object.assign(jest.fn(), {
+    FieldValue: {
+      serverTimestamp: jest.fn(() => 'server-timestamp'),
+    },
+  });
+
+  return {
+    admin: {
+      auth: jest.fn(),
+      firestore,
+    },
+  };
+});
 
 const authMock = admin.auth as unknown as jest.Mock;
+const firestoreMock = admin.firestore as unknown as jest.Mock;
 
 function createResponse() {
   const response = {
@@ -38,14 +48,20 @@ describe('logs da rota de subscrições push', () => {
   test('não regista o token ou detalhes internos quando ocorre uma falha', async () => {
     const canary = 'fcm-token-super-secreto|candidato@example.test';
     const sensitiveError = Object.assign(new Error(canary), {
-      code: 'auth/internal-error',
+      code: 'firestore/internal-error',
       config: {
         data: { token: canary },
         headers: { authorization: `Bearer ${canary}` },
       },
     });
     authMock.mockReturnValue({
-      verifyIdToken: jest.fn().mockRejectedValue(sensitiveError),
+      verifyIdToken: jest.fn().mockResolvedValue({ uid: 'owner-1' }),
+    });
+    firestoreMock.mockReturnValue({
+      collection: jest.fn().mockReturnValue({
+        doc: jest.fn().mockReturnValue({ id: 'subscription-1' }),
+      }),
+      runTransaction: jest.fn().mockRejectedValue(sensitiveError),
     });
 
     const response = createResponse();
@@ -60,7 +76,7 @@ describe('logs da rota de subscrições push', () => {
 
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       'push_subscription.request_failed',
-      { category: 'authentication' },
+      { category: 'firestore' },
     );
     expect(inspect(consoleErrorSpy.mock.calls, { depth: null })).not.toContain(
       canary,

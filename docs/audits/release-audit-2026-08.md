@@ -264,15 +264,18 @@ Validação do item: `npm run quality` aprovado com 40 suites e 148 testes; `npm
 
 Validação do item: falha inicial comprovou o `Error` bruto no log e a mensagem privada no 500; testes dirigidos aprovados (14/14), `npm run quality` aprovado com 43 suites e 162 testes e `npm run build` concluído com 27 páginas estáticas. Permanecem apenas os avisos transitivos de `punycode` do baseline. Nenhuma chamada ao Firebase online foi efetuada.
 
-### Log da rota de subscrições push
+### Rota de subscrições push
 
-| Item                                | Estado    | Ficheiros / evidência                                                                                                                                                                    |
-| ----------------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Falha de autenticação/Firestore/FCM | CORRIGIDO | `pages/api/push-subscriptions/index.js` usa `logServerError` e conserva apenas a categoria do erro; token FCM, bearer, email e objetos internos não chegam ao console.                   |
-| Regressão com dados-canário         | CORRIGIDO | `tests/unit/security/pushSubscriptionsLogging.test.ts` falhou primeiro ao receber o `Error` completo e passou após a migração; também confirma a resposta 500 genérica.                  |
-| Autorização da remoção por `DELETE` | PENDENTE  | A rota calcula o documento apenas a partir do token recebido. A prova de propriedade e a idempotência serão tratadas num item de IDOR separado, sem misturar contrato com esta correção. |
+| Item                                | Estado    | Ficheiros / evidência                                                                                                                                                                                                       |
+| ----------------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Falha de autenticação/Firestore/FCM | CORRIGIDO | `pages/api/push-subscriptions/index.js` usa `logServerError` e conserva apenas a categoria do erro; token FCM, bearer, email e objetos internos não chegam ao console.                                                      |
+| Autorização do `DELETE`             | CORRIGIDO | A remoção lê e apaga o documento na mesma transação, devolve 403 para outro proprietário e é idempotente quando o documento não existe.                                                                                     |
+| Reatribuição no `POST`              | CORRIGIDO | A escrita transacional só cria ou renova o token do mesmo UID; um token já associado a outra conta devolve 409 sem escrita. `createdAt` deixa de ser sobrescrito nas renovações.                                            |
+| Validação e métodos                 | CORRIGIDO | Token é string não vazia, sem whitespace e com máximo de 4096 caracteres; permissão tem allowlist; user agent tem máximo de 512. Métodos fora de POST/DELETE recebem 405 e `Allow`; bearer inválido/expirado recebe 401.    |
+| Regressões de segurança             | CORRIGIDO | `pushSubscriptionsAuthorization.test.ts` cobre IDOR, proprietário, idempotência, conflito, datas, corpos inválidos, autenticação e método; `pushSubscriptionsLogging.test.ts` usa falha Firestore com token/email canários. |
+| Logout perante falha do `DELETE`    | PENDENTE  | `lib/webPushClient.js` ainda remove o token local sem verificar `response.ok`; será corrigido num item cliente separado para não misturar UI/estado local com a autorização servidor.                                       |
 
-Validação do item: `npm run quality` aprovado com 44 suites e 163 testes. Nenhuma chamada ao Firebase online foi efetuada.
+Validação do item: os testes falharam primeiro com 12 violações reproduzidas; testes dirigidos aprovados (15/15), `npm run quality` aprovado com 46 suites e 178 testes e `npm run build` concluído com 27 páginas estáticas. Nenhuma chamada ao Firebase online foi efetuada.
 
 ### Log da rota de upload de CV
 
