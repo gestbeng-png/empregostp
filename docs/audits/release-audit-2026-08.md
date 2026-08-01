@@ -312,8 +312,8 @@ Validação do item: `npm run quality` aprovado com 45 suites e 164 testes. Nenh
 | Estado do pedido Básico              | CORRIGIDO     | A autoaprovação grava `status: approved`, `paymentStatus: not_required`, `autoApproved`, `processedAt` e `approvedDate` no mesmo timestamp de criação. O pedido deixa de reaparecer como aberto e não aceita comprovativo.                                              |
 | Expiração e espelho do plano Básico  | CORRIGIDO     | `users/{uid}` limpa `planEndDate`/`planActivationVersion` e `subscriptions/{uid}` é sincronizado na mesma transação com `endDate`/`activationVersion` nulos, estado ativo e direitos do tipo. Não é criada tarefa de expiração.                                         |
 | Repetição do plano Básico            | CORRIGIDO     | Se o tier Básico pedido já é o tier atual normalizado, a rota devolve 200/`approved` sem transação, novo pedido, notificação ou alteração de timestamps.                                                                                                                |
-| Tier não Básico a preço zero         | PENDENTE ALTO | Um plano Profissional/PRO configurado no Firestore com preço zero ainda exige lifecycle versionado e tarefa de expiração; não é tratado como equivalente ao Básico. Este caso será fechado junto da normalização da configuração dinâmica.                              |
-| Normalização de preço e duração      | PENDENTE ALTO | As decisões misturam `price > 0` e `price === 0`, e a duração é calculada de duas formas; valores Firestore como `"0"`, negativos, não finitos ou duração ausente podem produzir estados contraditórios.                                                                |
+| Tier não Básico a preço zero         | CORRIGIDO     | Ativação gratuita de tier com prazo recebe `activationVersion` (utilizador + espelho `subscriptions`) e tarefa `REVERT_TO_BASIC_PLAN` com id determinístico na mesma transação — o cron consegue revertê-la como qualquer ativação paga. Commit `1a655a9`.            |
+| Normalização de preço e duração      | CORRIGIDO     | `normalizePlanPrice`/`normalizePlanDurationDays` em `lib/subscriptionLifecycle.js` são a única fonte: strings numéricas aceites, duração ausente = 30 dias em todos os campos, valores inválidos devolvem 400 + `subscription.plan_config_invalid` sem qualquer escrita. Todas as decisões derivam de um único `isFreePlan`. 9 casos vermelho→verde em `SubscribePlanPricingNormalization.test.ts`. Commit `1a655a9`. |
 | Rate limiter em memória              | CORRIGIDO     | Migrada para o guard Firestore com scope `subscribe_plan` e 10 pedidos/minuto preservados (ver item 1.6 concluído abaixo). |
 
 Validação do item: testes dirigidos aprovados (2/2) e `npm run quality` aprovado com 49 suites e 198 testes. Nenhuma chamada ao Firebase online foi efetuada.
@@ -346,6 +346,16 @@ Validação do item: teste dirigido vermelho→verde (2 casos novos falharam ant
 | Política de TTL no Firestore           | PENDENTE (requer deploy) | Sem alteração: configurar TTL em `apiRateLimits.expiresAt` continua a entrar no `DEPLOY-GUIDE.md` da Fase 6.                                                                                                                                                     |
 
 Validação do item: testes dirigidos vermelho→verde (guard 8/8 antes da implementação falhou por módulo ausente; migração 8/8 falhou com as rotas ainda no limitador antigo), `npm run quality` aprovado com 52 suites e 220 testes, `npm run build` concluído com sucesso. Nenhuma chamada ao Firebase online foi efetuada.
+
+### Lifecycle versionado aterrado e normalização de preço/duração (fecho dos PENDENTE ALTO)
+
+| Item                                        | Estado    | Ficheiros / evidência                                                                                                                                                                                                       |
+| ------------------------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pacote de lifecycle versionado (worktree)   | COMMITADO | O trabalho validado que estava não commitado — `lib/subscriptionLifecycle.js`, aprovação admin com revalidação transacional (409), cron transacional com elegibilidade por versão e limpeza de Storage no upload de comprovativo — foi aterrado como commit próprio `2b439bb`, com `SubscriptionLifecycle.test.ts` (8/8). |
+| Normalização de preço e duração             | CORRIGIDO | Ver tabela acima; commit `1a655a9`.                                                                                                                                                                                         |
+| Tier não Básico a preço zero                | CORRIGIDO | Ver tabela acima; commit `1a655a9`.                                                                                                                                                                                         |
+
+Validação: testes dirigidos vermelho→verde (8/9 falharam antes da correção), `npm run quality` aprovado com 53 suites e 229 testes, `npm run build` concluído com sucesso. Nenhuma chamada ao Firebase online foi efetuada.
 
 ## Inventário de veredictos
 
