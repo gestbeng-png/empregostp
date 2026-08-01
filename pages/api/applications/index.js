@@ -89,9 +89,8 @@ export default async function handler(req, res) {
               planEndDate: null,
               updatedAt: adminApp.firestore.FieldValue.serverTimestamp()
             });
-            console.log(`Plano expirado atualizado para básico para usuário ${uid}`);
           } catch (updateError) {
-            console.error('Erro ao atualizar plano expirado:', updateError);
+            logServerError('applications.atualizar_plano_expirado_failed', updateError);
           }
         }
 
@@ -248,9 +247,8 @@ export default async function handler(req, res) {
               relatedJobId: jobId,
               actionUrl: '/dashboard/empresa?tab=applications'
             });
-            console.log('✅ Notificação criada para empresa');
           } catch (notifError) {
-            console.error('Erro ao criar notificação:', notifError);
+            logServerError('applications.criar_notificacao_failed', notifError);
           }
         }
 
@@ -268,9 +266,8 @@ export default async function handler(req, res) {
               relatedJobId: jobId,
               actionUrl: '/dashboard/candidato?tab=applications'
             });
-            console.log('✅ Notificação de confirmação criada para candidato');
           } catch (notifError) {
-            console.error('Erro ao criar notificação de confirmação:', notifError);
+            logServerError('applications.criar_notificacao_de_confirmacao_failed', notifError);
           }
         }
 

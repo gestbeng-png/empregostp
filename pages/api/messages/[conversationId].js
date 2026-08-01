@@ -63,7 +63,7 @@ export default async function handler(req, res) {
 
       return res.status(200).json({ messages });
     } catch (error) {
-      console.error('Erro ao listar mensagens:', error);
+      logServerError('messages_conversationid.listar_mensagens_failed', error);
       return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }

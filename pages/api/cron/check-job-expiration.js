@@ -1,6 +1,7 @@
 import { admin } from '../../../lib/firebaseAdmin';
 import { buildExpiredJobUpdate, isJobExpired } from '../../../lib/jobExpiration';
 import { createServerNotification } from '../../../lib/serverNotifications';
+import { logServerError } from '../../../lib/serverLog';
 
 export default async function handler(req, res) {
   const cronSecret = process.env.CRON_SECRET;
@@ -51,7 +52,7 @@ export default async function handler(req, res) {
         });
       } catch (error) {
         notificationErrors += 1;
-        console.error('Erro ao criar notificacao de vaga expirada:', error);
+        logServerError('cron_check_job_expiration.criar_notificacao_de_vaga_expirada_failed', error);
       }
     }
 

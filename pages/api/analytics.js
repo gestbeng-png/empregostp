@@ -1,5 +1,6 @@
 import { admin } from '../../lib/firebaseAdmin';
 import { canAccessAnalytics, getEmpresaPlanSummary } from '../../lib/empresaPlanFeatures';
+import { logServerError, logServerWarning } from '../../lib/serverLog';
 
 function isMissingIndexError(error) {
   return error?.code === 9 || String(error?.details || error?.message || '').toLowerCase().includes('requires an index');
@@ -27,7 +28,7 @@ async function fetchViewsForBatch(batch, thirtyDaysTimestamp) {
       throw error;
     }
 
-    console.warn('Analytics query without composite index, using fallback for batch:', batch);
+    logServerWarning('analytics.analytics_query_without_composite_index_usin_failed', batch);
 
     try {
       const fallbackSnapshot = await firestore
@@ -43,7 +44,7 @@ async function fetchViewsForBatch(batch, thirtyDaysTimestamp) {
 
       return { docs: filteredDocs };
     } catch (fallbackError) {
-      console.warn('Analytics batch fallback failed, using global scan:', fallbackError?.message || fallbackError);
+      logServerWarning('analytics.analytics_batch_fallback_failed_using_global_failed', fallbackError);
 
       const fullSnapshot = await firestore.collection('jobViews').get();
       const jobSet = new Set(batch);
@@ -96,7 +97,6 @@ export default async function handler(req, res) {
       });
     }
 
-    console.log('Buscando analytics para empresa:', companyUid);
 
     // Buscar vagas da empresa
     const jobsSnapshot = await admin.firestore()

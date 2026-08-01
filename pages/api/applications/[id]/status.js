@@ -258,7 +258,7 @@ export default async function handler(req, res) {
             actionUrl: '/dashboard/candidato?tab=applications'
           });
         } catch (notifError) {
-          console.error('Erro ao criar notificacao:', notifError);
+          logServerError('applications_id_status.criar_notificacao_failed', notifError);
         }
       }
     }

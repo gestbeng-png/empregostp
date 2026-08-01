@@ -28,7 +28,7 @@ async function listUserConversations(uid) {
       throw error;
     }
 
-    console.warn('Messages query without composite index, using in-memory sort for user:', uid);
+    logServerWarning('messages.messages_query_without_composite_index_using_failed', uid);
 
     const fallbackSnapshot = await firestore
       .collection('conversations')

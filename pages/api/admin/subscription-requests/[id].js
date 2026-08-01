@@ -3,6 +3,7 @@ import { normalizeCandidatePlanId } from '../../../../lib/candidatePlanFeatures'
 import { normalizeEmpresaPlanId } from '../../../../lib/empresaPlanFeatures';
 import { normalizeUserType } from '../../../../lib/defaultPlans';
 import { createServerNotification } from '../../../../lib/serverNotifications';
+import { logServerError, logServerWarning } from '../../../../lib/serverLog';
 import {
   buildPlanActivationVersion,
   buildPlanExpirationTaskId
@@ -122,7 +123,7 @@ export default async function handler(req, res) {
               }
             }
           } catch (planError) {
-            console.warn('Erro ao buscar plano da coleção plans, usando dados da solicitação:', planError);
+            logServerWarning('admin_subscription_requests_id.buscar_plano_da_colecao_plans_usando_dados_d_failed', planError);
           }
         }
         
