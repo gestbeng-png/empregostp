@@ -16,10 +16,34 @@ service firebase.storage {
     match /job-tdr/{userId}/{allPaths=**} { allow read: if isAuthenticated(); allow write: if isAuthenticated() && isOwner(userId); }
     match /users/{userId}/{allPaths=**} { allow read: if isAuthenticated() && isOwner(userId); allow write: if isAuthenticated() && isOwner(userId); }
 
-    // --- O QUE FALTAVA (Necessário para o App funcionar) ---
-    match /cvUrl/{userId}/{fileName} { allow read: if true; allow write: if isAuthenticated() && isOwner(userId); }
-    match /photoUrl/{userId}/{fileName} { allow read: if true; allow write: if isAuthenticated() && isOwner(userId); }
-    match /certificados/{userId}/{fileName} { allow read: if true; allow write: if isAuthenticated() && isOwner(userId); }
+    // --- Ficheiros pessoais do candidato ---
+    //
+    // Leitura restrita ao dono e a administradores. As empresas NÃO leem por
+    // estas regras: o acesso legítimo passa por POST /api/files/candidate-cv,
+    // que reavalia plano e privacidade e devolve um URL assinado de curta
+    // duração. O Admin SDK ignora estas regras, por isso a rota continua a
+    // funcionar depois de as apertar.
+    //
+    // ⚠️ SEQUÊNCIA DE DEPLOY OBRIGATÓRIA: o código com URLs assinados tem de
+    // estar em produção e validado ANTES destas regras. Ao contrário, os CVs
+    // dos utilizadores reais deixam de abrir. Ver docs/DEPLOY-GUIDE.md.
+    match /cvUrl/{userId}/{fileName} {
+      allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow write: if isAuthenticated() && isOwner(userId);
+    }
+    match /certificados/{userId}/{fileName} {
+      allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow write: if isAuthenticated() && isOwner(userId);
+    }
+
+    // A fotografia de perfil é exibida em páginas públicas de candidatos
+    // (perfil e listagens) através de <Image src>, sem sessão. Continua
+    // legível; a privacidade do perfil é aplicada a montante, decidindo se a
+    // página é servida de todo.
+    match /photoUrl/{userId}/{fileName} {
+      allow read: if true;
+      allow write: if isAuthenticated() && isOwner(userId);
+    }
 
     // Documentos de Verificação (ADICIONADO)
     match /verification/{docType}/{userId}/{fileName} { 
