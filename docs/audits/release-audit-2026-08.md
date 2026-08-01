@@ -11,7 +11,7 @@
 | 0 — Baseline, backup e ambiente              | QUASE    | Backup cloud verificado e desbloqueado. Contas QA continuam retidas: a chave Admin exposta é a que está ativa e ainda não foi rodada. |
 | 1 — Segurança crítica                        | EM CURSO | Itens 1.3, 1.4, 1.5, 1.6 e 1.7 concluídos. Falta 1.2 (`/setup/seed`) e a rotação da chave Admin, que depende do proprietário. |
 | 2 — Rotas de API                             | EM CURSO | Veredicto de auth das 71 rotas concluído em 1.7; falta a passagem funcional grupo a grupo.                              |
-| 3 — Páginas e dashboards                     | EM CURSO | 3.1 (públicas e autenticação) auditada: 6 achados, nenhum bloqueante. 3.2–3.6 retidas até às contas `qa-`.              |
+| 3 — Páginas e dashboards                     | EM CURSO | 3.1 auditada e os 6 achados corrigidos. 3.2–3.6 retidas até às contas `qa-`.                                            |
 | 4 — Purga de legado                          | PENDENTE | Ainda não iniciada.                                                                                                     |
 | 5 — UX, visual, performance e acessibilidade | PENDENTE | Ainda não iniciada.                                                                                                     |
 | 6 — Validação e pacote de deploy             | PENDENTE | Ainda não iniciada.                                                                                                     |
@@ -595,11 +595,26 @@ As 24 rotas públicas e de autenticação respondem: 22 em `200`, e `/premium/ca
 - Home a 375px sem um único alvo de toque abaixo de 44px.
 - `/vagas` renderiza 12 vagas reais com dados do Firebase, sem erros de consola.
 
-#### Correções não aplicadas e porquê
+#### Correções aplicadas
 
-Os achados 1 a 3 vivem em ficheiros com trabalho baseline não commitado e volumoso (`dashboard/empresa/index.js` com 2.518 linhas alteradas, `dashboard/admin/index.js` com 1.130, `empresa/profile.js` com 664, `premium.js` com 90). Aplicar as correções agora produziria commits que misturam o meu trabalho com o retrabalho em curso do proprietário, como já aconteceu no gerador de CV. **Ficam por aplicar até haver decisão sobre esses ficheiros.**
+Os seis achados foram corrigidos por autorização expressa do proprietário («corrija todas as rotas com rigor»).
 
-A correção do achado 1 é pequena e mecânica: um helper que compõe `/login?redirect=${encodeURIComponent(resolvedUrl)}` e a sua aplicação nos pontos inventariados. A do achado 2 é dar às duas páginas premium um `getServerSideProps` que só redirecione para o dashboard quando há sessão, servindo caso contrário a página de vendas pública.
+| # | Correção | Commit | Verificação |
+| --- | --- | --- | --- |
+| 1 | `lib/loginRedirect.js` compõe `/login?redirect=…` e foi aplicado nos 29 pontos que perdiam a intenção — `getServerSideProps` dos dashboards e das ferramentas premium, e os `router.push/replace` do dashboard de candidato, do perfil, do `DashboardShell` e das páginas de administração. Só aceita caminhos internos: um destino absoluto tornaria o login um open redirect para phishing. | `e7d7ca1`, `814f87e` | 13 casos unitários; contra a app, as seis rotas testadas redirecionam com `?redirect=` preenchido. |
+| 2 | `/premium/candidatos` e `/premium/empresa` deixam de encaminhar incondicionalmente para o dashboard: com sessão o destino mantém-se, sem sessão vão direto ao login com a tab de planos guardada como retorno. | `2a8f997` | 6 casos novos; o caso incondicional do teste antigo foi substituído em vez de duplicado. |
+| 3 | `/dashboard`, `/dashboard/candidato` e `/profile` ganham guard de servidor em `lib/serverSession.js`. As cinco rotas de dashboard respondem agora `307` de forma idêntica. | `37ad656` | 4 casos novos; confirmado nas cinco rotas contra a app. |
+| 4 | Chips de filtro rápido de `/vagas` sobem de 36px para 44px e os botões `Candidatar`/`Ver detalhes` de 42px para 44px. | `8b66e28` | Medido a 375×812: de 13 alvos abaixo do mínimo para 3. |
+| 5 | O `h1` da home passa a ler-se «Conectando Talentos ao Sucesso». | `8b66e28` | `textContent` verificado; mantém as três linhas visuais. |
+| 6 | Footer de `/vagas` em mobile e ausência de shell em `/candidatos` — **sem alteração**, por serem decisões de produto. | — | Registado para decisão. |
+
+Sobre o achado 4: restam três títulos de vaga a 23px de altura. São links de texto inline, cobertos pela exceção do critério WCAG 2.5.8, e cada cartão já oferece dois alvos de 44px. Aumentá-los distorceria o cartão sem ganho real.
+
+Nota de implementação, porque custou um build partido: `requireSession` vive em `lib/serverSession.js` e não em `lib/loginRedirect.js`. Este último é importado por componentes de cliente; juntar-lhe o `firebase-admin` arrastava-o para o bundle do browser, que falha a resolver `net`. A primeira tentativa fez isso e partiu o build — a separação dos módulos é a correção.
+
+#### Ficheiros com baseline misturado
+
+Os commits `814f87e` e `90f219b` incluem trabalho em curso do proprietário que não foi possível separar por hunks (retrabalho visual dos dashboards e do gerador de CV, reformatação de aspas no catálogo). As mensagens de commit dizem-no explicitamente, para o histórico não induzir em erro.
 
 ### 3.2 a 3.6 — retido
 
