@@ -249,6 +249,21 @@ Validação do item: `npm run quality` aprovado com 37 suites e 139 testes.
 
 Validação do item: `npm run quality` aprovado com 40 suites e 148 testes; `npm run build` concluído com sucesso e geração de 27 páginas estáticas. O build mantém avisos transitivos de `punycode` já registados no baseline.
 
+### Redação de erros no fluxo de comprovativos e push
+
+| Item                                      | Estado           | Ficheiros / evidência                                                                                                                                                                                                                                        |
+| ----------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Metadados seguros de erro                 | CORRIGIDO        | `lib/serverLog.js` classifica apenas a família do erro e valida o identificador fixo do evento. Mensagem, stack, causa, headers, resposta, payload e propriedades arbitrárias nunca entram no log.                                                           |
+| Erro inesperado do comprovativo           | CORRIGIDO        | `pages/api/subscription-requests/[id]/payment-proof.js` deixa de registar o `Error` bruto e devolve `Erro interno do servidor`; erros de domínio e validação são mapeados para mensagens constantes e erros Storage conhecidos mantêm respostas controladas. |
+| Limpeza de upload concorrente no worktree | MELHORADO        | O `cleanupError` da alteração preexistente passa por `logServerWarning`. Como a função de cleanup pertence a trabalho não commitado do utilizador, esta linha permanece nesse diff e não é apropriada pelo commit de logging.                                |
+| Entrega push / FCM                        | CORRIGIDO        | `lib/serverNotifications.js` já não persiste `result.error.message`, não regista o erro FCM bruto e não devolve `error.message`; conserva apenas a categoria segura (`messaging`, `storage`, etc.).                                                          |
+| Testes com canários                       | CORRIGIDO        | `serverLog.test.ts`, `serverNotificationsLogging.test.ts` e `paymentProofLogging.test.ts` colocam email, token, Authorization e Base64 em erros aninhados e provam a ausência desses valores em logs, Firestore simulado e resposta HTTP.                    |
+| Logs crus restantes                       | PENDENTE         | Inventário encontrou pelo menos 89 chamadas que passam `Error`/`err` diretamente em 64 ficheiros de `pages/api`; serão migradas em unidades atómicas, começando por push-subscriptions e upload de CV.                                                       |
+| `proofUrl` fornecido pelo cliente         | PENDENTE CRÍTICO | A rota ainda aceita uma URL arbitrária quando `proofUrl` e `proofName` são enviados juntos, embora o consumidor interno use Base64. Remoção/validação exige teste de contrato próprio para evitar apropriar alterações concorrentes da rota.                 |
+| Tipos de imagem do comprovativo           | PENDENTE         | O servidor ainda aceita qualquer `image/*`, incluindo SVG, sem validar assinatura binária. Será restringido a PDF/JPEG/PNG/WebP num item separado.                                                                                                           |
+
+Validação do item: falha inicial comprovou o `Error` bruto no log e a mensagem privada no 500; testes dirigidos aprovados (14/14), `npm run quality` aprovado com 43 suites e 162 testes e `npm run build` concluído com 27 páginas estáticas. Permanecem apenas os avisos transitivos de `punycode` do baseline. Nenhuma chamada ao Firebase online foi efetuada.
+
 ## Inventário de veredictos
 
 As tabelas exaustivas de rotas de API e páginas serão acrescentadas nas Fases 2 e 3. Nenhuma rota ou página é marcada como validada com base apenas na auditoria histórica.

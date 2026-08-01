@@ -5,9 +5,34 @@ import {
   getFirebaseStorageErrorMessage,
   isFirebaseStorageBillingDisabledError
 } from '../../../../lib/firebaseStorageError';
+import { logServerError, logServerWarning } from '../../../../lib/serverLog';
 import { sendPushToUser } from '../../../../lib/serverNotifications';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const PAYMENT_PROOF_VALIDATION_MESSAGES = new Set([
+  'Formato do comprovativo inválido',
+  'Formato não suportado. Envie PDF, JPG ou PNG.',
+  'Ficheiro inválido',
+  'O comprovativo deve ter no máximo 10MB.'
+]);
+const PAYMENT_PROOF_DOMAIN_ERRORS = Object.freeze({
+  PAYMENT_PROOF_NOT_REQUIRED: {
+    error: 'Este pedido não requer comprovativo',
+    status: 400
+  },
+  REQUEST_FORBIDDEN: { error: 'Acesso não autorizado', status: 403 },
+  REQUEST_NOT_FOUND: { error: 'Pedido não encontrado', status: 404 },
+  REQUEST_NOT_UPLOAD_ELIGIBLE: {
+    error: 'Este pedido já foi processado',
+    status: 409
+  }
+});
+const PUBLIC_STORAGE_ERROR_CODES = new Set([
+  'storage/canceled',
+  'storage/quota-exceeded',
+  'storage/unauthenticated',
+  'storage/unauthorized'
+]);
 
 const sanitizeFileName = (value = '') => String(value).replace(/[^a-zA-Z0-9._-]/g, '-');
 
@@ -303,17 +328,28 @@ export default async function handler(req, res) {
       }
     });
   } catch (error) {
-    console.error('Erro ao enviar comprovativo:', error);
-    if (error?.message?.includes('Formato') || error?.message?.includes('10MB')) {
+    const domainError = PAYMENT_PROOF_DOMAIN_ERRORS[error?.code];
+    if (domainError) {
+      return res.status(domainError.status).json({ error: domainError.error });
+    }
+    if (PAYMENT_PROOF_VALIDATION_MESSAGES.has(error?.message)) {
       return res.status(400).json({ error: error.message });
     }
     if (isFirebaseStorageBillingDisabledError(error)) {
+      logServerWarning('payment_proof.storage_unavailable', error);
       return res.status(503).json({
         error: getFirebaseStorageErrorMessage(error)
       });
     }
+    if (PUBLIC_STORAGE_ERROR_CODES.has(error?.code)) {
+      logServerWarning('payment_proof.storage_failed', error);
+      return res.status(500).json({
+        error: getFirebaseStorageErrorMessage(error)
+      });
+    }
+    logServerError('payment_proof.request_failed', error);
     return res.status(500).json({
-      error: getFirebaseStorageErrorMessage(error, 'Erro interno do servidor')
+      error: 'Erro interno do servidor'
     });
   }
 }
