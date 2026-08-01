@@ -11,7 +11,7 @@
 | 0 — Baseline, backup e ambiente              | QUASE    | Backup cloud verificado e desbloqueado. Contas QA continuam retidas: a chave Admin exposta é a que está ativa e ainda não foi rodada. |
 | 1 — Segurança crítica                        | EM CURSO | Itens 1.3, 1.4, 1.5, 1.6 e 1.7 concluídos. Falta 1.2 (`/setup/seed`) e a rotação da chave Admin, que depende do proprietário. |
 | 2 — Rotas de API                             | EM CURSO | Veredicto de auth das 71 rotas concluído em 1.7; falta a passagem funcional grupo a grupo.                              |
-| 3 — Páginas e dashboards                     | PENDENTE | Ainda não iniciada.                                                                                                     |
+| 3 — Páginas e dashboards                     | EM CURSO | 3.1 (públicas e autenticação) auditada: 6 achados, nenhum bloqueante. 3.2–3.6 retidas até às contas `qa-`.              |
 | 4 — Purga de legado                          | PENDENTE | Ainda não iniciada.                                                                                                     |
 | 5 — UX, visual, performance e acessibilidade | PENDENTE | Ainda não iniciada.                                                                                                     |
 | 6 — Validação e pacote de deploy             | PENDENTE | Ainda não iniciada.                                                                                                     |
@@ -562,6 +562,48 @@ Não alterei nada: fechar o acesso partiria os utilizadores que hoje chegam pela
 | `/api/testimonials` | pública (desenho) | sim | rate-limit |
 | `/api/track-view` | pública (desenho) | sim | — |
 | `/api/verifications` | token + admin | sim | — |
+
+## Fase 3 — Páginas e dashboards
+
+### Nota de método
+
+O servidor de desenvolvimento devolve uma shell de 8,6 KB com `body{display:none}`; auditar o HTML por `curl` dá **falsos positivos** — reportaria "sem `<title>`" e "sem `<h1>`" em todas as páginas, quando ambos existem depois da hidratação. Todas as medições abaixo foram feitas no DOM hidratado, no browser, com o viewport fixado. Duas tentativas anteriores (navegação por `history.pushState` e por `router.push` em lote) produziram resultados não fiáveis — o router corria à frente da leitura — e foram descartadas em vez de reportadas.
+
+### 3.1 — Páginas públicas e de autenticação
+
+#### Disponibilidade
+
+As 24 rotas públicas e de autenticação respondem: 22 em `200`, e `/premium/candidatos` e `/premium/empresa` em `307` (stubs de redirect, por desenho). Nenhuma página partida. `/setup/seed` devolve `404`, ou seja, a página de seed está corretamente desativada neste ambiente.
+
+#### Achados
+
+| # | Achado | Gravidade | Evidência |
+| --- | --- | --- | --- |
+| 1 | **A intenção perde-se no login.** `/login` já honra `?redirect=`, mas quase nenhum guard o envia. Um visitante que peça uma página protegida acaba no login e, depois de autenticar, é largado num destino genérico. | Alta (UX) | Padrão correto existe em `pages/vaga/[id].js` e `pages/recursos/gerador-cv.js`; ausente em ~15 pontos, incluindo os `getServerSideProps` de `dashboard/empresa`, `dashboard/admin`, `dashboard/admin/jobs` e os `router.push('/login')` de `premium.js`, `dashboard/index.js`, `empresa/profile.js` e `admin/payment-settings.js`. |
+| 2 | **Caminho de upgrade quebrado para quem não tem sessão.** `/premium/candidatos` e `/premium/empresa` redirecionam incondicionalmente para as tabs de planos do dashboard. Um anónimo faz dois saltos e aterra no login sem contexto — e é exatamente para aqui que aponta o CTA de upgrade das ferramentas premium. | Alta (UX) | Ambas as páginas são stubs de 12 linhas com `getServerSideProps` sem qualquer verificação de sessão. Confirmado no browser: `/premium/candidatos` → `/dashboard/candidato?tab=plans` → formulário de login. |
+| 3 | **Guards de dashboard inconsistentes.** `/dashboard/empresa` e `/dashboard/admin` bloqueiam no servidor (`307` para `/login`). `/dashboard`, `/dashboard/candidato` e `/profile` devolvem `200` a um anónimo e só redirecionam no cliente, o que mostra a shell antes de saltar. | Média (UX) | Sem fuga de dados — o conteúdo é obtido no cliente com o token —, mas o comportamento visível difere consoante a rota. |
+| 4 | **Alvos de toque abaixo de 44px em `/vagas`** (375px): 13 de 38. Chips de filtro a 36px (`Categoria` 103×36, `Tipo de contrato` 140×36, `Faixa salarial` 119×36, `Remoto` 71×36), botões de ação a 42px (`Candidatar` e `Ver detalhes`, 155×42) e títulos de vaga a 23px. | Média (UX) | Medido no DOM hidratado a 375×812. A home, em contraste, tem 0 de 51 abaixo de 44px. |
+| 5 | **O `h1` da home lê-se sem espaços:** «ConectandoTalentosao Sucesso». Os spans que compõem o título não têm separadores, e um leitor de ecrã anuncia-o literalmente assim. | Baixa (a11y) | `document.querySelectorAll('h1')[0].textContent` na home. |
+| 6 | `/vagas` esconde o footer em mobile (`showFooter={!isMobileView}`) e `/candidatos` não usa `PublicPageShell` de todo. | Baixa (consistência) | Deliberado no caso de `/vagas`. Fica como pergunta de produto: o footer é o único acesso aos links legais e de contacto na página onde o utilizador passa mais tempo. |
+
+#### O que está bem
+
+- Zero páginas com scroll horizontal em 375px, em todas as verificadas.
+- Zero imagens sem `alt` e zero campos de formulário sem label associada, em todas as verificadas.
+- `<html lang="pt-PT">` e `meta viewport` corretos em todas.
+- Um único `<h1>` por página, com hierarquia de headings coerente (`H1>H2>H3…`).
+- Home a 375px sem um único alvo de toque abaixo de 44px.
+- `/vagas` renderiza 12 vagas reais com dados do Firebase, sem erros de consola.
+
+#### Correções não aplicadas e porquê
+
+Os achados 1 a 3 vivem em ficheiros com trabalho baseline não commitado e volumoso (`dashboard/empresa/index.js` com 2.518 linhas alteradas, `dashboard/admin/index.js` com 1.130, `empresa/profile.js` com 664, `premium.js` com 90). Aplicar as correções agora produziria commits que misturam o meu trabalho com o retrabalho em curso do proprietário, como já aconteceu no gerador de CV. **Ficam por aplicar até haver decisão sobre esses ficheiros.**
+
+A correção do achado 1 é pequena e mecânica: um helper que compõe `/login?redirect=${encodeURIComponent(resolvedUrl)}` e a sua aplicação nos pontos inventariados. A do achado 2 é dar às duas páginas premium um `getServerSideProps` que só redirecione para o dashboard quando há sessão, servindo caso contrário a página de vendas pública.
+
+### 3.2 a 3.6 — retido
+
+As tabs autenticadas dos dashboards de candidato, empresa e admin, e os fluxos ponta-a-ponta, dependem das contas `qa-`, que continuam retidas enquanto a chave Admin exposta for a chave ativa.
 
 ## Inventário de veredictos
 
