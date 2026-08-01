@@ -8,7 +8,7 @@
 
 | Fase                                         | Estado   | Observação                                                                                                              |
 | -------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------- |
-| 0 — Baseline, backup e ambiente              | PENDENTE | Baseline local e snapshot de rules concluídos; export Firestore e contas QA bloqueados até confirmação do backup cloud. |
+| 0 — Baseline, backup e ambiente              | QUASE    | Backup cloud verificado e desbloqueado. Contas QA continuam retidas: a chave Admin exposta é a que está ativa e ainda não foi rodada. |
 | 1 — Segurança crítica                        | EM CURSO | Itens 1.3, 1.4, 1.5, 1.6 e 1.7 concluídos. Falta 1.2 (`/setup/seed`) e a rotação da chave Admin, que depende do proprietário. |
 | 2 — Rotas de API                             | EM CURSO | Veredicto de auth das 71 rotas concluído em 1.7; falta a passagem funcional grupo a grupo.                              |
 | 3 — Páginas e dashboards                     | PENDENTE | Ainda não iniciada.                                                                                                     |
@@ -32,12 +32,12 @@ Nenhuma conta, documento, ficheiro, email, push, broadcast, configuração cloud
 | `npm run test`                                       | OK            | 35 suites, 136 testes, 0 falhas, 0 snapshots.                                                                                                               |
 | `npm run quality` após instalação limpa              | OK            | Typecheck + lint + 35/35 suites e 136/136 testes, exit code 0.                                                                                              |
 | Inventário Playwright sem executar E2E               | OK            | `npx playwright test --list`: 100 casos em 26 ficheiros, dois projetos (desktop e mobile).                                                                  |
-| Backup cloud do Firestore                            | BLOQUEADO     | `gcloud`/`gsutil` ausentes; bucket de backup, localização, billing e IAM não confirmados. Nenhum export foi iniciado.                                       |
+| Backup cloud do Firestore                            | **CONCLUÍDO** | Export do proprietário verificado por mim: operação `SUCCESSFUL`, destino `gs://empregostp.firebasestorage.app/firestore-exports/full-20260801T161648Z`, 15 objetos / 2,24 MiB, terminado 2026-08-01T16:17:10Z. |
 | Snapshot local de rules e índices                    | OK            | Guardado em `docs/audits/rollback/2026-08-01-baseline/`, com manifesto SHA-256.                                                                             |
 | Estratégia sem emulador                              | DOCUMENTADO   | Unitários com mocks; rules por revisão + smoke QA; E2E online só após adaptação segura.                                                                     |
-| Contas `qa-`                                         | BLOQUEADO     | Proibido criar dados reais antes de o backup cloud estar confirmado.                                                                                        |
+| Contas `qa-`                                         | BLOQUEADO     | O backup já não bloqueia, mas a chave Admin exposta continua ativa (ver abaixo). Não crio dados reais enquanto uma credencial de acesso total estiver comprometida. |
 | `.env` e credenciais ignorados                       | PARCIAL       | `.env.local` e ficheiros conhecidos estão ignorados, mas a cobertura genérica ainda tem lacunas.                                                            |
-| Segredos no histórico recente                        | FALHA CRÍTICA | Chave privada Firebase Admin real versionada em dois documentos desde o primeiro commit.                                                                    |
+| Segredos no histórico recente                        | **FALHA CRÍTICA CONFIRMADA** | A chave exposta **é a chave atualmente ativa** — provado por comparação de impressão digital da chave pública. Ver secção dedicada abaixo. |
 
 ### Baseline Git
 
@@ -188,6 +188,71 @@ Estado do restante ambiente:
 - A cobertura ainda deve incluir `.env.development`, `.env.test`, `.env.staging`, nomes genéricos de service account e extensões `*.key`, `*.p12`, `*.pfx`, mantendo exceções para exemplos seguros.
 - A Firebase Web API key repetida no cliente e documentação é configuração pública, mas os fallbacks versionados serão removidos na Fase 1.
 - `test-verifications.js` é um script manual fora do Jest que chama API administrativa real e imprime PII; está proibido no baseline e entra na triagem de segurança/purga.
+
+### Verificação da Fase 0 (2026-08-01, sessão 2)
+
+#### Backup — desbloqueado
+
+O proprietário executou o export. Verifiquei-o diretamente com `gcloud`, sem alterar nada:
+
+| Verificação | Resultado |
+| --- | --- |
+| Operação Firestore | `SUCCESSFUL` |
+| Destino | `gs://empregostp.firebasestorage.app/firestore-exports/full-20260801T161648Z` |
+| Conteúdo | 15 objetos, 2,24 MiB, mais `overall_export_metadata` |
+| Fim | 2026-08-01T16:17:10Z |
+
+Ressalva sem gravidade: o export ficou no mesmo bucket que a aplicação usa para uploads de utilizadores. Não está exposto aos utilizadores — a regra final de `storage.rules` é `allow read, write: if false` e o acesso ao export faz-se por IAM, não pelo SDK cliente. Ainda assim, um bucket dedicado reduziria o raio de impacto de uma má configuração futura. Fica como sugestão, não como bloqueio.
+
+#### Chave Admin — a exposta é a que está ativa
+
+Comparei a impressão digital SHA-256 da **chave pública** derivada do PEM em `.env.local` com a dos PEM presentes no histórico Git. Nenhum material privado foi impresso, gravado ou transmitido.
+
+| Origem | Impressão digital (SHA-256 da chave pública, 128 bits) |
+| --- | --- |
+| `.env.local` (chave em uso) | `940e5887f58b7cc59e653b65faf96b3d` |
+| `dc9b8ea:VERCEL-DEPLOY-GUIDE.md` e mais 7 ocorrências | `940e5887f58b7cc59e653b65faf96b3d` |
+
+**São a mesma chave.** A rotação não foi feita.
+
+Confirmações adicionais:
+
+- A service account `firebase-adminsdk-fbsvc@empregostp.iam.gserviceaccount.com` tem **uma única** chave gerida pelo utilizador, criada a 2025-07-03T21:35:10Z — anterior ao primeiro commit do repositório.
+- Os commits que a contêm (`dc9b8ea` a `8fb3b89`) estão publicados em `origin/main`.
+- O repositório `Edmirsantos/EmpregoSTP-white` responde 404 à API anónima do GitHub, ou seja, **é privado**. Isto reduz muito o alcance, mas não elimina o risco: qualquer colaborador, clone anterior, fork interno ou integração de CI com acesso ao repositório tem uma credencial que ignora todas as `firestore.rules` e `storage.rules` e dá leitura e escrita totais sobre Firestore, Auth e Storage.
+- No `HEAD` atual os dois ficheiros já só têm placeholders; o problema é exclusivamente o histórico.
+
+Não rodei a chave. Criar a nova e apagar a antiga derruba a aplicação em produção no instante em que a antiga for revogada, até as variáveis na Vercel serem atualizadas — é uma operação coordenada que tem de ser do proprietário. Sequência recomendada, sem tempo de indisponibilidade:
+
+```bash
+# 1. Criar a nova chave (a antiga continua válida)
+gcloud iam service-accounts keys create ~/nova-chave-admin.json \
+  --iam-account=firebase-adminsdk-fbsvc@empregostp.iam.gserviceaccount.com \
+  --project=empregostp
+```
+
+Depois, na Vercel, atualizar `FIREBASE_PRIVATE_KEY` e `FIREBASE_CLIENT_EMAIL` com os valores da nova chave e fazer redeploy. Confirmar que a aplicação em produção funciona (login e uma escrita qualquer). Atualizar também o `.env.local` local. **Só então** revogar a antiga:
+
+```bash
+# 2. Só depois de produção confirmada com a nova chave
+gcloud iam service-accounts keys delete 4e1b5e73f2c296b690ca8fb46cffdf33621127bf \
+  --iam-account=firebase-adminsdk-fbsvc@empregostp.iam.gserviceaccount.com \
+  --project=empregostp
+```
+
+```bash
+# 3. Auditar uso anómalo da identidade desde a data do primeiro commit
+gcloud logging read \
+  'protoPayload.authenticationInfo.principalEmail="firebase-adminsdk-fbsvc@empregostp.iam.gserviceaccount.com"' \
+  --project=empregostp --freshness=90d --limit=50 \
+  --format='table(timestamp,protoPayload.methodName,protoPayload.requestMetadata.callerIp)'
+```
+
+Apagar o ficheiro `~/nova-chave-admin.json` depois de o valor estar na Vercel e no `.env.local`.
+
+O saneamento do histórico com `git filter-repo` continua a precisar de autorização explícita e de force-push coordenado. **A rotação é obrigatória independentemente disso**, porque clones e caches anteriores preservam o valor.
+
+Enquanto a chave ativa for a chave exposta, não crio contas `qa-` nem qualquer dado no Firebase real: não faz sentido introduzir dados de teste num projeto cuja credencial de administração está comprometida.
 
 ### Riscos adicionais transportados para fases seguintes
 
