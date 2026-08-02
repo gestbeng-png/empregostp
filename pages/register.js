@@ -213,6 +213,13 @@ export default function Register() {
         setError(
           'A janela de autenticação foi bloqueada. Autorize janelas adicionais para este site.',
         );
+      } else if (
+        err.code === 'auth/unauthorized-domain' ||
+        err.code === 'auth/operation-not-allowed'
+      ) {
+        setError(
+          'O registo com Google está temporariamente indisponível neste domínio. Por favor use o email e a senha, ou tente novamente mais tarde.',
+        );
       } else {
         setError(
           'Não foi possível criar a conta com o Google. Tente novamente.',
@@ -251,52 +258,19 @@ export default function Register() {
     setLoading(true);
     const normalizedEmail = normalizeEmail(email);
 
+    // A criação da conta é o único passo cuja falha deve ser relatada como
+    // "não foi possível criar a conta": depois dela, o utilizador já existe
+    // no Firebase Auth, e um erro em setup-user, no envio do email ou no
+    // signOut não pode reaparecer com essa mensagem — o utilizador tentaria
+    // registar-se de novo e receberia "email já em uso" sem perceber porquê.
+    let token;
     try {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         normalizedEmail,
         password,
       );
-      const user = userCredential.user;
-      const token = await user.getIdToken();
-
-      const payload = {
-        userType,
-        fullName: name.trim(),
-        name: name.trim(),
-        provider: 'email',
-      };
-
-      if (userType === 'empresa') {
-        payload.phone = companyPhone.trim();
-        payload.nif = companyNif.trim();
-        payload.location = companyLocation.trim();
-        payload.industrySectors = [companySector];
-      }
-
-      await fetch('/api/auth/setup-user', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      // Enviar o nosso email de confirmação (marca EmpregoSTP) e terminar
-      // sessão até o utilizador confirmar.
-      await fetch('/api/auth/send-verification', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ name: name.trim() }),
-      });
-      await auth.signOut();
-
-      setVerificationSent(true);
-      setLoading(false);
+      token = await userCredential.user.getIdToken();
     } catch (err) {
       setLoading(false);
       if (err.code === 'auth/email-already-in-use') {
@@ -310,6 +284,69 @@ export default function Register() {
       } else {
         setError('Não foi possível criar a conta. Tente novamente.');
       }
+      return;
+    }
+
+    const payload = {
+      userType,
+      fullName: name.trim(),
+      name: name.trim(),
+      provider: 'email',
+    };
+
+    if (userType === 'empresa') {
+      payload.phone = companyPhone.trim();
+      payload.nif = companyNif.trim();
+      payload.location = companyLocation.trim();
+      payload.industrySectors = [companySector];
+    }
+
+    try {
+      await fetch('/api/auth/setup-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+    } catch (setupError) {
+      // Melhor esforço: o perfil pode ser completado mais tarde a partir do
+      // painel; não bloqueia a confirmação do email.
+    }
+
+    // Enviar o nosso email de confirmação (marca EmpregoSTP). Ao contrário da
+    // versão anterior, o resultado é verificado: sem isto, uma rota que
+    // respondesse 503 (serviço de email por configurar) ou uma falha de rede
+    // fazia a aplicação afirmar "enviámos um link de confirmação" mesmo sem
+    // ter enviado nada.
+    let verificationEmailSent = false;
+    try {
+      const verifyResponse = await fetch('/api/auth/send-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ name: name.trim() }),
+      });
+      verificationEmailSent = verifyResponse.ok;
+    } catch (sendError) {
+      verificationEmailSent = false;
+    }
+
+    try {
+      await auth.signOut();
+    } catch (signOutError) {
+      // A sessão local pode ficar ativa; não impede o próximo ecrã.
+    }
+
+    setLoading(false);
+    setVerificationSent(true);
+    if (!verificationEmailSent) {
+      setResendState(
+        'Não foi possível enviar o email de confirmação agora. Tente reenviar.',
+      );
     }
   };
 
