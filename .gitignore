@@ -78,3 +78,14 @@ ADMIN-CREDENTIALS.txt
 
 # Registo das contas de teste da auditoria (contém UIDs e password de QA)
 docs/audits/qa-accounts.json
+
+# Ferramentas locais do agente — sem relação com o produto
+.claude/skills/
+.claude/settings.local.json
+
+# Capturas da auditoria de UI: 135 MB de binários.
+# Mantidas localmente de propósito. O Git guarda binários no histórico de
+# forma permanente, pelo que entrarem aqui tornaria cada clone futuro 135 MB
+# mais pesado para sempre, mesmo depois de removidos. Se forem para preservar,
+# usar Git LFS ou um bucket.
+docs/audits/screenshots/

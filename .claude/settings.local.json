@@ -1,7 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(wc -l /Users/edmirdossantos/Desktop/EmpregoSTP-v26/pages/api/**/*.js)"
-    ]
-  }
-}
