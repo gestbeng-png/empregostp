@@ -975,6 +975,49 @@ O guia antigo da raiz foi arquivado em `docs/legacy/` para não competir com est
 | 9 ficheiros órfãos retidos | Têm trabalho não commitado ou são untracked |
 | Ficheiros com baseline misturado nos commits | Vários commits incluem trabalho em curso do proprietário que não foi possível separar por hunks; as mensagens dizem-no |
 
+## Encerramento
+
+### Verificação final desta sessão
+
+| | |
+| --- | --- |
+| `npm run quality` | 336 testes, 66 suites, zero falhas |
+| `npm run build` | compila sem erros |
+| Testes de segurança dirigidos | 16/16 (segredos, `console.*`, `storage.rules`, remoção de ferramentas internas) |
+| Contas de teste no Firebase | 0 |
+| Árvore de trabalho | limpa |
+
+### Trabalho do proprietário commitado
+
+O retrabalho visual Workbridge, a suite E2E, os testes unitários e os módulos de Clean Architecture foram commitados em `cae169a` — 299 ficheiros. Inclui `tsconfig.json`, que estava fora do controlo de versões apesar de ser necessário para o typecheck e o build: quem clonasse o repositório não conseguiria correr nenhum dos dois.
+
+### Fora do Git, por decisão
+
+| Caminho | Porquê |
+| --- | --- |
+| `docs/audits/screenshots/` | 241 capturas, 135 MB. O Git guarda binários no histórico permanentemente: cada clone futuro carregaria esse peso para sempre, mesmo depois de removidos, e desfazê-lo exigiria reescrever o histórico. Para preservar, o caminho é Git LFS ou um bucket. |
+| `.claude/skills/` | Ferramentas do agente (design, branding, slides), 2,9 MB e 147 ficheiros sem relação com o produto. |
+| `.claude/settings.local.json` | Definições locais. `.claude/launch.json` fica versionado por ser configuração do projeto. |
+
+A escolha foi pela opção reversível: ficam no disco e podem entrar depois. Commitá-los seria irreversível.
+
+### O único bloqueio que resta
+
+**A chave privada do Firebase Admin em uso é a mesma que está exposta no histórico do Git.** Confirmado nesta auditoria por comparação de impressão digital da chave pública, não por suposição. O repositório é privado, o que limita o alcance, mas a credencial ignora todas as regras de Firestore e Storage.
+
+Os comandos de rotação, na sequência que evita indisponibilidade, estão no **passo 0** de `docs/DEPLOY-GUIDE.md`.
+
+### Nota honesta sobre o processo
+
+Ao longo da auditoria cheguei a conclusões erradas que só a verificação apanhou, e vale a pena ficarem registadas porque explicam as regras que passaram a valer:
+
+- **Tailwind.** Concluí duas vezes o oposto da verdade — uma medição truncada por `tee | head` comparou 9 ficheiros CSS contra 35, e a pesquisa procurava sintaxe da v3 num projeto que usa a v4. A remoção chegou a ser executada com autorização e partiu o build; foi revertida no mesmo passo.
+- **Contraste.** A primeira auditoria reportou 6 violações falsas por não compor a transparência dos fundos. Refeita com composição alfa e validada contra cálculo manual.
+- **HTML do servidor de desenvolvimento.** Auditar por `curl` daria «sem `<title>`» em todas as páginas: a resposta é uma shell vazia. Todas as medições passaram a ser feitas no DOM hidratado.
+- **Servidor de desenvolvimento.** `rm -rf .next` com o servidor a correr deixou-o a responder 500, duas vezes.
+
+Nenhuma destas falhas chegou ao repositório. A regra que ficou: **nenhuma remoção ou alteração avança sem que o build e a aplicação sejam verificados depois dela**, e configurações não versionadas são copiadas antes de qualquer alteração.
+
 ## Inventário de veredictos
 
 A tabela de rotas de API está acima, na Fase 1.7. A tabela de páginas é acrescentada na Fase 3. Nenhuma rota ou página é marcada como validada com base apenas na auditoria histórica.
