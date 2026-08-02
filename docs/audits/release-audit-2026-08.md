@@ -13,7 +13,7 @@
 | 2 — Rotas de API                             | EM CURSO | Veredicto de auth das 71 rotas concluído em 1.7; falta a passagem funcional grupo a grupo.                              |
 | 3 — Páginas e dashboards                     | **CONCLUÍDA** | Públicas, autenticação, os três dashboards, fluxos de utilizador e design auditados com contas reais. 9 achados corrigidos. |
 | 4 — Purga de legado                          | **QUASE** | Dependências, ficheiros órfãos, exports mortos e documentação legada concluídos. Falta a decisão sobre 9 ficheiros retidos e os índices Firestore (já declarados, por deployar). |
-| 5 — UX, visual, performance e acessibilidade | EM CURSO | 5.5 acessibilidade concluída: públicas a zero, dashboard corrigido (5 campos sem label, contraste sistémico em 38 sítios). Falta performance percebida. |
+| 5 — UX, visual, performance e acessibilidade | **QUASE** | Acessibilidade e performance concluídas. Consistência visual verificada na Fase 3; falta Lighthouse formal e paginação das listagens longas. |
 | 6 — Validação e pacote de deploy             | PENDENTE | Ainda não iniciada.                                                                                                     |
 
 Nenhuma conta, documento, ficheiro, email, push, broadcast, configuração cloud, rule, índice ou deploy remoto foi criado, alterado ou eliminado nesta fase.
@@ -855,6 +855,48 @@ Mais dois casos com causa própria:
 Verificação posterior: zero violações em `overview`, `profile`, `saved` e `interviews`. Commit `49dafb4`.
 
 Nota de método: a minha primeira deteção de «contexto escuro» classificou mal 5 ocorrências, deixando-as por corrigir; foram apanhadas na verificação seguinte e tratadas individualmente. O `axe-core` foi servido a partir de `public/` durante o teste e removido no fim.
+
+### 5.3 — Performance percebida
+
+O build desta versão do Next não imprime tamanhos por página, por isso medi os chunks diretamente do `build-manifest.json`.
+
+#### O diagnóstico inverteu a prioridade esperada
+
+A auditoria apontava as páginas gigantes (candidato ~5.4k linhas, empresa ~5k, gerador-cv ~2.8k) como alvo. Mas os números mostram outra coisa:
+
+| | Antes |
+| --- | --- |
+| Chunk partilhado que **todas** as páginas pagam | **1.009 KB** |
+| Código próprio por rota | 73 KB a 307 KB |
+
+O partilhado dominava — otimizar as páginas grandes atacaria a parte menor do problema. Dentro dele, o `_app` sozinho valia 511 KB.
+
+#### O que já estava bem
+
+Duas das otimizações que a auditoria pedia já existiam e não precisavam de trabalho: `jspdf` é carregado com `await import('jspdf')` no gerador de CV, e os quatro componentes de `recharts` já usam `next/dynamic` nos dashboards.
+
+#### O que foi feito
+
+`DashboardRouteFrame` envolve todas as páginas a partir do `_app`, mas a `DashboardShell` (491 linhas mais ícones) só é usada no ramo das rotas de dashboard. Passou a `next/dynamic` **mantendo SSR** — o dashboard continua a renderizar no servidor e as páginas públicas deixam de descarregar sidebar e topbar que nunca mostram.
+
+`PwaInstallPrompt` e `WebPushManager` passaram a `dynamic` com `ssr: false`: são interface que só aparece depois de um evento do browser ou de permissão concedida.
+
+| | Antes | Depois |
+| --- | --- | --- |
+| Chunk partilhado | 1.009 KB | **954 KB** |
+| `_app` | 511 KB | **458 KB** |
+
+Verificado no browser: `/vagas` renderiza sem um único elemento `.dashShell` no DOM, e `/dashboard/candidato` carrega a shell e a navegação normalmente. Commit `16bf736`.
+
+#### O que resta e porque não avancei
+
+Os 458 KB restantes do `_app` são dominados pelo SDK cliente do Firebase, que entra por `AuthProvider`. Não o adiei porque o estado de autenticação é preciso no primeiro render de todas as páginas — diferi-lo trocaria peso por um flash de conteúdo não autenticado, o que é uma regressão de UX, não uma melhoria.
+
+Reduzir isto a sério exigiria mudar a estratégia de autenticação (por exemplo, cookie de sessão lido no servidor em vez do SDK no cliente). É uma decisão de arquitetura, não uma otimização — fica registada como oportunidade, não como pendente.
+
+#### Nota de processo
+
+Voltei a correr `rm -rf .next` com o servidor de desenvolvimento a correr, deixando-o outra vez a responder 500. Desta vez a recuperação foi imediata porque o servidor já é gerido pelo harness. A regra para o resto do trabalho: não apagar `.next` sem parar o servidor primeiro.
 
 ## Inventário de veredictos
 
