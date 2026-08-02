@@ -12,7 +12,7 @@
 | 1 — Segurança crítica                        | EM CURSO | Itens 1.3, 1.4, 1.5, 1.6 e 1.7 concluídos. Falta 1.2 (`/setup/seed`) e a rotação da chave Admin, que depende do proprietário. |
 | 2 — Rotas de API                             | EM CURSO | Veredicto de auth das 71 rotas concluído em 1.7; falta a passagem funcional grupo a grupo.                              |
 | 3 — Páginas e dashboards                     | **CONCLUÍDA** | Públicas, autenticação, os três dashboards, fluxos de utilizador e design auditados com contas reais. 9 achados corrigidos. |
-| 4 — Purga de legado                          | EM CURSO | 4.1 dependências e 4.2 ficheiros órfãos concluídos (11 ficheiros, 1.621 linhas). Falta exports mortos e documentação legada. |
+| 4 — Purga de legado                          | **QUASE** | Dependências, ficheiros órfãos, exports mortos e documentação legada concluídos. Falta a decisão sobre 9 ficheiros retidos e os índices Firestore (já declarados, por deployar). |
 | 5 — UX, visual, performance e acessibilidade | PENDENTE | Ainda não iniciada.                                                                                                     |
 | 6 — Validação e pacote de deploy             | PENDENTE | Ainda não iniciada.                                                                                                     |
 
@@ -786,6 +786,43 @@ Estes estão órfãos no código, mas **não os removi**:
 | `styles/AdminProfilePage.module.css` | **untracked** | Idem. |
 
 Regra aplicada: só removi ficheiros commitados e sem alterações, que o Git consegue restaurar. Nenhum ficheiro com trabalho teu por commitar, nem qualquer untracked, foi tocado.
+
+### 4.3 — Exports mortos
+
+O `knip` reportou 38 exports/tipos sem uso. Separei-os em duas categorias, porque só uma tem valor real:
+
+- **11 funções mortas de facto** — sem qualquer uso, nem sequer dentro do próprio ficheiro.
+- **18 apenas sobre-exportados** — usados internamente, só com o `export` a mais. Removê-los é mexer em 18 ficheiros para ganhar nada de funcional; ficam registados mas por tocar.
+
+Removidas 8 das 11 (as outras 3 estão em ficheiros com trabalho não commitado ou untracked), num total de 104 linhas:
+
+| Ficheiro | Funções | Nota |
+| --- | --- | --- |
+| `lib/db.js` | `getAllDocuments`, `getDocumentById`, `getDocumentsByQuery`, `updateDocument` | As três que ficam — `addDocument`, `setDocument`, `deleteDocument` — continuam em uso pelas páginas de administração. |
+| `lib/candidateCatalog.js` | `summarizeCandidateServices` | |
+| `lib/resourcesCatalog.js` | `resourceCanDownloadGuide`, `resourceCanDownloadTemplate` | |
+| `lib/webPushClient.js` | `clearWebPushPromptDismissal` | |
+
+Retidas: `isValidPassword` e `PASSWORD_MIN_LENGTH` em `lib/validation.js` (untracked — a que se usa é `isStrongPassword`), e `fetchCandidateServices`/`fetchCompanyServices` em `lib/publicCandidates.js` (com alterações não commitadas). Commit `1b017f8`.
+
+### 4.4 — Documentação legada
+
+A raiz tinha **31 ficheiros `.md`/`.txt`, 325 KB**, incluindo `importantes.md` com 107 KB. Não eram apenas ruído: nesta mesma fase, vários ficheiros de código mortos **pareciam vivos** só porque estes documentos os mencionavam — `components/Badge.js` tinha 74 «referências», todas em documentação obsoleta.
+
+28 foram arquivados em `docs/legacy/`, cada um com um aviso de obsolescência no topo a apontar para as fontes de verdade. Arquivar em vez de apagar porque o histórico pode ser útil e a operação é reversível. A raiz fica com `README.md`, `DESIGN-SYSTEM.md` e `DEPLOY-GUIDE.md`.
+
+`trackedSecrets.test.ts` varre por `git ls-files`, pelo que seguiu os ficheiros movidos sem alteração — os placeholders de `VERCEL-DEPLOY-GUIDE.md` e `VERCEL-ENV-SETUP.txt` continuam sob vigilância. Commit `7611641`.
+
+### Balanço da Fase 4
+
+| Categoria | Removido |
+| --- | --- |
+| Dependências | 3 (`readline`, `ts-node`, `prettier-plugin-tailwindcss`) |
+| Ficheiros órfãos | 11 ficheiros, 1.621 linhas |
+| Funções mortas | 8 funções, 104 linhas |
+| Documentação | 28 ficheiros arquivados, 325 KB fora da raiz |
+
+Cada bloco foi verificado com `npm run quality` (336 testes) e `npm run build` antes do commit seguinte. Nada com trabalho não commitado do proprietário, nem qualquer ficheiro untracked, foi removido.
 
 ## Inventário de veredictos
 
