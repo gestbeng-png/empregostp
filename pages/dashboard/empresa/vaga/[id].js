@@ -25,7 +25,7 @@ const JOB_STATUS_LABELS = {
 const APPLICATION_STATUS_LABELS = {
   pending: "Pendente",
   approved: "Aprovada",
-  analysis: "Em analise",
+  analysis: "Em análise",
   interview: "Entrevista",
   rejected: "Rejeitada",
 };
@@ -39,7 +39,7 @@ function splitCsv(value) {
 }
 
 function formatDate(value) {
-  if (!value) return "Nao informado";
+  if (!value) return "Não informado";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
   return date.toLocaleDateString("pt-PT", {
@@ -50,7 +50,7 @@ function formatDate(value) {
 }
 
 function formatCurrency(value) {
-  if (!value) return "Nao informado";
+  if (!value) return "Não informado";
   return Number(value).toLocaleString("pt-ST", {
     style: "currency",
     currency: "STN",
@@ -84,7 +84,7 @@ export default function DetalheVaga({ vaga, candidaturas }) {
       setStatusFeedback("");
       const token = await getAuthToken();
       if (!token) {
-        setStatusFeedback("Sessao expirada. Faça login novamente.");
+        setStatusFeedback("A sessão expirou. Inicie sessão novamente.");
         return;
       }
 
@@ -124,7 +124,7 @@ export default function DetalheVaga({ vaga, candidaturas }) {
     try {
       setIsProcessing(true);
       const token = await getAuthToken();
-      if (!token) throw new Error("Sessao expirada");
+      if (!token) throw new Error("A sessão expirou");
 
       const response = await fetch(`/api/jobs/${vaga.id}`, {
         method: "DELETE",
@@ -138,7 +138,7 @@ export default function DetalheVaga({ vaga, candidaturas }) {
         throw new Error(data.error || "Erro ao eliminar vaga");
       }
 
-      router.push("/dashboard/empresa");
+      router.push("/dashboard/empresa?tab=jobs");
     } catch (error) {
       console.error("Erro ao eliminar vaga:", error);
       alert(error.message || "Erro ao eliminar vaga. Tente novamente.");
@@ -151,7 +151,7 @@ export default function DetalheVaga({ vaga, candidaturas }) {
     try {
       setIsProcessing(true);
       const token = await getAuthToken();
-      if (!token) throw new Error("Sessao expirada");
+      if (!token) throw new Error("A sessão expirou");
 
       const response = await fetch(
         `/api/applications/${candidaturaId}/status`,
@@ -227,6 +227,7 @@ export default function DetalheVaga({ vaga, candidaturas }) {
   const requisitosList = splitCsv(requisitos);
   const beneficiosList = splitCsv(beneficios);
   const statusLabel = JOB_STATUS_LABELS[status] || status || "Desconhecido";
+  const statusKey = status || "unknown";
   const closingDateMillis = safeTimestampToMillis(dataFecho);
   const canReopenExpiredJob =
     status === "closed" && closingDateMillis && closingDateMillis < Date.now();
@@ -244,7 +245,7 @@ export default function DetalheVaga({ vaga, candidaturas }) {
   const salaryRange =
     salarioDe || salarioAte
       ? `${formatCurrency(salarioDe)} - ${formatCurrency(salarioAte)}`
-      : "Nao informado";
+      : "Não informado";
 
   return (
     <>
@@ -288,7 +289,7 @@ export default function DetalheVaga({ vaga, candidaturas }) {
             </div>
 
             <div
-              className={`${styles.statusBadge} ${styles[`status${status.charAt(0).toUpperCase()}${status.slice(1)}`] || styles.statusDefault}`}
+              className={`${styles.statusBadge} ${styles[`status${statusKey.charAt(0).toUpperCase()}${statusKey.slice(1)}`] || styles.statusDefault}`}
             >
               {statusLabel}
             </div>
@@ -310,9 +311,9 @@ export default function DetalheVaga({ vaga, candidaturas }) {
           <div className={styles.mainColumn}>
             <article className={styles.panel}>
               <div className={styles.sectionHeader}>
-                <h2 className={styles.sectionTitle}>Descricao</h2>
+                  <h2 className={styles.sectionTitle}>Descrição</h2>
               </div>
-              <p className={styles.bodyCopy}>{descricao || "Nao informado"}</p>
+              <p className={styles.bodyCopy}>{descricao || "Não informado"}</p>
             </article>
 
             {requisitosList.length > 0 ? (
@@ -339,7 +340,7 @@ export default function DetalheVaga({ vaga, candidaturas }) {
                 </div>
                 <div className={styles.assessmentCard}>
                   <p className={styles.assessmentSummary}>
-                    Nota minima:{" "}
+                    Nota mínima:{" "}
                     <strong>{skillsAssessment.passingScore || 70}%</strong>
                   </p>
                   <div className={styles.assessmentList}>
@@ -355,7 +356,7 @@ export default function DetalheVaga({ vaga, candidaturas }) {
                           {Array.isArray(question.options)
                             ? question.options.length
                             : 0}{" "}
-                          opcoes
+                          opções
                         </span>
                       </div>
                     ))}
@@ -367,7 +368,7 @@ export default function DetalheVaga({ vaga, candidaturas }) {
             {beneficiosList.length > 0 ? (
               <article className={styles.panel}>
                 <div className={styles.sectionHeader}>
-                  <h2 className={styles.sectionTitle}>Beneficios</h2>
+                  <h2 className={styles.sectionTitle}>Benefícios</h2>
                 </div>
                 <ul className={styles.list}>
                   {beneficiosList.map((item, index) => (
@@ -385,26 +386,26 @@ export default function DetalheVaga({ vaga, candidaturas }) {
               </div>
               <dl className={styles.summaryList}>
                 <div className={styles.summaryItem}>
-                  <dt>Salario</dt>
+                  <dt>Salário</dt>
                   <dd>{salaryRange}</dd>
                 </div>
                 <div className={styles.summaryItem}>
-                  <dt>Periodo</dt>
+                  <dt>Período</dt>
                   <dd>
-                    {formatDate(dataAbertura)} ate {formatDate(dataFecho)}
+                    {formatDate(dataAbertura)} até {formatDate(dataFecho)}
                   </dd>
                 </div>
                 <div className={styles.summaryItem}>
                   <dt>Contrato</dt>
-                  <dd>{tipoContrato || "Nao informado"}</dd>
+                  <dd>{tipoContrato || "Não informado"}</dd>
                 </div>
                 <div className={styles.summaryItem}>
-                  <dt>Localizacao</dt>
-                  <dd>{localizacao || "Nao informado"}</dd>
+                  <dt>Localização</dt>
+                  <dd>{localizacao || "Não informado"}</dd>
                 </div>
                 <div className={styles.summaryItem}>
                   <dt>Privacidade</dt>
-                  <dd>{isPrivada ? "Privada" : "Publica"}</dd>
+                  <dd>{isPrivada ? "Privada" : "Pública"}</dd>
                 </div>
               </dl>
             </article>
@@ -412,7 +413,7 @@ export default function DetalheVaga({ vaga, candidaturas }) {
             {vaga.tdrUrl ? (
               <article className={styles.panel}>
                 <div className={styles.sectionHeader}>
-                  <h2 className={styles.sectionTitle}>Documentacao</h2>
+                  <h2 className={styles.sectionTitle}>Documentação</h2>
                 </div>
                 <div className={styles.docCard}>
                   <div className={styles.docIcon}>
@@ -432,7 +433,7 @@ export default function DetalheVaga({ vaga, candidaturas }) {
                     </svg>
                   </div>
                   <div className={styles.docInfo}>
-                    <strong>Termos de Referencia</strong>
+                    <strong>Termos de Referência</strong>
                     <span>Ficheiro PDF/Documento associado a esta vaga.</span>
                   </div>
                 </div>
@@ -449,10 +450,10 @@ export default function DetalheVaga({ vaga, candidaturas }) {
 
             <article className={styles.panel}>
               <div className={styles.sectionHeader}>
-                <h2 className={styles.sectionTitle}>Acoes</h2>
+                <h2 className={styles.sectionTitle}>Ações</h2>
               </div>
               {statusFeedback ? (
-                <div className={styles.inlineNotice}>
+                <div className={styles.inlineNotice} role="status" aria-live="polite">
                   <p>{statusFeedback}</p>
                 </div>
               ) : null}
@@ -467,6 +468,7 @@ export default function DetalheVaga({ vaga, candidaturas }) {
               <div className={styles.actionsGrid}>
                 {vaga.status === "active" ? (
                   <button
+                    type="button"
                     onClick={() => alterarStatus("closed")}
                     disabled={isProcessing}
                     className={`${styles.actionButton} ${styles.actionWarning}`}
@@ -477,6 +479,7 @@ export default function DetalheVaga({ vaga, candidaturas }) {
 
                 {vaga.status === "closed" ? (
                   <button
+                    type="button"
                     onClick={() => alterarStatus("active")}
                     disabled={isProcessing}
                     className={`${styles.actionButton} ${styles.actionSuccess}`}
@@ -486,6 +489,7 @@ export default function DetalheVaga({ vaga, candidaturas }) {
                 ) : null}
 
                 <button
+                  type="button"
                   onClick={() =>
                     router.push(
                       `/dashboard/empresa/vaga/criar-vaga?edit=${vaga.id}`,
@@ -498,6 +502,7 @@ export default function DetalheVaga({ vaga, candidaturas }) {
                 </button>
 
                 <button
+                  type="button"
                   onClick={eliminarVaga}
                   disabled={isProcessing}
                   className={`${styles.actionButton} ${styles.actionDanger}`}
@@ -521,8 +526,7 @@ export default function DetalheVaga({ vaga, candidaturas }) {
             <div className={styles.emptyApplications}>
               <h3>Nenhuma candidatura ainda</h3>
               <p>
-                As candidaturas aparecerao aqui quando candidatos se
-                inscreverem.
+                As candidaturas aparecerão aqui assim que alguém responder à vaga.
               </p>
             </div>
           ) : (
@@ -618,7 +622,7 @@ export default function DetalheVaga({ vaga, candidaturas }) {
                             {typeof candidatura.compatibilityScore ===
                             "number" ? (
                               <p>
-                                Score registado:{" "}
+                                Compatibilidade registada:{" "}
                                 {candidatura.compatibilityScore}%
                               </p>
                             ) : null}
@@ -650,6 +654,7 @@ export default function DetalheVaga({ vaga, candidaturas }) {
                         !applicationStatus ? (
                           <div className={styles.applicationActions}>
                             <button
+                              type="button"
                               onClick={() =>
                                 alterarStatusCandidatura(
                                   candidatura.id,
@@ -662,6 +667,7 @@ export default function DetalheVaga({ vaga, candidaturas }) {
                               Aprovar
                             </button>
                             <button
+                              type="button"
                               onClick={() =>
                                 alterarStatusCandidatura(
                                   candidatura.id,
@@ -678,6 +684,7 @@ export default function DetalheVaga({ vaga, candidaturas }) {
 
                         {applicationStatus === "approved" ? (
                           <button
+                            type="button"
                             onClick={() =>
                               alterarStatusCandidatura(
                                 candidatura.id,
@@ -693,6 +700,7 @@ export default function DetalheVaga({ vaga, candidaturas }) {
 
                         {applicationStatus === "rejected" ? (
                           <button
+                            type="button"
                             onClick={() =>
                               alterarStatusCandidatura(
                                 candidatura.id,

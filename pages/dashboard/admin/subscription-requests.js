@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { getAuth } from 'firebase/auth';
 import Head from 'next/head';
 import Link from 'next/link';
-import LandingHeader from '../../../components/LandingHeader';
 import { requireAdminPageAuth } from '../../../lib/adminPageGuard';
 import styles from '../../../styles/AdminPanel.module.css';
 
@@ -13,35 +12,37 @@ const getStatusConfig = (status) => {
         label: 'Comprovativo enviado',
         backgroundColor: 'rgba(59, 130, 246, 0.15)',
         color: '#93c5fd',
-        border: '1px solid rgba(59, 130, 246, 0.3)'
+        border: '1px solid rgba(59, 130, 246, 0.3)',
       };
     case 'approved':
       return {
         label: 'Aprovado',
         backgroundColor: 'rgba(16, 185, 129, 0.15)',
         color: '#34d399',
-        border: '1px solid rgba(16, 185, 129, 0.3)'
+        border: '1px solid rgba(16, 185, 129, 0.3)',
       };
     case 'rejected':
       return {
         label: 'Rejeitado',
         backgroundColor: 'rgba(239, 68, 68, 0.15)',
         color: '#f87171',
-        border: '1px solid rgba(239, 68, 68, 0.3)'
+        border: '1px solid rgba(239, 68, 68, 0.3)',
       };
     default:
       return {
         label: 'Aguardando comprovativo',
         backgroundColor: 'rgba(245, 158, 11, 0.15)',
         color: '#fbbf24',
-        border: '1px solid rgba(245, 158, 11, 0.3)'
+        border: '1px solid rgba(245, 158, 11, 0.3)',
       };
   }
 };
 
 const getMessageTone = (message) => {
   const normalized = String(message || '').toLowerCase();
-  return normalized.includes('sucesso') || normalized.includes('aprovada') || normalized.includes('aprovado')
+  return normalized.includes('sucesso') ||
+    normalized.includes('aprovada') ||
+    normalized.includes('aprovado')
     ? styles.alertSuccess
     : styles.alertError;
 };
@@ -57,7 +58,7 @@ const formatRequestDate = (requestDate) => {
   return date.toLocaleDateString('pt-PT', {
     day: '2-digit',
     month: 'short',
-    year: 'numeric'
+    year: 'numeric',
   });
 };
 
@@ -78,7 +79,9 @@ export default function SubscriptionRequests() {
   const loadRequests = useCallback(async (options = {}) => {
     const append = Boolean(options.append);
     const statusParam = String(options.statusParam || 'all');
-    const cursorIdParam = options.cursorIdParam ? String(options.cursorIdParam) : null;
+    const cursorIdParam = options.cursorIdParam
+      ? String(options.cursorIdParam)
+      : null;
     if (append && !cursorIdParam) return;
 
     try {
@@ -101,18 +104,29 @@ export default function SubscriptionRequests() {
         params.set('cursorId', cursorIdParam);
       }
 
-      const res = await fetch(`/api/admin/subscription-requests?${params.toString()}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      const res = await fetch(
+        `/api/admin/subscription-requests?${params.toString()}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
 
       if (!res.ok) throw new Error('Falha ao carregar pedidos');
 
       const data = await res.json();
       const incoming = data.requests || [];
       const merged = append
-        ? [...requestsRef.current, ...incoming.filter((item) => !requestsRef.current.some((existing) => existing.id === item.id))]
+        ? [
+            ...requestsRef.current,
+            ...incoming.filter(
+              (item) =>
+                !requestsRef.current.some(
+                  (existing) => existing.id === item.id,
+                ),
+            ),
+          ]
         : incoming;
 
       setRequests(merged);
@@ -128,7 +142,11 @@ export default function SubscriptionRequests() {
   }, []);
 
   useEffect(() => {
-    loadRequests({ append: false, statusParam: statusFilter, cursorIdParam: null });
+    loadRequests({
+      append: false,
+      statusParam: statusFilter,
+      cursorIdParam: null,
+    });
   }, [statusFilter, loadRequests]);
 
   async function handleAction(requestId, action) {
@@ -142,18 +160,29 @@ export default function SubscriptionRequests() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ action })
+        body: JSON.stringify({ action }),
       });
 
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || data.message || 'Falha ao processar pedido');
+      if (!res.ok)
+        throw new Error(
+          data.error || data.message || 'Falha ao processar pedido',
+        );
 
-      setMessage(action === 'approve' ? 'Assinatura aprovada com sucesso' : 'Assinatura rejeitada');
+      setMessage(
+        action === 'approve'
+          ? 'Assinatura aprovada com sucesso'
+          : 'Assinatura rejeitada',
+      );
       setNextCursorId(null);
       setHasMore(false);
-      loadRequests({ append: false, statusParam: statusFilter, cursorIdParam: null });
+      loadRequests({
+        append: false,
+        statusParam: statusFilter,
+        cursorIdParam: null,
+      });
     } catch (error) {
       console.error('Erro ao processar pedido:', error);
       setMessage(error.message || 'Erro ao processar pedido');
@@ -167,16 +196,21 @@ export default function SubscriptionRequests() {
       <Head>
         <title>Solicitações de Assinatura - Admin</title>
       </Head>
-      <LandingHeader />
 
-      <main className={`${styles.page} ${styles.pageNarrow}`}>
+      <div className={`${styles.page} ${styles.pageNarrow}`}>
         <div className={styles.headerCard}>
           <div className={styles.headerCopy}>
-            <h1 className={`${styles.headerTitle} ${styles.headerTitleSmall}`}>Solicitações de Assinatura</h1>
-            <p className={styles.headerSubtitle}>Gerencie pedidos de atualização de plano e comprovativos recebidos.</p>
+            <h1 className={`${styles.headerTitle} ${styles.headerTitleSmall}`}>
+              Solicitações de Assinatura
+            </h1>
+            <p className={styles.headerSubtitle}>
+              Gerencie pedidos de atualização de plano e comprovativos
+              recebidos.
+            </p>
           </div>
           <div className={styles.headerActions}>
             <select
+              aria-label="Filtrar solicitações por estado"
               value={statusFilter}
               onChange={(event) => {
                 setNextCursorId(null);
@@ -194,7 +228,11 @@ export default function SubscriptionRequests() {
             <Link
               href="/dashboard/admin"
               className={`${styles.linkButton} ${styles.buttonAccent}`}
-              style={{ '--button-bg': 'rgba(255, 255, 255, 0.05)', '--button-border': 'rgba(255, 255, 255, 0.1)', '--button-color': '#fff' }}
+              style={{
+                '--button-bg': 'rgba(255, 255, 255, 0.05)',
+                '--button-border': 'rgba(255, 255, 255, 0.1)',
+                '--button-color': '#fff',
+              }}
             >
               Voltar ao Dashboard
             </Link>
@@ -202,7 +240,11 @@ export default function SubscriptionRequests() {
         </div>
 
         {message ? (
-          <div className={`${styles.alert} ${getMessageTone(message)}`}>
+          <div
+            role="status"
+            aria-live="polite"
+            className={`${styles.alert} ${getMessageTone(message)}`}
+          >
             {message}
           </div>
         ) : null}
@@ -210,11 +252,13 @@ export default function SubscriptionRequests() {
         {loading ? (
           <div className={styles.loadingState}>
             <div className={styles.spinner} />
-            <p className={styles.loadingText}>Carregando pedidos...</p>
+            <p className={styles.loadingText}>A carregar pedidos...</p>
           </div>
         ) : requests.length === 0 ? (
           <div className={styles.emptyState}>
-            <p className={styles.emptyText}>Nenhum pedido encontrado para este filtro.</p>
+            <p className={styles.emptyText}>
+              Nenhum pedido encontrado para este filtro.
+            </p>
           </div>
         ) : (
           <div className={styles.tableShell}>
@@ -222,75 +266,127 @@ export default function SubscriptionRequests() {
               <table className={styles.table}>
                 <thead>
                   <tr className={styles.tableHeadRow}>
-                    <th className={styles.tableHeadCell}>Usuário</th>
+                    <th className={styles.tableHeadCell}>Utilizador</th>
                     <th className={styles.tableHeadCell}>Plano</th>
                     <th className={styles.tableHeadCell}>Preço</th>
                     <th className={styles.tableHeadCell}>Data</th>
                     <th className={styles.tableHeadCell}>Comprovativo</th>
-                    <th className={styles.tableHeadCell}>Status</th>
-                    <th className={`${styles.tableHeadCell} ${styles.alignCenter}`}>Ações</th>
+                    <th className={styles.tableHeadCell}>Estado</th>
+                    <th
+                      className={`${styles.tableHeadCell} ${styles.alignCenter}`}
+                    >
+                      Ações
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {requests.map((request) => {
                     const statusConfig = getStatusConfig(request.status);
-                    const canApprove = request.status === 'payment_submitted' || (Number(request.price || 0) === 0 && request.status === 'pending');
+                    const canApprove =
+                      request.status === 'payment_submitted' ||
+                      (Number(request.price || 0) === 0 &&
+                        request.status === 'pending');
 
                     return (
                       <tr key={request.id} className={styles.tableRow}>
                         <td className={styles.tableCell}>
-                          <div className={styles.tableCellStrong}>{request.userName}</div>
-                          <div className={styles.metaText}>{request.userEmail}</div>
+                          <div className={styles.tableCellStrong}>
+                            {request.userName}
+                          </div>
+                          <div className={styles.metaText}>
+                            {request.userEmail}
+                          </div>
                         </td>
                         <td className={styles.tableCell}>
                           <span
                             className={`${styles.badge} ${styles.badgeSmall}`}
-                            style={{ '--badge-bg': 'rgba(99, 102, 241, 0.15)', '--badge-color': '#a5b4fc', '--badge-border': '1px solid rgba(99, 102, 241, 0.3)' }}
+                            style={{
+                              '--badge-bg': 'rgba(99, 102, 241, 0.15)',
+                              '--badge-color': '#a5b4fc',
+                              '--badge-border':
+                                '1px solid rgba(99, 102, 241, 0.3)',
+                            }}
                           >
                             {request.planName}
                           </span>
                         </td>
-                        <td className={`${styles.tableCell} ${styles.tableCellStrong}`}>{request.priceLabel}</td>
-                        <td className={`${styles.tableCell} ${styles.tableCellSoft}`}>{formatRequestDate(request.requestDate)}</td>
+                        <td
+                          className={`${styles.tableCell} ${styles.tableCellStrong}`}
+                        >
+                          {request.priceLabel}
+                        </td>
+                        <td
+                          className={`${styles.tableCell} ${styles.tableCellSoft}`}
+                        >
+                          {formatRequestDate(request.requestDate)}
+                        </td>
                         <td className={styles.tableCell}>
                           {request.paymentProof?.url ? (
                             <div className={styles.proofStack}>
-                              <a href={request.paymentProof.url} target="_blank" rel="noreferrer" className={styles.proofLink}>
+                              <a
+                                href={request.paymentProof.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className={styles.proofLink}
+                              >
                                 Abrir comprovativo
                               </a>
-                              {request.paymentProof.note ? <span className={styles.proofNote}>{request.paymentProof.note}</span> : null}
+                              {request.paymentProof.note ? (
+                                <span className={styles.proofNote}>
+                                  {request.paymentProof.note}
+                                </span>
+                              ) : null}
                             </div>
                           ) : (
-                            <span className={styles.tableCellSoft}>Ainda não enviado</span>
+                            <span className={styles.tableCellSoft}>
+                              Ainda não enviado
+                            </span>
                           )}
                         </td>
                         <td className={styles.tableCell}>
                           <span
                             className={styles.badge}
-                            style={{ '--badge-bg': statusConfig.backgroundColor, '--badge-color': statusConfig.color, '--badge-border': statusConfig.border }}
+                            style={{
+                              '--badge-bg': statusConfig.backgroundColor,
+                              '--badge-color': statusConfig.color,
+                              '--badge-border': statusConfig.border,
+                            }}
                           >
                             {statusConfig.label}
                           </span>
                         </td>
-                        <td className={`${styles.tableCell} ${styles.alignCenter}`}>
-                          {(request.status === 'pending' || request.status === 'payment_submitted') ? (
+                        <td
+                          className={`${styles.tableCell} ${styles.alignCenter}`}
+                        >
+                          {request.status === 'pending' ||
+                          request.status === 'payment_submitted' ? (
                             <div className={styles.buttonGroupCenter}>
                               <button
                                 type="button"
-                                onClick={() => handleAction(request.id, 'approve')}
+                                onClick={() =>
+                                  handleAction(request.id, 'approve')
+                                }
                                 disabled={loading || !canApprove}
                                 className={`${styles.buttonBase} ${styles.buttonAccent} ${styles.buttonSmall}`}
                                 style={{
-                                  '--button-bg': canApprove ? 'rgba(16, 185, 129, 0.18)' : 'rgba(148, 163, 184, 0.12)',
-                                  '--button-border': canApprove ? 'rgba(16, 185, 129, 0.32)' : 'rgba(148, 163, 184, 0.18)',
-                                  '--button-color': canApprove ? '#34d399' : '#94a3b8'
+                                  '--button-bg': canApprove
+                                    ? 'rgba(16, 185, 129, 0.18)'
+                                    : 'rgba(148, 163, 184, 0.12)',
+                                  '--button-border': canApprove
+                                    ? 'rgba(16, 185, 129, 0.32)'
+                                    : 'rgba(148, 163, 184, 0.18)',
+                                  '--button-color': canApprove
+                                    ? '#34d399'
+                                    : '#94a3b8',
                                 }}
                               >
                                 Aprovar
                               </button>
                               <button
                                 type="button"
-                                onClick={() => handleAction(request.id, 'reject')}
+                                onClick={() =>
+                                  handleAction(request.id, 'reject')
+                                }
                                 disabled={loading}
                                 className={`${styles.buttonBase} ${styles.buttonDanger} ${styles.buttonSmall}`}
                               >
@@ -298,7 +394,9 @@ export default function SubscriptionRequests() {
                               </button>
                             </div>
                           ) : (
-                            <span className={styles.tableCellSoft}>Sem ações</span>
+                            <span className={styles.tableCellSoft}>
+                              Sem ações
+                            </span>
                           )}
                         </td>
                       </tr>
@@ -314,15 +412,21 @@ export default function SubscriptionRequests() {
           <div className={styles.loadMoreWrap}>
             <button
               type="button"
-              onClick={() => loadRequests({ append: true, statusParam: statusFilter, cursorIdParam: nextCursorId })}
+              onClick={() =>
+                loadRequests({
+                  append: true,
+                  statusParam: statusFilter,
+                  cursorIdParam: nextCursorId,
+                })
+              }
               disabled={loadingMore}
               className={`${styles.buttonBase} ${styles.buttonGhost}`}
             >
-              {loadingMore ? 'Carregando...' : 'Carregar mais pedidos'}
+              {loadingMore ? 'A carregar...' : 'Carregar mais pedidos'}
             </button>
           </div>
         ) : null}
-      </main>
+      </div>
     </>
   );
 }

@@ -1,23 +1,28 @@
-import { useState } from "react";
-import { useRouter } from "next/router";
-import Link from "next/link";
-import Head from "next/head";
+import { useState } from 'react';
+import { useRouter } from 'next/router';
+import Link from 'next/link';
+import Head from 'next/head';
 import {
   signInWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
-} from "firebase/auth";
-import nookies from "nookies";
-import { doc, getDoc } from "firebase/firestore";
-import auth from "../lib/firebaseAuth";
-import { db } from "../lib/firebase";
-import AuthShell from "../components/auth/AuthShell";
-import styles from "../styles/AuthPage.module.css";
+} from 'firebase/auth';
+import { FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
+import nookies from 'nookies';
+import { doc, getDoc } from 'firebase/firestore';
+import auth from '../lib/firebaseAuth';
+import { db } from '../lib/firebase';
+import AuthShell from '../components/auth/AuthShell';
+import { isValidEmail, normalizeEmail } from '../lib/validation';
+import styles from '../styles/AuthPage.module.css';
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [info, setInfo] = useState('');
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [resending, setResending] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const redirect = Array.isArray(router.query.redirect)
@@ -25,7 +30,7 @@ export default function Login() {
     : router.query.redirect;
 
   const handleGoogleLogin = async () => {
-    setError("");
+    setError('');
     setLoading(true);
 
     try {
@@ -33,25 +38,25 @@ export default function Login() {
       const userCredential = await signInWithPopup(auth, provider);
       const user = userCredential.user;
 
-      const userDocRef = doc(db, "users", user.uid);
+      const userDocRef = doc(db, 'users', user.uid);
       const userDoc = await getDoc(userDocRef);
       const token = await user.getIdToken();
 
-      nookies.set(null, "token", token, {
+      nookies.set(null, 'token', token, {
         maxAge: 30 * 24 * 60 * 60,
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
       });
 
       if (!userDoc.exists()) {
-        window.location.href = "/escolha-tipo?google=true";
+        window.location.href = '/escolha-tipo?google=true';
         return;
       }
 
       const userData = userDoc.data();
 
       if (userData.needsTypeSelection) {
-        window.location.href = "/escolha-tipo?google=true";
+        window.location.href = '/escolha-tipo?google=true';
         return;
       }
 
@@ -59,58 +64,80 @@ export default function Login() {
 
       if (redirect) {
         window.location.href = redirect;
-      } else if (userType === "empresa") {
-        window.location.href = "/dashboard/empresa";
-      } else if (userType === "admin") {
-        window.location.href = "/dashboard/admin";
+      } else if (userType === 'empresa') {
+        window.location.href = '/dashboard/empresa';
+      } else if (userType === 'admin') {
+        window.location.href = '/dashboard/admin';
       } else {
-        window.location.href = "/dashboard/candidato";
+        window.location.href = '/dashboard/candidato';
       }
     } catch (err) {
-      console.error("Erro ao fazer login com Google:", err);
+      console.error('Erro ao iniciar sessão com Google:', err);
       setLoading(false);
 
-      if (err.code === "auth/popup-closed-by-user") {
-        setError("Login cancelado.");
-      } else if (err.code === "auth/popup-blocked") {
-        setError("Popup bloqueado. Habilite popups para este site.");
+      if (err.code === 'auth/popup-closed-by-user') {
+        setError('Início de sessão cancelado.');
+      } else if (err.code === 'auth/popup-blocked') {
+        setError(
+          'A janela de autenticação foi bloqueada. Autorize janelas adicionais para este site.',
+        );
       } else {
-        setError("Erro ao fazer login com Google. Tente novamente.");
+        setError(
+          'Não foi possível iniciar sessão com o Google. Tente novamente.',
+        );
       }
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setLoading(true);
+    setError('');
+    setInfo('');
+    setNeedsVerification(false);
 
     if (!email || !password) {
-      setError("E-mail e senha são obrigatórios.");
-      setLoading(false);
+      setError('O email e a senha são obrigatórios.');
       return;
     }
+
+    if (!isValidEmail(email)) {
+      setError('Introduza um email válido.');
+      return;
+    }
+
+    setLoading(true);
 
     try {
       const userCredential = await signInWithEmailAndPassword(
         auth,
-        email,
+        normalizeEmail(email),
         password,
       );
       const user = userCredential.user;
 
+      // Bloquear acesso enquanto o email não estiver confirmado.
+      if (!user.emailVerified) {
+        await auth.signOut();
+        setNeedsVerification(true);
+        setError(
+          'Confirme o seu email antes de iniciar sessão. Verifique a caixa de entrada e a pasta de spam.',
+        );
+        setLoading(false);
+        return;
+      }
+
       const token = await user.getIdToken();
-      nookies.set(null, "token", token, {
+      nookies.set(null, 'token', token, {
         maxAge: 30 * 24 * 60 * 60,
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
       });
 
-      const userDoc = await getDoc(doc(db, "users", user.uid));
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
 
       if (!userDoc.exists()) {
         await auth.signOut();
-        setError("Usuário não encontrado. Complete seu cadastro.");
+        setError('Utilizador não encontrado. Conclua o seu registo.');
         setLoading(false);
         return;
       }
@@ -120,52 +147,87 @@ export default function Login() {
 
       if (redirect) {
         window.location.href = redirect;
-      } else if (userType === "empresa") {
-        window.location.href = "/dashboard/empresa";
-      } else if (userType === "admin") {
-        window.location.href = "/dashboard/admin";
+      } else if (userType === 'empresa') {
+        window.location.href = '/dashboard/empresa';
+      } else if (userType === 'admin') {
+        window.location.href = '/dashboard/admin';
       } else {
-        window.location.href = "/dashboard/candidato";
+        window.location.href = '/dashboard/candidato';
       }
     } catch (err) {
       setLoading(false);
 
       if (
-        err.code === "auth/invalid-email" ||
-        err.code === "auth/user-not-found" ||
-        err.code === "auth/wrong-password" ||
-        err.code === "auth/invalid-credential"
+        err.code === 'auth/invalid-email' ||
+        err.code === 'auth/user-not-found' ||
+        err.code === 'auth/wrong-password' ||
+        err.code === 'auth/invalid-credential'
       ) {
-        setError("E-mail ou senha incorretos.");
-      } else if (err.code === "auth/too-many-requests") {
-        setError("Muitas tentativas. Tente novamente mais tarde.");
+        setError('Email ou senha incorretos.');
+      } else if (err.code === 'auth/too-many-requests') {
+        setError('Muitas tentativas. Tente novamente mais tarde.');
       } else {
-        setError("Erro ao fazer login. Tente novamente.");
+        setError('Não foi possível iniciar sessão. Tente novamente.');
       }
+    }
+  };
+
+  const handleResendVerification = async () => {
+    setResending(true);
+    setInfo('');
+    try {
+      const credential = await signInWithEmailAndPassword(
+        auth,
+        normalizeEmail(email),
+        password,
+      );
+      const token = await credential.user.getIdToken();
+      const response = await fetch('/api/auth/send-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ name: credential.user.displayName || '' }),
+      });
+      await auth.signOut();
+      if (!response.ok) throw new Error('resend_failed');
+      setError('');
+      setInfo(
+        'Email de confirmação reenviado. Verifique a sua caixa de entrada.',
+      );
+    } catch (err) {
+      if (err.code === 'auth/too-many-requests') {
+        setError('Muitos pedidos. Aguarde alguns minutos e tente novamente.');
+      } else {
+        setError('Não foi possível reenviar. Confirme o email e a senha.');
+      }
+    } finally {
+      setResending(false);
     }
   };
 
   return (
     <>
       <Head>
-        <title>Login - EmpregoSTP</title>
+        <title>Iniciar sessão | EmpregoSTP</title>
       </Head>
 
       <AuthShell minimal>
         <div className={styles.formHeader}>
-          <h2>Faça seu Login</h2>
-          <p>Entre com seu e-mail e senha para continuar</p>
+          <h1>Iniciar sessão</h1>
+          <p>Use o seu email e a sua senha para continuar.</p>
         </div>
 
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.field}>
             <label htmlFor="login-email" className={styles.fieldLabel}>
-              E-mail
+              Email
             </label>
             <input
               id="login-email"
               type="email"
-              placeholder="Digite seu e-mail"
+              placeholder="O seu email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
@@ -174,13 +236,18 @@ export default function Login() {
           </div>
 
           <div className={styles.field}>
-            <label htmlFor="login-password" className={styles.fieldLabel}>
-              Senha
-            </label>
+            <div className={styles.labelRow}>
+              <label htmlFor="login-password" className={styles.fieldLabel}>
+                Senha
+              </label>
+              <Link href="/recuperar-senha" className={styles.forgotLink}>
+                Recuperar senha
+              </Link>
+            </div>
             <input
               id="login-password"
               type="password"
-              placeholder="Digite sua senha"
+              placeholder="A sua senha"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
@@ -188,11 +255,29 @@ export default function Login() {
             />
           </div>
 
+          {info ? (
+            <div className={styles.info} role="status" aria-live="polite">
+              <FiCheckCircle className={styles.errorIcon} aria-hidden="true" />
+              <span>{info}</span>
+            </div>
+          ) : null}
+
           {error ? (
             <div className={styles.error} role="alert" aria-live="polite">
-              <span className={styles.errorIcon}>⚠️</span>
+              <FiAlertCircle className={styles.errorIcon} aria-hidden="true" />
               <span>{error}</span>
             </div>
+          ) : null}
+
+          {needsVerification ? (
+            <button
+              type="button"
+              onClick={handleResendVerification}
+              disabled={resending}
+              className={styles.linkButton}
+            >
+              {resending ? 'A reenviar…' : 'Reenviar email de confirmação'}
+            </button>
           ) : null}
 
           <button
@@ -200,13 +285,13 @@ export default function Login() {
             disabled={loading}
             className={styles.primaryButton}
           >
-            {loading ? "Entrando..." : "Entrar"}
+            {loading ? 'A iniciar sessão…' : 'Iniciar sessão'}
           </button>
         </form>
 
         <div className={styles.divider} aria-hidden="true">
           <span className={styles.dividerLine} />
-          <span>Ou</span>
+          <span>ou</span>
           <span className={styles.dividerLine} />
         </div>
 
@@ -240,13 +325,13 @@ export default function Login() {
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
             />
           </svg>
-          {loading ? "Autenticando..." : "Continuar com Google"}
+          {loading ? 'A autenticar…' : 'Continuar com Google'}
         </button>
 
         <p className={styles.footerNote}>
-          Não tem uma conta?{" "}
+          Ainda não tem uma conta?{' '}
           <Link href="/register" className={styles.footerLink}>
-            Crie uma aqui
+            Criar conta
           </Link>
         </p>
       </AuthShell>

@@ -1,0 +1,2024 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "phase": "before",
+  "results": [
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              ".CandidatosPage_candidatePlanCard__xwk9g:nth-child(1) > .CandidatosPage_candidatePlanPrice__WVzIS > span"
+            ],
+            [
+              ".CandidatosPage_candidatePlanPremium__dtgtb > .CandidatosPage_candidatePlanPrice__WVzIS > span"
+            ],
+            [
+              ".CandidatosPage_plansNote__ciO_d"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 320,
+          "scrollHeight": 5409,
+          "scrollWidth": 320
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 2
+        },
+        "shortTargets": [
+          {
+            "height": 40,
+            "tag": "A",
+            "text": "Nacional",
+            "width": 140
+          },
+          {
+            "height": 40,
+            "tag": "A",
+            "text": "Internacional",
+            "width": 140
+          },
+          {
+            "height": 22,
+            "tag": "A",
+            "text": "Encontrar Vagas",
+            "width": 120
+          },
+          {
+            "height": 22,
+            "tag": "A",
+            "text": "Criar Currículo",
+            "width": 108
+          },
+          {
+            "height": 22,
+            "tag": "A",
+            "text": "Alertas de Vagas",
+            "width": 123
+          },
+          {
+            "height": 22,
+            "tag": "A",
+            "text": "Dicas de Carreira",
+            "width": 126
+          },
+          {
+            "height": 22,
+            "tag": "A",
+            "text": "Publicar Vagas",
+            "width": 110
+          },
+          {
+            "height": 22,
+            "tag": "A",
+            "text": "Buscar Candidatos",
+            "width": 136
+          },
+          {
+            "height": 22,
+            "tag": "A",
+            "text": "Planos e Preços",
+            "width": 117
+          },
+          {
+            "height": 22,
+            "tag": "A",
+            "text": "Recursos",
+            "width": 73
+          },
+          {
+            "height": 22,
+            "tag": "A",
+            "text": "Sobre Nós",
+            "width": 81
+          },
+          {
+            "height": 22,
+            "tag": "A",
+            "text": "Blog",
+            "width": 42
+          },
+          {
+            "height": 22,
+            "tag": "A",
+            "text": "Contato",
+            "width": 64
+          },
+          {
+            "height": 22,
+            "tag": "A",
+            "text": "Privacidade",
+            "width": 89
+          },
+          {
+            "height": 21,
+            "tag": "A",
+            "text": "Privacidade",
+            "width": 74
+          },
+          {
+            "height": 21,
+            "tag": "A",
+            "text": "Termos",
+            "width": 47
+          },
+          {
+            "height": 21,
+            "tag": "A",
+            "text": "Cookies",
+            "width": 51
+          }
+        ],
+        "smallText": [
+          {
+            "size": "10.5px",
+            "tag": "A",
+            "text": "Nacional"
+          },
+          {
+            "size": "10.5px",
+            "tag": "A",
+            "text": "Internacional"
+          },
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "Talento nacional"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Encontre apoio para apresentar melhor o seu perfil, preparar candidaturas e chegar às oportunidades "
+          },
+          {
+            "size": "11.7px",
+            "tag": "A",
+            "text": "Comparar planos"
+          },
+          {
+            "size": "11.7px",
+            "tag": "A",
+            "text": "Explorar vagas"
+          },
+          {
+            "size": "11.4px",
+            "tag": "P",
+            "text": "Plano gratuito disponível, sem compromisso"
+          },
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "Planos para candidatos"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Comece gratuitamente ou aumente a sua visibilidade, credibilidade e número de candidaturas quando fi"
+          },
+          {
+            "size": "9.3px",
+            "tag": "SPAN",
+            "text": "para começar"
+          },
+          {
+            "size": "11.1px",
+            "tag": "P",
+            "text": "Entrada para criar perfil, candidatar-se a vagas e começar a usar a plataforma."
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "3 candidaturas por mês"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Criar perfil profissional"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Upload de CV"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Pesquisa e filtro de vagas"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Histórico de candidaturas"
+          },
+          {
+            "size": "10.5px",
+            "tag": "A",
+            "text": "Criar perfil gratuito"
+          },
+          {
+            "size": "8.1px",
+            "tag": "SPAN",
+            "text": "Mais escolhido"
+          },
+          {
+            "size": "9.3px",
+            "tag": "SPAN",
+            "text": "/ 30 dias"
+          },
+          {
+            "size": "11.1px",
+            "tag": "P",
+            "text": "Mais visibilidade, mais candidaturas e recursos premium para subir o nível do perfil."
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "20 candidaturas por mês"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "50 vagas salvas"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Currículo em destaque"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Gerador de CV completo em PDF"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Recomendações personalizadas"
+          },
+          {
+            "size": "10.5px",
+            "tag": "A",
+            "text": "Escolher este plano"
+          },
+          {
+            "size": "9.3px",
+            "tag": "SPAN",
+            "text": "/ 30 dias"
+          },
+          {
+            "size": "11.1px",
+            "tag": "P",
+            "text": "Pacote completo com candidaturas ilimitadas, inteligência avançada e máxima exposição."
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Candidaturas ilimitadas"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Vagas salvas ilimitadas"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Quem viu o seu perfil"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Estatísticas de visualização"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Verificação incluída"
+          },
+          {
+            "size": "10.5px",
+            "tag": "A",
+            "text": "Escolher este plano"
+          },
+          {
+            "size": "10.5px",
+            "tag": "P",
+            "text": "Pode mudar de plano conforme os seus objetivos profissionais."
+          },
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "Escolha o seu próximo passo"
+          },
+          {
+            "size": "13.8px",
+            "tag": "P",
+            "text": "Do primeiro perfil à candidatura, cada recurso foi organizado para reduzir fricção e aumentar a sua "
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Posicionamento"
+          },
+          {
+            "size": "12.9px",
+            "tag": "P",
+            "text": "Apresente experiência, formação e competências com a clareza que as empresas locais procuram."
+          },
+          {
+            "size": "11.7px",
+            "tag": "A",
+            "text": "Criar perfil"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Oportunidades"
+          },
+          {
+            "size": "12.9px",
+            "tag": "P",
+            "text": "Encontre oportunidades nacionais e acompanhe cada etapa da sua candidatura num só lugar."
+          },
+          {
+            "size": "11.7px",
+            "tag": "A",
+            "text": "Explorar vagas"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Credibilidade"
+          },
+          {
+            "size": "12.9px",
+            "tag": "P",
+            "text": "Reforce a confiança no seu perfil com validação de identidade, percurso e documentos profissionais."
+          },
+          {
+            "size": "11.7px",
+            "tag": "A",
+            "text": "Verificar perfil"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Apresentação"
+          },
+          {
+            "size": "12.9px",
+            "tag": "P",
+            "text": "Crie materiais profissionais adaptados ao recrutamento local e às funções a que se candidata."
+          },
+          {
+            "size": "11.7px",
+            "tag": "A",
+            "text": "Criar documentos"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Inteligência"
+          },
+          {
+            "size": "12.9px",
+            "tag": "P",
+            "text": "Receba oportunidades mais relevantes de acordo com a sua área, preferências e disponibilidade."
+          },
+          {
+            "size": "11.7px",
+            "tag": "A",
+            "text": "Ativar alertas"
+          },
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "O seu próximo passo"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Crie o seu perfil profissional e apresente-se ao mercado nacional com mais confiança."
+          },
+          {
+            "size": "11.7px",
+            "tag": "A",
+            "text": "Criar perfil gratuito"
+          },
+          {
+            "size": "13.8px",
+            "tag": "SPAN",
+            "text": "+239 986 9673"
+          },
+          {
+            "size": "13.8px",
+            "tag": "SPAN",
+            "text": "suporte@empregos.st"
+          },
+          {
+            "size": "12px",
+            "tag": "H4",
+            "text": "Candidatos"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Encontrar Vagas"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Criar Currículo"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Alertas de Vagas"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Dicas de Carreira"
+          },
+          {
+            "size": "12px",
+            "tag": "H4",
+            "text": "Empresas"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Publicar Vagas"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Buscar Candidatos"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Planos e Preços"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Recursos"
+          },
+          {
+            "size": "12px",
+            "tag": "H4",
+            "text": "Plataforma"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Sobre Nós"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Blog"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Contato"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Privacidade"
+          },
+          {
+            "size": "13.2px",
+            "tag": "DIV",
+            "text": "© 2026 EmpregosSTP. Todos os direitos reservados."
+          },
+          {
+            "size": "13.2px",
+            "tag": "A",
+            "text": "Privacidade"
+          },
+          {
+            "size": "13.2px",
+            "tag": "A",
+            "text": "Termos"
+          },
+          {
+            "size": "13.2px",
+            "tag": "A",
+            "text": "Cookies"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/candidatos",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      }
+    },
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              ".CandidatosPage_candidatePlanCard__xwk9g:nth-child(1) > .CandidatosPage_candidatePlanPrice__WVzIS > span"
+            ],
+            [
+              ".CandidatosPage_candidatePlanPremium__dtgtb > .CandidatosPage_candidatePlanPrice__WVzIS > span"
+            ],
+            [
+              ".CandidatosPage_plansNote__ciO_d"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 768,
+          "scrollHeight": 4023,
+          "scrollWidth": 768
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 2
+        },
+        "shortTargets": [
+          {
+            "height": 40,
+            "tag": "A",
+            "text": "Nacional",
+            "width": 98
+          },
+          {
+            "height": 40,
+            "tag": "A",
+            "text": "Internacional",
+            "width": 124
+          },
+          {
+            "height": 22,
+            "tag": "A",
+            "text": "Encontrar Vagas",
+            "width": 120
+          },
+          {
+            "height": 22,
+            "tag": "A",
+            "text": "Criar Currículo",
+            "width": 108
+          },
+          {
+            "height": 22,
+            "tag": "A",
+            "text": "Alertas de Vagas",
+            "width": 123
+          },
+          {
+            "height": 22,
+            "tag": "A",
+            "text": "Dicas de Carreira",
+            "width": 126
+          },
+          {
+            "height": 22,
+            "tag": "A",
+            "text": "Publicar Vagas",
+            "width": 110
+          },
+          {
+            "height": 22,
+            "tag": "A",
+            "text": "Buscar Candidatos",
+            "width": 136
+          },
+          {
+            "height": 22,
+            "tag": "A",
+            "text": "Planos e Preços",
+            "width": 117
+          },
+          {
+            "height": 22,
+            "tag": "A",
+            "text": "Recursos",
+            "width": 73
+          },
+          {
+            "height": 22,
+            "tag": "A",
+            "text": "Sobre Nós",
+            "width": 81
+          },
+          {
+            "height": 22,
+            "tag": "A",
+            "text": "Blog",
+            "width": 42
+          },
+          {
+            "height": 22,
+            "tag": "A",
+            "text": "Contato",
+            "width": 64
+          },
+          {
+            "height": 22,
+            "tag": "A",
+            "text": "Privacidade",
+            "width": 89
+          },
+          {
+            "height": 21,
+            "tag": "A",
+            "text": "Privacidade",
+            "width": 74
+          },
+          {
+            "height": 21,
+            "tag": "A",
+            "text": "Termos",
+            "width": 47
+          },
+          {
+            "height": 21,
+            "tag": "A",
+            "text": "Cookies",
+            "width": 51
+          }
+        ],
+        "smallText": [
+          {
+            "size": "11.7px",
+            "tag": "A",
+            "text": "Nacional"
+          },
+          {
+            "size": "11.7px",
+            "tag": "A",
+            "text": "Internacional"
+          },
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "Talento nacional"
+          },
+          {
+            "size": "11.7px",
+            "tag": "A",
+            "text": "Comparar planos"
+          },
+          {
+            "size": "11.7px",
+            "tag": "A",
+            "text": "Explorar vagas"
+          },
+          {
+            "size": "11.4px",
+            "tag": "P",
+            "text": "Plano gratuito disponível, sem compromisso"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "CV"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "RH"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "ST"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "PR"
+          },
+          {
+            "size": "9px",
+            "tag": "SPAN",
+            "text": "São Tomé e Príncipe"
+          },
+          {
+            "size": "9px",
+            "tag": "DIV",
+            "text": "Rede profissional ativa"
+          },
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "Planos para candidatos"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Comece gratuitamente ou aumente a sua visibilidade, credibilidade e número de candidaturas quando fi"
+          },
+          {
+            "size": "9.3px",
+            "tag": "SPAN",
+            "text": "para começar"
+          },
+          {
+            "size": "11.1px",
+            "tag": "P",
+            "text": "Entrada para criar perfil, candidatar-se a vagas e começar a usar a plataforma."
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "3 candidaturas por mês"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Criar perfil profissional"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Upload de CV"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Pesquisa e filtro de vagas"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Histórico de candidaturas"
+          },
+          {
+            "size": "10.5px",
+            "tag": "A",
+            "text": "Criar perfil gratuito"
+          },
+          {
+            "size": "8.1px",
+            "tag": "SPAN",
+            "text": "Mais escolhido"
+          },
+          {
+            "size": "9.3px",
+            "tag": "SPAN",
+            "text": "/ 30 dias"
+          },
+          {
+            "size": "11.1px",
+            "tag": "P",
+            "text": "Mais visibilidade, mais candidaturas e recursos premium para subir o nível do perfil."
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "20 candidaturas por mês"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "50 vagas salvas"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Currículo em destaque"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Gerador de CV completo em PDF"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Recomendações personalizadas"
+          },
+          {
+            "size": "10.5px",
+            "tag": "A",
+            "text": "Escolher este plano"
+          },
+          {
+            "size": "9.3px",
+            "tag": "SPAN",
+            "text": "/ 30 dias"
+          },
+          {
+            "size": "11.1px",
+            "tag": "P",
+            "text": "Pacote completo com candidaturas ilimitadas, inteligência avançada e máxima exposição."
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Candidaturas ilimitadas"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Vagas salvas ilimitadas"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Quem viu o seu perfil"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Estatísticas de visualização"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Verificação incluída"
+          },
+          {
+            "size": "10.5px",
+            "tag": "A",
+            "text": "Escolher este plano"
+          },
+          {
+            "size": "10.5px",
+            "tag": "P",
+            "text": "Pode mudar de plano conforme os seus objetivos profissionais."
+          },
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "Escolha o seu próximo passo"
+          },
+          {
+            "size": "13.8px",
+            "tag": "P",
+            "text": "Do primeiro perfil à candidatura, cada recurso foi organizado para reduzir fricção e aumentar a sua "
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Posicionamento"
+          },
+          {
+            "size": "12.9px",
+            "tag": "P",
+            "text": "Apresente experiência, formação e competências com a clareza que as empresas locais procuram."
+          },
+          {
+            "size": "11.7px",
+            "tag": "A",
+            "text": "Criar perfil"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Oportunidades"
+          },
+          {
+            "size": "12.9px",
+            "tag": "P",
+            "text": "Encontre oportunidades nacionais e acompanhe cada etapa da sua candidatura num só lugar."
+          },
+          {
+            "size": "11.7px",
+            "tag": "A",
+            "text": "Explorar vagas"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Credibilidade"
+          },
+          {
+            "size": "12.9px",
+            "tag": "P",
+            "text": "Reforce a confiança no seu perfil com validação de identidade, percurso e documentos profissionais."
+          },
+          {
+            "size": "11.7px",
+            "tag": "A",
+            "text": "Verificar perfil"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Apresentação"
+          },
+          {
+            "size": "12.9px",
+            "tag": "P",
+            "text": "Crie materiais profissionais adaptados ao recrutamento local e às funções a que se candidata."
+          },
+          {
+            "size": "11.7px",
+            "tag": "A",
+            "text": "Criar documentos"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Inteligência"
+          },
+          {
+            "size": "12.9px",
+            "tag": "P",
+            "text": "Receba oportunidades mais relevantes de acordo com a sua área, preferências e disponibilidade."
+          },
+          {
+            "size": "11.7px",
+            "tag": "A",
+            "text": "Ativar alertas"
+          },
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "O seu próximo passo"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Crie o seu perfil profissional e apresente-se ao mercado nacional com mais confiança."
+          },
+          {
+            "size": "11.7px",
+            "tag": "A",
+            "text": "Criar perfil gratuito"
+          },
+          {
+            "size": "13.8px",
+            "tag": "SPAN",
+            "text": "+239 986 9673"
+          },
+          {
+            "size": "13.8px",
+            "tag": "SPAN",
+            "text": "suporte@empregos.st"
+          },
+          {
+            "size": "12px",
+            "tag": "H4",
+            "text": "Candidatos"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Encontrar Vagas"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Criar Currículo"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Alertas de Vagas"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Dicas de Carreira"
+          },
+          {
+            "size": "12px",
+            "tag": "H4",
+            "text": "Empresas"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Publicar Vagas"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Buscar Candidatos"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Planos e Preços"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Recursos"
+          },
+          {
+            "size": "12px",
+            "tag": "H4",
+            "text": "Plataforma"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Sobre Nós"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Blog"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Contato"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Privacidade"
+          },
+          {
+            "size": "13.2px",
+            "tag": "DIV",
+            "text": "© 2026 EmpregosSTP. Todos os direitos reservados."
+          },
+          {
+            "size": "13.2px",
+            "tag": "A",
+            "text": "Privacidade"
+          },
+          {
+            "size": "13.2px",
+            "tag": "A",
+            "text": "Termos"
+          },
+          {
+            "size": "13.2px",
+            "tag": "A",
+            "text": "Cookies"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/candidatos",
+      "viewport": {
+        "width": 768,
+        "height": 900
+      }
+    },
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              ".CandidatosPage_candidatePlanCard__xwk9g:nth-child(1) > .CandidatosPage_candidatePlanPrice__WVzIS > span"
+            ],
+            [
+              ".CandidatosPage_candidatePlanPremium__dtgtb > .CandidatosPage_candidatePlanPrice__WVzIS > span"
+            ],
+            [
+              ".CandidatosPage_plansNote__ciO_d"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1024,
+          "scrollHeight": 4133,
+          "scrollWidth": 1024
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 2
+        },
+        "shortTargets": [
+          {
+            "height": 40,
+            "tag": "A",
+            "text": "Nacional",
+            "width": 105
+          },
+          {
+            "height": 40,
+            "tag": "A",
+            "text": "Internacional",
+            "width": 132
+          },
+          {
+            "height": 24,
+            "tag": "A",
+            "text": "Encontrar Vagas",
+            "width": 128
+          },
+          {
+            "height": 24,
+            "tag": "A",
+            "text": "Criar Currículo",
+            "width": 115
+          },
+          {
+            "height": 24,
+            "tag": "A",
+            "text": "Alertas de Vagas",
+            "width": 131
+          },
+          {
+            "height": 24,
+            "tag": "A",
+            "text": "Dicas de Carreira",
+            "width": 134
+          },
+          {
+            "height": 24,
+            "tag": "A",
+            "text": "Publicar Vagas",
+            "width": 117
+          },
+          {
+            "height": 24,
+            "tag": "A",
+            "text": "Buscar Candidatos",
+            "width": 144
+          },
+          {
+            "height": 24,
+            "tag": "A",
+            "text": "Planos e Preços",
+            "width": 125
+          },
+          {
+            "height": 24,
+            "tag": "A",
+            "text": "Recursos",
+            "width": 78
+          },
+          {
+            "height": 24,
+            "tag": "A",
+            "text": "Sobre Nós",
+            "width": 86
+          },
+          {
+            "height": 24,
+            "tag": "A",
+            "text": "Blog",
+            "width": 44
+          },
+          {
+            "height": 24,
+            "tag": "A",
+            "text": "Contato",
+            "width": 68
+          },
+          {
+            "height": 24,
+            "tag": "A",
+            "text": "Privacidade",
+            "width": 95
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Privacidade",
+            "width": 78
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Termos",
+            "width": 50
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Cookies",
+            "width": 54
+          }
+        ],
+        "smallText": [
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Nacional"
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Internacional"
+          },
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "Talento nacional"
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Comparar planos"
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Explorar vagas"
+          },
+          {
+            "size": "12.16px",
+            "tag": "P",
+            "text": "Plano gratuito disponível, sem compromisso"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "CV"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "RH"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "ST"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "PR"
+          },
+          {
+            "size": "9.6px",
+            "tag": "SPAN",
+            "text": "São Tomé e Príncipe"
+          },
+          {
+            "size": "9.6px",
+            "tag": "DIV",
+            "text": "Rede profissional ativa"
+          },
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "Planos para candidatos"
+          },
+          {
+            "size": "9.92px",
+            "tag": "SPAN",
+            "text": "para começar"
+          },
+          {
+            "size": "11.84px",
+            "tag": "P",
+            "text": "Entrada para criar perfil, candidatar-se a vagas e começar a usar a plataforma."
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "3 candidaturas por mês"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Criar perfil profissional"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Upload de CV"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Pesquisa e filtro de vagas"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Histórico de candidaturas"
+          },
+          {
+            "size": "11.2px",
+            "tag": "A",
+            "text": "Criar perfil gratuito"
+          },
+          {
+            "size": "8.64px",
+            "tag": "SPAN",
+            "text": "Mais escolhido"
+          },
+          {
+            "size": "9.92px",
+            "tag": "SPAN",
+            "text": "/ 30 dias"
+          },
+          {
+            "size": "11.84px",
+            "tag": "P",
+            "text": "Mais visibilidade, mais candidaturas e recursos premium para subir o nível do perfil."
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "20 candidaturas por mês"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "50 vagas salvas"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Currículo em destaque"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Gerador de CV completo em PDF"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Recomendações personalizadas"
+          },
+          {
+            "size": "11.2px",
+            "tag": "A",
+            "text": "Escolher este plano"
+          },
+          {
+            "size": "9.92px",
+            "tag": "SPAN",
+            "text": "/ 30 dias"
+          },
+          {
+            "size": "11.84px",
+            "tag": "P",
+            "text": "Pacote completo com candidaturas ilimitadas, inteligência avançada e máxima exposição."
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Candidaturas ilimitadas"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Vagas salvas ilimitadas"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Quem viu o seu perfil"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Estatísticas de visualização"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Verificação incluída"
+          },
+          {
+            "size": "11.2px",
+            "tag": "A",
+            "text": "Escolher este plano"
+          },
+          {
+            "size": "11.2px",
+            "tag": "P",
+            "text": "Pode mudar de plano conforme os seus objetivos profissionais."
+          },
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "Escolha o seu próximo passo"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Posicionamento"
+          },
+          {
+            "size": "13.76px",
+            "tag": "P",
+            "text": "Apresente experiência, formação e competências com a clareza que as empresas locais procuram."
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Criar perfil"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Oportunidades"
+          },
+          {
+            "size": "13.76px",
+            "tag": "P",
+            "text": "Encontre oportunidades nacionais e acompanhe cada etapa da sua candidatura num só lugar."
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Explorar vagas"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Credibilidade"
+          },
+          {
+            "size": "13.76px",
+            "tag": "P",
+            "text": "Reforce a confiança no seu perfil com validação de identidade, percurso e documentos profissionais."
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Verificar perfil"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Apresentação"
+          },
+          {
+            "size": "13.76px",
+            "tag": "P",
+            "text": "Crie materiais profissionais adaptados ao recrutamento local e às funções a que se candidata."
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Criar documentos"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Inteligência"
+          },
+          {
+            "size": "13.76px",
+            "tag": "P",
+            "text": "Receba oportunidades mais relevantes de acordo com a sua área, preferências e disponibilidade."
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Ativar alertas"
+          },
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "O seu próximo passo"
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Criar perfil gratuito"
+          },
+          {
+            "size": "12.8px",
+            "tag": "H4",
+            "text": "Candidatos"
+          },
+          {
+            "size": "12.8px",
+            "tag": "H4",
+            "text": "Empresas"
+          },
+          {
+            "size": "12.8px",
+            "tag": "H4",
+            "text": "Plataforma"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/candidatos",
+      "viewport": {
+        "width": 1024,
+        "height": 900
+      }
+    },
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              ".CandidatosPage_candidatePlanCard__xwk9g:nth-child(1) > .CandidatosPage_candidatePlanPrice__WVzIS > span"
+            ],
+            [
+              ".CandidatosPage_candidatePlanPremium__dtgtb > .CandidatosPage_candidatePlanPrice__WVzIS > span"
+            ],
+            [
+              ".CandidatosPage_plansNote__ciO_d"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1440,
+          "scrollHeight": 3447,
+          "scrollWidth": 1440
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 2
+        },
+        "shortTargets": [
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Sobre nós",
+            "width": 101
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Vagas",
+            "width": 74
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Para candidatos",
+            "width": 145
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Para empresas",
+            "width": 135
+          },
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "Recursos",
+            "width": 116
+          },
+          {
+            "height": 40,
+            "tag": "A",
+            "text": "Nacional",
+            "width": 105
+          },
+          {
+            "height": 40,
+            "tag": "A",
+            "text": "Internacional",
+            "width": 132
+          },
+          {
+            "height": 24,
+            "tag": "A",
+            "text": "Encontrar Vagas",
+            "width": 128
+          },
+          {
+            "height": 24,
+            "tag": "A",
+            "text": "Criar Currículo",
+            "width": 115
+          },
+          {
+            "height": 24,
+            "tag": "A",
+            "text": "Alertas de Vagas",
+            "width": 131
+          },
+          {
+            "height": 24,
+            "tag": "A",
+            "text": "Dicas de Carreira",
+            "width": 134
+          },
+          {
+            "height": 24,
+            "tag": "A",
+            "text": "Publicar Vagas",
+            "width": 117
+          },
+          {
+            "height": 24,
+            "tag": "A",
+            "text": "Buscar Candidatos",
+            "width": 144
+          },
+          {
+            "height": 24,
+            "tag": "A",
+            "text": "Planos e Preços",
+            "width": 125
+          },
+          {
+            "height": 24,
+            "tag": "A",
+            "text": "Recursos",
+            "width": 78
+          },
+          {
+            "height": 24,
+            "tag": "A",
+            "text": "Sobre Nós",
+            "width": 86
+          },
+          {
+            "height": 24,
+            "tag": "A",
+            "text": "Blog",
+            "width": 44
+          },
+          {
+            "height": 24,
+            "tag": "A",
+            "text": "Contato",
+            "width": 68
+          },
+          {
+            "height": 24,
+            "tag": "A",
+            "text": "Privacidade",
+            "width": 95
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Privacidade",
+            "width": 78
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Termos",
+            "width": 50
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Cookies",
+            "width": 54
+          }
+        ],
+        "smallText": [
+          {
+            "size": "13.12px",
+            "tag": "A",
+            "text": "LOGIN"
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Nacional"
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Internacional"
+          },
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "Talento nacional"
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Comparar planos"
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Explorar vagas"
+          },
+          {
+            "size": "12.16px",
+            "tag": "P",
+            "text": "Plano gratuito disponível, sem compromisso"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "CV"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "RH"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "ST"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "PR"
+          },
+          {
+            "size": "9.6px",
+            "tag": "SPAN",
+            "text": "São Tomé e Príncipe"
+          },
+          {
+            "size": "9.6px",
+            "tag": "DIV",
+            "text": "Rede profissional ativa"
+          },
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "Planos para candidatos"
+          },
+          {
+            "size": "9.92px",
+            "tag": "SPAN",
+            "text": "para começar"
+          },
+          {
+            "size": "11.84px",
+            "tag": "P",
+            "text": "Entrada para criar perfil, candidatar-se a vagas e começar a usar a plataforma."
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "3 candidaturas por mês"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Criar perfil profissional"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Upload de CV"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Pesquisa e filtro de vagas"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Histórico de candidaturas"
+          },
+          {
+            "size": "11.2px",
+            "tag": "A",
+            "text": "Criar perfil gratuito"
+          },
+          {
+            "size": "8.64px",
+            "tag": "SPAN",
+            "text": "Mais escolhido"
+          },
+          {
+            "size": "9.92px",
+            "tag": "SPAN",
+            "text": "/ 30 dias"
+          },
+          {
+            "size": "11.84px",
+            "tag": "P",
+            "text": "Mais visibilidade, mais candidaturas e recursos premium para subir o nível do perfil."
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "20 candidaturas por mês"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "50 vagas salvas"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Currículo em destaque"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Gerador de CV completo em PDF"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Recomendações personalizadas"
+          },
+          {
+            "size": "11.2px",
+            "tag": "A",
+            "text": "Escolher este plano"
+          },
+          {
+            "size": "9.92px",
+            "tag": "SPAN",
+            "text": "/ 30 dias"
+          },
+          {
+            "size": "11.84px",
+            "tag": "P",
+            "text": "Pacote completo com candidaturas ilimitadas, inteligência avançada e máxima exposição."
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Candidaturas ilimitadas"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Vagas salvas ilimitadas"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Quem viu o seu perfil"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Estatísticas de visualização"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Verificação incluída"
+          },
+          {
+            "size": "11.2px",
+            "tag": "A",
+            "text": "Escolher este plano"
+          },
+          {
+            "size": "11.2px",
+            "tag": "P",
+            "text": "Pode mudar de plano conforme os seus objetivos profissionais."
+          },
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "Escolha o seu próximo passo"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Posicionamento"
+          },
+          {
+            "size": "13.76px",
+            "tag": "P",
+            "text": "Apresente experiência, formação e competências com a clareza que as empresas locais procuram."
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Criar perfil"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Oportunidades"
+          },
+          {
+            "size": "13.76px",
+            "tag": "P",
+            "text": "Encontre oportunidades nacionais e acompanhe cada etapa da sua candidatura num só lugar."
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Explorar vagas"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Credibilidade"
+          },
+          {
+            "size": "13.76px",
+            "tag": "P",
+            "text": "Reforce a confiança no seu perfil com validação de identidade, percurso e documentos profissionais."
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Verificar perfil"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Apresentação"
+          },
+          {
+            "size": "13.76px",
+            "tag": "P",
+            "text": "Crie materiais profissionais adaptados ao recrutamento local e às funções a que se candidata."
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Criar documentos"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Inteligência"
+          },
+          {
+            "size": "13.76px",
+            "tag": "P",
+            "text": "Receba oportunidades mais relevantes de acordo com a sua área, preferências e disponibilidade."
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Ativar alertas"
+          },
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "O seu próximo passo"
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Criar perfil gratuito"
+          },
+          {
+            "size": "12.8px",
+            "tag": "H4",
+            "text": "Candidatos"
+          },
+          {
+            "size": "12.8px",
+            "tag": "H4",
+            "text": "Empresas"
+          },
+          {
+            "size": "12.8px",
+            "tag": "H4",
+            "text": "Plataforma"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/candidatos",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    }
+  ],
+  "route": "/candidatos",
+  "slug": "candidatos"
+}

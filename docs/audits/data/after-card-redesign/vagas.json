@@ -1,0 +1,566 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "phase": "after-card-redesign",
+  "results": [
+    {
+      "accessibilityViolations": [],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 320,
+          "scrollHeight": 5281,
+          "scrollWidth": 320
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 2
+        },
+        "shortTargets": [],
+        "smallText": [],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/vagas",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      }
+    },
+    {
+      "accessibilityViolations": [],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 768,
+          "scrollHeight": 3752,
+          "scrollWidth": 768
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 2
+        },
+        "shortTargets": [
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "Filtros",
+            "width": 99
+          }
+        ],
+        "smallText": [],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/vagas",
+      "viewport": {
+        "width": 768,
+        "height": 900
+      }
+    },
+    {
+      "accessibilityViolations": [],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1024,
+          "scrollHeight": 3857,
+          "scrollWidth": 1024
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 2
+        },
+        "shortTargets": [
+          {
+            "height": 28,
+            "tag": "BUTTON",
+            "text": "Categoria",
+            "width": 230
+          },
+          {
+            "height": 28,
+            "tag": "BUTTON",
+            "text": "Tipo de contrato",
+            "width": 230
+          },
+          {
+            "height": 28,
+            "tag": "BUTTON",
+            "text": "Modalidade",
+            "width": 230
+          },
+          {
+            "height": 28,
+            "tag": "BUTTON",
+            "text": "Localização",
+            "width": 230
+          },
+          {
+            "height": 28,
+            "tag": "BUTTON",
+            "text": "Experiência",
+            "width": 230
+          },
+          {
+            "height": 42,
+            "tag": "INPUT",
+            "text": "",
+            "width": 222
+          },
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "Ativar alerta",
+            "width": 222
+          }
+        ],
+        "smallText": [
+          {
+            "size": "13px",
+            "tag": "BUTTON",
+            "text": "Limpar"
+          },
+          {
+            "size": "13px",
+            "tag": "H3",
+            "text": "Categoria"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "3"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "1"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "1"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "1"
+          },
+          {
+            "size": "13px",
+            "tag": "H3",
+            "text": "Tipo de contrato"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "1"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "6"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "2"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "3"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "5"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "3"
+          },
+          {
+            "size": "13px",
+            "tag": "H3",
+            "text": "Modalidade"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "11"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "0"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "10"
+          },
+          {
+            "size": "13px",
+            "tag": "H3",
+            "text": "Localização"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "1"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "1"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "2"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "4"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "1"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "3"
+          },
+          {
+            "size": "13px",
+            "tag": "H3",
+            "text": "Experiência"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "0"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "2"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "0"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "2"
+          },
+          {
+            "size": "13px",
+            "tag": "H3",
+            "text": "Salário mínimo"
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "0"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "100.000 STD"
+          },
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Recebe já por email as vagas publicadas com estes filtros."
+          },
+          {
+            "size": "13px",
+            "tag": "BUTTON",
+            "text": "Ativar alerta"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/vagas",
+      "viewport": {
+        "width": 1024,
+        "height": 900
+      }
+    },
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              ".VagasPage_filterSection__XOKDK:nth-child(4) > .VagasPage_checkRow__dydhQ:nth-child(2) > strong"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1440,
+          "scrollHeight": 2679,
+          "scrollWidth": 1440
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 2
+        },
+        "shortTargets": [
+          {
+            "height": 28,
+            "tag": "BUTTON",
+            "text": "Categoria",
+            "width": 230
+          },
+          {
+            "height": 28,
+            "tag": "BUTTON",
+            "text": "Tipo de contrato",
+            "width": 230
+          },
+          {
+            "height": 28,
+            "tag": "BUTTON",
+            "text": "Modalidade",
+            "width": 230
+          },
+          {
+            "height": 28,
+            "tag": "BUTTON",
+            "text": "Localização",
+            "width": 230
+          },
+          {
+            "height": 28,
+            "tag": "BUTTON",
+            "text": "Experiência",
+            "width": 230
+          },
+          {
+            "height": 42,
+            "tag": "INPUT",
+            "text": "",
+            "width": 222
+          },
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "Ativar alerta",
+            "width": 222
+          }
+        ],
+        "smallText": [
+          {
+            "size": "13px",
+            "tag": "BUTTON",
+            "text": "Limpar"
+          },
+          {
+            "size": "13px",
+            "tag": "H3",
+            "text": "Categoria"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "3"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "1"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "1"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "1"
+          },
+          {
+            "size": "13px",
+            "tag": "H3",
+            "text": "Tipo de contrato"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "1"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "6"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "2"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "3"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "5"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "3"
+          },
+          {
+            "size": "13px",
+            "tag": "H3",
+            "text": "Modalidade"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "11"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "0"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "10"
+          },
+          {
+            "size": "13px",
+            "tag": "H3",
+            "text": "Localização"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "1"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "1"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "2"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "4"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "1"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "3"
+          },
+          {
+            "size": "13px",
+            "tag": "H3",
+            "text": "Experiência"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "0"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "2"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "0"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "2"
+          },
+          {
+            "size": "13px",
+            "tag": "H3",
+            "text": "Salário mínimo"
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "0"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "100.000 STD"
+          },
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Recebe já por email as vagas publicadas com estes filtros."
+          },
+          {
+            "size": "13px",
+            "tag": "BUTTON",
+            "text": "Ativar alerta"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/vagas",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    }
+  ],
+  "route": "/vagas",
+  "slug": "vagas"
+}

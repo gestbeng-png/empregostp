@@ -33,7 +33,10 @@ function escapeICS(value) {
  */
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
-    return res.status(405).setHeader('Allow', ['GET']).end('Method not allowed');
+    return res
+      .status(405)
+      .setHeader('Allow', ['GET'])
+      .json({ error: 'Método não permitido' });
   }
 
   const authHeader = req.headers.authorization;

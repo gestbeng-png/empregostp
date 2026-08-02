@@ -1,0 +1,828 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "phase": "before-card-redesign",
+  "results": [
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              "article:nth-child(1) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY"
+            ],
+            [
+              "article:nth-child(1) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY > span"
+            ],
+            [
+              "article:nth-child(1) > .CompactJobCard_listingCompanyRow__dVz_a > .CompactJobCard_company__O2T9A > .CompactJobCard_companyDetails__yQ_I1 > .CompactJobCard_location__b1ikJ"
+            ],
+            [
+              "article:nth-child(2) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY"
+            ],
+            [
+              "article:nth-child(2) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY > span"
+            ],
+            [
+              "article:nth-child(2) > .CompactJobCard_listingCompanyRow__dVz_a > .CompactJobCard_company__O2T9A > .CompactJobCard_companyDetails__yQ_I1 > .CompactJobCard_location__b1ikJ"
+            ],
+            [
+              "article:nth-child(3) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY"
+            ],
+            [
+              "article:nth-child(3) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY > span"
+            ],
+            [
+              "article:nth-child(3) > .CompactJobCard_listingCompanyRow__dVz_a > .CompactJobCard_company__O2T9A > .CompactJobCard_companyDetails__yQ_I1 > .CompactJobCard_location__b1ikJ"
+            ],
+            [
+              "article:nth-child(4) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY"
+            ],
+            [
+              "article:nth-child(4) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY > span"
+            ],
+            [
+              "article:nth-child(4) > .CompactJobCard_listingCompanyRow__dVz_a > .CompactJobCard_company__O2T9A > .CompactJobCard_companyDetails__yQ_I1 > .CompactJobCard_location__b1ikJ"
+            ],
+            [
+              "article:nth-child(5) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY"
+            ],
+            [
+              "article:nth-child(5) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY > span"
+            ],
+            [
+              "article:nth-child(5) > .CompactJobCard_listingCompanyRow__dVz_a > .CompactJobCard_company__O2T9A > .CompactJobCard_companyDetails__yQ_I1 > .CompactJobCard_location__b1ikJ"
+            ],
+            [
+              "article:nth-child(6) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY"
+            ],
+            [
+              "article:nth-child(6) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY > span"
+            ],
+            [
+              "article:nth-child(6) > .CompactJobCard_listingCompanyRow__dVz_a > .CompactJobCard_company__O2T9A > .CompactJobCard_companyDetails__yQ_I1 > .CompactJobCard_location__b1ikJ"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 320,
+          "scrollHeight": 4483,
+          "scrollWidth": 320
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 2
+        },
+        "shortTargets": [
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "Filtros",
+            "width": 96
+          },
+          {
+            "height": 31,
+            "tag": "A",
+            "text": "Marketing",
+            "width": 246
+          },
+          {
+            "height": 31,
+            "tag": "A",
+            "text": "web design",
+            "width": 246
+          },
+          {
+            "height": 31,
+            "tag": "A",
+            "text": "Banana",
+            "width": 246
+          },
+          {
+            "height": 31,
+            "tag": "A",
+            "text": "Pedreiro",
+            "width": 246
+          },
+          {
+            "height": 31,
+            "tag": "A",
+            "text": "aaaa",
+            "width": 246
+          },
+          {
+            "height": 31,
+            "tag": "A",
+            "text": "Analista de Dados",
+            "width": 246
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "‹",
+            "width": 38
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "1",
+            "width": 38
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "2",
+            "width": 38
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "3",
+            "width": 38
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "4",
+            "width": 38
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "›",
+            "width": 38
+          }
+        ],
+        "smallText": [
+          {
+            "size": "13px",
+            "tag": "SPAN",
+            "text": "Oportunidades em destaque"
+          },
+          {
+            "size": "13px",
+            "tag": "A",
+            "text": "Candidatar-se"
+          },
+          {
+            "size": "13px",
+            "tag": "SPAN",
+            "text": "Vaga encerrada"
+          },
+          {
+            "size": "13px",
+            "tag": "SPAN",
+            "text": "Vaga encerrada"
+          },
+          {
+            "size": "13px",
+            "tag": "SPAN",
+            "text": "Vaga encerrada"
+          },
+          {
+            "size": "13px",
+            "tag": "SPAN",
+            "text": "Vaga encerrada"
+          },
+          {
+            "size": "13px",
+            "tag": "SPAN",
+            "text": "Vaga encerrada"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/vagas",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      }
+    },
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              "article:nth-child(1) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY"
+            ],
+            [
+              "article:nth-child(1) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY > span"
+            ],
+            [
+              "article:nth-child(1) > .CompactJobCard_listingCompanyRow__dVz_a > .CompactJobCard_company__O2T9A > .CompactJobCard_companyDetails__yQ_I1 > .CompactJobCard_location__b1ikJ"
+            ],
+            [
+              "article:nth-child(2) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY"
+            ],
+            [
+              "article:nth-child(2) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY > span"
+            ],
+            [
+              "article:nth-child(2) > .CompactJobCard_listingCompanyRow__dVz_a > .CompactJobCard_company__O2T9A > .CompactJobCard_companyDetails__yQ_I1 > .CompactJobCard_location__b1ikJ"
+            ],
+            [
+              "article:nth-child(3) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY"
+            ],
+            [
+              "article:nth-child(3) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY > span"
+            ],
+            [
+              "article:nth-child(3) > .CompactJobCard_listingCompanyRow__dVz_a > .CompactJobCard_company__O2T9A > .CompactJobCard_companyDetails__yQ_I1 > .CompactJobCard_location__b1ikJ"
+            ],
+            [
+              "article:nth-child(4) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY"
+            ],
+            [
+              "article:nth-child(4) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY > span"
+            ],
+            [
+              "article:nth-child(4) > .CompactJobCard_listingCompanyRow__dVz_a > .CompactJobCard_company__O2T9A > .CompactJobCard_companyDetails__yQ_I1 > .CompactJobCard_location__b1ikJ"
+            ],
+            [
+              "article:nth-child(5) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY"
+            ],
+            [
+              "article:nth-child(5) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY > span"
+            ],
+            [
+              "article:nth-child(5) > .CompactJobCard_listingCompanyRow__dVz_a > .CompactJobCard_company__O2T9A > .CompactJobCard_companyDetails__yQ_I1 > .CompactJobCard_location__b1ikJ"
+            ],
+            [
+              "article:nth-child(6) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY"
+            ],
+            [
+              "article:nth-child(6) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY > span"
+            ],
+            [
+              "article:nth-child(6) > .CompactJobCard_listingCompanyRow__dVz_a > .CompactJobCard_company__O2T9A > .CompactJobCard_companyDetails__yQ_I1 > .CompactJobCard_location__b1ikJ"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 768,
+          "scrollHeight": 3429,
+          "scrollWidth": 768
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 2
+        },
+        "shortTargets": [
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "Filtros",
+            "width": 99
+          },
+          {
+            "height": 34,
+            "tag": "A",
+            "text": "Marketing",
+            "width": 293
+          },
+          {
+            "height": 34,
+            "tag": "A",
+            "text": "web design",
+            "width": 293
+          },
+          {
+            "height": 34,
+            "tag": "A",
+            "text": "Banana",
+            "width": 293
+          },
+          {
+            "height": 34,
+            "tag": "A",
+            "text": "Pedreiro",
+            "width": 293
+          },
+          {
+            "height": 34,
+            "tag": "A",
+            "text": "aaaa",
+            "width": 293
+          },
+          {
+            "height": 34,
+            "tag": "A",
+            "text": "Analista de Dados",
+            "width": 293
+          },
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "‹",
+            "width": 42
+          },
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "1",
+            "width": 42
+          },
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "2",
+            "width": 42
+          },
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "3",
+            "width": 42
+          },
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "4",
+            "width": 42
+          },
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "›",
+            "width": 42
+          }
+        ],
+        "smallText": [
+          {
+            "size": "13px",
+            "tag": "SPAN",
+            "text": "Oportunidades em destaque"
+          },
+          {
+            "size": "13px",
+            "tag": "A",
+            "text": "Candidatar-se"
+          },
+          {
+            "size": "13px",
+            "tag": "SPAN",
+            "text": "Vaga encerrada"
+          },
+          {
+            "size": "13px",
+            "tag": "SPAN",
+            "text": "Vaga encerrada"
+          },
+          {
+            "size": "13px",
+            "tag": "SPAN",
+            "text": "Vaga encerrada"
+          },
+          {
+            "size": "13px",
+            "tag": "SPAN",
+            "text": "Vaga encerrada"
+          },
+          {
+            "size": "13px",
+            "tag": "SPAN",
+            "text": "Vaga encerrada"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/vagas",
+      "viewport": {
+        "width": 768,
+        "height": 900
+      }
+    },
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              "article:nth-child(1) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY"
+            ],
+            [
+              "article:nth-child(1) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY > span"
+            ],
+            [
+              "article:nth-child(1) > .CompactJobCard_listingCompanyRow__dVz_a > .CompactJobCard_company__O2T9A > .CompactJobCard_companyDetails__yQ_I1 > .CompactJobCard_location__b1ikJ"
+            ],
+            [
+              "article:nth-child(2) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY"
+            ],
+            [
+              "article:nth-child(2) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY > span"
+            ],
+            [
+              "article:nth-child(2) > .CompactJobCard_listingCompanyRow__dVz_a > .CompactJobCard_company__O2T9A > .CompactJobCard_companyDetails__yQ_I1 > .CompactJobCard_location__b1ikJ"
+            ],
+            [
+              "article:nth-child(3) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY"
+            ],
+            [
+              "article:nth-child(3) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY > span"
+            ],
+            [
+              "article:nth-child(3) > .CompactJobCard_listingCompanyRow__dVz_a > .CompactJobCard_company__O2T9A > .CompactJobCard_companyDetails__yQ_I1 > .CompactJobCard_location__b1ikJ"
+            ],
+            [
+              "article:nth-child(4) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY"
+            ],
+            [
+              "article:nth-child(4) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY > span"
+            ],
+            [
+              "article:nth-child(4) > .CompactJobCard_listingCompanyRow__dVz_a > .CompactJobCard_company__O2T9A > .CompactJobCard_companyDetails__yQ_I1 > .CompactJobCard_location__b1ikJ"
+            ],
+            [
+              "article:nth-child(5) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY"
+            ],
+            [
+              "article:nth-child(5) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY > span"
+            ],
+            [
+              "article:nth-child(5) > .CompactJobCard_listingCompanyRow__dVz_a > .CompactJobCard_company__O2T9A > .CompactJobCard_companyDetails__yQ_I1 > .CompactJobCard_location__b1ikJ"
+            ],
+            [
+              "article:nth-child(6) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY"
+            ],
+            [
+              "article:nth-child(6) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY > span"
+            ],
+            [
+              "article:nth-child(6) > .CompactJobCard_listingCompanyRow__dVz_a > .CompactJobCard_company__O2T9A > .CompactJobCard_companyDetails__yQ_I1 > .CompactJobCard_location__b1ikJ"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1024,
+          "scrollHeight": 2607,
+          "scrollWidth": 1024
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 2
+        },
+        "shortTargets": [
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "Filtros",
+            "width": 99
+          },
+          {
+            "height": 34,
+            "tag": "A",
+            "text": "Marketing",
+            "width": 421
+          },
+          {
+            "height": 34,
+            "tag": "A",
+            "text": "web design",
+            "width": 421
+          },
+          {
+            "height": 34,
+            "tag": "A",
+            "text": "Banana",
+            "width": 421
+          },
+          {
+            "height": 34,
+            "tag": "A",
+            "text": "Pedreiro",
+            "width": 421
+          },
+          {
+            "height": 34,
+            "tag": "A",
+            "text": "aaaa",
+            "width": 421
+          },
+          {
+            "height": 34,
+            "tag": "A",
+            "text": "Analista de Dados",
+            "width": 421
+          },
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "‹",
+            "width": 42
+          },
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "1",
+            "width": 42
+          },
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "2",
+            "width": 42
+          },
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "3",
+            "width": 42
+          },
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "4",
+            "width": 42
+          },
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "›",
+            "width": 42
+          }
+        ],
+        "smallText": [
+          {
+            "size": "13px",
+            "tag": "SPAN",
+            "text": "Oportunidades em destaque"
+          },
+          {
+            "size": "13px",
+            "tag": "A",
+            "text": "Candidatar-se"
+          },
+          {
+            "size": "13px",
+            "tag": "SPAN",
+            "text": "Vaga encerrada"
+          },
+          {
+            "size": "13px",
+            "tag": "SPAN",
+            "text": "Vaga encerrada"
+          },
+          {
+            "size": "13px",
+            "tag": "SPAN",
+            "text": "Vaga encerrada"
+          },
+          {
+            "size": "13px",
+            "tag": "SPAN",
+            "text": "Vaga encerrada"
+          },
+          {
+            "size": "13px",
+            "tag": "SPAN",
+            "text": "Vaga encerrada"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/vagas",
+      "viewport": {
+        "width": 1024,
+        "height": 900
+      }
+    },
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              "article:nth-child(1) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY"
+            ],
+            [
+              "article:nth-child(1) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY > span"
+            ],
+            [
+              "article:nth-child(1) > .CompactJobCard_listingCompanyRow__dVz_a > .CompactJobCard_company__O2T9A > .CompactJobCard_companyDetails__yQ_I1 > .CompactJobCard_location__b1ikJ"
+            ],
+            [
+              "article:nth-child(2) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY"
+            ],
+            [
+              "article:nth-child(2) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY > span"
+            ],
+            [
+              "article:nth-child(2) > .CompactJobCard_listingCompanyRow__dVz_a > .CompactJobCard_company__O2T9A > .CompactJobCard_companyDetails__yQ_I1 > .CompactJobCard_location__b1ikJ"
+            ],
+            [
+              "article:nth-child(3) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY"
+            ],
+            [
+              "article:nth-child(3) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY > span"
+            ],
+            [
+              "article:nth-child(3) > .CompactJobCard_listingCompanyRow__dVz_a > .CompactJobCard_company__O2T9A > .CompactJobCard_companyDetails__yQ_I1 > .CompactJobCard_location__b1ikJ"
+            ],
+            [
+              "article:nth-child(4) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY"
+            ],
+            [
+              "article:nth-child(4) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY > span"
+            ],
+            [
+              "article:nth-child(4) > .CompactJobCard_listingCompanyRow__dVz_a > .CompactJobCard_company__O2T9A > .CompactJobCard_companyDetails__yQ_I1 > .CompactJobCard_location__b1ikJ"
+            ],
+            [
+              "article:nth-child(5) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY"
+            ],
+            [
+              "article:nth-child(5) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY > span"
+            ],
+            [
+              "article:nth-child(5) > .CompactJobCard_listingCompanyRow__dVz_a > .CompactJobCard_company__O2T9A > .CompactJobCard_companyDetails__yQ_I1 > .CompactJobCard_location__b1ikJ"
+            ],
+            [
+              "article:nth-child(6) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY"
+            ],
+            [
+              "article:nth-child(6) > .CompactJobCard_jobDetails__yqowd.CompactJobCard_listingDetails__GTVPn > .CompactJobCard_salary__Um2IY > span"
+            ],
+            [
+              "article:nth-child(6) > .CompactJobCard_listingCompanyRow__dVz_a > .CompactJobCard_company__O2T9A > .CompactJobCard_companyDetails__yQ_I1 > .CompactJobCard_location__b1ikJ"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1440,
+          "scrollHeight": 2632,
+          "scrollWidth": 1440
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 2
+        },
+        "shortTargets": [
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "Filtros",
+            "width": 99
+          },
+          {
+            "height": 38,
+            "tag": "A",
+            "text": "Marketing",
+            "width": 602
+          },
+          {
+            "height": 38,
+            "tag": "A",
+            "text": "web design",
+            "width": 602
+          },
+          {
+            "height": 38,
+            "tag": "A",
+            "text": "Banana",
+            "width": 602
+          },
+          {
+            "height": 38,
+            "tag": "A",
+            "text": "Pedreiro",
+            "width": 602
+          },
+          {
+            "height": 38,
+            "tag": "A",
+            "text": "aaaa",
+            "width": 602
+          },
+          {
+            "height": 38,
+            "tag": "A",
+            "text": "Analista de Dados",
+            "width": 602
+          },
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "‹",
+            "width": 42
+          },
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "1",
+            "width": 42
+          },
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "2",
+            "width": 42
+          },
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "3",
+            "width": 42
+          },
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "4",
+            "width": 42
+          },
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "›",
+            "width": 42
+          }
+        ],
+        "smallText": [
+          {
+            "size": "13px",
+            "tag": "SPAN",
+            "text": "Oportunidades em destaque"
+          },
+          {
+            "size": "13px",
+            "tag": "A",
+            "text": "Candidatar-se"
+          },
+          {
+            "size": "13px",
+            "tag": "SPAN",
+            "text": "Vaga encerrada"
+          },
+          {
+            "size": "13px",
+            "tag": "SPAN",
+            "text": "Vaga encerrada"
+          },
+          {
+            "size": "13px",
+            "tag": "SPAN",
+            "text": "Vaga encerrada"
+          },
+          {
+            "size": "13px",
+            "tag": "SPAN",
+            "text": "Vaga encerrada"
+          },
+          {
+            "size": "13px",
+            "tag": "SPAN",
+            "text": "Vaga encerrada"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/vagas",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    }
+  ],
+  "route": "/vagas",
+  "slug": "vagas"
+}

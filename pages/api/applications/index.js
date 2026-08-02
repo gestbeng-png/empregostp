@@ -15,6 +15,14 @@ import { getEffectiveJobStatus, syncExpiredJobStatus } from '../../../lib/jobExp
 import { analyzeCandidateJobFit } from '../../../lib/candidateOptimizationInsights';
 import { calculateSkillsAssessmentResult, getPublicSkillsAssessment } from '../../../lib/skillsAssessment';
 import { createServerNotification } from '../../../lib/serverNotifications';
+import { logServerError } from '../../../lib/serverLog';
+
+function applicationError(code, message, details = {}) {
+  const error = new Error(message);
+  error.code = code;
+  Object.assign(error, details);
+  return error;
+}
 
 export default async function handler(req, res) {
   const { method } = req;
@@ -222,7 +230,79 @@ export default async function handler(req, res) {
           updatedAt: firebaseAdmin.firestore.FieldValue.serverTimestamp(),
         };
 
-        const applRef = await adminApp.firestore().collection('applications').add(applicationData);
+        const monthKey = new Date().toISOString().slice(0, 7);
+        const applicationId = `${jobId}_${uid}`;
+        const applRef = adminApp
+          .firestore()
+          .collection('applications')
+          .doc(applicationId);
+        const monthlyLimit =
+          getCandidatePlanFeatures(planId).maxApplicationsPerMonth;
+        const usageRef = adminApp
+          .firestore()
+          .collection('candidate_usage')
+          .doc(`${uid}_${monthKey}`);
+
+        try {
+          await adminApp.firestore().runTransaction(async (transaction) => {
+            const applicationSnapshot = await transaction.get(applRef);
+            if (applicationSnapshot.exists) {
+              throw applicationError(
+                'APPLICATION_ALREADY_EXISTS',
+                'Você já se candidatou a esta vaga',
+              );
+            }
+
+            const usageSnapshot = await transaction.get(usageRef);
+            const storedApplications = usageSnapshot.exists
+              ? Number(usageSnapshot.data()?.applicationsCount) || 0
+              : 0;
+            const currentApplications = Math.max(
+              Number(applyCheck.current) || 0,
+              storedApplications,
+            );
+
+            if (
+              monthlyLimit !== null &&
+              currentApplications >= monthlyLimit
+            ) {
+              throw applicationError(
+                'APPLICATION_LIMIT_REACHED',
+                `Você atingiu o limite de ${monthlyLimit} candidaturas por mês.`,
+                { current: currentApplications, limit: monthlyLimit },
+              );
+            }
+
+            transaction.set(applRef, applicationData);
+            transaction.set(
+              usageRef,
+              {
+                candidateId: uid,
+                month: monthKey,
+                applicationsCount: currentApplications + 1,
+                updatedAt:
+                  firebaseAdmin.firestore.FieldValue.serverTimestamp(),
+              },
+              { merge: true },
+            );
+          });
+        } catch (transactionError) {
+          if (transactionError?.code === 'APPLICATION_ALREADY_EXISTS') {
+            return res.status(409).json({ error: transactionError.message });
+          }
+          if (transactionError?.code === 'APPLICATION_LIMIT_REACHED') {
+            return res.status(403).json({
+              error: transactionError.message,
+              code: transactionError.code,
+              current: transactionError.current,
+              limit: transactionError.limit,
+              upgradeMessage:
+                'Escolha um plano superior para continuar a candidatar-se.',
+              upgradeUrl: '/premium/candidatos',
+            });
+          }
+          throw transactionError;
+        }
 
         // Registrar atividade para auditoria
         await adminApp.firestore().collection('admin_activities').add({
@@ -287,7 +367,7 @@ export default async function handler(req, res) {
         return res.status(405).setHeader('Allow', ['GET', 'POST']).json({ error: 'Método não permitido' });
     }
   } catch (error) {
-    console.error('Erro na rota /api/applications:', error);
+    logServerError('applications.rota_api_applications_failed', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 } 

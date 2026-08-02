@@ -5,12 +5,11 @@ export default function CandidateVagaRedirect() {
 export async function getServerSideProps() {
   return {
     redirect: {
-      destination: '/dashboard/candidato',
+      destination: '/dashboard/candidato?tab=saved',
       permanent: false,
     },
   };
 }
-
 
 
 

@@ -1,0 +1,232 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "phase": "before",
+  "results": [
+    {
+      "accessibilityViolations": [],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 320,
+          "scrollHeight": 3600,
+          "scrollWidth": 320
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 2,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 41,
+            "tag": "A",
+            "text": "← Voltar ao blog",
+            "width": 135
+          }
+        ],
+        "smallText": [
+          {
+            "size": "12.9px",
+            "tag": "A",
+            "text": "← Voltar ao blog"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Tecnologia"
+          },
+          {
+            "size": "12.6px",
+            "tag": "SPAN",
+            "text": "4 min de leitura"
+          },
+          {
+            "size": "12.6px",
+            "tag": "SPAN",
+            "text": "12/07/2026"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/blog/oAZRP7PW5OBDEQRssq2o",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      }
+    },
+    {
+      "accessibilityViolations": [],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 768,
+          "scrollHeight": 1833,
+          "scrollWidth": 768
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 2,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 41,
+            "tag": "A",
+            "text": "← Voltar ao blog",
+            "width": 135
+          }
+        ],
+        "smallText": [
+          {
+            "size": "12.9px",
+            "tag": "A",
+            "text": "← Voltar ao blog"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Tecnologia"
+          },
+          {
+            "size": "12.6px",
+            "tag": "SPAN",
+            "text": "4 min de leitura"
+          },
+          {
+            "size": "12.6px",
+            "tag": "SPAN",
+            "text": "12/07/2026"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/blog/oAZRP7PW5OBDEQRssq2o",
+      "viewport": {
+        "width": 768,
+        "height": 900
+      }
+    },
+    {
+      "accessibilityViolations": [],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1024,
+          "scrollHeight": 1912,
+          "scrollWidth": 1024
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 2,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 43,
+            "tag": "A",
+            "text": "← Voltar ao blog",
+            "width": 144
+          }
+        ],
+        "smallText": [
+          {
+            "size": "13.76px",
+            "tag": "A",
+            "text": "← Voltar ao blog"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Tecnologia"
+          },
+          {
+            "size": "13.44px",
+            "tag": "SPAN",
+            "text": "4 min de leitura"
+          },
+          {
+            "size": "13.44px",
+            "tag": "SPAN",
+            "text": "12/07/2026"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/blog/oAZRP7PW5OBDEQRssq2o",
+      "viewport": {
+        "width": 1024,
+        "height": 900
+      }
+    },
+    {
+      "accessibilityViolations": [],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1440,
+          "scrollHeight": 1696,
+          "scrollWidth": 1440
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 2,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 43,
+            "tag": "A",
+            "text": "← Voltar ao blog",
+            "width": 144
+          }
+        ],
+        "smallText": [
+          {
+            "size": "13.76px",
+            "tag": "A",
+            "text": "← Voltar ao blog"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Tecnologia"
+          },
+          {
+            "size": "13.44px",
+            "tag": "SPAN",
+            "text": "4 min de leitura"
+          },
+          {
+            "size": "13.44px",
+            "tag": "SPAN",
+            "text": "12/07/2026"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/blog/oAZRP7PW5OBDEQRssq2o",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    }
+  ],
+  "route": "/blog/oAZRP7PW5OBDEQRssq2o",
+  "slug": "blog-artigo"
+}

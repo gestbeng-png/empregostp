@@ -1,290 +1,230 @@
-import Head from "next/head";
-import Link from "next/link";
-import PublicPageShell from "../components/PublicPageShell";
-import styles from "../styles/CarreiraPage.module.css";
+import Head from 'next/head';
+import Link from 'next/link';
+import {
+  FiArrowRight,
+  FiBriefcase,
+  FiCalendar,
+  FiCheck,
+  FiClock,
+  FiEdit3,
+  FiFileText,
+  FiMonitor,
+  FiSend,
+  FiStar,
+  FiTrendingUp,
+  FiUsers,
+} from 'react-icons/fi';
+import PublicPageShell from '../components/PublicPageShell';
+import styles from '../styles/CarreiraPage.module.css';
 
 const icons = {
-  users: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
-    </svg>
-  ),
-  target: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="12" cy="12" r="10" />
-      <circle cx="12" cy="12" r="6" />
-      <circle cx="12" cy="12" r="2" />
-    </svg>
-  ),
-  mic: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <rect x="9" y="2" width="6" height="11" rx="3" />
-      <path d="M5 10a7 7 0 0014 0" />
-      <line x1="12" y1="19" x2="12" y2="22" />
-    </svg>
-  ),
-  document: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-      <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
-    </svg>
-  ),
-  briefcase: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <rect x="2" y="7" width="20" height="14" rx="2" />
-      <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" />
-    </svg>
-  ),
-  trending: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-      <polyline points="17 6 23 6 23 12" />
-    </svg>
-  ),
-  star: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-    </svg>
-  ),
-  plane: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
-    </svg>
-  ),
-  laptop: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <rect x="2" y="3" width="20" height="14" rx="2" />
-      <path d="M2 20h20" />
-    </svg>
-  ),
-  lightbulb: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M9 18h6M10 22h4" />
-      <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A5.5 5.5 0 1 0 8.5 14c.76.76 1.23 1.52 1.41 2.5" />
-    </svg>
-  ),
-  check: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  ),
-  arrow: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <line x1="5" y1="12" x2="19" y2="12" />
-      <polyline points="12 5 19 12 12 19" />
-    </svg>
-  ),
-  calendar: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <rect x="3" y="4" width="18" height="18" rx="2" />
-      <line x1="16" y1="2" x2="16" y2="6" />
-      <line x1="8" y1="2" x2="8" y2="6" />
-      <line x1="3" y1="10" x2="21" y2="10" />
-    </svg>
-  ),
-  clock: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="12" cy="12" r="10" />
-      <polyline points="12 6 12 12 16 14" />
-    </svg>
-  ),
+  arrow: <FiArrowRight aria-hidden="true" />,
+  briefcase: <FiBriefcase aria-hidden="true" />,
+  calendar: <FiCalendar aria-hidden="true" />,
+  check: <FiCheck aria-hidden="true" />,
+  clock: <FiClock aria-hidden="true" />,
+  document: <FiFileText aria-hidden="true" />,
+  laptop: <FiMonitor aria-hidden="true" />,
+  lightbulb: <FiEdit3 aria-hidden="true" />,
+  plane: <FiSend aria-hidden="true" />,
+  star: <FiStar aria-hidden="true" />,
+  trending: <FiTrendingUp aria-hidden="true" />,
+  users: <FiUsers aria-hidden="true" />,
 };
 
 const SERVICES = [
   {
-    id: "coaching",
-    icon: "users",
-    title: "Career Coaching Premium",
+    id: 'coaching',
+    icon: 'users',
+    title: 'Coaching de carreira premium',
     description:
-      "Sessões individuais com especialistas de RH para definir seu roadmap profissional, otimizar seu perfil e acelerar sua carreira.",
+      'Sessões individuais com especialistas de recursos humanos para definir o seu percurso, otimizar o seu perfil e acelerar a sua carreira.',
     features: [
-      "Diagnóstico de carreira",
-      "Plano de ação personalizado",
-      "Simulação de entrevista",
-      "Revisão de LinkedIn",
-      "Acompanhamento mensal",
+      'Diagnóstico de carreira',
+      'Plano de ação personalizado',
+      'Simulação de entrevista',
+      'Revisão de LinkedIn',
+      'Acompanhamento mensal',
     ],
-    price: "150",
-    priceNote: "por sessão",
+    price: '150',
+    priceNote: 'por sessão',
     popular: true,
-    color: "#2057d7",
-    cta: "Agendar sessão",
+    tone: 'toneBlue',
+    cta: 'Agendar sessão',
   },
   {
-    id: "repatriacao",
-    icon: "plane",
-    title: "Apoio à repatriação",
+    id: 'repatriacao',
+    icon: 'plane',
+    title: 'Apoio à repatriação',
     description:
-      "Serviço completo para profissionais da diáspora que desejam regressar a STP com transição suave e conexões diretas.",
+      'Serviço completo para profissionais da diáspora que desejam regressar a STP com uma transição tranquila e ligações diretas.',
     features: [
-      "Guia completo de mudança",
-      "Equivalência de diplomas",
-      "Assessoria fiscal",
-      "Networking com empresas",
-      "Suporte logístico",
+      'Guia completo de mudança',
+      'Equivalência de diplomas',
+      'Assessoria fiscal',
+      'Rede de contactos com empresas',
+      'Apoio logístico',
     ],
-    price: "300",
-    priceNote: "pacote completo",
+    price: '300',
+    priceNote: 'pacote completo',
     popular: false,
-    color: "#5fb8f5",
-    cta: "Solicitar consulta",
+    tone: 'toneSky',
+    cta: 'Solicitar consulta',
   },
   {
-    id: "executivo",
-    icon: "star",
-    title: "Recolocação executiva",
+    id: 'executivo',
+    icon: 'star',
+    title: 'Recolocação executiva',
     description:
-      "Acompanhamento premium para profissionais seniores: posicionamento estratégico, acesso a rede C-level e negociação.",
+      'Acompanhamento premium para profissionais seniores: posicionamento estratégico, acesso a uma rede de liderança executiva e negociação.',
     features: [
-      "Diagnóstico executivo",
-      "Personal branding",
-      "Preparação para boards",
-      "Negociação salarial",
-      "Acesso exclusivo a vagas",
+      'Diagnóstico executivo',
+      'Marca pessoal',
+      'Preparação para conselhos de administração',
+      'Negociação salarial',
+      'Acesso exclusivo a vagas',
     ],
-    price: "500",
-    priceNote: "programa completo",
+    price: '500',
+    priceNote: 'programa completo',
     popular: false,
-    color: "#1e2b4d",
-    cta: "Falar com especialista",
+    tone: 'toneNavy',
+    cta: 'Falar com especialista',
   },
   {
-    id: "freelancer",
-    icon: "laptop",
-    title: "Apoio ao freelancer",
+    id: 'freelancer',
+    icon: 'laptop',
+    title: 'Apoio ao freelancer',
     description:
-      "Orientação completa sobre trabalho remoto internacional: abertura de atividade, impostos em STP e contratos seguros.",
+      'Orientação completa sobre trabalho remoto internacional: abertura de atividade, impostos em STP e contratos seguros.',
     features: [
-      "Guia fiscal digital",
-      "Modelos de contrato",
-      "Pagamentos internacionais",
-      "Proteção legal",
-      "Networking remoto",
+      'Guia fiscal digital',
+      'Modelos de contrato',
+      'Pagamentos internacionais',
+      'Proteção legal',
+      'Rede de contactos remota',
     ],
-    price: "200",
-    priceNote: "consultoria completa",
+    price: '200',
+    priceNote: 'consultoria completa',
     popular: false,
-    color: "#3dbb7a",
-    cta: "Iniciar consultoria",
+    tone: 'toneGreen',
+    cta: 'Iniciar consultoria',
   },
   {
-    id: "branding",
-    icon: "lightbulb",
-    title: "Marca pessoal",
+    id: 'branding',
+    icon: 'lightbulb',
+    title: 'Marca pessoal',
     description:
-      "Construímos seu posicionamento profissional com portefólio moderno, narrativa clara e presença digital forte.",
+      'Construímos o seu posicionamento profissional com portefólio moderno, narrativa clara e presença digital forte.',
     features: [
-      "Storytelling profissional",
-      "Portefólio visual",
-      "Perfil otimizado",
-      "Estratégia de conteúdo",
-      "Sessão fotográfica",
+      'Narrativa profissional',
+      'Portefólio visual',
+      'Perfil otimizado',
+      'Estratégia de conteúdo',
+      'Sessão fotográfica',
     ],
-    price: "250",
-    priceNote: "pacote completo",
+    price: '250',
+    priceNote: 'pacote completo',
     popular: false,
-    color: "#2057d7",
-    cta: "Montar portefólio",
+    tone: 'toneBlue',
+    cta: 'Montar portefólio',
   },
   {
-    id: "empresa",
-    icon: "briefcase",
-    title: "Recrutamento para empresas",
+    id: 'empresa',
+    icon: 'briefcase',
+    title: 'Recrutamento para empresas',
     description:
-      "Serviço dedicado para empresas: apoio no recrutamento, triagem de candidatos e campanhas de atração de talentos.",
+      'Serviço dedicado para empresas: apoio no recrutamento, triagem de candidatos e campanhas de atração de talentos.',
     features: [
-      "Shortlist qualificada",
-      "Entrevistas guiadas",
-      "Relatório final",
-      "Suporte contínuo",
-      "Employer branding",
+      'Lista final qualificada',
+      'Entrevistas guiadas',
+      'Relatório final',
+      'Suporte contínuo',
+      'Marca empregadora',
     ],
-    price: "Sob consulta",
-    priceNote: "por vaga",
+    price: 'Sob consulta',
+    priceNote: 'por vaga',
     popular: false,
-    color: "#1e2b4d",
-    cta: "Solicitar proposta",
+    tone: 'toneNavy',
+    cta: 'Solicitar proposta',
   },
 ];
 
 const COURSES = [
   {
-    id: "c1",
-    title: "Dominando entrevistas de emprego",
+    id: 'c1',
+    title: 'Dominando entrevistas de emprego',
     description:
-      "Aprenda técnicas avançadas para se destacar em qualquer entrevista.",
+      'Aprenda técnicas avançadas para se destacar em qualquer entrevista.',
     modules: 8,
-    duration: "4h 30min",
+    duration: '4h 30min',
     rating: 4.9,
-    price: "49",
-    color: "#2057d7",
-    badge: "Mais vendido",
+    price: '49',
+    tone: 'toneBlue',
+    badge: 'Mais vendido',
   },
   {
-    id: "c2",
-    title: "CV e carta de motivação perfeitos",
-    description: "Crie documentos que chamam atenção dos recrutadores.",
+    id: 'c2',
+    title: 'CV e carta de motivação perfeitos',
+    description: 'Crie documentos que captem a atenção dos recrutadores.',
     modules: 6,
-    duration: "3h 15min",
+    duration: '3h 15min',
     rating: 4.8,
-    price: "39",
-    color: "#3dbb7a",
+    price: '39',
+    tone: 'toneGreen',
     badge: null,
   },
   {
-    id: "c3",
-    title: "LinkedIn para profissionais",
+    id: 'c3',
+    title: 'LinkedIn para profissionais',
     description:
-      "Otimize seu perfil e construa uma rede de contactos poderosa.",
+      'Otimize o seu perfil e construa uma rede de contactos relevante.',
     modules: 5,
-    duration: "2h 45min",
+    duration: '2h 45min',
     rating: 4.7,
-    price: "35",
-    color: "#5fb8f5",
-    badge: "Novo",
+    price: '35',
+    tone: 'toneSky',
+    badge: 'Novo',
   },
   {
-    id: "c4",
-    title: "Negociação salarial",
-    description: "Aprenda a negociar salários e benefícios com confiança.",
+    id: 'c4',
+    title: 'Negociação salarial',
+    description: 'Aprenda a negociar salários e benefícios com confiança.',
     modules: 4,
-    duration: "2h 00min",
+    duration: '2h 00min',
     rating: 4.9,
-    price: "45",
-    color: "#1e2b4d",
+    price: '45',
+    tone: 'toneNavy',
     badge: null,
   },
 ];
 
 const MENTORS = [
   {
-    id: "m1",
-    name: "Ana Costa",
-    role: "HR Director",
-    company: "TechSTP",
-    experience: "15 anos",
+    id: 'm1',
+    name: 'Ana Costa',
+    role: 'Diretora de recursos humanos',
+    company: 'TechSTP',
+    experience: '15 anos',
     sessions: 120,
     rating: 5.0,
     available: true,
   },
   {
-    id: "m2",
-    name: "Pedro Dias",
-    role: "CEO",
-    company: "StartUp STP",
-    experience: "20 anos",
+    id: 'm2',
+    name: 'Pedro Dias',
+    role: 'Diretor executivo',
+    company: 'StartUp STP',
+    experience: '20 anos',
     sessions: 85,
     rating: 4.9,
     available: true,
   },
   {
-    id: "m3",
-    name: "Maria Santos",
-    role: "Finance Manager",
-    company: "BancoSTP",
-    experience: "12 anos",
+    id: 'm3',
+    name: 'Maria Santos',
+    role: 'Gestora financeira',
+    company: 'BancoSTP',
+    experience: '12 anos',
     sessions: 95,
     rating: 4.8,
     available: false,
@@ -293,22 +233,22 @@ const MENTORS = [
 
 const TESTIMONIALS = [
   {
-    id: "t1",
-    name: "João Fernandes",
-    role: "Software Developer",
-    text: "O coaching de carreira mudou completamente minha abordagem profissional. Consegui uma promoção em apenas 3 meses!",
+    id: 't1',
+    name: 'João Fernandes',
+    role: 'Programador',
+    text: 'O coaching de carreira mudou completamente a minha abordagem profissional. Consegui uma promoção em apenas três meses.',
   },
   {
-    id: "t2",
-    name: "Carla Neves",
-    role: "Marketing Manager",
-    text: "O serviço de repatriação foi fundamental para minha volta a STP. Apoio completo em todas as etapas.",
+    id: 't2',
+    name: 'Carla Neves',
+    role: 'Gestora de marketing',
+    text: 'O serviço de repatriação foi fundamental para o meu regresso a STP. Tive apoio completo em todas as fases.',
   },
   {
-    id: "t3",
-    name: "Miguel Santos",
-    role: "Freelancer",
-    text: "Com a consultoria para freelancers, consegui regularizar minha situação fiscal e expandir meus clientes internacionais.",
+    id: 't3',
+    name: 'Miguel Santos',
+    role: 'Freelancer',
+    text: 'Com a consultoria para freelancers, consegui regularizar a minha situação fiscal e ampliar a minha carteira de clientes internacionais.',
   },
 ];
 
@@ -316,9 +256,7 @@ export default function CarreiraPage() {
   return (
     <>
       <Head>
-        <title>
-          Serviços de Carreira | EmpregoSTP - Coaching, Cursos e Mentoria
-        </title>
+        <title>Serviços de carreira | EmpregoSTP</title>
         <meta
           name="description"
           content="Serviços profissionais de desenvolvimento de carreira: coaching, mentoria, cursos online e apoio à repatriação em São Tomé e Príncipe."
@@ -326,7 +264,7 @@ export default function CarreiraPage() {
       </Head>
 
       <PublicPageShell headerVariant="light">
-        <main className={styles.page}>
+        <div className={styles.page}>
           <section className={styles.hero}>
             <div className={styles.heroInner}>
               <div className={styles.heroBadge}>
@@ -334,26 +272,32 @@ export default function CarreiraPage() {
                 <span>Serviços de carreira</span>
               </div>
               <h1 className={styles.heroTitle}>
-                Acelere sua carreira com apoio profissional
+                Acelere a sua carreira com apoio profissional
               </h1>
               <p className={styles.heroSubtitle}>
                 Coaching personalizado, cursos online e mentoria com
                 especialistas. Invista no seu desenvolvimento profissional e
                 alcance seus objetivos.
               </p>
-              <div className={styles.heroStats}>
-                <div className={styles.heroStat}>
-                  <strong>500+</strong>
-                  <span>Profissionais atendidos</span>
-                </div>
-                <div className={styles.heroStat}>
-                  <strong>95%</strong>
-                  <span>Taxa de satisfação</span>
-                </div>
-                <div className={styles.heroStat}>
-                  <strong>20+</strong>
-                  <span>Mentores especialistas</span>
-                </div>
+            </div>
+          </section>
+
+          <section
+            className={styles.metricsBand}
+            aria-label="Resultados dos serviços de carreira"
+          >
+            <div className={styles.heroStats}>
+              <div className={styles.heroStat}>
+                <strong>500+</strong>
+                <span>Profissionais acompanhados</span>
+              </div>
+              <div className={styles.heroStat}>
+                <strong>95%</strong>
+                <span>Taxa de satisfação</span>
+              </div>
+              <div className={styles.heroStat}>
+                <strong>20+</strong>
+                <span>Mentores especialistas</span>
               </div>
             </div>
           </section>
@@ -375,11 +319,7 @@ export default function CarreiraPage() {
                     <span className={styles.popularBadge}>Mais popular</span>
                   ) : null}
                   <div
-                    className={styles.serviceIcon}
-                    style={{
-                      "--service-icon-bg": `${service.color}18`,
-                      "--service-icon-color": service.color,
-                    }}
+                    className={`${styles.serviceIcon} ${styles[service.tone]}`}
                   >
                     {icons[service.icon]}
                   </div>
@@ -398,20 +338,19 @@ export default function CarreiraPage() {
                   <div className={styles.serviceFooter}>
                     <div className={styles.priceBlock}>
                       <strong>
-                        {typeof service.price === "number" ||
+                        {typeof service.price === 'number' ||
                         !Number.isNaN(Number(service.price))
                           ? `€${service.price}`
                           : service.price}
                       </strong>
                       <span>{service.priceNote}</span>
                     </div>
-                    <button
-                      type="button"
-                      className={styles.serviceButton}
-                      style={{ "--service-button": service.color }}
+                    <Link
+                      href="/sobre-nos#contactos"
+                      className={`${styles.serviceButton} ${styles[service.tone]}`}
                     >
                       {service.cta}
-                    </button>
+                    </Link>
                   </div>
                 </article>
               ))}
@@ -433,11 +372,7 @@ export default function CarreiraPage() {
                 <article key={course.id} className={styles.courseCard}>
                   {course.badge ? (
                     <span
-                      className={styles.courseBadge}
-                      style={{
-                        "--course-badge-bg": `${course.color}18`,
-                        "--course-badge-color": course.color,
-                      }}
+                      className={`${styles.courseBadge} ${styles[course.tone]}`}
                     >
                       {course.badge}
                     </span>
@@ -462,9 +397,12 @@ export default function CarreiraPage() {
                     <strong className={styles.coursePrice}>
                       €{course.price}
                     </strong>
-                    <button type="button" className={styles.courseButton}>
-                      Ver curso
-                    </button>
+                    <Link
+                      href="/sobre-nos#contactos"
+                      className={styles.courseButton}
+                    >
+                      Pedir informações
+                    </Link>
                   </div>
                 </article>
               ))}
@@ -475,10 +413,10 @@ export default function CarreiraPage() {
             <div className={styles.sectionHeader}>
               <div>
                 <p className={styles.eyebrow}>Mentoria</p>
-                <h2 className={styles.sectionTitle}>Nossos mentores</h2>
+                <h2 className={styles.sectionTitle}>Os nossos mentores</h2>
               </div>
               <p className={styles.sectionSubtitle}>
-                Conecte-se com profissionais experientes de São Tomé e Príncipe.
+                Ligue-se a profissionais experientes de São Tomé e Príncipe.
               </p>
             </div>
             <div className={styles.mentorsGrid}>
@@ -499,7 +437,7 @@ export default function CarreiraPage() {
                     </div>
                     <div>
                       <strong>{mentor.rating}</strong>
-                      <span>Rating</span>
+                      <span>Avaliação</span>
                     </div>
                   </div>
                   <span
@@ -509,7 +447,7 @@ export default function CarreiraPage() {
                         : styles.mentorStatusUnavailable
                     }`}
                   >
-                    {mentor.available ? "Disponível" : "Indisponível"}
+                    {mentor.available ? 'Disponível' : 'Indisponível'}
                   </span>
                 </article>
               ))}
@@ -522,7 +460,7 @@ export default function CarreiraPage() {
                 <div>
                   <p className={styles.eyebrow}>Prova social</p>
                   <h2 className={styles.sectionTitle}>
-                    O que dizem nossos clientes
+                    O que dizem os nossos clientes
                   </h2>
                 </div>
               </div>
@@ -564,10 +502,10 @@ export default function CarreiraPage() {
                 serviço é o ideal para o seu momento profissional.
               </p>
               <div className={styles.ctaActions}>
-                <button type="button" className={styles.ctaPrimary}>
+                <Link href="/sobre-nos#contactos" className={styles.ctaPrimary}>
                   Agendar consulta gratuita
                   <span className={styles.inlineIcon}>{icons.calendar}</span>
-                </button>
+                </Link>
                 <Link href="/recursos" className={styles.ctaSecondary}>
                   Ver recursos gratuitos
                   <span className={styles.inlineIcon}>{icons.arrow}</span>
@@ -575,7 +513,7 @@ export default function CarreiraPage() {
               </div>
             </div>
           </section>
-        </main>
+        </div>
       </PublicPageShell>
     </>
   );

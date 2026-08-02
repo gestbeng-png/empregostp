@@ -1,0 +1,1427 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "phase": "before",
+  "results": [
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              ".EmpresasPage_valueGrid__NUnPC > div:nth-child(1) > span"
+            ],
+            [
+              ".EmpresasPage_valueGrid__NUnPC > div:nth-child(2) > span"
+            ],
+            [
+              ".EmpresasPage_valueGrid__NUnPC > div:nth-child(3) > span"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 320,
+          "scrollHeight": 6543,
+          "scrollWidth": 320
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [],
+        "smallText": [
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "Recrutamento para empresas"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Publique vagas, organize candidaturas e encontre profissionais preparados para fazer a sua empresa a"
+          },
+          {
+            "size": "12px",
+            "tag": "A",
+            "text": "Publicar uma vaga"
+          },
+          {
+            "size": "12px",
+            "tag": "A",
+            "text": "Encontrar candidatos"
+          },
+          {
+            "size": "11.25px",
+            "tag": "DIV",
+            "text": "Comece gratuitamente e escolha um plano quando precisar de mais alcance."
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Publicação simplesCrie uma vaga em poucos minutos"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "Publicação simples"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Candidatos relevantesFiltre por perfil e competências"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "Candidatos relevantes"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Processo organizadoAcompanhe cada candidatura"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "Processo organizado"
+          },
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "Tudo num só lugar"
+          },
+          {
+            "size": "13.8px",
+            "tag": "P",
+            "text": "Da publicação à contratação, organize o processo sem perder tempo entre ferramentas diferentes."
+          },
+          {
+            "size": "12.3px",
+            "tag": "P",
+            "text": "Cria um perfil completo da tua empresa com verificação oficial."
+          },
+          {
+            "size": "12.3px",
+            "tag": "P",
+            "text": "Publica vagas em minutos com formulário intuitivo e templates profissionais."
+          },
+          {
+            "size": "12.3px",
+            "tag": "P",
+            "text": "Acede a uma base de candidatos qualificados e filtra por competências."
+          },
+          {
+            "size": "12.3px",
+            "tag": "P",
+            "text": "Filtra candidatos automaticamente com base nos requisitos da vaga."
+          },
+          {
+            "size": "12.3px",
+            "tag": "P",
+            "text": "A plataforma sugere os candidatos mais compatíveis com cada vaga."
+          },
+          {
+            "size": "12.3px",
+            "tag": "P",
+            "text": "Analisa o desempenho das vagas e o processo de recrutamento com dados reais."
+          },
+          {
+            "size": "12.3px",
+            "tag": "P",
+            "text": "Destaca as tuas vagas para aparecerem no topo das pesquisas."
+          },
+          {
+            "size": "12.3px",
+            "tag": "P",
+            "text": "Obtém o badge de empresa verificada e aumenta a confiança dos candidatos."
+          },
+          {
+            "size": "12.3px",
+            "tag": "P",
+            "text": "Recrutamento assistido por especialistas: triagem, shortlist, entrevistas, avaliação de competências"
+          },
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "Um processo claro"
+          },
+          {
+            "size": "13.8px",
+            "tag": "P",
+            "text": "Quatro passos para transformar uma necessidade da equipa numa contratação segura."
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "01"
+          },
+          {
+            "size": "11.7px",
+            "tag": "P",
+            "text": "Regista a tua empresa e obtém verificação oficial para aumentar a credibilidade."
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "02"
+          },
+          {
+            "size": "11.7px",
+            "tag": "P",
+            "text": "Define os requisitos, responsabilidades e benefícios da posição em aberto."
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "03"
+          },
+          {
+            "size": "11.7px",
+            "tag": "P",
+            "text": "A plataforma filtra e sugere os candidatos mais compatíveis automaticamente."
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "04"
+          },
+          {
+            "size": "11.7px",
+            "tag": "P",
+            "text": "Cria shortlists, agenda entrevistas e toma decisões informadas com dados reais."
+          },
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "Planos flexíveis"
+          },
+          {
+            "size": "13.8px",
+            "tag": "P",
+            "text": "Escolhe o plano certo para publicar vagas, destacar oportunidades e recrutar com mais eficiência."
+          },
+          {
+            "size": "11.7px",
+            "tag": "LI",
+            "text": "1 vaga por mês"
+          },
+          {
+            "size": "11.7px",
+            "tag": "LI",
+            "text": "Visualização de candidatos"
+          },
+          {
+            "size": "11.7px",
+            "tag": "LI",
+            "text": "Suporte básico"
+          },
+          {
+            "size": "12px",
+            "tag": "A",
+            "text": "Começar grátis"
+          },
+          {
+            "size": "9.3px",
+            "tag": "SPAN",
+            "text": "Mais escolhido"
+          },
+          {
+            "size": "11.7px",
+            "tag": "LI",
+            "text": "5 vagas por mês"
+          },
+          {
+            "size": "11.7px",
+            "tag": "LI",
+            "text": "Vagas em destaque"
+          },
+          {
+            "size": "11.7px",
+            "tag": "LI",
+            "text": "Prioridade nas buscas"
+          },
+          {
+            "size": "11.7px",
+            "tag": "LI",
+            "text": "Suporte prioritário"
+          },
+          {
+            "size": "12px",
+            "tag": "A",
+            "text": "Ver plano"
+          },
+          {
+            "size": "11.7px",
+            "tag": "LI",
+            "text": "Vagas ilimitadas"
+          },
+          {
+            "size": "11.7px",
+            "tag": "LI",
+            "text": "Mensagens diretas com candidatos"
+          },
+          {
+            "size": "11.7px",
+            "tag": "LI",
+            "text": "Analytics completos"
+          },
+          {
+            "size": "11.7px",
+            "tag": "LI",
+            "text": "Banco de talentos completo"
+          },
+          {
+            "size": "11.7px",
+            "tag": "LI",
+            "text": "Serviços avançados e suporte prioritário"
+          },
+          {
+            "size": "11.7px",
+            "tag": "LI",
+            "text": "Todas as vagas em destaque"
+          },
+          {
+            "size": "12px",
+            "tag": "A",
+            "text": "Ver plano"
+          },
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "Pronto para recrutar?"
+          },
+          {
+            "size": "13.2px",
+            "tag": "P",
+            "text": "Crie a sua conta de empresa e publique a primeira oportunidade."
+          },
+          {
+            "size": "12px",
+            "tag": "A",
+            "text": "Criar conta de empresa"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/empresas",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      }
+    },
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              ".EmpresasPage_valueGrid__NUnPC > div:nth-child(1) > span"
+            ],
+            [
+              ".EmpresasPage_valueGrid__NUnPC > div:nth-child(2) > span"
+            ],
+            [
+              ".EmpresasPage_valueGrid__NUnPC > div:nth-child(3) > span"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 768,
+          "scrollHeight": 4442,
+          "scrollWidth": 768
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [],
+        "smallText": [
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "Recrutamento para empresas"
+          },
+          {
+            "size": "12px",
+            "tag": "A",
+            "text": "Publicar uma vaga"
+          },
+          {
+            "size": "12px",
+            "tag": "A",
+            "text": "Encontrar candidatos"
+          },
+          {
+            "size": "11.25px",
+            "tag": "DIV",
+            "text": "Comece gratuitamente e escolha um plano quando precisar de mais alcance."
+          },
+          {
+            "size": "9px",
+            "tag": "SPAN",
+            "text": "Painel de recrutamento"
+          },
+          {
+            "size": "9.3px",
+            "tag": "SPAN",
+            "text": "Ativo"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "EM"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "Especialista de marketing"
+          },
+          {
+            "size": "9.6px",
+            "tag": "SPAN",
+            "text": "São Tomé · Tempo inteiro"
+          },
+          {
+            "size": "12.75px",
+            "tag": "SPAN",
+            "text": "24"
+          },
+          {
+            "size": "8.7px",
+            "tag": "SPAN",
+            "text": "Recebidas"
+          },
+          {
+            "size": "8.7px",
+            "tag": "SPAN",
+            "text": "Shortlist"
+          },
+          {
+            "size": "8.7px",
+            "tag": "SPAN",
+            "text": "Entrevistas"
+          },
+          {
+            "size": "8.1px",
+            "tag": "SPAN",
+            "text": "AM"
+          },
+          {
+            "size": "8.1px",
+            "tag": "SPAN",
+            "text": "JM"
+          },
+          {
+            "size": "8.1px",
+            "tag": "SPAN",
+            "text": "LC"
+          },
+          {
+            "size": "10.2px",
+            "tag": "P",
+            "text": "3 candidatos prontos para entrevista"
+          },
+          {
+            "size": "11.1px",
+            "tag": "STRONG",
+            "text": "3 candidatos"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Publicação simplesCrie uma vaga em poucos minutos"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "Publicação simples"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Candidatos relevantesFiltre por perfil e competências"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "Candidatos relevantes"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Processo organizadoAcompanhe cada candidatura"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "Processo organizado"
+          },
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "Tudo num só lugar"
+          },
+          {
+            "size": "13.8px",
+            "tag": "P",
+            "text": "Da publicação à contratação, organize o processo sem perder tempo entre ferramentas diferentes."
+          },
+          {
+            "size": "12.3px",
+            "tag": "P",
+            "text": "Cria um perfil completo da tua empresa com verificação oficial."
+          },
+          {
+            "size": "12.3px",
+            "tag": "P",
+            "text": "Publica vagas em minutos com formulário intuitivo e templates profissionais."
+          },
+          {
+            "size": "12.3px",
+            "tag": "P",
+            "text": "Acede a uma base de candidatos qualificados e filtra por competências."
+          },
+          {
+            "size": "12.3px",
+            "tag": "P",
+            "text": "Filtra candidatos automaticamente com base nos requisitos da vaga."
+          },
+          {
+            "size": "12.3px",
+            "tag": "P",
+            "text": "A plataforma sugere os candidatos mais compatíveis com cada vaga."
+          },
+          {
+            "size": "12.3px",
+            "tag": "P",
+            "text": "Analisa o desempenho das vagas e o processo de recrutamento com dados reais."
+          },
+          {
+            "size": "12.3px",
+            "tag": "P",
+            "text": "Destaca as tuas vagas para aparecerem no topo das pesquisas."
+          },
+          {
+            "size": "12.3px",
+            "tag": "P",
+            "text": "Obtém o badge de empresa verificada e aumenta a confiança dos candidatos."
+          },
+          {
+            "size": "12.3px",
+            "tag": "P",
+            "text": "Recrutamento assistido por especialistas: triagem, shortlist, entrevistas, avaliação de competências"
+          },
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "Um processo claro"
+          },
+          {
+            "size": "13.8px",
+            "tag": "P",
+            "text": "Quatro passos para transformar uma necessidade da equipa numa contratação segura."
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "01"
+          },
+          {
+            "size": "11.7px",
+            "tag": "P",
+            "text": "Regista a tua empresa e obtém verificação oficial para aumentar a credibilidade."
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "02"
+          },
+          {
+            "size": "11.7px",
+            "tag": "P",
+            "text": "Define os requisitos, responsabilidades e benefícios da posição em aberto."
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "03"
+          },
+          {
+            "size": "11.7px",
+            "tag": "P",
+            "text": "A plataforma filtra e sugere os candidatos mais compatíveis automaticamente."
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "04"
+          },
+          {
+            "size": "11.7px",
+            "tag": "P",
+            "text": "Cria shortlists, agenda entrevistas e toma decisões informadas com dados reais."
+          },
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "Planos flexíveis"
+          },
+          {
+            "size": "13.8px",
+            "tag": "P",
+            "text": "Escolhe o plano certo para publicar vagas, destacar oportunidades e recrutar com mais eficiência."
+          },
+          {
+            "size": "11.7px",
+            "tag": "LI",
+            "text": "1 vaga por mês"
+          },
+          {
+            "size": "11.7px",
+            "tag": "LI",
+            "text": "Visualização de candidatos"
+          },
+          {
+            "size": "11.7px",
+            "tag": "LI",
+            "text": "Suporte básico"
+          },
+          {
+            "size": "12px",
+            "tag": "A",
+            "text": "Começar grátis"
+          },
+          {
+            "size": "9.3px",
+            "tag": "SPAN",
+            "text": "Mais escolhido"
+          },
+          {
+            "size": "11.7px",
+            "tag": "LI",
+            "text": "5 vagas por mês"
+          },
+          {
+            "size": "11.7px",
+            "tag": "LI",
+            "text": "Vagas em destaque"
+          },
+          {
+            "size": "11.7px",
+            "tag": "LI",
+            "text": "Prioridade nas buscas"
+          },
+          {
+            "size": "11.7px",
+            "tag": "LI",
+            "text": "Suporte prioritário"
+          },
+          {
+            "size": "12px",
+            "tag": "A",
+            "text": "Ver plano"
+          },
+          {
+            "size": "11.7px",
+            "tag": "LI",
+            "text": "Vagas ilimitadas"
+          },
+          {
+            "size": "11.7px",
+            "tag": "LI",
+            "text": "Mensagens diretas com candidatos"
+          },
+          {
+            "size": "11.7px",
+            "tag": "LI",
+            "text": "Analytics completos"
+          },
+          {
+            "size": "11.7px",
+            "tag": "LI",
+            "text": "Banco de talentos completo"
+          },
+          {
+            "size": "11.7px",
+            "tag": "LI",
+            "text": "Serviços avançados e suporte prioritário"
+          },
+          {
+            "size": "11.7px",
+            "tag": "LI",
+            "text": "Todas as vagas em destaque"
+          },
+          {
+            "size": "12px",
+            "tag": "A",
+            "text": "Ver plano"
+          },
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "Pronto para recrutar?"
+          },
+          {
+            "size": "13.2px",
+            "tag": "P",
+            "text": "Crie a sua conta de empresa e publique a primeira oportunidade."
+          },
+          {
+            "size": "12px",
+            "tag": "A",
+            "text": "Criar conta de empresa"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/empresas",
+      "viewport": {
+        "width": 768,
+        "height": 900
+      }
+    },
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              ".EmpresasPage_valueGrid__NUnPC > div:nth-child(1) > span"
+            ],
+            [
+              ".EmpresasPage_valueGrid__NUnPC > div:nth-child(2) > span"
+            ],
+            [
+              ".EmpresasPage_valueGrid__NUnPC > div:nth-child(3) > span"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1024,
+          "scrollHeight": 4095,
+          "scrollWidth": 1024
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [],
+        "smallText": [
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "Recrutamento para empresas"
+          },
+          {
+            "size": "12.8px",
+            "tag": "A",
+            "text": "Publicar uma vaga"
+          },
+          {
+            "size": "12.8px",
+            "tag": "A",
+            "text": "Encontrar candidatos"
+          },
+          {
+            "size": "12px",
+            "tag": "DIV",
+            "text": "Comece gratuitamente e escolha um plano quando precisar de mais alcance."
+          },
+          {
+            "size": "9.6px",
+            "tag": "SPAN",
+            "text": "Painel de recrutamento"
+          },
+          {
+            "size": "9.92px",
+            "tag": "SPAN",
+            "text": "Ativo"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "EM"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "Especialista de marketing"
+          },
+          {
+            "size": "10.24px",
+            "tag": "SPAN",
+            "text": "São Tomé · Tempo inteiro"
+          },
+          {
+            "size": "13.6px",
+            "tag": "SPAN",
+            "text": "24"
+          },
+          {
+            "size": "9.28px",
+            "tag": "SPAN",
+            "text": "Recebidas"
+          },
+          {
+            "size": "9.28px",
+            "tag": "SPAN",
+            "text": "Shortlist"
+          },
+          {
+            "size": "9.28px",
+            "tag": "SPAN",
+            "text": "Entrevistas"
+          },
+          {
+            "size": "8.64px",
+            "tag": "SPAN",
+            "text": "AM"
+          },
+          {
+            "size": "8.64px",
+            "tag": "SPAN",
+            "text": "JM"
+          },
+          {
+            "size": "8.64px",
+            "tag": "SPAN",
+            "text": "LC"
+          },
+          {
+            "size": "10.88px",
+            "tag": "P",
+            "text": "3 candidatos prontos para entrevista"
+          },
+          {
+            "size": "11.84px",
+            "tag": "STRONG",
+            "text": "3 candidatos"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Publicação simplesCrie uma vaga em poucos minutos"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "Publicação simples"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Candidatos relevantesFiltre por perfil e competências"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "Candidatos relevantes"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Processo organizadoAcompanhe cada candidatura"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "Processo organizado"
+          },
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "Tudo num só lugar"
+          },
+          {
+            "size": "13.12px",
+            "tag": "P",
+            "text": "Cria um perfil completo da tua empresa com verificação oficial."
+          },
+          {
+            "size": "13.12px",
+            "tag": "P",
+            "text": "Publica vagas em minutos com formulário intuitivo e templates profissionais."
+          },
+          {
+            "size": "13.12px",
+            "tag": "P",
+            "text": "Acede a uma base de candidatos qualificados e filtra por competências."
+          },
+          {
+            "size": "13.12px",
+            "tag": "P",
+            "text": "Filtra candidatos automaticamente com base nos requisitos da vaga."
+          },
+          {
+            "size": "13.12px",
+            "tag": "P",
+            "text": "A plataforma sugere os candidatos mais compatíveis com cada vaga."
+          },
+          {
+            "size": "13.12px",
+            "tag": "P",
+            "text": "Analisa o desempenho das vagas e o processo de recrutamento com dados reais."
+          },
+          {
+            "size": "13.12px",
+            "tag": "P",
+            "text": "Destaca as tuas vagas para aparecerem no topo das pesquisas."
+          },
+          {
+            "size": "13.12px",
+            "tag": "P",
+            "text": "Obtém o badge de empresa verificada e aumenta a confiança dos candidatos."
+          },
+          {
+            "size": "13.12px",
+            "tag": "P",
+            "text": "Recrutamento assistido por especialistas: triagem, shortlist, entrevistas, avaliação de competências"
+          },
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "Um processo claro"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "01"
+          },
+          {
+            "size": "12.48px",
+            "tag": "P",
+            "text": "Regista a tua empresa e obtém verificação oficial para aumentar a credibilidade."
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "02"
+          },
+          {
+            "size": "12.48px",
+            "tag": "P",
+            "text": "Define os requisitos, responsabilidades e benefícios da posição em aberto."
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "03"
+          },
+          {
+            "size": "12.48px",
+            "tag": "P",
+            "text": "A plataforma filtra e sugere os candidatos mais compatíveis automaticamente."
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "04"
+          },
+          {
+            "size": "12.48px",
+            "tag": "P",
+            "text": "Cria shortlists, agenda entrevistas e toma decisões informadas com dados reais."
+          },
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "Planos flexíveis"
+          },
+          {
+            "size": "12.48px",
+            "tag": "LI",
+            "text": "1 vaga por mês"
+          },
+          {
+            "size": "12.48px",
+            "tag": "LI",
+            "text": "Visualização de candidatos"
+          },
+          {
+            "size": "12.48px",
+            "tag": "LI",
+            "text": "Suporte básico"
+          },
+          {
+            "size": "12.8px",
+            "tag": "A",
+            "text": "Começar grátis"
+          },
+          {
+            "size": "9.92px",
+            "tag": "SPAN",
+            "text": "Mais escolhido"
+          },
+          {
+            "size": "12.48px",
+            "tag": "LI",
+            "text": "5 vagas por mês"
+          },
+          {
+            "size": "12.48px",
+            "tag": "LI",
+            "text": "Vagas em destaque"
+          },
+          {
+            "size": "12.48px",
+            "tag": "LI",
+            "text": "Prioridade nas buscas"
+          },
+          {
+            "size": "12.48px",
+            "tag": "LI",
+            "text": "Suporte prioritário"
+          },
+          {
+            "size": "12.8px",
+            "tag": "A",
+            "text": "Ver plano"
+          },
+          {
+            "size": "12.48px",
+            "tag": "LI",
+            "text": "Vagas ilimitadas"
+          },
+          {
+            "size": "12.48px",
+            "tag": "LI",
+            "text": "Mensagens diretas com candidatos"
+          },
+          {
+            "size": "12.48px",
+            "tag": "LI",
+            "text": "Analytics completos"
+          },
+          {
+            "size": "12.48px",
+            "tag": "LI",
+            "text": "Banco de talentos completo"
+          },
+          {
+            "size": "12.48px",
+            "tag": "LI",
+            "text": "Serviços avançados e suporte prioritário"
+          },
+          {
+            "size": "12.48px",
+            "tag": "LI",
+            "text": "Todas as vagas em destaque"
+          },
+          {
+            "size": "12.8px",
+            "tag": "A",
+            "text": "Ver plano"
+          },
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "Pronto para recrutar?"
+          },
+          {
+            "size": "12.8px",
+            "tag": "A",
+            "text": "Criar conta de empresa"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/empresas",
+      "viewport": {
+        "width": 1024,
+        "height": 900
+      }
+    },
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              ".EmpresasPage_valueGrid__NUnPC > div:nth-child(1) > span"
+            ],
+            [
+              ".EmpresasPage_valueGrid__NUnPC > div:nth-child(2) > span"
+            ],
+            [
+              ".EmpresasPage_valueGrid__NUnPC > div:nth-child(3) > span"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1440,
+          "scrollHeight": 3996,
+          "scrollWidth": 1440
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [],
+        "smallText": [
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "Recrutamento para empresas"
+          },
+          {
+            "size": "12.8px",
+            "tag": "A",
+            "text": "Publicar uma vaga"
+          },
+          {
+            "size": "12.8px",
+            "tag": "A",
+            "text": "Encontrar candidatos"
+          },
+          {
+            "size": "12px",
+            "tag": "DIV",
+            "text": "Comece gratuitamente e escolha um plano quando precisar de mais alcance."
+          },
+          {
+            "size": "9.6px",
+            "tag": "SPAN",
+            "text": "Painel de recrutamento"
+          },
+          {
+            "size": "9.92px",
+            "tag": "SPAN",
+            "text": "Ativo"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "EM"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "Especialista de marketing"
+          },
+          {
+            "size": "10.24px",
+            "tag": "SPAN",
+            "text": "São Tomé · Tempo inteiro"
+          },
+          {
+            "size": "13.6px",
+            "tag": "SPAN",
+            "text": "24"
+          },
+          {
+            "size": "9.28px",
+            "tag": "SPAN",
+            "text": "Recebidas"
+          },
+          {
+            "size": "9.28px",
+            "tag": "SPAN",
+            "text": "Shortlist"
+          },
+          {
+            "size": "9.28px",
+            "tag": "SPAN",
+            "text": "Entrevistas"
+          },
+          {
+            "size": "8.64px",
+            "tag": "SPAN",
+            "text": "AM"
+          },
+          {
+            "size": "8.64px",
+            "tag": "SPAN",
+            "text": "JM"
+          },
+          {
+            "size": "8.64px",
+            "tag": "SPAN",
+            "text": "LC"
+          },
+          {
+            "size": "10.88px",
+            "tag": "P",
+            "text": "3 candidatos prontos para entrevista"
+          },
+          {
+            "size": "11.84px",
+            "tag": "STRONG",
+            "text": "3 candidatos"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Publicação simplesCrie uma vaga em poucos minutos"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "Publicação simples"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Candidatos relevantesFiltre por perfil e competências"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "Candidatos relevantes"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Processo organizadoAcompanhe cada candidatura"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "Processo organizado"
+          },
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "Tudo num só lugar"
+          },
+          {
+            "size": "13.12px",
+            "tag": "P",
+            "text": "Cria um perfil completo da tua empresa com verificação oficial."
+          },
+          {
+            "size": "13.12px",
+            "tag": "P",
+            "text": "Publica vagas em minutos com formulário intuitivo e templates profissionais."
+          },
+          {
+            "size": "13.12px",
+            "tag": "P",
+            "text": "Acede a uma base de candidatos qualificados e filtra por competências."
+          },
+          {
+            "size": "13.12px",
+            "tag": "P",
+            "text": "Filtra candidatos automaticamente com base nos requisitos da vaga."
+          },
+          {
+            "size": "13.12px",
+            "tag": "P",
+            "text": "A plataforma sugere os candidatos mais compatíveis com cada vaga."
+          },
+          {
+            "size": "13.12px",
+            "tag": "P",
+            "text": "Analisa o desempenho das vagas e o processo de recrutamento com dados reais."
+          },
+          {
+            "size": "13.12px",
+            "tag": "P",
+            "text": "Destaca as tuas vagas para aparecerem no topo das pesquisas."
+          },
+          {
+            "size": "13.12px",
+            "tag": "P",
+            "text": "Obtém o badge de empresa verificada e aumenta a confiança dos candidatos."
+          },
+          {
+            "size": "13.12px",
+            "tag": "P",
+            "text": "Recrutamento assistido por especialistas: triagem, shortlist, entrevistas, avaliação de competências"
+          },
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "Um processo claro"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "01"
+          },
+          {
+            "size": "12.48px",
+            "tag": "P",
+            "text": "Regista a tua empresa e obtém verificação oficial para aumentar a credibilidade."
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "02"
+          },
+          {
+            "size": "12.48px",
+            "tag": "P",
+            "text": "Define os requisitos, responsabilidades e benefícios da posição em aberto."
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "03"
+          },
+          {
+            "size": "12.48px",
+            "tag": "P",
+            "text": "A plataforma filtra e sugere os candidatos mais compatíveis automaticamente."
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "04"
+          },
+          {
+            "size": "12.48px",
+            "tag": "P",
+            "text": "Cria shortlists, agenda entrevistas e toma decisões informadas com dados reais."
+          },
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "Planos flexíveis"
+          },
+          {
+            "size": "12.48px",
+            "tag": "LI",
+            "text": "1 vaga por mês"
+          },
+          {
+            "size": "12.48px",
+            "tag": "LI",
+            "text": "Visualização de candidatos"
+          },
+          {
+            "size": "12.48px",
+            "tag": "LI",
+            "text": "Suporte básico"
+          },
+          {
+            "size": "12.8px",
+            "tag": "A",
+            "text": "Começar grátis"
+          },
+          {
+            "size": "9.92px",
+            "tag": "SPAN",
+            "text": "Mais escolhido"
+          },
+          {
+            "size": "12.48px",
+            "tag": "LI",
+            "text": "5 vagas por mês"
+          },
+          {
+            "size": "12.48px",
+            "tag": "LI",
+            "text": "Vagas em destaque"
+          },
+          {
+            "size": "12.48px",
+            "tag": "LI",
+            "text": "Prioridade nas buscas"
+          },
+          {
+            "size": "12.48px",
+            "tag": "LI",
+            "text": "Suporte prioritário"
+          },
+          {
+            "size": "12.8px",
+            "tag": "A",
+            "text": "Ver plano"
+          },
+          {
+            "size": "12.48px",
+            "tag": "LI",
+            "text": "Vagas ilimitadas"
+          },
+          {
+            "size": "12.48px",
+            "tag": "LI",
+            "text": "Mensagens diretas com candidatos"
+          },
+          {
+            "size": "12.48px",
+            "tag": "LI",
+            "text": "Analytics completos"
+          },
+          {
+            "size": "12.48px",
+            "tag": "LI",
+            "text": "Banco de talentos completo"
+          },
+          {
+            "size": "12.48px",
+            "tag": "LI",
+            "text": "Serviços avançados e suporte prioritário"
+          },
+          {
+            "size": "12.48px",
+            "tag": "LI",
+            "text": "Todas as vagas em destaque"
+          },
+          {
+            "size": "12.8px",
+            "tag": "A",
+            "text": "Ver plano"
+          },
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "Pronto para recrutar?"
+          },
+          {
+            "size": "12.8px",
+            "tag": "A",
+            "text": "Criar conta de empresa"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/empresas",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    }
+  ],
+  "route": "/empresas",
+  "slug": "empresas"
+}

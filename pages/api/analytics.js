@@ -207,13 +207,6 @@ export default async function handler(req, res) {
       .map(([date, count]) => ({ date, count }))
       .sort((a, b) => new Date(a.date) - new Date(b.date));
 
-    console.log('Analytics calculados:', {
-      totalViews,
-      totalApplications,
-      conversionRate: `${conversionRate}%`,
-      vagas: jobsAnalytics.length
-    });
-
     return res.status(200).json({
       totalViews,
       totalApplications,
@@ -224,7 +217,7 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('Erro ao buscar analytics:', error);
+    logServerError('analytics.buscar_analytics_failed', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 }

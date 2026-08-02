@@ -2,8 +2,9 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { getAuth } from 'firebase/auth';
-import LandingHeader from '../../../components/LandingHeader';
+import { FiClipboard } from 'react-icons/fi';
 import { requireAdminPageAuth } from '../../../lib/adminPageGuard';
+import adminStyles from '../../../styles/AdminPanel.module.css';
 
 const TYPE_LABELS = {
   all: 'Todos os tipos',
@@ -58,8 +59,11 @@ function formatDate(dateStr) {
   if (!dateStr) return '—';
   try {
     return new Date(dateStr).toLocaleString('pt-PT', {
-      day: '2-digit', month: '2-digit', year: 'numeric',
-      hour: '2-digit', minute: '2-digit'
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
     });
   } catch {
     return dateStr;
@@ -201,66 +205,85 @@ export default function AdminAuditoria() {
     return counts;
   };
 
-  const fetchActivities = useCallback(async (options = {}) => {
-    const append = Boolean(options.append);
-    const cursorIdParam = options.cursorId ? String(options.cursorId) : null;
-    if (append && !cursorIdParam) return;
+  const fetchActivities = useCallback(
+    async (options = {}) => {
+      const append = Boolean(options.append);
+      const cursorIdParam = options.cursorId ? String(options.cursorId) : null;
+      if (append && !cursorIdParam) return;
 
-    if (append) {
-      setLoadingMore(true);
-    } else {
-      setLoading(true);
-      setError('');
-    }
+      if (append) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+        setError('');
+      }
 
-    try {
-      const auth = getAuth();
-      const user = auth.currentUser;
-      if (!user) {
-        setError('Não autenticado');
+      try {
+        const auth = getAuth();
+        const user = auth.currentUser;
+        if (!user) {
+          setError('Não autenticado');
+          setLoading(false);
+          setLoadingMore(false);
+          return;
+        }
+        const token = await user.getIdToken();
+
+        const params = new URLSearchParams();
+        if (filterType && filterType !== 'all') params.set('type', filterType);
+        if (filterSearch) params.set('search', filterSearch);
+        if (filterStartDate) params.set('startDate', filterStartDate);
+        if (filterEndDate) params.set('endDate', filterEndDate);
+        params.set('pageSize', String(pageSize));
+        if (append && cursorIdParam) {
+          params.set('cursorId', cursorIdParam);
+        }
+
+        const res = await fetch(`/api/admin/activities?${params.toString()}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.message || 'Erro ao carregar atividades');
+        }
+
+        const data = await res.json();
+        const incoming = data.activities || [];
+        const merged = append
+          ? [
+              ...activitiesRef.current,
+              ...incoming.filter(
+                (item) =>
+                  !activitiesRef.current.some(
+                    (existing) => existing.id === item.id,
+                  ),
+              ),
+            ]
+          : incoming;
+
+        setActivities(merged);
+        setTotal(
+          Number.isFinite(Number(data.total))
+            ? Number(data.total)
+            : merged.length,
+        );
+        setTypeCounts(
+          append
+            ? countByType(merged)
+            : data.typeCounts || countByType(incoming),
+        );
+        setHasMore(Boolean(data.hasMore));
+        setNextCursorId(data.nextCursorId || null);
+      } catch (err) {
+        setError(err.message);
+      } finally {
         setLoading(false);
         setLoadingMore(false);
-        return;
       }
-      const token = await user.getIdToken();
-
-      const params = new URLSearchParams();
-      if (filterType && filterType !== 'all') params.set('type', filterType);
-      if (filterSearch) params.set('search', filterSearch);
-      if (filterStartDate) params.set('startDate', filterStartDate);
-      if (filterEndDate) params.set('endDate', filterEndDate);
-      params.set('pageSize', String(pageSize));
-      if (append && cursorIdParam) {
-        params.set('cursorId', cursorIdParam);
-      }
-
-      const res = await fetch(`/api/admin/activities?${params.toString()}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message || 'Erro ao carregar atividades');
-      }
-
-      const data = await res.json();
-      const incoming = data.activities || [];
-      const merged = append
-        ? [...activitiesRef.current, ...incoming.filter((item) => !activitiesRef.current.some((existing) => existing.id === item.id))]
-        : incoming;
-
-      setActivities(merged);
-      setTotal(Number.isFinite(Number(data.total)) ? Number(data.total) : merged.length);
-      setTypeCounts(append ? countByType(merged) : (data.typeCounts || countByType(incoming)));
-      setHasMore(Boolean(data.hasMore));
-      setNextCursorId(data.nextCursorId || null);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-    }
-  }, [filterType, filterSearch, filterStartDate, filterEndDate, pageSize]);
+    },
+    [filterType, filterSearch, filterStartDate, filterEndDate, pageSize],
+  );
 
   useEffect(() => {
     fetchActivities({ append: false });
@@ -283,35 +306,82 @@ export default function AdminAuditoria() {
         <title>Auditoria | Admin EmpregoSTP</title>
       </Head>
       <div style={s.page}>
-        <LandingHeader />
-        <main style={s.container}>
-
+        <div className={adminStyles.legacyPage} style={s.container}>
           {/* Header */}
           <div style={{ marginBottom: '2rem' }}>
-            <Link href="/dashboard/admin" style={{
-              display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
-              color: '#60a5fa', textDecoration: 'none', fontWeight: '600',
-              marginBottom: '0.75rem', fontSize: '0.9rem',
-            }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <Link
+              href="/dashboard/admin"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                color: '#60a5fa',
+                textDecoration: 'none',
+                fontWeight: '600',
+                marginBottom: '0.75rem',
+                fontSize: '0.9rem',
+              }}
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <path d="M19 12H5M12 19l-7-7 7-7" />
               </svg>
               Voltar ao Dashboard
             </Link>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '1rem' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-end',
+                flexWrap: 'wrap',
+                gap: '1rem',
+              }}
+            >
               <div>
-                <h1 style={{ margin: 0, fontSize: '2.5rem', fontWeight: 900, lineHeight: 1.1 }}>
+                <h1
+                  style={{
+                    margin: 0,
+                    fontSize: '2.5rem',
+                    fontWeight: 900,
+                    lineHeight: 1.1,
+                  }}
+                >
                   Auditoria
                 </h1>
-                <p style={{ margin: '0.5rem 0 0', color: 'rgba(255,255,255,0.55)', fontSize: '1rem' }}>
+                <p
+                  style={{
+                    margin: '0.5rem 0 0',
+                    color: 'rgba(255,255,255,0.55)',
+                    fontSize: '1rem',
+                  }}
+                >
                   Registo de todas as ações administrativas da plataforma
                 </p>
               </div>
               <button
                 onClick={fetchActivities}
-                style={{ ...s.btn, ...s.secondaryBtn, display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                style={{
+                  ...s.btn,
+                  ...s.secondaryBtn,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                }}
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <polyline points="23 4 23 10 17 10" />
                   <polyline points="1 20 1 14 7 14" />
                   <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
@@ -322,83 +392,143 @@ export default function AdminAuditoria() {
           </div>
 
           {/* Stats */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-            gap: '1rem',
-            marginBottom: '2rem',
-          }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+              gap: '1rem',
+              marginBottom: '2rem',
+            }}
+          >
             <div style={s.statCard('#3b82f6')}>
-              <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.4rem' }}>Total de Ações</div>
-              <div style={{ fontSize: '2rem', fontWeight: 900, color: '#60a5fa' }}>{total}</div>
+              <div
+                style={{
+                  fontSize: '0.75rem',
+                  color: 'rgba(255,255,255,0.5)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.06em',
+                  marginBottom: '0.4rem',
+                }}
+              >
+                Total de Ações
+              </div>
+              <div
+                style={{ fontSize: '2rem', fontWeight: 900, color: '#60a5fa' }}
+              >
+                {total}
+              </div>
             </div>
             {topTypes.map(([type, count]) => (
               <div key={type} style={s.statCard(getTypeColor(type))}>
-                <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.4rem' }}>
+                <div
+                  style={{
+                    fontSize: '0.75rem',
+                    color: 'rgba(255,255,255,0.5)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.06em',
+                    marginBottom: '0.4rem',
+                  }}
+                >
                   {getTypeLabel(type)}
                 </div>
-                <div style={{ fontSize: '2rem', fontWeight: 900, color: getTypeColor(type) }}>{count}</div>
+                <div
+                  style={{
+                    fontSize: '2rem',
+                    fontWeight: 900,
+                    color: getTypeColor(type),
+                  }}
+                >
+                  {count}
+                </div>
               </div>
             ))}
           </div>
 
           {/* Filters */}
           <div style={{ ...s.card, marginBottom: '1.5rem' }}>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '1.25rem',
-              alignItems: 'end',
-            }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: '1.25rem',
+                alignItems: 'end',
+              }}
+            >
               <div>
-                <label style={s.label}>Tipo de Ação</label>
+                <label htmlFor="audit-action-type" style={s.label}>
+                  Tipo de ação
+                </label>
                 <select
+                  id="audit-action-type"
                   value={filterType}
-                  onChange={e => setFilterType(e.target.value)}
+                  onChange={(e) => setFilterType(e.target.value)}
                   style={s.select}
                 >
                   {Object.entries(TYPE_LABELS).map(([value, label]) => (
-                    <option key={value} value={value}>{label}</option>
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label style={s.label}>Pesquisar</label>
+                <label htmlFor="audit-search" style={s.label}>
+                  Pesquisar
+                </label>
                 <input
-                  type="text"
+                  id="audit-search"
+                  type="search"
                   value={filterSearch}
-                  onChange={e => setFilterSearch(e.target.value)}
+                  onChange={(e) => setFilterSearch(e.target.value)}
                   placeholder="Descrição, utilizador..."
                   style={s.input}
                 />
               </div>
 
               <div>
-                <label style={s.label}>Data Início</label>
+                <label htmlFor="audit-start-date" style={s.label}>
+                  Data de início
+                </label>
                 <input
+                  id="audit-start-date"
                   type="date"
                   value={filterStartDate}
-                  onChange={e => setFilterStartDate(e.target.value)}
+                  onChange={(e) => setFilterStartDate(e.target.value)}
                   style={s.input}
                 />
               </div>
 
               <div>
-                <label style={s.label}>Data Fim</label>
+                <label htmlFor="audit-end-date" style={s.label}>
+                  Data de fim
+                </label>
                 <input
+                  id="audit-end-date"
                   type="date"
                   value={filterEndDate}
-                  onChange={e => setFilterEndDate(e.target.value)}
+                  onChange={(e) => setFilterEndDate(e.target.value)}
                   style={s.input}
                 />
               </div>
 
-              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-end' }}>
-              <button onClick={fetchActivities} style={{ ...s.btn, ...s.primaryBtn, flex: 1 }}>
-                Filtrar
-              </button>
-                <button onClick={handleClearFilters} style={{ ...s.btn, ...s.secondaryBtn }}>
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '0.75rem',
+                  alignItems: 'flex-end',
+                }}
+              >
+                <button
+                  onClick={fetchActivities}
+                  style={{ ...s.btn, ...s.primaryBtn, flex: 1 }}
+                >
+                  Filtrar
+                </button>
+                <button
+                  onClick={handleClearFilters}
+                  style={{ ...s.btn, ...s.secondaryBtn }}
+                >
                   Limpar
                 </button>
               </div>
@@ -407,23 +537,37 @@ export default function AdminAuditoria() {
 
           {/* Error */}
           {error && (
-            <div style={{
-              marginBottom: '1.5rem', padding: '1rem 1.25rem', borderRadius: '10px',
-              background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)',
-              color: '#fca5a5', fontSize: '0.95rem',
-            }}>
+            <div
+              role="alert"
+              style={{
+                marginBottom: '1.5rem',
+                padding: '1rem 1.25rem',
+                borderRadius: '10px',
+                background: 'rgba(239,68,68,0.12)',
+                border: '1px solid rgba(239,68,68,0.3)',
+                color: '#fca5a5',
+                fontSize: '0.95rem',
+              }}
+            >
               {error}
             </div>
           )}
 
           {/* Table */}
           <div style={s.card}>
-            <div style={{
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              marginBottom: '1rem', paddingBottom: '0.75rem',
-              borderBottom: '1px solid rgba(255,255,255,0.08)',
-            }}>
-              <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.95rem' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '1rem',
+                paddingBottom: '0.75rem',
+                borderBottom: '1px solid rgba(255,255,255,0.08)',
+              }}
+            >
+              <span
+                style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.95rem' }}
+              >
                 {loading
                   ? 'A carregar...'
                   : total > 0
@@ -433,22 +577,33 @@ export default function AdminAuditoria() {
             </div>
 
             {loading ? (
-              <div style={{ padding: '3rem', textAlign: 'center' }}>
-                <div style={{
-                  width: '40px', height: '40px', border: '3px solid rgba(255,255,255,0.1)',
-                  borderTop: '3px solid #3b82f6', borderRadius: '50%',
-                  animation: 'spin 1s linear infinite', margin: '0 auto 1rem',
-                }} />
-                <p style={{ color: 'rgba(255,255,255,0.5)' }}>A carregar registos de auditoria...</p>
-                <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+              <div
+                role="status"
+                aria-live="polite"
+                style={{ padding: '3rem', textAlign: 'center' }}
+              >
+                <div
+                  className={`${adminStyles.spinner} ${adminStyles.spinnerLarge}`}
+                />
+                <p style={{ color: 'rgba(255,255,255,0.5)' }}>
+                  A carregar registos de auditoria...
+                </p>
               </div>
             ) : activities.length === 0 ? (
               <div style={{ padding: '4rem', textAlign: 'center' }}>
-                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📋</div>
-                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '1.1rem' }}>
+                <FiClipboard
+                  aria-hidden="true"
+                  size={42}
+                  style={{ marginBottom: '1rem', color: 'var(--text-3)' }}
+                />
+                <p
+                  style={{ color: 'rgba(255,255,255,0.5)', fontSize: '1.1rem' }}
+                >
                   Nenhum registo encontrado
                 </p>
-                <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.9rem' }}>
+                <p
+                  style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.9rem' }}
+                >
                   Tente ajustar os filtros ou aguarde que ações sejam registadas
                 </p>
               </div>
@@ -465,14 +620,26 @@ export default function AdminAuditoria() {
                     </tr>
                   </thead>
                   <tbody>
-                    {activities.map(activity => (
+                    {activities.map((activity) => (
                       <tr
                         key={activity.id}
                         style={{ transition: 'background 0.15s' }}
-                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
-                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                        onMouseEnter={(e) =>
+                          (e.currentTarget.style.background =
+                            'rgba(255,255,255,0.03)')
+                        }
+                        onMouseLeave={(e) =>
+                          (e.currentTarget.style.background = 'transparent')
+                        }
                       >
-                        <td style={{ ...s.td, whiteSpace: 'nowrap', color: 'rgba(255,255,255,0.5)', fontSize: '0.82rem' }}>
+                        <td
+                          style={{
+                            ...s.td,
+                            whiteSpace: 'nowrap',
+                            color: 'rgba(255,255,255,0.5)',
+                            fontSize: '0.82rem',
+                          }}
+                        >
                           {formatDate(activity.createdAt)}
                         </td>
                         <td style={s.td}>
@@ -489,24 +656,36 @@ export default function AdminAuditoria() {
                           {activity.userId ? (
                             <Link
                               href={`/dashboard/admin/users/${activity.userId}`}
-                              style={{ color: '#60a5fa', textDecoration: 'none', fontSize: '0.85rem' }}
+                              style={{
+                                color: '#60a5fa',
+                                textDecoration: 'none',
+                                fontSize: '0.85rem',
+                              }}
                             >
                               {activity.userName || activity.userId}
                             </Link>
                           ) : (
-                            <span style={{ color: 'rgba(255,255,255,0.3)' }}>—</span>
+                            <span style={{ color: 'rgba(255,255,255,0.3)' }}>
+                              —
+                            </span>
                           )}
                         </td>
                         <td style={s.td}>
                           {activity.adminId ? (
                             <Link
                               href={`/dashboard/admin/users/${activity.adminId}`}
-                              style={{ color: '#a78bfa', textDecoration: 'none', fontSize: '0.85rem' }}
+                              style={{
+                                color: '#a78bfa',
+                                textDecoration: 'none',
+                                fontSize: '0.85rem',
+                              }}
                             >
                               {activity.adminName || activity.adminId}
                             </Link>
                           ) : (
-                            <span style={{ color: 'rgba(255,255,255,0.3)' }}>Sistema</span>
+                            <span style={{ color: 'rgba(255,255,255,0.3)' }}>
+                              Sistema
+                            </span>
                           )}
                         </td>
                       </tr>
@@ -519,26 +698,41 @@ export default function AdminAuditoria() {
 
           {/* Load more hint */}
           {!loading && hasMore && (
-            <div style={{ textAlign: 'center', marginTop: '1.5rem', display: 'grid', gap: '0.65rem', justifyItems: 'center' }}>
+            <div
+              style={{
+                textAlign: 'center',
+                marginTop: '1.5rem',
+                display: 'grid',
+                gap: '0.65rem',
+                justifyItems: 'center',
+              }}
+            >
               <button
-                onClick={() => fetchActivities({ append: true, cursorId: nextCursorId })}
+                onClick={() =>
+                  fetchActivities({ append: true, cursorId: nextCursorId })
+                }
                 disabled={loadingMore}
                 style={{
                   ...s.btn,
                   ...s.secondaryBtn,
                   opacity: loadingMore ? 0.7 : 1,
-                  cursor: loadingMore ? 'not-allowed' : 'pointer'
+                  cursor: loadingMore ? 'not-allowed' : 'pointer',
                 }}
               >
                 {loadingMore ? 'A carregar mais...' : 'Carregar mais registos'}
               </button>
-              <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem', margin: 0 }}>
+              <p
+                style={{
+                  color: 'rgba(255,255,255,0.4)',
+                  fontSize: '0.85rem',
+                  margin: 0,
+                }}
+              >
                 Continue a carregar para ver registos mais antigos.
               </p>
             </div>
           )}
-
-        </main>
+        </div>
       </div>
     </>
   );

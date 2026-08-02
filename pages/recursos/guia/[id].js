@@ -1,9 +1,39 @@
 import Head from 'next/head';
 import Link from 'next/link';
-import LandingHeader from '../../../components/LandingHeader';
-import Footer from '../../../components/home/Footer';
+import {
+  FiArrowLeft,
+  FiBookOpen,
+  FiClock,
+  FiDownload,
+  FiFileText,
+} from 'react-icons/fi';
+import PublicPageShell from '../../../components/PublicPageShell';
 import { admin } from '../../../lib/firebaseAdmin';
 import { DEFAULT_GUIDES, GUIDE_CONTENTS } from '../../../lib/resourcesCatalog';
+import styles from '../../../styles/ResourceGuidePage.module.css';
+
+const MIN_COMPLETE_GUIDE_LENGTH = 80;
+const LEGACY_GUIDE_COPY = {
+  'Preparacao pratica para entrevistas presenciais e remotas.':
+    'Preparação prática para entrevistas presenciais e remotas.',
+  'Guia de Negociacao Salarial': 'Guia de Negociação Salarial',
+  'Como negociar remuneracao com argumentos objetivos.':
+    'Como negociar a remuneração com argumentos objetivos.',
+  'Playbook de Entrevistas para Empresas':
+    'Roteiro de Entrevistas para Empresas',
+  'Roteiro para triagem, entrevista e avaliacao de candidatos.':
+    'Roteiro para triagem, entrevista e avaliação de candidatos.',
+  'Guia de Onboarding de Novos Colaboradores':
+    'Guia de Integração de Novos Colaboradores',
+  'Plano de 30 dias para integracao e produtividade inicial.':
+    'Plano de 30 dias para integração e produtividade inicial.',
+  Gestao: 'Gestão',
+};
+
+const normalizeGuideCopy = (value, fallback = '') => {
+  const text = String(value || fallback).trim();
+  return LEGACY_GUIDE_COPY[text] || text;
+};
 
 const toPlainText = (value) => {
   const text = String(value || '').trim();
@@ -16,107 +46,166 @@ const toPlainText = (value) => {
     .trim();
 };
 
-export default function GuiaDetalhePage({ guide }) {
-  const styles = {
-    page: {
-      minHeight: '100vh',
-      backgroundColor: '#09090b',
-      color: '#fff'
-    },
-    container: {
-      maxWidth: '900px',
-      margin: '0 auto',
-      padding: '2rem'
-    },
-    breadcrumb: {
-      color: '#94a3b8',
-      textDecoration: 'none',
-      fontSize: '0.9rem'
-    },
-    title: {
-      margin: '1rem 0 0.4rem',
-      fontSize: '2rem',
-      fontWeight: 800
-    },
-    description: {
-      margin: 0,
-      color: '#a1a1aa',
-      lineHeight: 1.7
-    },
-    meta: {
-      display: 'flex',
-      gap: '1rem',
-      flexWrap: 'wrap',
-      marginTop: '1rem',
-      marginBottom: '1rem',
-      color: '#9ca3af',
-      fontSize: '0.85rem'
-    },
-    button: {
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: '0.4rem',
-      padding: '0.55rem 0.85rem',
-      background: 'rgba(99, 102, 241, 0.16)',
-      border: '1px solid rgba(99, 102, 241, 0.35)',
-      borderRadius: '8px',
-      color: '#c7d2fe',
-      textDecoration: 'none',
-      fontWeight: 600,
-      fontSize: '0.82rem'
-    },
-    contentCard: {
-      marginTop: '1.2rem',
-      borderRadius: '14px',
-      border: '1px solid rgba(255, 255, 255, 0.08)',
-      background: 'rgba(255, 255, 255, 0.02)',
-      padding: '1.15rem'
-    },
-    content: {
-      margin: 0,
-      color: '#e5e7eb',
-      lineHeight: 1.8,
-      whiteSpace: 'pre-wrap',
-      fontSize: '0.95rem'
+const createGuideBlocks = (content) => {
+  const blocks = [];
+  let listItems = [];
+  let listType = 'unordered';
+
+  const flushList = () => {
+    if (listItems.length > 0) {
+      blocks.push({ items: listItems, type: listType });
+      listItems = [];
     }
   };
 
+  toPlainText(content)
+    .split('\n')
+    .forEach((rawLine) => {
+      const line = rawLine.trim();
+
+      if (!line) {
+        flushList();
+        return;
+      }
+
+      if (/^#\s+/.test(line)) {
+        flushList();
+        return;
+      }
+
+      const heading = line.match(/^#{2,3}\s+(.+)$/);
+      if (heading) {
+        flushList();
+        blocks.push({ text: heading[1], type: 'heading' });
+        return;
+      }
+
+      const unorderedItem = line.match(/^[-*]\s+(.+)$/);
+      const orderedItem = line.match(/^\d+[.)]\s+(.+)$/);
+      if (unorderedItem || orderedItem) {
+        const nextListType = orderedItem ? 'ordered' : 'unordered';
+        if (listItems.length > 0 && listType !== nextListType) flushList();
+        listType = nextListType;
+        listItems.push((orderedItem || unorderedItem)[1]);
+        return;
+      }
+
+      flushList();
+      blocks.push({ text: line, type: 'paragraph' });
+    });
+
+  flushList();
+  return blocks;
+};
+
+function GuideContent({ content }) {
+  const blocks = createGuideBlocks(content);
+
+  if (blocks.length === 0) {
+    return (
+      <div className={styles.emptyState}>
+        <FiFileText aria-hidden="true" />
+        <div>
+          <h2>Conteúdo em preparação</h2>
+          <p>Este guia ainda não tem conteúdo disponível.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.guideContent}>
+      {blocks.map((block, index) => {
+        const key = `${block.type}-${index}`;
+
+        if (block.type === 'heading') {
+          return <h2 key={key}>{block.text}</h2>;
+        }
+
+        if (block.type === 'ordered') {
+          return (
+            <ol key={key}>
+              {block.items.map((item, itemIndex) => (
+                <li key={`${item}-${itemIndex}`}>{item}</li>
+              ))}
+            </ol>
+          );
+        }
+
+        if (block.type === 'unordered') {
+          return (
+            <ul key={key}>
+              {block.items.map((item, itemIndex) => (
+                <li key={`${item}-${itemIndex}`}>{item}</li>
+              ))}
+            </ul>
+          );
+        }
+
+        return <p key={key}>{block.text}</p>;
+      })}
+    </div>
+  );
+}
+
+export default function GuiaDetalhePage({ guide }) {
   return (
     <>
       <Head>
         <title>{guide.title} | Guia EmpregoSTP</title>
-        <meta name="description" content={guide.description || 'Guia e manual de carreira no EmpregoSTP.'} />
+        <meta
+          name="description"
+          content={
+            guide.description || 'Guia prático de carreira no EmpregoSTP.'
+          }
+        />
       </Head>
-      <div style={styles.page}>
-        <LandingHeader />
-        <main style={styles.container}>
-          <Link href="/recursos" style={styles.breadcrumb}>
-            {'<-'} Voltar para Recursos
-          </Link>
 
-          <h1 style={styles.title}>{guide.title}</h1>
-          <p style={styles.description}>{guide.description}</p>
+      <PublicPageShell>
+        <div className={styles.page}>
+          <div className={styles.container}>
+            <Link href="/recursos" className={styles.backLink}>
+              <FiArrowLeft aria-hidden="true" />
+              Voltar aos recursos
+            </Link>
 
-          <div style={styles.meta}>
-            <span>{guide.category || 'Guia'}</span>
-            {guide.readTime ? <span>{guide.readTime}</span> : null}
-            {guide.pages ? <span>{guide.pages} paginas</span> : null}
+            <header className={styles.hero}>
+              <span className={styles.eyebrow}>
+                <FiBookOpen aria-hidden="true" />
+                {guide.category || 'Guia prático'}
+              </span>
+              <h1>{guide.title}</h1>
+              {guide.description ? <p>{guide.description}</p> : null}
+
+              <div className={styles.details} aria-label="Detalhes do guia">
+                {guide.readTime ? (
+                  <span>
+                    <FiClock aria-hidden="true" />
+                    {guide.readTime}
+                  </span>
+                ) : null}
+                {guide.pages ? (
+                  <span>
+                    <FiFileText aria-hidden="true" />
+                    {guide.pages} páginas
+                  </span>
+                ) : null}
+              </div>
+
+              {guide.downloadUrl ? (
+                <a href={guide.downloadUrl} className={styles.downloadLink}>
+                  <FiDownload aria-hidden="true" />
+                  Descarregar anexo
+                </a>
+              ) : null}
+            </header>
+
+            <article className={styles.article}>
+              <GuideContent content={guide.content} />
+            </article>
           </div>
-
-          {guide.downloadUrl ? (
-            <a href={guide.downloadUrl} style={styles.button}>
-              Baixar anexo
-            </a>
-          ) : null}
-
-          <section style={styles.contentCard}>
-            <pre style={styles.content}>
-              {guide.content || 'Este guia ainda nao possui conteudo de texto.'}
-            </pre>
-          </section>
-        </main>
-        <Footer />
-      </div>
+        </div>
+      </PublicPageShell>
     </>
   );
 }
@@ -127,41 +216,56 @@ export async function getServerSideProps(context) {
     return { notFound: true };
   }
 
+  const fallbackGuide = DEFAULT_GUIDES.find((item) => item.id === id);
+  const fallbackContent = toPlainText(GUIDE_CONTENTS[id] || '');
   let guide = null;
 
   try {
-    const guideDoc = await admin.firestore().collection('resources_guides').doc(id).get();
+    const guideDoc = await admin
+      .firestore()
+      .collection('resources_guides')
+      .doc(id)
+      .get();
     if (guideDoc.exists) {
       const data = guideDoc.data() || {};
+      const storedContent = toPlainText(data.content || '');
+      const content =
+        storedContent.length >= MIN_COMPLETE_GUIDE_LENGTH || !fallbackContent
+          ? storedContent
+          : fallbackContent;
+
       guide = {
         id: guideDoc.id,
-        title: data.title || 'Guia',
-        description: data.description || '',
-        category: data.category || 'Guia',
-        readTime: data.readTime || '',
-        pages: data.pages || '',
+        title: normalizeGuideCopy(data.title, fallbackGuide?.title || 'Guia'),
+        description: normalizeGuideCopy(
+          data.description,
+          fallbackGuide?.description,
+        ),
+        category: normalizeGuideCopy(
+          data.category,
+          fallbackGuide?.category || 'Guia',
+        ),
+        readTime: data.readTime || fallbackGuide?.readTime || '',
+        pages: data.pages || fallbackGuide?.pages || '',
         downloadUrl: data.fileUrl || data.url || null,
-        content: toPlainText(data.content || '')
+        content,
       };
     }
   } catch (error) {
     console.error('Erro ao carregar guia por ID:', error);
   }
 
-  if (!guide) {
-    const fallbackGuide = DEFAULT_GUIDES.find((item) => item.id === id);
-    if (fallbackGuide) {
-      guide = {
-        id: fallbackGuide.id,
-        title: fallbackGuide.title || 'Guia',
-        description: fallbackGuide.description || '',
-        category: fallbackGuide.category || 'Guia',
-        readTime: fallbackGuide.readTime || '',
-        pages: fallbackGuide.pages || '',
-        downloadUrl: null,
-        content: toPlainText(GUIDE_CONTENTS[fallbackGuide.id] || '')
-      };
-    }
+  if (!guide && fallbackGuide) {
+    guide = {
+      id: fallbackGuide.id,
+      title: fallbackGuide.title || 'Guia',
+      description: fallbackGuide.description || '',
+      category: fallbackGuide.category || 'Guia',
+      readTime: fallbackGuide.readTime || '',
+      pages: fallbackGuide.pages || '',
+      downloadUrl: null,
+      content: fallbackContent,
+    };
   }
 
   if (!guide) {
@@ -170,7 +274,7 @@ export async function getServerSideProps(context) {
 
   return {
     props: {
-      guide
-    }
+      guide,
+    },
   };
 }

@@ -1,0 +1,549 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "phase": "global-before",
+  "results": [
+    {
+      "accessibilityViolations": [],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 320,
+          "scrollHeight": 3785,
+          "scrollWidth": 320
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 40,
+            "tag": "A",
+            "text": "Voltar para vagas",
+            "width": 153
+          },
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "Partilhar",
+            "width": 127
+          },
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "Denunciar",
+            "width": 127
+          }
+        ],
+        "smallText": [
+          {
+            "size": "13.125px",
+            "tag": "A",
+            "text": "Voltar para vagas"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "L"
+          },
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "Temporário"
+          },
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "Não informado"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "ltd"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "ntr"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Publicada em 10/05/2026"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Candidatar-se agora"
+          },
+          {
+            "size": "11.7px",
+            "tag": "BUTTON",
+            "text": "Guardar vaga"
+          },
+          {
+            "size": "13.125px",
+            "tag": "P",
+            "text": "Sdhjk bla bla bla bla bla"
+          },
+          {
+            "size": "12.9px",
+            "tag": "SPAN",
+            "text": "Saber fazer sempre"
+          },
+          {
+            "size": "12.9px",
+            "tag": "SPAN",
+            "text": "Ter tudo"
+          },
+          {
+            "size": "12.3px",
+            "tag": "STRONG",
+            "text": "Salário competitivo"
+          },
+          {
+            "size": "10.2px",
+            "tag": "SMALL",
+            "text": "Benefício indicado pela empresa"
+          },
+          {
+            "size": "12.3px",
+            "tag": "STRONG",
+            "text": "Contexto profissional estruturado"
+          },
+          {
+            "size": "10.2px",
+            "tag": "SMALL",
+            "text": "Benefício indicado pela empresa"
+          },
+          {
+            "size": "12.3px",
+            "tag": "STRONG",
+            "text": "Processo de candidatura organizado"
+          },
+          {
+            "size": "10.2px",
+            "tag": "SMALL",
+            "text": "Benefício indicado pela empresa"
+          },
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "Estado"
+          },
+          {
+            "size": "12.3px",
+            "tag": "STRONG",
+            "text": "Aberta"
+          },
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "Abertura"
+          },
+          {
+            "size": "12.3px",
+            "tag": "STRONG",
+            "text": "Não informado"
+          },
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "Encerramento"
+          },
+          {
+            "size": "12.3px",
+            "tag": "STRONG",
+            "text": "Não informado"
+          },
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "Escolaridade"
+          },
+          {
+            "size": "12.3px",
+            "tag": "STRONG",
+            "text": "Licenciatura"
+          },
+          {
+            "size": "11.25px",
+            "tag": "DT",
+            "text": "Nível de experiência"
+          },
+          {
+            "size": "11.25px",
+            "tag": "DD",
+            "text": "Sénior"
+          },
+          {
+            "size": "11.25px",
+            "tag": "DT",
+            "text": "Modalidade"
+          },
+          {
+            "size": "11.25px",
+            "tag": "DD",
+            "text": "Não informado"
+          },
+          {
+            "size": "11.25px",
+            "tag": "DT",
+            "text": "Tipo de contrato"
+          },
+          {
+            "size": "11.25px",
+            "tag": "DD",
+            "text": "Temporário"
+          },
+          {
+            "size": "11.25px",
+            "tag": "DT",
+            "text": "Faixa salarial"
+          },
+          {
+            "size": "11.25px",
+            "tag": "DD",
+            "text": "A combinar"
+          },
+          {
+            "size": "10.5px",
+            "tag": "STRONG",
+            "text": "Candidatura direta"
+          },
+          {
+            "size": "10.8px",
+            "tag": "P",
+            "text": "Envie o seu perfil e acompanhe a evolução da candidatura no dashboard."
+          },
+          {
+            "size": "11.7px",
+            "tag": "BUTTON",
+            "text": "Candidatar agora"
+          },
+          {
+            "size": "9.9px",
+            "tag": "SPAN",
+            "text": "Partilhar"
+          },
+          {
+            "size": "9.9px",
+            "tag": "SPAN",
+            "text": "Denunciar"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Sénior"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Ter tudo"
+          },
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "Empresa"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "L"
+          },
+          {
+            "size": "11.7px",
+            "tag": "P",
+            "text": "ntr"
+          },
+          {
+            "size": "11.7px",
+            "tag": "P",
+            "text": "Consulte a oportunidade e a informação disponível para conhecer melhor o contexto desta empresa e o "
+          },
+          {
+            "size": "11.7px",
+            "tag": "BUTTON",
+            "text": "Candidatar agora"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/vaga/Jt8k6ucQlT94PjQDOZxZ",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      }
+    },
+    {
+      "accessibilityViolations": [],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1440,
+          "scrollHeight": 2617,
+          "scrollWidth": 1440
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 40,
+            "tag": "A",
+            "text": "Voltar para vagas",
+            "width": 160
+          },
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "Partilhar",
+            "width": 152
+          },
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "Denunciar",
+            "width": 152
+          }
+        ],
+        "smallText": [
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "Temporário"
+          },
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "Não informado"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "ltd"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "ntr"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Publicada em 10/05/2026"
+          },
+          {
+            "size": "10.56px",
+            "tag": "SPAN",
+            "text": "Sénior"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Candidatar-se agora"
+          },
+          {
+            "size": "12.48px",
+            "tag": "BUTTON",
+            "text": "Guardar vaga"
+          },
+          {
+            "size": "13.76px",
+            "tag": "SPAN",
+            "text": "Saber fazer sempre"
+          },
+          {
+            "size": "13.76px",
+            "tag": "SPAN",
+            "text": "Ter tudo"
+          },
+          {
+            "size": "13.12px",
+            "tag": "STRONG",
+            "text": "Salário competitivo"
+          },
+          {
+            "size": "10.88px",
+            "tag": "SMALL",
+            "text": "Benefício indicado pela empresa"
+          },
+          {
+            "size": "13.12px",
+            "tag": "STRONG",
+            "text": "Contexto profissional estruturado"
+          },
+          {
+            "size": "10.88px",
+            "tag": "SMALL",
+            "text": "Benefício indicado pela empresa"
+          },
+          {
+            "size": "13.12px",
+            "tag": "STRONG",
+            "text": "Processo de candidatura organizado"
+          },
+          {
+            "size": "10.88px",
+            "tag": "SMALL",
+            "text": "Benefício indicado pela empresa"
+          },
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "Estado"
+          },
+          {
+            "size": "13.12px",
+            "tag": "STRONG",
+            "text": "Aberta"
+          },
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "Abertura"
+          },
+          {
+            "size": "13.12px",
+            "tag": "STRONG",
+            "text": "Não informado"
+          },
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "Encerramento"
+          },
+          {
+            "size": "13.12px",
+            "tag": "STRONG",
+            "text": "Não informado"
+          },
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "Escolaridade"
+          },
+          {
+            "size": "13.12px",
+            "tag": "STRONG",
+            "text": "Licenciatura"
+          },
+          {
+            "size": "12px",
+            "tag": "DT",
+            "text": "Nível de experiência"
+          },
+          {
+            "size": "12px",
+            "tag": "DD",
+            "text": "Sénior"
+          },
+          {
+            "size": "12px",
+            "tag": "DT",
+            "text": "Modalidade"
+          },
+          {
+            "size": "12px",
+            "tag": "DD",
+            "text": "Não informado"
+          },
+          {
+            "size": "12px",
+            "tag": "DT",
+            "text": "Tipo de contrato"
+          },
+          {
+            "size": "12px",
+            "tag": "DD",
+            "text": "Temporário"
+          },
+          {
+            "size": "12px",
+            "tag": "DT",
+            "text": "Faixa salarial"
+          },
+          {
+            "size": "12px",
+            "tag": "DD",
+            "text": "A combinar"
+          },
+          {
+            "size": "11.2px",
+            "tag": "STRONG",
+            "text": "Candidatura direta"
+          },
+          {
+            "size": "11.52px",
+            "tag": "P",
+            "text": "Envie o seu perfil e acompanhe a evolução da candidatura no dashboard."
+          },
+          {
+            "size": "12.48px",
+            "tag": "BUTTON",
+            "text": "Candidatar agora"
+          },
+          {
+            "size": "10.56px",
+            "tag": "SPAN",
+            "text": "Partilhar"
+          },
+          {
+            "size": "10.56px",
+            "tag": "SPAN",
+            "text": "Denunciar"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Sénior"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Ter tudo"
+          },
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "Empresa"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "L"
+          },
+          {
+            "size": "12.48px",
+            "tag": "P",
+            "text": "ntr"
+          },
+          {
+            "size": "12.48px",
+            "tag": "P",
+            "text": "Consulte a oportunidade e a informação disponível para conhecer melhor o contexto desta empresa e o "
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/vaga/Jt8k6ucQlT94PjQDOZxZ",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    }
+  ],
+  "route": "/vaga/Jt8k6ucQlT94PjQDOZxZ",
+  "slug": "vaga-detalhe"
+}

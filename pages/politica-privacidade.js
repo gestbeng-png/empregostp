@@ -1,12 +1,12 @@
-import Head from "next/head";
-import PublicPageShell from "../components/PublicPageShell";
-import styles from "../styles/LegalPage.module.css";
+import Head from 'next/head';
+import PublicPageShell from '../components/PublicPageShell';
+import styles from '../styles/LegalPage.module.css';
 
 export default function PoliticaPrivacidade() {
   return (
     <>
       <Head>
-        <title>Política de Privacidade - Emprego STP</title>
+        <title>Política de privacidade | EmpregoSTP</title>
         <meta
           name="description"
           content="Política de Privacidade do Emprego STP."
@@ -14,7 +14,7 @@ export default function PoliticaPrivacidade() {
       </Head>
 
       <PublicPageShell>
-        <main className={styles.page}>
+        <div className={styles.page}>
           <section className={styles.hero}>
             <div className={styles.heroPanel}>
               <p className={styles.heroKicker}>Política de Privacidade</p>
@@ -23,8 +23,8 @@ export default function PoliticaPrivacidade() {
               </h1>
               <p className={styles.heroText}>
                 Esta política explica como o Emprego STP recolhe, utiliza e
-                protege os seus dados pessoais. Ao usar a plataforma, você
-                concorda com os termos descritos abaixo.
+                protege os seus dados pessoais. Ao utilizar a plataforma, o
+                utilizador aceita os termos descritos abaixo.
               </p>
               <p className={styles.heroDate}>
                 Última atualização: 2 de fevereiro de 2026
@@ -34,10 +34,7 @@ export default function PoliticaPrivacidade() {
 
           <div className={styles.stack}>
             <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>
-                <span />
-                Dados que recolhemos
-              </h2>
+              <h2 className={styles.sectionTitle}>Dados que recolhemos</h2>
               <ul>
                 <li>Dados de conta: nome, email, telefone e tipo de perfil.</li>
                 <li>
@@ -51,15 +48,14 @@ export default function PoliticaPrivacidade() {
             </section>
 
             <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>
-                <span />
-                Como utilizamos os dados
-              </h2>
+              <h2 className={styles.sectionTitle}>Como utilizamos os dados</h2>
               <ul>
-                <li>Para conectar candidatos a vagas relevantes e empresas.</li>
+                <li>
+                  Para aproximar candidatos de vagas relevantes e empresas.
+                </li>
                 <li>
                   Para melhorar a experiência da plataforma e os serviços
-                  oferecidos.
+                  disponibilizados.
                 </li>
                 <li>
                   Para enviar comunicações essenciais sobre candidaturas e
@@ -69,45 +65,33 @@ export default function PoliticaPrivacidade() {
             </section>
 
             <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>
-                <span />
-                Partilha de informações
-              </h2>
+              <h2 className={styles.sectionTitle}>Partilha de informações</h2>
               <p>
-                Partilhamos apenas o necessário para viabilizar a conexão entre
+                Partilhamos apenas o necessário para permitir a ligação entre
                 candidatos e empresas. Não vendemos dados pessoais a terceiros.
               </p>
             </section>
 
             <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>
-                <span />
-                Cookies e tecnologia
-              </h2>
+              <h2 className={styles.sectionTitle}>Cookies e tecnologia</h2>
               <p>
                 Utilizamos cookies para manter sessões ativas, melhorar a
-                navegação e entender o uso da plataforma. Você pode ajustar as
+                navegação e compreender o uso da plataforma. Pode ajustar as
                 permissões no seu navegador.
               </p>
             </section>
 
             <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>
-                <span />
-                Segurança
-              </h2>
+              <h2 className={styles.sectionTitle}>Segurança</h2>
               <p>
                 Adotamos práticas de segurança para proteger os seus dados.
                 Apesar disso, nenhum sistema é 100% imune. Recomendamos manter
-                suas credenciais em sigilo.
+                as credenciais em segurança.
               </p>
             </section>
 
             <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>
-                <span />
-                Direitos do utilizador
-              </h2>
+              <h2 className={styles.sectionTitle}>Direitos do utilizador</h2>
               <ul>
                 <li>Aceder, atualizar ou corrigir informações pessoais.</li>
                 <li>Solicitar a remoção da conta e dos dados associados.</li>
@@ -118,10 +102,15 @@ export default function PoliticaPrivacidade() {
             <section className={styles.contact}>
               <h2>Fale connosco</h2>
               <p>Se tiver dúvidas sobre esta política, contacte-nos:</p>
-              <p className={styles.contactEmail}>emprego@stp.st</p>
+              <a
+                href="mailto:suporte@empregos.st"
+                className={styles.contactEmail}
+              >
+                suporte@empregos.st
+              </a>
             </section>
           </div>
-        </main>
+        </div>
       </PublicPageShell>
     </>
   );

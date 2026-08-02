@@ -1,5 +1,10 @@
 import { admin } from '../../../lib/firebaseAdmin';
 import { canSendDirectMessage, getEmpresaPlanSummary } from '../../../lib/empresaPlanFeatures';
+import {
+  canUsersContinueConversation,
+  canUsersStartConversation,
+} from '../../../lib/conversationPolicy';
+import { logServerError, logServerWarning } from '../../../lib/serverLog';
 
 function isMissingIndexError(error) {
   return error?.code === 9 || String(error?.details || error?.message || '').toLowerCase().includes('requires an index');
@@ -105,14 +110,21 @@ export default async function handler(req, res) {
 
       return res.status(200).json({ conversations });
     } catch (error) {
-      console.error('Erro ao listar conversas:', error);
+      logServerError('messages.listar_conversas_failed', error);
       return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 
   if (req.method === 'POST') {
-    const { participantId } = req.body;
-    if (!participantId) {
+    const participantId =
+      typeof req.body?.participantId === 'string'
+        ? req.body.participantId.trim()
+        : '';
+    if (
+      !participantId.trim() ||
+      participantId.length > 128 ||
+      participantId.includes('/')
+    ) {
       return res.status(400).json({ error: 'participantId é obrigatório' });
     }
     if (participantId === uid) {
@@ -133,7 +145,20 @@ export default async function handler(req, res) {
     }
 
     try {
-      // Verificar se a conversa já existe
+      const participantDoc = await admin
+        .firestore()
+        .collection('users')
+        .doc(participantId)
+        .get();
+      if (!participantDoc.exists) {
+        return res.status(404).json({ error: 'Participante não encontrado' });
+      }
+
+      const participantData = participantDoc.data() || {};
+
+      // Uma conversa existente continua utilizável mesmo que o candidato tenha
+      // entretanto tornado o perfil privado. A privacidade bloqueia apenas uma
+      // nova ligação; os papéis dos participantes continuam a ser validados.
       const existingSnapshot = await admin.firestore()
         .collection('conversations')
         .where('participants', 'array-contains', uid)
@@ -145,25 +170,92 @@ export default async function handler(req, res) {
       });
 
       if (existing) {
+        const conversationPolicy = canUsersContinueConversation({
+          requester: requesterData,
+          participant: participantData,
+        });
+        if (!conversationPolicy.allowed) {
+          return res.status(403).json({ error: conversationPolicy.reason });
+        }
+
         return res.status(200).json({ conversationId: existing.id });
       }
 
-      // Criar nova conversa
+      const requesterProfileDoc =
+        requesterData.userType === 'candidato'
+          ? await admin
+              .firestore()
+              .collection('profiles')
+              .doc(uid)
+              .get()
+          : null;
+      const participantProfileDoc =
+        participantData.userType === 'candidato'
+          ? await admin
+              .firestore()
+              .collection('profiles')
+              .doc(participantId)
+              .get()
+          : null;
+      const conversationPolicy = canUsersStartConversation({
+        requester: requesterData,
+        participant: participantData,
+        requesterProfile: requesterProfileDoc?.exists
+          ? requesterProfileDoc.data()
+          : {},
+        participantProfile: participantProfileDoc?.exists
+          ? participantProfileDoc.data()
+          : {},
+      });
+      if (!conversationPolicy.allowed) {
+        return res.status(403).json({ error: conversationPolicy.reason });
+      }
+
+      if (
+        requesterData.userType === 'candidato' &&
+        participantData.userType === 'empresa'
+      ) {
+        const participantPlanSummary = getEmpresaPlanSummary(participantData);
+        const participantMessageAccess = canSendDirectMessage(
+          participantPlanSummary.planId,
+        );
+        if (!participantMessageAccess.allowed) {
+          return res.status(403).json({
+            error:
+              'Esta empresa ainda não tem as mensagens diretas ativas. Candidate-se a uma vaga para estabelecer contacto.',
+            code: participantMessageAccess.code,
+          });
+        }
+      }
+
+      // Criar a conversa com um ID determinístico para impedir duplicados em
+      // pedidos concorrentes ou iniciados pelos dois participantes.
       const now = admin.firestore.FieldValue.serverTimestamp();
-      const newConversation = await admin.firestore().collection('conversations').add({
-        participants: [uid, participantId],
-        lastMessage: '',
-        unreadCounts: { [uid]: 0, [participantId]: 0 },
-        createdAt: now,
-        updatedAt: now
+      const conversationId = [uid, participantId].sort().join('__');
+      const conversationRef = admin
+        .firestore()
+        .collection('conversations')
+        .doc(conversationId);
+      await admin.firestore().runTransaction(async (transaction) => {
+        const conversationDoc = await transaction.get(conversationRef);
+        if (!conversationDoc.exists) {
+          transaction.set(conversationRef, {
+            participants: [uid, participantId],
+            lastMessage: '',
+            unreadCounts: { [uid]: 0, [participantId]: 0 },
+            createdAt: now,
+            updatedAt: now
+          });
+        }
       });
 
-      return res.status(201).json({ conversationId: newConversation.id });
+      return res.status(201).json({ conversationId });
     } catch (error) {
-      console.error('Erro ao criar/obter conversa:', error);
+      logServerError('messages.criar_obter_conversa_failed', error);
       return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 
+  res.setHeader('Allow', ['GET', 'POST']);
   return res.status(405).json({ error: 'Método não permitido' });
 }

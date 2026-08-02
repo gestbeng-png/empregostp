@@ -1,0 +1,152 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "phase": "targeted-after",
+  "results": [
+    {
+      "accessibilityViolations": [],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 320,
+          "scrollHeight": 3942,
+          "scrollWidth": 320
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [],
+        "smallText": [
+          {
+            "size": "13.125px",
+            "tag": "A",
+            "text": "Voltar para vagas"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "L"
+          },
+          {
+            "size": "13.125px",
+            "tag": "P",
+            "text": "Sdhjk bla bla bla bla bla"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/vaga/Jt8k6ucQlT94PjQDOZxZ",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      }
+    },
+    {
+      "accessibilityViolations": [],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 768,
+          "scrollHeight": 2679,
+          "scrollWidth": 768
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [],
+        "smallText": [
+          {
+            "size": "13.125px",
+            "tag": "A",
+            "text": "Voltar para vagas"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "L"
+          },
+          {
+            "size": "13.125px",
+            "tag": "P",
+            "text": "Sdhjk bla bla bla bla bla"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/vaga/Jt8k6ucQlT94PjQDOZxZ",
+      "viewport": {
+        "width": 768,
+        "height": 900
+      }
+    },
+    {
+      "accessibilityViolations": [],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1024,
+          "scrollHeight": 2704,
+          "scrollWidth": 1024
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [],
+        "smallText": [],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/vaga/Jt8k6ucQlT94PjQDOZxZ",
+      "viewport": {
+        "width": 1024,
+        "height": 900
+      }
+    },
+    {
+      "accessibilityViolations": [],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1440,
+          "scrollHeight": 2619,
+          "scrollWidth": 1440
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [],
+        "smallText": [],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/vaga/Jt8k6ucQlT94PjQDOZxZ",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    }
+  ],
+  "route": "/vaga/Jt8k6ucQlT94PjQDOZxZ",
+  "slug": "vaga-detalhe"
+}

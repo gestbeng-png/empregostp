@@ -1,53 +1,63 @@
-import Link from "next/link";
-import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/router";
-import { useAuth } from "../context/AuthContext";
-import { useIsInsideDashboardShell } from "../context/DashboardShellContext";
-import styles from "../styles/LandingHeader.module.css";
+import Link from 'next/link';
+import Image from 'next/image';
+import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/router';
+import {
+  FiArrowUpRight,
+  FiChevronDown,
+  FiGrid,
+  FiLogOut,
+  FiMenu,
+  FiX,
+} from 'react-icons/fi';
+import { useAuth } from '../context/AuthContext';
+import { useIsInsideDashboardShell } from '../context/DashboardShellContext';
+import styles from '../styles/LandingHeader.module.css';
 
 const ABOUT_SUBMENU = [
-  { href: "/sobre-nos", label: "Sobre nós" },
-  { href: "/#testemunhos", label: "Testemunhos" },
-  { href: "/recursos#faq", label: "FAQ" },
-  { href: "/sobre-nos#contactos", label: "Contactos" },
+  { href: '/sobre-nos', label: 'Sobre nós' },
+  { href: '/#testemunhos', label: 'Testemunhos' },
+  { href: '/recursos#faq', label: 'FAQ' },
+  { href: '/contacto', label: 'Contactos' },
 ];
 
 const RESOURCES_SUBMENU = [
-  { href: "/blog", label: "Blog" },
-  { href: "/recursos", label: "Recursos" },
+  { href: '/blog', label: 'Blog' },
+  { href: '/recursos', label: 'Recursos' },
 ];
 
 const DEFAULT_NAV_ITEMS = [
-  { href: "/vagas", label: "Vagas" },
-  { href: "/candidatos", label: "Para candidatos" },
-  { href: "/empresas", label: "Para empresas" },
+  { href: '/vagas', label: 'Vagas' },
+  { href: '/candidatos', label: 'Para candidatos' },
+  { href: '/empresas', label: 'Para empresas' },
   {
-    href: "/recursos",
-    label: "Recursos",
+    href: '/recursos',
+    label: 'Recursos',
     hasCaret: true,
     submenu: RESOURCES_SUBMENU,
-    submenuKey: "resources",
+    submenuKey: 'resources',
   },
-  { href: "/blog", label: "Blog" },
-  { href: "/sobre-nos", label: "Sobre nós" },
+  { href: '/blog', label: 'Blog' },
+  { href: '/sobre-nos', label: 'Sobre nós' },
+  { href: '/contacto', label: 'Contacto' },
 ];
 
 const LIGHT_NAV_ITEMS = [
-  { href: "/sobre-nos", label: "Sobre nós" },
-  { href: "/vagas", label: "Vagas" },
-  { href: "/candidatos", label: "Para candidatos" },
-  { href: "/empresas", label: "Para empresas" },
+  { href: '/sobre-nos', label: 'Sobre nós' },
+  { href: '/vagas', label: 'Vagas' },
+  { href: '/candidatos', label: 'Para candidatos' },
+  { href: '/empresas', label: 'Para empresas' },
   {
-    href: "/recursos",
-    label: "Recursos",
+    href: '/recursos',
+    label: 'Recursos',
     hasCaret: true,
     submenu: RESOURCES_SUBMENU,
-    submenuKey: "resources",
+    submenuKey: 'resources',
   },
+  { href: '/contacto', label: 'Contacto' },
 ];
 
-export default function LandingHeader({ variant = "light" }) {
+export default function LandingHeader({ variant = 'light' }) {
   const isInsideDashboardShell = useIsInsideDashboardShell();
 
   if (isInsideDashboardShell) return null;
@@ -55,7 +65,7 @@ export default function LandingHeader({ variant = "light" }) {
   return <LandingHeaderContent variant={variant} />;
 }
 
-function LandingHeaderContent({ variant = "light" }) {
+function LandingHeaderContent({ variant = 'light' }) {
   const router = useRouter();
   const { user, logout } = useAuth();
   const [profile, setProfile] = useState(null);
@@ -66,12 +76,12 @@ function LandingHeaderContent({ variant = "light" }) {
   const menuRef = useRef(null);
   const submenuRef = useRef(null);
 
-  const isDashboard = variant === "dashboard";
-  const isLight = variant === "light";
+  const isDashboard = variant === 'dashboard';
+  const isLight = variant === 'light';
   const navItems = isLight ? LIGHT_NAV_ITEMS : DEFAULT_NAV_ITEMS;
   const displayName =
-    profile?.fullName || user?.email?.split("@")[0] || "Minha conta";
-  const avatarFallback = displayName.charAt(0).toUpperCase() || "U";
+    profile?.fullName || user?.email?.split('@')[0] || 'Minha conta';
+  const avatarFallback = displayName.charAt(0).toUpperCase() || 'U';
 
   useEffect(() => {
     let active = true;
@@ -120,13 +130,13 @@ function LandingHeaderContent({ variant = "light" }) {
       }
     }
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   useEffect(() => {
     function handleKeyDown(event) {
-      if (event.key === "Escape") {
+      if (event.key === 'Escape') {
         setMenuOpen(false);
         setOpenSubmenu(null);
         setMobileMenuOpen(false);
@@ -134,17 +144,17 @@ function LandingHeaderContent({ variant = "light" }) {
       }
     }
 
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   useEffect(() => {
-    if (typeof document === "undefined") return undefined;
+    if (typeof document === 'undefined') return undefined;
 
-    document.body.classList.toggle("modal-open", mobileMenuOpen);
+    document.body.classList.toggle('modal-open', mobileMenuOpen);
 
     return () => {
-      document.body.classList.remove("modal-open");
+      document.body.classList.remove('modal-open');
     };
   }, [mobileMenuOpen]);
 
@@ -157,11 +167,20 @@ function LandingHeaderContent({ variant = "light" }) {
 
   function isActiveLink(href) {
     if (!router.pathname) return false;
-    if (href === "/") return router.pathname === "/";
+    const normalizedHref = href.split(/[?#]/)[0] || '/';
+
+    if (normalizedHref === '/') return router.pathname === '/';
     return (
-      router.pathname === href ||
-      router.pathname.startsWith(`${href}/`) ||
-      router.asPath.startsWith(`${href}/`)
+      router.pathname === normalizedHref ||
+      router.pathname.startsWith(`${normalizedHref}/`) ||
+      router.asPath.startsWith(`${normalizedHref}/`)
+    );
+  }
+
+  function isNavItemActive(item) {
+    return (
+      isActiveLink(item.href) ||
+      item.submenu?.some((subitem) => isActiveLink(subitem.href))
     );
   }
 
@@ -173,18 +192,18 @@ function LandingHeaderContent({ variant = "light" }) {
     setMobileOpenSubmenu(null);
 
     if (result?.success) {
-      router.push("/");
+      router.push('/');
     }
   }
 
   const headerClassName = [
     styles.header,
     isDashboard ? styles.dashboard : isLight ? styles.light : styles.default,
-  ].join(" ");
+  ].join(' ');
 
   return (
-    <header className={headerClassName}>
-      <div className={styles.inner}>
+    <header className={`${headerClassName} workbridgeHeader`}>
+      <div className={`${styles.inner} workbridgeHeaderInner`}>
         <Link href="/" className={styles.brand} aria-label="EmpregoSTP">
           <span className={styles.brandMark}>
             <Image
@@ -193,7 +212,7 @@ function LandingHeaderContent({ variant = "light" }) {
               width={196}
               height={59}
               priority
-              sizes="(max-width: 768px) 176px, (max-width: 1200px) 220px, 236px"
+              sizes="(max-width: 380px) 150px, (max-width: 640px) 164px, (max-width: 1240px) 170px, 184px"
               className={styles.logoImage}
             />
           </span>
@@ -219,25 +238,22 @@ function LandingHeaderContent({ variant = "light" }) {
                     className={[
                       styles.navLink,
                       styles.navTrigger,
-                      isActiveLink(item.href) ? styles.navLinkActive : "",
+                      isNavItemActive(item) ? styles.navLinkActive : '',
                       openSubmenu === item.submenuKey
                         ? styles.navTriggerOpen
-                        : "",
+                        : '',
                     ]
                       .filter(Boolean)
-                      .join(" ")}
+                      .join(' ')}
                     aria-expanded={openSubmenu === item.submenuKey}
                     aria-haspopup="menu"
                     aria-controls={`${item.submenuKey}-nav-menu`}
                   >
                     <span>{item.label}</span>
-                    <svg
+                    <FiChevronDown
                       className={styles.navCaret}
-                      viewBox="0 0 20 20"
                       aria-hidden="true"
-                    >
-                      <path fill="currentColor" d="M5.5 7 10 11l4.5-4" />
-                    </svg>
+                    />
                   </button>
 
                   {openSubmenu === item.submenuKey ? (
@@ -250,8 +266,18 @@ function LandingHeaderContent({ variant = "light" }) {
                         <Link
                           key={subitem.href}
                           href={subitem.href}
-                          className={styles.navDropdownLink}
+                          className={[
+                            styles.navDropdownLink,
+                            isActiveLink(subitem.href)
+                              ? styles.navDropdownLinkActive
+                              : '',
+                          ]
+                            .filter(Boolean)
+                            .join(' ')}
                           role="menuitem"
+                          aria-current={
+                            isActiveLink(subitem.href) ? 'page' : undefined
+                          }
                         >
                           {subitem.label}
                         </Link>
@@ -265,20 +291,18 @@ function LandingHeaderContent({ variant = "light" }) {
                   href={item.href}
                   className={[
                     styles.navLink,
-                    isActiveLink(item.href) ? styles.navLinkActive : "",
+                    isActiveLink(item.href) ? styles.navLinkActive : '',
                   ]
                     .filter(Boolean)
-                    .join(" ")}
+                    .join(' ')}
+                  aria-current={isActiveLink(item.href) ? 'page' : undefined}
                 >
                   <span>{item.label}</span>
                   {item.hasCaret ? (
-                    <svg
+                    <FiChevronDown
                       className={styles.navCaret}
-                      viewBox="0 0 20 20"
                       aria-hidden="true"
-                    >
-                      <path fill="currentColor" d="M5.5 7 10 11l4.5-4" />
-                    </svg>
+                    />
                   ) : null}
                 </Link>
               ),
@@ -289,15 +313,18 @@ function LandingHeaderContent({ variant = "light" }) {
             <div className={styles.authActions}>
               {isLight ? (
                 <Link href="/login" className={styles.lightLoginButton}>
-                  LOGIN
+                  <span>Iniciar sessão</span>
+                  <span className={styles.loginButtonIcon} aria-hidden="true">
+                    <FiArrowUpRight />
+                  </span>
                 </Link>
               ) : (
                 <>
                   <Link href="/login" className={styles.ghostButton}>
-                    Login
+                    Iniciar sessão
                   </Link>
                   <Link href="/escolha-tipo" className={styles.primaryButton}>
-                    Criar Conta
+                    Criar conta
                   </Link>
                 </>
               )}
@@ -309,23 +336,23 @@ function LandingHeaderContent({ variant = "light" }) {
                 onClick={() => setMenuOpen((open) => !open)}
                 className={[
                   styles.profileButton,
-                  menuOpen ? styles.profileButtonOpen : "",
+                  menuOpen ? styles.profileButtonOpen : '',
                 ]
                   .filter(Boolean)
-                  .join(" ")}
+                  .join(' ')}
                 aria-expanded={menuOpen}
                 aria-haspopup="menu"
                 aria-controls="account-menu"
+                aria-label={`Abrir menu da conta de ${displayName}`}
               >
                 {profile?.photoUrl ? (
-                  <img
+                  <Image
                     src={profile.photoUrl}
                     alt="Foto do perfil"
                     className={styles.avatarImage}
-                    loading="lazy"
-                    decoding="async"
-                    width="40"
-                    height="40"
+                    width={40}
+                    height={40}
+                    unoptimized
                   />
                 ) : (
                   <span className={styles.avatarInitial}>{avatarFallback}</span>
@@ -336,18 +363,15 @@ function LandingHeaderContent({ variant = "light" }) {
                   <span className={styles.profileMeta}>Minha conta</span>
                 </span>
 
-                <svg
+                <FiChevronDown
                   className={[
                     styles.chevron,
-                    menuOpen ? styles.chevronOpen : "",
+                    menuOpen ? styles.chevronOpen : '',
                   ]
                     .filter(Boolean)
-                    .join(" ")}
-                  viewBox="0 0 20 20"
+                    .join(' ')}
                   aria-hidden="true"
-                >
-                  <path fill="currentColor" d="M5.5 7 10 11l4.5-4" />
-                </svg>
+                />
               </button>
 
               {menuOpen ? (
@@ -367,7 +391,8 @@ function LandingHeaderContent({ variant = "light" }) {
                       className={styles.dropdownLink}
                       role="menuitem"
                     >
-                      Dashboard
+                      <FiGrid aria-hidden="true" />
+                      <span>Dashboard</span>
                     </Link>
                     <button
                       type="button"
@@ -375,7 +400,8 @@ function LandingHeaderContent({ variant = "light" }) {
                       className={styles.logoutButton}
                       role="menuitem"
                     >
-                      Sair
+                      <FiLogOut aria-hidden="true" />
+                      <span>Sair</span>
                     </button>
                   </div>
                 </div>
@@ -388,20 +414,20 @@ function LandingHeaderContent({ variant = "light" }) {
           type="button"
           className={[
             styles.mobileToggle,
-            mobileMenuOpen ? styles.mobileToggleOpen : "",
+            mobileMenuOpen ? styles.mobileToggleOpen : '',
           ]
             .filter(Boolean)
-            .join(" ")}
+            .join(' ')}
           onClick={() => setMobileMenuOpen((open) => !open)}
-          aria-label={mobileMenuOpen ? "Fechar menu" : "Abrir menu"}
+          aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'}
           aria-expanded={mobileMenuOpen}
           aria-controls="mobile-main-nav"
         >
-          <span className={styles.mobileToggleBars}>
-            <span />
-            <span />
-            <span />
-          </span>
+          {mobileMenuOpen ? (
+            <FiX className={styles.mobileToggleIcon} aria-hidden="true" />
+          ) : (
+            <FiMenu className={styles.mobileToggleIcon} aria-hidden="true" />
+          )}
         </button>
       </div>
 
@@ -424,21 +450,18 @@ function LandingHeaderContent({ variant = "light" }) {
                     }
                     className={[
                       styles.mobileNavLink,
-                      isActiveLink(item.href) ? styles.mobileNavLinkActive : "",
+                      isNavItemActive(item) ? styles.mobileNavLinkActive : '',
                     ]
                       .filter(Boolean)
-                      .join(" ")}
+                      .join(' ')}
                     aria-expanded={mobileOpenSubmenu === item.submenuKey}
                     aria-controls={`mobile-${item.submenuKey}-nav-menu`}
                   >
                     <span>{item.label}</span>
-                    <svg
+                    <FiChevronDown
                       className={styles.mobileNavCaret}
-                      viewBox="0 0 20 20"
                       aria-hidden="true"
-                    >
-                      <path fill="currentColor" d="M5.5 7 10 11l4.5-4" />
-                    </svg>
+                    />
                   </button>
 
                   {mobileOpenSubmenu === item.submenuKey ? (
@@ -450,7 +473,17 @@ function LandingHeaderContent({ variant = "light" }) {
                         <Link
                           key={subitem.href}
                           href={subitem.href}
-                          className={styles.mobileSubnavLink}
+                          className={[
+                            styles.mobileSubnavLink,
+                            isActiveLink(subitem.href)
+                              ? styles.mobileSubnavLinkActive
+                              : '',
+                          ]
+                            .filter(Boolean)
+                            .join(' ')}
+                          aria-current={
+                            isActiveLink(subitem.href) ? 'page' : undefined
+                          }
                         >
                           {subitem.label}
                         </Link>
@@ -464,20 +497,18 @@ function LandingHeaderContent({ variant = "light" }) {
                   href={item.href}
                   className={[
                     styles.mobileNavLink,
-                    isActiveLink(item.href) ? styles.mobileNavLinkActive : "",
+                    isActiveLink(item.href) ? styles.mobileNavLinkActive : '',
                   ]
                     .filter(Boolean)
-                    .join(" ")}
+                    .join(' ')}
+                  aria-current={isActiveLink(item.href) ? 'page' : undefined}
                 >
                   <span>{item.label}</span>
                   {item.hasCaret ? (
-                    <svg
+                    <FiChevronDown
                       className={styles.mobileNavCaret}
-                      viewBox="0 0 20 20"
                       aria-hidden="true"
-                    >
-                      <path fill="currentColor" d="M5.5 7 10 11l4.5-4" />
-                    </svg>
+                    />
                   ) : null}
                 </Link>
               ),
@@ -487,24 +518,23 @@ function LandingHeaderContent({ variant = "light" }) {
           {!user ? (
             <div className={styles.mobileActions}>
               <Link href="/login" className={styles.mobileGhostButton}>
-                Login
+                Iniciar sessão
               </Link>
               <Link href="/escolha-tipo" className={styles.mobilePrimaryButton}>
-                Criar Conta
+                Criar conta
               </Link>
             </div>
           ) : (
             <>
               <div className={styles.mobileProfile}>
                 {profile?.photoUrl ? (
-                  <img
+                  <Image
                     src={profile.photoUrl}
                     alt="Foto do perfil"
                     className={styles.avatarImage}
-                    loading="lazy"
-                    decoding="async"
-                    width="40"
-                    height="40"
+                    width={40}
+                    height={40}
+                    unoptimized
                   />
                 ) : (
                   <span className={styles.avatarInitial}>{avatarFallback}</span>

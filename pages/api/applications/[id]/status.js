@@ -2,11 +2,15 @@ import { admin as adminApp } from '../../../../lib/firebaseAdmin';
 import * as firebaseAdmin from 'firebase-admin';
 import { canScheduleInterview, getEmpresaPlanSummary } from '../../../../lib/empresaPlanFeatures';
 import { createServerNotification } from '../../../../lib/serverNotifications';
+import { resolveApplicationCompanyId } from '../../../../lib/applicationOwnership';
+import { isAdminPublishedJob } from '../../../../lib/adminJobManagement';
+import { logServerError } from '../../../../lib/serverLog';
 
-function buildTimelineEvent({ status, notes, interviewDetails, companyName }) {
+function buildTimelineEvent({ status, notes, interviewDetails, companyName, actorType = 'empresa' }) {
+  const actorLabel = actorType === 'admin' ? 'A administração da vaga' : 'A empresa';
   const base = {
     date: new Date().toISOString(),
-    byType: 'empresa',
+    byType: actorType,
     companyName: companyName || 'Empresa'
   };
 
@@ -15,7 +19,7 @@ function buildTimelineEvent({ status, notes, interviewDetails, companyName }) {
       ...base,
       title: 'Em análise',
       icon: '🔍',
-      description: notes ? `A empresa colocou sua candidatura em análise. Nota: ${notes}` : 'A empresa colocou sua candidatura em análise.'
+      description: notes ? `${actorLabel} colocou sua candidatura em análise. Nota: ${notes}` : `${actorLabel} colocou sua candidatura em análise.`
     };
   }
   if (status === 'interview') {
@@ -32,7 +36,7 @@ function buildTimelineEvent({ status, notes, interviewDetails, companyName }) {
       ...base,
       title: 'Entrevista agendada',
       icon: '📅',
-      description: `A empresa agendou uma entrevista${when ? ` para ${when}` : ''}.${where ? ` ${interviewDetails.mode === 'presencial' ? 'Local' : 'Link'}: ${where}.` : ''}${extra}`.trim()
+      description: `${actorLabel} agendou uma entrevista${when ? ` para ${when}` : ''}.${where ? ` ${interviewDetails.mode === 'presencial' ? 'Local' : 'Link'}: ${where}.` : ''}${extra}`.trim()
     };
   }
   if (status === 'approved') {
@@ -40,7 +44,7 @@ function buildTimelineEvent({ status, notes, interviewDetails, companyName }) {
       ...base,
       title: 'Aprovada',
       icon: '✅',
-      description: notes ? `A empresa aprovou sua candidatura. Nota: ${notes}` : 'A empresa aprovou sua candidatura.'
+      description: notes ? `${actorLabel} aprovou sua candidatura. Nota: ${notes}` : `${actorLabel} aprovou sua candidatura.`
     };
   }
   if (status === 'rejected') {
@@ -48,7 +52,7 @@ function buildTimelineEvent({ status, notes, interviewDetails, companyName }) {
       ...base,
       title: 'Rejeitada',
       icon: '❌',
-      description: notes ? `A empresa rejeitou sua candidatura. Nota: ${notes}` : 'A empresa rejeitou sua candidatura.'
+      description: notes ? `${actorLabel} rejeitou sua candidatura. Nota: ${notes}` : `${actorLabel} rejeitou sua candidatura.`
     };
   }
   return {
@@ -109,17 +113,20 @@ export default async function handler(req, res) {
     const decodedToken = await adminApp.auth().verifyIdToken(token);
     const uid = decodedToken.uid;
 
-    // Verify user is a company
+    // Empresas gerem as suas candidaturas; administradores gerem apenas as
+    // candidaturas de vagas que foram publicadas pelo Admin.
     const userDoc = await adminApp.firestore().collection('users').doc(uid).get();
     if (!userDoc.exists) {
       return res.status(404).json({ error: 'Usuario nao encontrado' });
     }
     const userData = userDoc.data();
-    if (userData.userType !== 'empresa') {
-      return res.status(403).json({ error: 'Somente empresas podem atualizar status de candidaturas' });
+    const isCompanyActor = userData.userType === 'empresa';
+    const isAdminActor = userData.userType === 'admin';
+    if (!isCompanyActor && !isAdminActor) {
+      return res.status(403).json({ error: 'Sem permissao para atualizar status de candidaturas' });
     }
 
-    if (status === 'interview') {
+    if (status === 'interview' && isCompanyActor) {
       const planSummary = getEmpresaPlanSummary(userData);
       const interviewAccess = canScheduleInterview(planSummary.planId);
       if (!interviewAccess.allowed) {
@@ -142,8 +149,31 @@ export default async function handler(req, res) {
 
     const applicationData = applicationDoc.data();
 
-    // Verify company owns this application (via job)
-    if (applicationData.companyId && applicationData.companyId !== uid) {
+    // A vaga é também a fonte de verdade para autorizar ações administrativas.
+    let jobData = {};
+
+    if (applicationData.jobId) {
+      const jobDoc = await adminApp
+        .firestore()
+        .collection('jobs')
+        .doc(applicationData.jobId)
+        .get();
+      if (jobDoc.exists) {
+        jobData = jobDoc.data() || {};
+      }
+    }
+
+    const applicationCompanyId = resolveApplicationCompanyId(
+      applicationData,
+      jobData,
+    );
+
+    const canManageAsCompany =
+      isCompanyActor && Boolean(applicationCompanyId) && applicationCompanyId === uid;
+    const canManageAsAdmin =
+      isAdminActor && isAdminPublishedJob(jobData, uid);
+
+    if (!canManageAsCompany && !canManageAsAdmin) {
       return res.status(403).json({ error: 'Voce nao tem permissao para atualizar esta candidatura' });
     }
 
@@ -197,8 +227,16 @@ export default async function handler(req, res) {
       };
     }
     // Append timeline event atomically (avoid lost updates).
-    const companyName = userData.name || userData.fullName || userData.companyName || 'Empresa';
-    const timelineEvent = buildTimelineEvent({ status, notes, interviewDetails, companyName });
+    const companyName = isAdminActor
+      ? jobData.companyName || jobData.empresaNome || jobData.empresa || 'Empresa'
+      : userData.name || userData.fullName || userData.companyName || 'Empresa';
+    const timelineEvent = buildTimelineEvent({
+      status,
+      notes,
+      interviewDetails,
+      companyName,
+      actorType: isAdminActor ? 'admin' : 'empresa'
+    });
 
     await adminApp.firestore().runTransaction(async (transaction) => {
       const freshDoc = await transaction.get(applicationRef);
@@ -266,7 +304,9 @@ export default async function handler(req, res) {
     // Log activity
     await adminApp.firestore().collection('admin_activities').add({
       action: 'update_application_status',
-      companyId: uid,
+      actorId: uid,
+      actorType: isAdminActor ? 'admin' : 'empresa',
+      companyId: applicationCompanyId || null,
       applicationId: id,
       candidateId: applicationData.candidateId,
       jobId: applicationData.jobId,
@@ -302,7 +342,7 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('Erro ao atualizar status da candidatura:', error);
+    logServerError('applications_id_status.atualizar_status_da_candidatura_failed', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 }

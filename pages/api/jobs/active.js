@@ -1,4 +1,15 @@
 import { admin } from '../../../lib/firebaseAdmin';
+import { isJobPubliclyVisible } from '../../../lib/jobExpiration';
+import { projectPublicJob } from '../../../lib/publicJob';
+import { logServerError } from '../../../lib/serverLog';
+
+function toIsoDate(value) {
+  if (!value) return null;
+  if (typeof value.toDate === 'function') return value.toDate().toISOString();
+  if (value instanceof Date) return value.toISOString();
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
+}
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -14,7 +25,8 @@ export default async function handler(req, res) {
       .get();
 
     const jobs = await Promise.all(jobsSnapshot.docs.map(async (doc) => {
-      const jobData = doc.data();
+      const jobData = { id: doc.id, ...doc.data() };
+      if (!isJobPubliclyVisible(jobData)) return null;
       let companyData = {};
 
       // Buscar informações da empresa
@@ -27,47 +39,41 @@ export default async function handler(req, res) {
         if (companyDoc.exists) {
           companyData = {
             companyName: companyDoc.data().name || companyDoc.data().fullName || 'Empresa',
-            logo: companyDoc.data().logo || ''
+            logo: companyDoc.data().logoUrl || companyDoc.data().logo || ''
           };
         }
       }
 
-      return {
-        id: doc.id,
+      const publicJob = projectPublicJob({
         ...jobData,
-        ...companyData,
-        // Garantir que os campos necessários para o frontend existam
-        titulo: jobData.titulo || 'Sem título',
-        localizacao: jobData.localizacao || jobData.location || 'Local não especificado',
-        tipoContrato: jobData.tipoContrato || 'full-time',
-        salarioDe: jobData.salario || 'A combinar',
-        salarioAte: jobData.salarioAte || 'A combinar',
-        empresaLogo: companyData.logo || '',
-        empresaNome: companyData.companyName || 'Empresa',
-        empresa: companyData.companyName || 'Empresa',
-        // Adicionar campos de data para ordenação
-        // Função auxiliar para data segura
-        createdAt: (() => {
-          if (!jobData.createdAt) return new Date().toISOString();
-          if (typeof jobData.createdAt.toDate === 'function') return jobData.createdAt.toDate().toISOString();
-          if (jobData.createdAt instanceof Date) return jobData.createdAt.toISOString();
-          return new Date(jobData.createdAt).toISOString();
-        })(),
-        updatedAt: (() => {
-          if (!jobData.updatedAt) return new Date().toISOString();
-          if (typeof jobData.updatedAt.toDate === 'function') return jobData.updatedAt.toDate().toISOString();
-          if (jobData.updatedAt instanceof Date) return jobData.updatedAt.toISOString();
-          return new Date(jobData.updatedAt).toISOString();
-        })()
+        companyName: companyData.companyName || jobData.companyName,
+        empresaNome:
+          companyData.companyName ||
+          jobData.empresaNome ||
+          jobData.companyName,
+        companyLogo: companyData.logo || jobData.companyLogo || '',
+        empresaLogo: companyData.logo || jobData.empresaLogo || '',
+      });
+
+      return {
+        ...publicJob,
+        createdAt: toIsoDate(publicJob.createdAt) || new Date().toISOString(),
+        updatedAt: toIsoDate(publicJob.updatedAt),
+        publishedAt: toIsoDate(publicJob.publishedAt),
+        publicadoEm: toIsoDate(publicJob.publicadoEm),
+        dataFecho: toIsoDate(publicJob.dataFecho) || publicJob.dataFecho,
+        deadline: toIsoDate(publicJob.deadline) || publicJob.deadline,
+        expiresAt: toIsoDate(publicJob.expiresAt) || publicJob.expiresAt,
       };
     }));
 
     // Ordenar por data de criação (mais recentes primeiro)
-    jobs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const publicJobs = jobs.filter(Boolean);
+    publicJobs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-    res.status(200).json({ jobs });
+    res.status(200).json({ jobs: publicJobs });
   } catch (error) {
-    console.error('Error fetching active jobs:', error);
+    logServerError('jobs_active.fetching_active_jobs_failed', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 }

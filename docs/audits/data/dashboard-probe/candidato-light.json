@@ -1,0 +1,267 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "phase": "dashboard-probe",
+  "results": [
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Documents must have <title> element to aid in navigation",
+          "id": "document-title",
+          "impact": "serious",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 320,
+          "scrollHeight": 1226,
+          "scrollWidth": 388
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 68,
+        "landmarks": {
+          "footer": 0,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 39,
+            "tag": "A",
+            "text": "Saltar para o conteúdo",
+            "width": 179
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 41,
+            "tag": "BUTTON",
+            "text": "Exportar",
+            "width": 95
+          },
+          {
+            "height": 41,
+            "tag": "BUTTON",
+            "text": "Criar registo",
+            "width": 119
+          },
+          {
+            "height": 41,
+            "tag": "A",
+            "text": "Ver atividade",
+            "width": 143
+          }
+        ],
+        "smallText": [
+          {
+            "size": "10.8px",
+            "tag": "TH",
+            "text": "Item"
+          },
+          {
+            "size": "10.8px",
+            "tag": "TH",
+            "text": "Estado"
+          },
+          {
+            "size": "10.8px",
+            "tag": "TH",
+            "text": "Atualização"
+          },
+          {
+            "size": "13.125px",
+            "tag": "TD",
+            "text": "Processo de recrutamento"
+          },
+          {
+            "size": "13.125px",
+            "tag": "SPAN",
+            "text": "Em análise"
+          },
+          {
+            "size": "13.125px",
+            "tag": "TD",
+            "text": "Hoje, 10:30"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/__dashboard-accessibility-audit?role=candidato&theme=light",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      }
+    },
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Documents must have <title> element to aid in navigation",
+          "id": "document-title",
+          "impact": "serious",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1440,
+          "scrollHeight": 1000,
+          "scrollWidth": 1440
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 0,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 39,
+            "tag": "A",
+            "text": "Saltar para o conteúdo",
+            "width": 179
+          },
+          {
+            "height": 41,
+            "tag": "A",
+            "text": "Visão geral",
+            "width": 247
+          },
+          {
+            "height": 41,
+            "tag": "A",
+            "text": "Candidaturas",
+            "width": 247
+          },
+          {
+            "height": 41,
+            "tag": "A",
+            "text": "Vagas guardadas",
+            "width": 247
+          },
+          {
+            "height": 41,
+            "tag": "A",
+            "text": "Entrevistas",
+            "width": 247
+          },
+          {
+            "height": 41,
+            "tag": "A",
+            "text": "Mensagens",
+            "width": 247
+          },
+          {
+            "height": 41,
+            "tag": "A",
+            "text": "Procurar vagas",
+            "width": 247
+          },
+          {
+            "height": 41,
+            "tag": "A",
+            "text": "Recursos",
+            "width": 247
+          },
+          {
+            "height": 41,
+            "tag": "A",
+            "text": "Meu perfil",
+            "width": 247
+          },
+          {
+            "height": 41,
+            "tag": "A",
+            "text": "Configurações",
+            "width": 247
+          },
+          {
+            "height": 41,
+            "tag": "A",
+            "text": "Verificação",
+            "width": 247
+          },
+          {
+            "height": 41,
+            "tag": "A",
+            "text": "Planos premium",
+            "width": 247
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 41,
+            "tag": "BUTTON",
+            "text": "Exportar",
+            "width": 95
+          },
+          {
+            "height": 41,
+            "tag": "BUTTON",
+            "text": "Criar registo",
+            "width": 119
+          },
+          {
+            "height": 41,
+            "tag": "A",
+            "text": "Ver atividade",
+            "width": 143
+          }
+        ],
+        "smallText": [
+          {
+            "size": "11.52px",
+            "tag": "TH",
+            "text": "Item"
+          },
+          {
+            "size": "11.52px",
+            "tag": "TH",
+            "text": "Estado"
+          },
+          {
+            "size": "11.52px",
+            "tag": "TH",
+            "text": "Atualização"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/__dashboard-accessibility-audit?role=candidato&theme=light",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    }
+  ],
+  "route": "/__dashboard-accessibility-audit?role=candidato&theme=light",
+  "slug": "candidato-light"
+}

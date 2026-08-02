@@ -1,0 +1,1540 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "phase": "before",
+  "results": [
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              ".CarreiraPage_serviceCard___Z2SV:nth-child(2) > .CarreiraPage_serviceFooter__6pahl > .CarreiraPage_serviceButton__hhaej[type=\"button\"]"
+            ],
+            [
+              ".CarreiraPage_serviceCard___Z2SV:nth-child(4) > .CarreiraPage_serviceFooter__6pahl > .CarreiraPage_serviceButton__hhaej[type=\"button\"]"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 320,
+          "scrollHeight": 9130,
+          "scrollWidth": 320
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 2,
+          "nav": 1
+        },
+        "shortTargets": [],
+        "smallText": [
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Serviços de carreira"
+          },
+          {
+            "size": "12.6px",
+            "tag": "SPAN",
+            "text": "Profissionais atendidos"
+          },
+          {
+            "size": "12.6px",
+            "tag": "SPAN",
+            "text": "Taxa de satisfação"
+          },
+          {
+            "size": "12.6px",
+            "tag": "SPAN",
+            "text": "Mentores especialistas"
+          },
+          {
+            "size": "10.8px",
+            "tag": "P",
+            "text": "Serviços"
+          },
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "Mais popular"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Diagnóstico de carreira"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Plano de ação personalizado"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Simulação de entrevista"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Revisão de LinkedIn"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "por sessão"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Guia completo de mudança"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Equivalência de diplomas"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Assessoria fiscal"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Networking com empresas"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "pacote completo"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Diagnóstico executivo"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Personal branding"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Preparação para boards"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Negociação salarial"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "programa completo"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Guia fiscal digital"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Modelos de contrato"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Pagamentos internacionais"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Proteção legal"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "consultoria completa"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Storytelling profissional"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Portefólio visual"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Perfil otimizado"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Estratégia de conteúdo"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "pacote completo"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Shortlist qualificada"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Entrevistas guiadas"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Relatório final"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Suporte contínuo"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "por vaga"
+          },
+          {
+            "size": "10.8px",
+            "tag": "P",
+            "text": "Cursos"
+          },
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "Mais vendido"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "8 módulos"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "4h 30min"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "4.9"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "6 módulos"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "3h 15min"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "4.8"
+          },
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "Novo"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "5 módulos"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "2h 45min"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "4.7"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "4 módulos"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "2h 00min"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "4.9"
+          },
+          {
+            "size": "10.8px",
+            "tag": "P",
+            "text": "Mentoria"
+          },
+          {
+            "size": "12.6px",
+            "tag": "P",
+            "text": "TechSTP"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Experiência"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Sessões"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Rating"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "Disponível"
+          },
+          {
+            "size": "12.6px",
+            "tag": "P",
+            "text": "StartUp STP"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Experiência"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Sessões"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Rating"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "Disponível"
+          },
+          {
+            "size": "12.6px",
+            "tag": "P",
+            "text": "BancoSTP"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Experiência"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Sessões"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Rating"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "Indisponível"
+          },
+          {
+            "size": "10.8px",
+            "tag": "P",
+            "text": "Prova social"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/carreira",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      }
+    },
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              ".CarreiraPage_serviceCard___Z2SV:nth-child(2) > .CarreiraPage_serviceFooter__6pahl > .CarreiraPage_serviceButton__hhaej[type=\"button\"]"
+            ],
+            [
+              ".CarreiraPage_serviceCard___Z2SV:nth-child(4) > .CarreiraPage_serviceFooter__6pahl > .CarreiraPage_serviceButton__hhaej[type=\"button\"]"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 768,
+          "scrollHeight": 7737,
+          "scrollWidth": 768
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 2,
+          "nav": 1
+        },
+        "shortTargets": [],
+        "smallText": [
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Serviços de carreira"
+          },
+          {
+            "size": "12.6px",
+            "tag": "SPAN",
+            "text": "Profissionais atendidos"
+          },
+          {
+            "size": "12.6px",
+            "tag": "SPAN",
+            "text": "Taxa de satisfação"
+          },
+          {
+            "size": "12.6px",
+            "tag": "SPAN",
+            "text": "Mentores especialistas"
+          },
+          {
+            "size": "10.8px",
+            "tag": "P",
+            "text": "Serviços"
+          },
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "Mais popular"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Diagnóstico de carreira"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Plano de ação personalizado"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Simulação de entrevista"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Revisão de LinkedIn"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "por sessão"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Guia completo de mudança"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Equivalência de diplomas"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Assessoria fiscal"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Networking com empresas"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "pacote completo"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Diagnóstico executivo"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Personal branding"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Preparação para boards"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Negociação salarial"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "programa completo"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Guia fiscal digital"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Modelos de contrato"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Pagamentos internacionais"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Proteção legal"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "consultoria completa"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Storytelling profissional"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Portefólio visual"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Perfil otimizado"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Estratégia de conteúdo"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "pacote completo"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Shortlist qualificada"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Entrevistas guiadas"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Relatório final"
+          },
+          {
+            "size": "12.9px",
+            "tag": "LI",
+            "text": "Suporte contínuo"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "por vaga"
+          },
+          {
+            "size": "10.8px",
+            "tag": "P",
+            "text": "Cursos"
+          },
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "Mais vendido"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "8 módulos"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "4h 30min"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "4.9"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "6 módulos"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "3h 15min"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "4.8"
+          },
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "Novo"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "5 módulos"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "2h 45min"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "4.7"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "4 módulos"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "2h 00min"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "4.9"
+          },
+          {
+            "size": "10.8px",
+            "tag": "P",
+            "text": "Mentoria"
+          },
+          {
+            "size": "12.6px",
+            "tag": "P",
+            "text": "TechSTP"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Experiência"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Sessões"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Rating"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "Disponível"
+          },
+          {
+            "size": "12.6px",
+            "tag": "P",
+            "text": "StartUp STP"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Experiência"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Sessões"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Rating"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "Disponível"
+          },
+          {
+            "size": "12.6px",
+            "tag": "P",
+            "text": "BancoSTP"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Experiência"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Sessões"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Rating"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "Indisponível"
+          },
+          {
+            "size": "10.8px",
+            "tag": "P",
+            "text": "Prova social"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/carreira",
+      "viewport": {
+        "width": 768,
+        "height": 900
+      }
+    },
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              ".CarreiraPage_serviceCard___Z2SV:nth-child(2) > .CarreiraPage_serviceFooter__6pahl > .CarreiraPage_serviceButton__hhaej[type=\"button\"]"
+            ],
+            [
+              ".CarreiraPage_serviceCard___Z2SV:nth-child(4) > .CarreiraPage_serviceFooter__6pahl > .CarreiraPage_serviceButton__hhaej[type=\"button\"]"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1024,
+          "scrollHeight": 4518,
+          "scrollWidth": 1024
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 2,
+          "nav": 1
+        },
+        "shortTargets": [],
+        "smallText": [
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Serviços de carreira"
+          },
+          {
+            "size": "13.44px",
+            "tag": "SPAN",
+            "text": "Profissionais atendidos"
+          },
+          {
+            "size": "13.44px",
+            "tag": "SPAN",
+            "text": "Taxa de satisfação"
+          },
+          {
+            "size": "13.44px",
+            "tag": "SPAN",
+            "text": "Mentores especialistas"
+          },
+          {
+            "size": "11.52px",
+            "tag": "P",
+            "text": "Serviços"
+          },
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "Mais popular"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Diagnóstico de carreira"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Plano de ação personalizado"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Simulação de entrevista"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Revisão de LinkedIn"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "por sessão"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Guia completo de mudança"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Equivalência de diplomas"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Assessoria fiscal"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Networking com empresas"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "pacote completo"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Diagnóstico executivo"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Personal branding"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Preparação para boards"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Negociação salarial"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "programa completo"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Guia fiscal digital"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Modelos de contrato"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Pagamentos internacionais"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Proteção legal"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "consultoria completa"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Storytelling profissional"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Portefólio visual"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Perfil otimizado"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Estratégia de conteúdo"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "pacote completo"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Shortlist qualificada"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Entrevistas guiadas"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Relatório final"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Suporte contínuo"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "por vaga"
+          },
+          {
+            "size": "11.52px",
+            "tag": "P",
+            "text": "Cursos"
+          },
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "Mais vendido"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "8 módulos"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "4h 30min"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "4.9"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "6 módulos"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "3h 15min"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "4.8"
+          },
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "Novo"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "5 módulos"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "2h 45min"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "4.7"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "4 módulos"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "2h 00min"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "4.9"
+          },
+          {
+            "size": "11.52px",
+            "tag": "P",
+            "text": "Mentoria"
+          },
+          {
+            "size": "13.44px",
+            "tag": "P",
+            "text": "TechSTP"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Experiência"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Sessões"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Rating"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "Disponível"
+          },
+          {
+            "size": "13.44px",
+            "tag": "P",
+            "text": "StartUp STP"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Experiência"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Sessões"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Rating"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "Disponível"
+          },
+          {
+            "size": "13.44px",
+            "tag": "P",
+            "text": "BancoSTP"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Experiência"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Sessões"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Rating"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "Indisponível"
+          },
+          {
+            "size": "11.52px",
+            "tag": "P",
+            "text": "Prova social"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/carreira",
+      "viewport": {
+        "width": 1024,
+        "height": 900
+      }
+    },
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              ".CarreiraPage_serviceCard___Z2SV:nth-child(2) > .CarreiraPage_serviceFooter__6pahl > .CarreiraPage_serviceButton__hhaej[type=\"button\"]"
+            ],
+            [
+              ".CarreiraPage_serviceCard___Z2SV:nth-child(4) > .CarreiraPage_serviceFooter__6pahl > .CarreiraPage_serviceButton__hhaej[type=\"button\"]"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1440,
+          "scrollHeight": 3665,
+          "scrollWidth": 1440
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 2,
+          "nav": 1
+        },
+        "shortTargets": [],
+        "smallText": [
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Serviços de carreira"
+          },
+          {
+            "size": "13.44px",
+            "tag": "SPAN",
+            "text": "Profissionais atendidos"
+          },
+          {
+            "size": "13.44px",
+            "tag": "SPAN",
+            "text": "Taxa de satisfação"
+          },
+          {
+            "size": "13.44px",
+            "tag": "SPAN",
+            "text": "Mentores especialistas"
+          },
+          {
+            "size": "11.52px",
+            "tag": "P",
+            "text": "Serviços"
+          },
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "Mais popular"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Diagnóstico de carreira"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Plano de ação personalizado"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Simulação de entrevista"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Revisão de LinkedIn"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "por sessão"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Guia completo de mudança"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Equivalência de diplomas"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Assessoria fiscal"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Networking com empresas"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "pacote completo"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Diagnóstico executivo"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Personal branding"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Preparação para boards"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Negociação salarial"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "programa completo"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Guia fiscal digital"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Modelos de contrato"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Pagamentos internacionais"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Proteção legal"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "consultoria completa"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Storytelling profissional"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Portefólio visual"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Perfil otimizado"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Estratégia de conteúdo"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "pacote completo"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Shortlist qualificada"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Entrevistas guiadas"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Relatório final"
+          },
+          {
+            "size": "13.76px",
+            "tag": "LI",
+            "text": "Suporte contínuo"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "por vaga"
+          },
+          {
+            "size": "11.52px",
+            "tag": "P",
+            "text": "Cursos"
+          },
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "Mais vendido"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "8 módulos"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "4h 30min"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "4.9"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "6 módulos"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "3h 15min"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "4.8"
+          },
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "Novo"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "5 módulos"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "2h 45min"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "4.7"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "4 módulos"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "2h 00min"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "4.9"
+          },
+          {
+            "size": "11.52px",
+            "tag": "P",
+            "text": "Mentoria"
+          },
+          {
+            "size": "13.44px",
+            "tag": "P",
+            "text": "TechSTP"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Experiência"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Sessões"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Rating"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "Disponível"
+          },
+          {
+            "size": "13.44px",
+            "tag": "P",
+            "text": "StartUp STP"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Experiência"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Sessões"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Rating"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "Disponível"
+          },
+          {
+            "size": "13.44px",
+            "tag": "P",
+            "text": "BancoSTP"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Experiência"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Sessões"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Rating"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "Indisponível"
+          },
+          {
+            "size": "11.52px",
+            "tag": "P",
+            "text": "Prova social"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/carreira",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    }
+  ],
+  "route": "/carreira",
+  "slug": "carreira"
+}

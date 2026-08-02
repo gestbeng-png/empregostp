@@ -1,0 +1,266 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "phase": "before",
+  "results": [
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              "h1"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 320,
+          "scrollHeight": 1580,
+          "scrollWidth": 320
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 16,
+            "tag": "A",
+            "text": "<- Voltar para Recursos",
+            "width": 150
+          }
+        ],
+        "smallText": [
+          {
+            "size": "13.5px",
+            "tag": "A",
+            "text": "<- Voltar para Recursos"
+          },
+          {
+            "size": "12.75px",
+            "tag": "SPAN",
+            "text": "Carreira"
+          },
+          {
+            "size": "12.75px",
+            "tag": "SPAN",
+            "text": "15 min"
+          },
+          {
+            "size": "12.75px",
+            "tag": "SPAN",
+            "text": "24 paginas"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/recursos/guia/guia-entrevista-candidato",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      }
+    },
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              "h1"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 768,
+          "scrollHeight": 983,
+          "scrollWidth": 768
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 16,
+            "tag": "A",
+            "text": "<- Voltar para Recursos",
+            "width": 150
+          }
+        ],
+        "smallText": [
+          {
+            "size": "13.5px",
+            "tag": "A",
+            "text": "<- Voltar para Recursos"
+          },
+          {
+            "size": "12.75px",
+            "tag": "SPAN",
+            "text": "Carreira"
+          },
+          {
+            "size": "12.75px",
+            "tag": "SPAN",
+            "text": "15 min"
+          },
+          {
+            "size": "12.75px",
+            "tag": "SPAN",
+            "text": "24 paginas"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/recursos/guia/guia-entrevista-candidato",
+      "viewport": {
+        "width": 768,
+        "height": 900
+      }
+    },
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              "h1"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1024,
+          "scrollHeight": 1025,
+          "scrollWidth": 1024
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 17,
+            "tag": "A",
+            "text": "<- Voltar para Recursos",
+            "width": 160
+          }
+        ],
+        "smallText": [
+          {
+            "size": "13.6px",
+            "tag": "SPAN",
+            "text": "Carreira"
+          },
+          {
+            "size": "13.6px",
+            "tag": "SPAN",
+            "text": "15 min"
+          },
+          {
+            "size": "13.6px",
+            "tag": "SPAN",
+            "text": "24 paginas"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/recursos/guia/guia-entrevista-candidato",
+      "viewport": {
+        "width": 1024,
+        "height": 900
+      }
+    },
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              "h1"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1440,
+          "scrollHeight": 1000,
+          "scrollWidth": 1440
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 17,
+            "tag": "A",
+            "text": "<- Voltar para Recursos",
+            "width": 160
+          }
+        ],
+        "smallText": [
+          {
+            "size": "13.6px",
+            "tag": "SPAN",
+            "text": "Carreira"
+          },
+          {
+            "size": "13.6px",
+            "tag": "SPAN",
+            "text": "15 min"
+          },
+          {
+            "size": "13.6px",
+            "tag": "SPAN",
+            "text": "24 paginas"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/recursos/guia/guia-entrevista-candidato",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    }
+  ],
+  "route": "/recursos/guia/guia-entrevista-candidato",
+  "slug": "recurso-guia"
+}

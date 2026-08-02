@@ -1,0 +1,64 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "phase": "global-before",
+  "results": [
+    {
+      "accessibilityViolations": [],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 320,
+          "scrollHeight": 4445,
+          "scrollWidth": 320
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [],
+        "smallText": [],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/blog/oAZRP7PW5OBDEQRssq2o",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      }
+    },
+    {
+      "accessibilityViolations": [],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1440,
+          "scrollHeight": 2755,
+          "scrollWidth": 1440
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [],
+        "smallText": [],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/blog/oAZRP7PW5OBDEQRssq2o",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    }
+  ],
+  "route": "/blog/oAZRP7PW5OBDEQRssq2o",
+  "slug": "blog-post"
+}

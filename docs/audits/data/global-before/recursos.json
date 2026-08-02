@@ -1,0 +1,170 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "phase": "global-before",
+  "results": [
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              ".RecursosPage_templateCard__hreJl:nth-child(1) > .RecursosPage_templateHeader__ALcxZ > .RecursosPage_templateFormat__6saX9"
+            ],
+            [
+              ".RecursosPage_templateCard__hreJl:nth-child(1) > .RecursosPage_templateFooter__xamUE > .RecursosPage_disabledButton___JJIU"
+            ],
+            [
+              ".RecursosPage_templateCard__hreJl:nth-child(2) > .RecursosPage_templateHeader__ALcxZ > .RecursosPage_templateFormat__6saX9"
+            ],
+            [
+              ".RecursosPage_templateCard__hreJl:nth-child(2) > .RecursosPage_templateFooter__xamUE > .RecursosPage_disabledButton___JJIU"
+            ],
+            [
+              ".RecursosPage_templateCard__hreJl:nth-child(3) > .RecursosPage_templateHeader__ALcxZ > .RecursosPage_templateFormat__6saX9"
+            ],
+            [
+              ".RecursosPage_templateCard__hreJl:nth-child(3) > .RecursosPage_templateFooter__xamUE > .RecursosPage_disabledButton___JJIU"
+            ],
+            [
+              ".RecursosPage_templateCard__hreJl:nth-child(4) > .RecursosPage_templateHeader__ALcxZ > .RecursosPage_templateFormat__6saX9"
+            ],
+            [
+              ".RecursosPage_templateCard__hreJl:nth-child(4) > .RecursosPage_templateFooter__xamUE > .RecursosPage_disabledButton___JJIU"
+            ],
+            [
+              ".RecursosPage_templateCard__hreJl:nth-child(5) > .RecursosPage_templateHeader__ALcxZ > .RecursosPage_templateFormat__6saX9"
+            ],
+            [
+              ".RecursosPage_templateCard__hreJl:nth-child(5) > .RecursosPage_templateFooter__xamUE > .RecursosPage_disabledButton___JJIU"
+            ],
+            [
+              ".RecursosPage_templateCard__hreJl:nth-child(6) > .RecursosPage_templateHeader__ALcxZ > .RecursosPage_templateFormat__6saX9"
+            ],
+            [
+              ".RecursosPage_templateCard__hreJl:nth-child(6) > .RecursosPage_templateFooter__xamUE > .RecursosPage_disabledButton___JJIU"
+            ],
+            [
+              ".RecursosPage_templateCard__hreJl:nth-child(7) > .RecursosPage_templateHeader__ALcxZ > .RecursosPage_templateFormat__6saX9"
+            ],
+            [
+              ".RecursosPage_templateCard__hreJl:nth-child(8) > .RecursosPage_templateHeader__ALcxZ > .RecursosPage_templateFormat__6saX9"
+            ],
+            [
+              ".RecursosPage_templateCard__hreJl:nth-child(8) > .RecursosPage_templateFooter__xamUE > .RecursosPage_disabledButton___JJIU"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 320,
+          "scrollHeight": 9312,
+          "scrollWidth": 320
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [],
+        "smallText": [],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/recursos",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      }
+    },
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              ".RecursosPage_templateCard__hreJl:nth-child(1) > .RecursosPage_templateHeader__ALcxZ > .RecursosPage_templateFormat__6saX9"
+            ],
+            [
+              ".RecursosPage_templateCard__hreJl:nth-child(1) > .RecursosPage_templateFooter__xamUE > .RecursosPage_disabledButton___JJIU"
+            ],
+            [
+              ".RecursosPage_templateCard__hreJl:nth-child(2) > .RecursosPage_templateHeader__ALcxZ > .RecursosPage_templateFormat__6saX9"
+            ],
+            [
+              ".RecursosPage_templateCard__hreJl:nth-child(2) > .RecursosPage_templateFooter__xamUE > .RecursosPage_disabledButton___JJIU"
+            ],
+            [
+              ".RecursosPage_templateCard__hreJl:nth-child(3) > .RecursosPage_templateHeader__ALcxZ > .RecursosPage_templateFormat__6saX9"
+            ],
+            [
+              ".RecursosPage_templateCard__hreJl:nth-child(3) > .RecursosPage_templateFooter__xamUE > .RecursosPage_disabledButton___JJIU"
+            ],
+            [
+              ".RecursosPage_templateCard__hreJl:nth-child(4) > .RecursosPage_templateHeader__ALcxZ > .RecursosPage_templateFormat__6saX9"
+            ],
+            [
+              ".RecursosPage_templateCard__hreJl:nth-child(4) > .RecursosPage_templateFooter__xamUE > .RecursosPage_disabledButton___JJIU"
+            ],
+            [
+              ".RecursosPage_templateCard__hreJl:nth-child(5) > .RecursosPage_templateHeader__ALcxZ > .RecursosPage_templateFormat__6saX9"
+            ],
+            [
+              ".RecursosPage_templateCard__hreJl:nth-child(5) > .RecursosPage_templateFooter__xamUE > .RecursosPage_disabledButton___JJIU"
+            ],
+            [
+              ".RecursosPage_templateCard__hreJl:nth-child(6) > .RecursosPage_templateHeader__ALcxZ > .RecursosPage_templateFormat__6saX9"
+            ],
+            [
+              ".RecursosPage_templateCard__hreJl:nth-child(6) > .RecursosPage_templateFooter__xamUE > .RecursosPage_disabledButton___JJIU"
+            ],
+            [
+              ".RecursosPage_templateCard__hreJl:nth-child(7) > .RecursosPage_templateHeader__ALcxZ > .RecursosPage_templateFormat__6saX9"
+            ],
+            [
+              ".RecursosPage_templateCard__hreJl:nth-child(8) > .RecursosPage_templateHeader__ALcxZ > .RecursosPage_templateFormat__6saX9"
+            ],
+            [
+              ".RecursosPage_templateCard__hreJl:nth-child(8) > .RecursosPage_templateFooter__xamUE > .RecursosPage_disabledButton___JJIU"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1440,
+          "scrollHeight": 5275,
+          "scrollWidth": 1440
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [],
+        "smallText": [],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/recursos",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    }
+  ],
+  "route": "/recursos",
+  "slug": "recursos"
+}

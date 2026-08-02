@@ -1,0 +1,6750 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "phase": "before",
+  "results": [
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              ".VagasPage_filterSection__XOKDK:nth-child(3) > label:nth-child(2) > strong"
+            ],
+            [
+              ".VagasPage_filterSection__XOKDK:nth-child(3) > label:nth-child(4) > strong"
+            ]
+          ]
+        },
+        {
+          "help": "Select element must have an accessible name",
+          "id": "select-name",
+          "impact": "critical",
+          "targets": [
+            [
+              "select"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 320,
+          "scrollHeight": 12288,
+          "scrollWidth": 320
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 2,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 22,
+            "tag": "BUTTON",
+            "text": "Limpar",
+            "width": 56
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 8,
+            "tag": "INPUT",
+            "text": "",
+            "width": 261
+          },
+          {
+            "height": 42,
+            "tag": "INPUT",
+            "text": "",
+            "width": 249
+          },
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "Ativar alerta",
+            "width": 249
+          },
+          {
+            "height": 38,
+            "tag": "SELECT",
+            "text": "Mais recentesPrazoMaior salário",
+            "width": 296
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 145
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 145
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "web design",
+            "width": 257
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 257
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Banana",
+            "width": 257
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 257
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Marketing",
+            "width": 257
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 257
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Pedreiro",
+            "width": 257
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 257
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "aaaa",
+            "width": 257
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 257
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Analista de Dados",
+            "width": 257
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 257
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "ddddd",
+            "width": 257
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 257
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "See",
+            "width": 257
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 257
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Dev",
+            "width": 257
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 257
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Social Media",
+            "width": 257
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 257
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Programador",
+            "width": 257
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 257
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Programador",
+            "width": 257
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 257
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Pedreiro",
+            "width": 257
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 257
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Engenheiro fisico",
+            "width": 257
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 257
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Engenheiro civil",
+            "width": 257
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 257
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Motorista",
+            "width": 257
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 257
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Design",
+            "width": 257
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 257
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Pedreiro",
+            "width": 257
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 257
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Vender Peixe",
+            "width": 257
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 257
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Web design",
+            "width": 257
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 257
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Carpinteiro",
+            "width": 257
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 257
+          }
+        ],
+        "smallText": [
+          {
+            "size": "11.7px",
+            "tag": "DIV",
+            "text": "Patrocinada · Destaque"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "Design"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "Júnior (0-2 anos)"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "nodejs"
+          },
+          {
+            "size": "13.2px",
+            "tag": "SPAN",
+            "text": "64%"
+          },
+          {
+            "size": "12.9px",
+            "tag": "SPAN",
+            "text": "tens 4 de 5 skills"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Salário"
+          },
+          {
+            "size": "12.9px",
+            "tag": "SMALL",
+            "text": "STD/mês"
+          },
+          {
+            "size": "13.5px",
+            "tag": "H2",
+            "text": "Filtros"
+          },
+          {
+            "size": "12.6px",
+            "tag": "BUTTON",
+            "text": "Limpar"
+          },
+          {
+            "size": "11.7px",
+            "tag": "H3",
+            "text": "Tipo de contrato"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "6"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "Part-time"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "2"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "Temporário"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "1"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "Estágio"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "3"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "Full-time"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "5"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "Freelance"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "3"
+          },
+          {
+            "size": "11.7px",
+            "tag": "H3",
+            "text": "Modalidade"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "Presencial"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "11"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "Híbrido"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "0"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "Remoto"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "10"
+          },
+          {
+            "size": "11.7px",
+            "tag": "H3",
+            "text": "Localização"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "lembra"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "1"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "STP"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "2"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "ntr"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "1"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "São Tomé"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "4"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "aaaa"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "1"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "Água Grande"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "3"
+          },
+          {
+            "size": "11.7px",
+            "tag": "H3",
+            "text": "Experiência"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "Sem experiência"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "0"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "1-3 anos"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "2"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "3-5 anos"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "0"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "5+ anos"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "2"
+          },
+          {
+            "size": "11.7px",
+            "tag": "H3",
+            "text": "Salário mínimo"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "0"
+          },
+          {
+            "size": "12.9px",
+            "tag": "STRONG",
+            "text": "100.000 STD"
+          },
+          {
+            "size": "12.3px",
+            "tag": "P",
+            "text": "Recebe já por email as vagas publicadas com estes filtros."
+          },
+          {
+            "size": "13.2px",
+            "tag": "BUTTON",
+            "text": "Ativar alerta"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "M"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Microaitec"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "lembra · Presencial"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 5 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Design"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Júnior (0-2 anos)"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "64% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "DM"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Djinola Marketing Digital"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "STP · Remoto"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 23 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Part-time"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Marketing Digital"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Pleno (2-5 anos)"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "71% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "L"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "ltd"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "ntr · Presencial"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 63 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Temporário"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Sénior"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "ghj"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "81% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "ES"
+          },
+          {
+            "size": "11.1px",
+            "tag": "SPAN",
+            "text": "Popular"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Edmir Santos"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "São Tomé · Presencial"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 72 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Estágio"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Engenharia"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Pleno (2-5 anos)"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "62% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "M"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Microaitec"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "aaaa · Remoto"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 95 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Design"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Especialista"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "64% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "DI"
+          },
+          {
+            "size": "11.1px",
+            "tag": "SPAN",
+            "text": "Popular"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Djinola Internacional"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "Água Grande · Presencial"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 96 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Full-time"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Programação"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Pleno (2-5 anos)"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "85% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "M"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Microaitec"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "Lemba · Remoto"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 100 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Freelance"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Design"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Sénior (5+ anos)"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "73% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "ES"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Edmir santos"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "Bbb · Remoto"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 159 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Full-time"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Júnior (0-2 anos)"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Vendas"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "64% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "ES"
+          },
+          {
+            "size": "11.1px",
+            "tag": "SPAN",
+            "text": "Popular"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Edmir santos"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "Lembá · Remoto"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 160 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Programador"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "76% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "S"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "SocoFica"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "Água Grande · Remoto"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 160 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Freelance"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Where does it come from?"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Contrary to popular belief"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "77% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Edmir Santos"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "Neves · Remoto"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 161 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Full-time"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Saber NodeJs e outras tecnologias WEB"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "70% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Edmir Santos"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "Neves · Remoto"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 161 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Full-time"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Saber NodeJs e outras tecnologias WEB"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "80% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "DM"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Djinola Marketing Digital"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "STP · Remoto"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 162 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Part-time"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "72% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "ES"
+          },
+          {
+            "size": "11.1px",
+            "tag": "SPAN",
+            "text": "Popular"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Edmir Santos"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "São Tomé, Lembá · Remoto"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 177 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Part-time"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Desenvolvimento de Sistemas: Projetar e testar sistemas de instrumentação"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "sensores e dispositivos de medição eletrónica."
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "79% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "ES"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Edmir Santos"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "São Tomé · Presencial"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 195 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Mestrado"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "81% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "DM"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Djinola Marketing Digital"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "Água Grande · Presencial"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 262 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Estágio"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "2 anos de experiência"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "77% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "ES"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Edmir Santos"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "São Tomé · Presencial"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 262 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Estágio"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Ser design profissional"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "80% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "ES"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Edmir Santos"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "São Tomé · Presencial"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 263 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Saber construir uma casa de madeira"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "71% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "M"
+          },
+          {
+            "size": "11.1px",
+            "tag": "SPAN",
+            "text": "Popular"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Microaitec"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "Neves · Presencial"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 360 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Freelance"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Ser bom vendedor"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "78% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "M"
+          },
+          {
+            "size": "11.1px",
+            "tag": "SPAN",
+            "text": "Popular"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Microaitec"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "Neves · Presencial"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 369 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Saber canva"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "photoshop e Lightroom"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "86% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "M"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Microaitec"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "Neves · Presencial"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 369 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Full-time"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Ter martelo"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "67% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          }
+        ],
+        "unlabeledFields": 1
+      },
+      "status": 200,
+      "url": "http://localhost:3000/vagas",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      }
+    },
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              ".VagasPage_filterSection__XOKDK:nth-child(3) > label:nth-child(2) > strong"
+            ],
+            [
+              ".VagasPage_filterSection__XOKDK:nth-child(3) > label:nth-child(4) > strong"
+            ]
+          ]
+        },
+        {
+          "help": "Select element must have an accessible name",
+          "id": "select-name",
+          "impact": "critical",
+          "targets": [
+            [
+              "select"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 768,
+          "scrollHeight": 11118,
+          "scrollWidth": 768
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 2,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 22,
+            "tag": "BUTTON",
+            "text": "Limpar",
+            "width": 56
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 8,
+            "tag": "INPUT",
+            "text": "",
+            "width": 685
+          },
+          {
+            "height": 42,
+            "tag": "INPUT",
+            "text": "",
+            "width": 673
+          },
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "Ativar alerta",
+            "width": 673
+          },
+          {
+            "height": 38,
+            "tag": "SELECT",
+            "text": "Mais recentesPrazoMaior salário",
+            "width": 720
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 357
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 357
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "web design",
+            "width": 681
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 681
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Banana",
+            "width": 681
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 681
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Marketing",
+            "width": 681
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 681
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Pedreiro",
+            "width": 681
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 681
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "aaaa",
+            "width": 681
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 681
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Analista de Dados",
+            "width": 681
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 681
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "ddddd",
+            "width": 681
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 681
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "See",
+            "width": 681
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 681
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Dev",
+            "width": 681
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 681
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Social Media",
+            "width": 681
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 681
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Programador",
+            "width": 681
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 681
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Programador",
+            "width": 681
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 681
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Pedreiro",
+            "width": 681
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 681
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Engenheiro fisico",
+            "width": 681
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 681
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Engenheiro civil",
+            "width": 681
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 681
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Motorista",
+            "width": 681
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 681
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Design",
+            "width": 681
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 681
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Pedreiro",
+            "width": 681
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 681
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Vender Peixe",
+            "width": 681
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 681
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Web design",
+            "width": 681
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 681
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Carpinteiro",
+            "width": 681
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 681
+          }
+        ],
+        "smallText": [
+          {
+            "size": "11.7px",
+            "tag": "DIV",
+            "text": "Patrocinada · Destaque"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "Design"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "Júnior (0-2 anos)"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "nodejs"
+          },
+          {
+            "size": "13.2px",
+            "tag": "SPAN",
+            "text": "64%"
+          },
+          {
+            "size": "12.9px",
+            "tag": "SPAN",
+            "text": "tens 4 de 5 skills"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Salário"
+          },
+          {
+            "size": "12.9px",
+            "tag": "SMALL",
+            "text": "STD/mês"
+          },
+          {
+            "size": "13.5px",
+            "tag": "H2",
+            "text": "Filtros"
+          },
+          {
+            "size": "12.6px",
+            "tag": "BUTTON",
+            "text": "Limpar"
+          },
+          {
+            "size": "11.7px",
+            "tag": "H3",
+            "text": "Tipo de contrato"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "6"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "Part-time"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "2"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "Temporário"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "1"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "Estágio"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "3"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "Full-time"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "5"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "Freelance"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "3"
+          },
+          {
+            "size": "11.7px",
+            "tag": "H3",
+            "text": "Modalidade"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "Presencial"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "11"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "Híbrido"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "0"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "Remoto"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "10"
+          },
+          {
+            "size": "11.7px",
+            "tag": "H3",
+            "text": "Localização"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "lembra"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "1"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "STP"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "2"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "ntr"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "1"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "São Tomé"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "4"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "aaaa"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "1"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "Água Grande"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "3"
+          },
+          {
+            "size": "11.7px",
+            "tag": "H3",
+            "text": "Experiência"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "Sem experiência"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "0"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "1-3 anos"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "2"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "3-5 anos"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "0"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "5+ anos"
+          },
+          {
+            "size": "11.7px",
+            "tag": "STRONG",
+            "text": "2"
+          },
+          {
+            "size": "11.7px",
+            "tag": "H3",
+            "text": "Salário mínimo"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "0"
+          },
+          {
+            "size": "12.9px",
+            "tag": "STRONG",
+            "text": "100.000 STD"
+          },
+          {
+            "size": "12.3px",
+            "tag": "P",
+            "text": "Recebe já por email as vagas publicadas com estes filtros."
+          },
+          {
+            "size": "13.2px",
+            "tag": "BUTTON",
+            "text": "Ativar alerta"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "M"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Microaitec"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "lembra · Presencial"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 5 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Design"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Júnior (0-2 anos)"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "64% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "DM"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Djinola Marketing Digital"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "STP · Remoto"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 23 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Part-time"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Marketing Digital"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Pleno (2-5 anos)"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "71% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "L"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "ltd"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "ntr · Presencial"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 63 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Temporário"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Sénior"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "ghj"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "81% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "ES"
+          },
+          {
+            "size": "11.1px",
+            "tag": "SPAN",
+            "text": "Popular"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Edmir Santos"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "São Tomé · Presencial"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 72 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Estágio"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Engenharia"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Pleno (2-5 anos)"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "62% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "M"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Microaitec"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "aaaa · Remoto"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 95 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Design"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Especialista"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "64% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "DI"
+          },
+          {
+            "size": "11.1px",
+            "tag": "SPAN",
+            "text": "Popular"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Djinola Internacional"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "Água Grande · Presencial"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 96 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Full-time"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Programação"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Pleno (2-5 anos)"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "85% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "M"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Microaitec"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "Lemba · Remoto"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 100 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Freelance"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Design"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Sénior (5+ anos)"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "73% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "ES"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Edmir santos"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "Bbb · Remoto"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 159 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Full-time"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Júnior (0-2 anos)"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Vendas"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "64% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "ES"
+          },
+          {
+            "size": "11.1px",
+            "tag": "SPAN",
+            "text": "Popular"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Edmir santos"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "Lembá · Remoto"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 160 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Programador"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "76% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "S"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "SocoFica"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "Água Grande · Remoto"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 160 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Freelance"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Where does it come from?"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Contrary to popular belief"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "77% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Edmir Santos"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "Neves · Remoto"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 161 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Full-time"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Saber NodeJs e outras tecnologias WEB"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "70% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Edmir Santos"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "Neves · Remoto"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 161 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Full-time"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Saber NodeJs e outras tecnologias WEB"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "80% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "DM"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Djinola Marketing Digital"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "STP · Remoto"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 162 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Part-time"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "72% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "ES"
+          },
+          {
+            "size": "11.1px",
+            "tag": "SPAN",
+            "text": "Popular"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Edmir Santos"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "São Tomé, Lembá · Remoto"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 177 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Part-time"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Desenvolvimento de Sistemas: Projetar e testar sistemas de instrumentação"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "sensores e dispositivos de medição eletrónica."
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "79% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "ES"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Edmir Santos"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "São Tomé · Presencial"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 195 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Mestrado"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "81% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "DM"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Djinola Marketing Digital"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "Água Grande · Presencial"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 262 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Estágio"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "2 anos de experiência"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "77% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "ES"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Edmir Santos"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "São Tomé · Presencial"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 262 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Estágio"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Ser design profissional"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "80% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "ES"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Edmir Santos"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "São Tomé · Presencial"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 263 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Saber construir uma casa de madeira"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "71% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "M"
+          },
+          {
+            "size": "11.1px",
+            "tag": "SPAN",
+            "text": "Popular"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Microaitec"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "Neves · Presencial"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 360 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Freelance"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Ser bom vendedor"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "78% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "M"
+          },
+          {
+            "size": "11.1px",
+            "tag": "SPAN",
+            "text": "Popular"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Microaitec"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "Neves · Presencial"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 369 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Saber canva"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "photoshop e Lightroom"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "86% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "M"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Microaitec"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "Neves · Presencial"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "há 369 dias"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Full-time"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Ter martelo"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "11.4px",
+            "tag": "STRONG",
+            "text": "67% match"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Candidatar"
+          }
+        ],
+        "unlabeledFields": 1
+      },
+      "status": 200,
+      "url": "http://localhost:3000/vagas",
+      "viewport": {
+        "width": 768,
+        "height": 900
+      }
+    },
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              ".VagasPage_filterSection__XOKDK:nth-child(3) > label:nth-child(2) > strong"
+            ],
+            [
+              ".VagasPage_filterSection__XOKDK:nth-child(3) > label:nth-child(4) > strong"
+            ]
+          ]
+        },
+        {
+          "help": "Select element must have an accessible name",
+          "id": "select-name",
+          "impact": "critical",
+          "targets": [
+            [
+              "select"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1024,
+          "scrollHeight": 6991,
+          "scrollWidth": 1024
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 2,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 24,
+            "tag": "BUTTON",
+            "text": "Limpar",
+            "width": 59
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 8,
+            "tag": "INPUT",
+            "text": "",
+            "width": 955
+          },
+          {
+            "height": 42,
+            "tag": "INPUT",
+            "text": "",
+            "width": 942
+          },
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "Ativar alerta",
+            "width": 942
+          },
+          {
+            "height": 38,
+            "tag": "SELECT",
+            "text": "Mais recentesPrazoMaior salário",
+            "width": 137
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 40
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 40
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "web design",
+            "width": 447
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 447
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Banana",
+            "width": 447
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 447
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Marketing",
+            "width": 447
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 447
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Pedreiro",
+            "width": 447
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 447
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "aaaa",
+            "width": 447
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 447
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Analista de Dados",
+            "width": 447
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 447
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "ddddd",
+            "width": 447
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 447
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "See",
+            "width": 447
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 447
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Dev",
+            "width": 447
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 447
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Social Media",
+            "width": 447
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 447
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Programador",
+            "width": 447
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 447
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Programador",
+            "width": 447
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 447
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Pedreiro",
+            "width": 447
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 447
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Engenheiro fisico",
+            "width": 447
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 447
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Engenheiro civil",
+            "width": 447
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 447
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Motorista",
+            "width": 447
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 447
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Design",
+            "width": 447
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 447
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Pedreiro",
+            "width": 447
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 447
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Vender Peixe",
+            "width": 447
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 447
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Web design",
+            "width": 447
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 447
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Carpinteiro",
+            "width": 447
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 447
+          }
+        ],
+        "smallText": [
+          {
+            "size": "12.48px",
+            "tag": "DIV",
+            "text": "Patrocinada · Destaque"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "Design"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "Júnior (0-2 anos)"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "nodejs"
+          },
+          {
+            "size": "13.76px",
+            "tag": "SPAN",
+            "text": "tens 4 de 5 skills"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Salário"
+          },
+          {
+            "size": "13.76px",
+            "tag": "SMALL",
+            "text": "STD/mês"
+          },
+          {
+            "size": "13.44px",
+            "tag": "BUTTON",
+            "text": "Limpar"
+          },
+          {
+            "size": "12.48px",
+            "tag": "H3",
+            "text": "Tipo de contrato"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "6"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "2"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "1"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "3"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "5"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "3"
+          },
+          {
+            "size": "12.48px",
+            "tag": "H3",
+            "text": "Modalidade"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "11"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "0"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "10"
+          },
+          {
+            "size": "12.48px",
+            "tag": "H3",
+            "text": "Localização"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "1"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "2"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "1"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "4"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "1"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "3"
+          },
+          {
+            "size": "12.48px",
+            "tag": "H3",
+            "text": "Experiência"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "0"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "2"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "0"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "2"
+          },
+          {
+            "size": "12.48px",
+            "tag": "H3",
+            "text": "Salário mínimo"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "0"
+          },
+          {
+            "size": "13.76px",
+            "tag": "STRONG",
+            "text": "100.000 STD"
+          },
+          {
+            "size": "13.12px",
+            "tag": "P",
+            "text": "Recebe já por email as vagas publicadas com estes filtros."
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "lembra · Presencial"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 5 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Design"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Júnior (0-2 anos)"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "64% match"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "STP · Remoto"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 23 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Part-time"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Marketing Digital"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Pleno (2-5 anos)"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "71% match"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "ntr · Presencial"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 63 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Temporário"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Sénior"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "ghj"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "81% match"
+          },
+          {
+            "size": "11.84px",
+            "tag": "SPAN",
+            "text": "Popular"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "São Tomé · Presencial"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 72 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Estágio"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Engenharia"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Pleno (2-5 anos)"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "62% match"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "aaaa · Remoto"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 95 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Design"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Especialista"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "64% match"
+          },
+          {
+            "size": "11.84px",
+            "tag": "SPAN",
+            "text": "Popular"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "Água Grande · Presencial"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 96 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Full-time"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Programação"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Pleno (2-5 anos)"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "85% match"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "Lemba · Remoto"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 100 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Freelance"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Design"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Sénior (5+ anos)"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "73% match"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "Bbb · Remoto"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 159 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Full-time"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Júnior (0-2 anos)"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Vendas"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "64% match"
+          },
+          {
+            "size": "11.84px",
+            "tag": "SPAN",
+            "text": "Popular"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "Lembá · Remoto"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 160 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Programador"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "76% match"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "Água Grande · Remoto"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 160 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Freelance"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Where does it come from?"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Contrary to popular belief"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "77% match"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "Neves · Remoto"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 161 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Full-time"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Saber NodeJs e outras tecnologias WEB"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "70% match"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "Neves · Remoto"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 161 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Full-time"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Saber NodeJs e outras tecnologias WEB"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "80% match"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "STP · Remoto"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 162 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Part-time"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "72% match"
+          },
+          {
+            "size": "11.84px",
+            "tag": "SPAN",
+            "text": "Popular"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "São Tomé, Lembá · Remoto"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 177 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Part-time"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Desenvolvimento de Sistemas: Projetar e testar sistemas de instrumentação"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "sensores e dispositivos de medição eletrónica."
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "79% match"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "São Tomé · Presencial"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 195 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Mestrado"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "81% match"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "Água Grande · Presencial"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 262 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Estágio"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "2 anos de experiência"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "77% match"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "São Tomé · Presencial"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 262 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Estágio"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Ser design profissional"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "80% match"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "São Tomé · Presencial"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 263 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Saber construir uma casa de madeira"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "71% match"
+          },
+          {
+            "size": "11.84px",
+            "tag": "SPAN",
+            "text": "Popular"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "Neves · Presencial"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 360 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Freelance"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Ser bom vendedor"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "78% match"
+          },
+          {
+            "size": "11.84px",
+            "tag": "SPAN",
+            "text": "Popular"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "Neves · Presencial"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 369 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Saber canva"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "photoshop e Lightroom"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "86% match"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "Neves · Presencial"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 369 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Full-time"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Ter martelo"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "67% match"
+          }
+        ],
+        "unlabeledFields": 1
+      },
+      "status": 200,
+      "url": "http://localhost:3000/vagas",
+      "viewport": {
+        "width": 1024,
+        "height": 900
+      }
+    },
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              ".VagasPage_filterSection__XOKDK:nth-child(3) > label:nth-child(2) > strong"
+            ],
+            [
+              ".VagasPage_filterSection__XOKDK:nth-child(3) > label:nth-child(4) > strong"
+            ]
+          ]
+        },
+        {
+          "help": "Select element must have an accessible name",
+          "id": "select-name",
+          "impact": "critical",
+          "targets": [
+            [
+              "select"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1440,
+          "scrollHeight": 5000,
+          "scrollWidth": 1440
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 2,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 24,
+            "tag": "BUTTON",
+            "text": "Limpar",
+            "width": 59
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 18,
+            "tag": "INPUT",
+            "text": "",
+            "width": 18
+          },
+          {
+            "height": 8,
+            "tag": "INPUT",
+            "text": "",
+            "width": 273
+          },
+          {
+            "height": 42,
+            "tag": "INPUT",
+            "text": "",
+            "width": 260
+          },
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "Ativar alerta",
+            "width": 260
+          },
+          {
+            "height": 38,
+            "tag": "SELECT",
+            "text": "Mais recentesPrazoMaior salário",
+            "width": 137
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 40
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 40
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "web design",
+            "width": 482
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 482
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Banana",
+            "width": 482
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 482
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Marketing",
+            "width": 482
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 482
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Pedreiro",
+            "width": 482
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 482
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "aaaa",
+            "width": 482
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 482
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Analista de Dados",
+            "width": 482
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 482
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "ddddd",
+            "width": 482
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 482
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "See",
+            "width": 482
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 482
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Dev",
+            "width": 482
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 482
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Social Media",
+            "width": 482
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 482
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Programador",
+            "width": 482
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 482
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Programador",
+            "width": 482
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 482
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Pedreiro",
+            "width": 482
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 482
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Engenheiro fisico",
+            "width": 482
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 482
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Engenheiro civil",
+            "width": 482
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 482
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Motorista",
+            "width": 482
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 482
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Design",
+            "width": 482
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 482
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Pedreiro",
+            "width": 482
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 482
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Vender Peixe",
+            "width": 482
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 482
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Web design",
+            "width": 482
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 482
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Carpinteiro",
+            "width": 482
+          },
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Candidatar",
+            "width": 482
+          }
+        ],
+        "smallText": [
+          {
+            "size": "12.48px",
+            "tag": "DIV",
+            "text": "Patrocinada · Destaque"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "Design"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "Júnior (0-2 anos)"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "nodejs"
+          },
+          {
+            "size": "13.76px",
+            "tag": "SPAN",
+            "text": "tens 4 de 5 skills"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Salário"
+          },
+          {
+            "size": "13.76px",
+            "tag": "SMALL",
+            "text": "STD/mês"
+          },
+          {
+            "size": "13.44px",
+            "tag": "BUTTON",
+            "text": "Limpar"
+          },
+          {
+            "size": "12.48px",
+            "tag": "H3",
+            "text": "Tipo de contrato"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "6"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "2"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "1"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "3"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "5"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "3"
+          },
+          {
+            "size": "12.48px",
+            "tag": "H3",
+            "text": "Modalidade"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "11"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "0"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "10"
+          },
+          {
+            "size": "12.48px",
+            "tag": "H3",
+            "text": "Localização"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "1"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "2"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "1"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "4"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "1"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "3"
+          },
+          {
+            "size": "12.48px",
+            "tag": "H3",
+            "text": "Experiência"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "0"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "2"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "0"
+          },
+          {
+            "size": "12.48px",
+            "tag": "STRONG",
+            "text": "2"
+          },
+          {
+            "size": "12.48px",
+            "tag": "H3",
+            "text": "Salário mínimo"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "0"
+          },
+          {
+            "size": "13.76px",
+            "tag": "STRONG",
+            "text": "100.000 STD"
+          },
+          {
+            "size": "13.12px",
+            "tag": "P",
+            "text": "Recebe já por email as vagas publicadas com estes filtros."
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "lembra · Presencial"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 5 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Design"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Júnior (0-2 anos)"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "64% match"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "STP · Remoto"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 23 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Part-time"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Marketing Digital"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Pleno (2-5 anos)"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "71% match"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "ntr · Presencial"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 63 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Temporário"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Sénior"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "ghj"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "81% match"
+          },
+          {
+            "size": "11.84px",
+            "tag": "SPAN",
+            "text": "Popular"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "São Tomé · Presencial"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 72 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Estágio"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Engenharia"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Pleno (2-5 anos)"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "62% match"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "aaaa · Remoto"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 95 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Design"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Especialista"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "64% match"
+          },
+          {
+            "size": "11.84px",
+            "tag": "SPAN",
+            "text": "Popular"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "Água Grande · Presencial"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 96 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Full-time"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Programação"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Pleno (2-5 anos)"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "85% match"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "Lemba · Remoto"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 100 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Freelance"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Design"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Sénior (5+ anos)"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "73% match"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "Bbb · Remoto"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 159 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Full-time"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Júnior (0-2 anos)"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Vendas"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "64% match"
+          },
+          {
+            "size": "11.84px",
+            "tag": "SPAN",
+            "text": "Popular"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "Lembá · Remoto"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 160 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Programador"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "76% match"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "Água Grande · Remoto"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 160 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Freelance"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Where does it come from?"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Contrary to popular belief"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "77% match"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "Neves · Remoto"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 161 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Full-time"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Saber NodeJs e outras tecnologias WEB"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "70% match"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "Neves · Remoto"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 161 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Full-time"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Saber NodeJs e outras tecnologias WEB"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "80% match"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "STP · Remoto"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 162 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Part-time"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "72% match"
+          },
+          {
+            "size": "11.84px",
+            "tag": "SPAN",
+            "text": "Popular"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "São Tomé, Lembá · Remoto"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 177 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Part-time"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Desenvolvimento de Sistemas: Projetar e testar sistemas de instrumentação"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "sensores e dispositivos de medição eletrónica."
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "79% match"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "São Tomé · Presencial"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 195 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Mestrado"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "81% match"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "Água Grande · Presencial"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 262 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Estágio"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "2 anos de experiência"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "77% match"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "São Tomé · Presencial"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 262 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Estágio"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Ser design profissional"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "80% match"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "São Tomé · Presencial"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 263 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Saber construir uma casa de madeira"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "71% match"
+          },
+          {
+            "size": "11.84px",
+            "tag": "SPAN",
+            "text": "Popular"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "Neves · Presencial"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 360 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Freelance"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Ser bom vendedor"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "78% match"
+          },
+          {
+            "size": "11.84px",
+            "tag": "SPAN",
+            "text": "Popular"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "Neves · Presencial"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 369 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Saber canva"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "photoshop e Lightroom"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "86% match"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "Neves · Presencial"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "há 369 dias"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Full-time"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Ter martelo"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "STD/mês"
+          },
+          {
+            "size": "12.16px",
+            "tag": "STRONG",
+            "text": "67% match"
+          }
+        ],
+        "unlabeledFields": 1
+      },
+      "status": 200,
+      "url": "http://localhost:3000/vagas",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    }
+  ],
+  "route": "/vagas",
+  "slug": "vagas"
+}

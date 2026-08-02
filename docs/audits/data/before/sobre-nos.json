@@ -1,0 +1,878 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "phase": "before",
+  "results": [
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must only use permitted ARIA attributes",
+          "id": "aria-prohibited-attr",
+          "impact": "serious",
+          "targets": [
+            [
+              ".SobreNosPage_carouselSlide__CQXm5:nth-child(2) > .SobreNosPage_testimonialCard__jzHQh > .SobreNosPage_stars__ZZFca[aria-label=\"5 de 5 estrelas\"]"
+            ],
+            [
+              ".SobreNosPage_carouselSlide__CQXm5:nth-child(3) > .SobreNosPage_testimonialCard__jzHQh > .SobreNosPage_stars__ZZFca[aria-label=\"5 de 5 estrelas\"]"
+            ],
+            [
+              ".SobreNosPage_carouselSlide__CQXm5:nth-child(4) > .SobreNosPage_testimonialCard__jzHQh > .SobreNosPage_stars__ZZFca[aria-label=\"5 de 5 estrelas\"]"
+            ],
+            [
+              "span[aria-label=\"4 de 5 estrelas\"]"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 320,
+          "scrollHeight": 7575,
+          "scrollWidth": 320
+        },
+        "duplicateIds": [],
+        "headingOneCount": 0,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 2,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 9,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 26
+          },
+          {
+            "height": 9,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 9
+          },
+          {
+            "height": 9,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 9
+          },
+          {
+            "height": 9,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 9
+          },
+          {
+            "height": 9,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 9
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 35
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 35
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 35
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 35
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 35
+          }
+        ],
+        "smallText": [
+          {
+            "size": "11.7px",
+            "tag": "P",
+            "text": "Quem somos"
+          },
+          {
+            "size": "11.7px",
+            "tag": "P",
+            "text": "O nosso lema"
+          },
+          {
+            "size": "11.7px",
+            "tag": "P",
+            "text": "A nossa equipa"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Engenheiro Físico e Programador"
+          },
+          {
+            "size": "13.8px",
+            "tag": "P",
+            "text": "Lidera a visão tecnológica do Emprego STP, unindo engenharia, produto e programação para construir u"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Gestor"
+          },
+          {
+            "size": "13.8px",
+            "tag": "P",
+            "text": "Acompanha a organização operacional e a relação com parceiros, ajudando a transformar necessidades r"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Gestor"
+          },
+          {
+            "size": "13.8px",
+            "tag": "P",
+            "text": "Contribui para a gestão estratégica da plataforma, com foco em crescimento, credibilidade e criação "
+          },
+          {
+            "size": "11.7px",
+            "tag": "P",
+            "text": "A nossa comunidade"
+          },
+          {
+            "size": "13.8px",
+            "tag": "P",
+            "text": "Perfis, candidaturas e crescimento profissional."
+          },
+          {
+            "size": "13.8px",
+            "tag": "P",
+            "text": "Vagas, triagem e recrutamento com confiança."
+          },
+          {
+            "size": "13.8px",
+            "tag": "P",
+            "text": "Respeito, entreajuda e oportunidades para todos."
+          },
+          {
+            "size": "13.8px",
+            "tag": "P",
+            "text": "Cada vaga, uma árvore e um compromisso com o país."
+          },
+          {
+            "size": "11.7px",
+            "tag": "P",
+            "text": "Testemunhos"
+          },
+          {
+            "size": "12.75px",
+            "tag": "SPAN",
+            "text": "Profissional"
+          },
+          {
+            "size": "12.75px",
+            "tag": "SPAN",
+            "text": "Candidata · São Tomé"
+          },
+          {
+            "size": "12.75px",
+            "tag": "SPAN",
+            "text": "Gestor de RH"
+          },
+          {
+            "size": "12.75px",
+            "tag": "SPAN",
+            "text": "Candidata"
+          },
+          {
+            "size": "11.7px",
+            "tag": "P",
+            "text": "Partilhe a sua experiência"
+          },
+          {
+            "size": "12.75px",
+            "tag": "LABEL",
+            "text": "Nome *"
+          },
+          {
+            "size": "12.75px",
+            "tag": "LABEL",
+            "text": "Cargo / função (opcional)"
+          },
+          {
+            "size": "12.75px",
+            "tag": "SPAN",
+            "text": "Avaliação (opcional)"
+          },
+          {
+            "size": "12.75px",
+            "tag": "LABEL",
+            "text": "O seu testemunho *"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "0/600"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/sobre-nos",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      }
+    },
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must only use permitted ARIA attributes",
+          "id": "aria-prohibited-attr",
+          "impact": "serious",
+          "targets": [
+            [
+              ".SobreNosPage_carouselSlide__CQXm5:nth-child(2) > .SobreNosPage_testimonialCard__jzHQh > .SobreNosPage_stars__ZZFca[aria-label=\"5 de 5 estrelas\"]"
+            ],
+            [
+              ".SobreNosPage_carouselSlide__CQXm5:nth-child(3) > .SobreNosPage_testimonialCard__jzHQh > .SobreNosPage_stars__ZZFca[aria-label=\"5 de 5 estrelas\"]"
+            ],
+            [
+              ".SobreNosPage_carouselSlide__CQXm5:nth-child(4) > .SobreNosPage_testimonialCard__jzHQh > .SobreNosPage_stars__ZZFca[aria-label=\"5 de 5 estrelas\"]"
+            ],
+            [
+              "span[aria-label=\"4 de 5 estrelas\"]"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 768,
+          "scrollHeight": 5139,
+          "scrollWidth": 768
+        },
+        "duplicateIds": [],
+        "headingOneCount": 0,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 2,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 9,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 26
+          },
+          {
+            "height": 9,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 9
+          },
+          {
+            "height": 9,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 9
+          },
+          {
+            "height": 9,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 9
+          },
+          {
+            "height": 9,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 9
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 40
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 40
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 40
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 40
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 40
+          }
+        ],
+        "smallText": [
+          {
+            "size": "11.7px",
+            "tag": "P",
+            "text": "Quem somos"
+          },
+          {
+            "size": "11.7px",
+            "tag": "P",
+            "text": "O nosso lema"
+          },
+          {
+            "size": "11.7px",
+            "tag": "P",
+            "text": "A nossa equipa"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Engenheiro Físico e Programador"
+          },
+          {
+            "size": "13.8px",
+            "tag": "P",
+            "text": "Lidera a visão tecnológica do Emprego STP, unindo engenharia, produto e programação para construir u"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Gestor"
+          },
+          {
+            "size": "13.8px",
+            "tag": "P",
+            "text": "Acompanha a organização operacional e a relação com parceiros, ajudando a transformar necessidades r"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Gestor"
+          },
+          {
+            "size": "13.8px",
+            "tag": "P",
+            "text": "Contribui para a gestão estratégica da plataforma, com foco em crescimento, credibilidade e criação "
+          },
+          {
+            "size": "11.7px",
+            "tag": "P",
+            "text": "A nossa comunidade"
+          },
+          {
+            "size": "13.8px",
+            "tag": "P",
+            "text": "Perfis, candidaturas e crescimento profissional."
+          },
+          {
+            "size": "13.8px",
+            "tag": "P",
+            "text": "Vagas, triagem e recrutamento com confiança."
+          },
+          {
+            "size": "13.8px",
+            "tag": "P",
+            "text": "Respeito, entreajuda e oportunidades para todos."
+          },
+          {
+            "size": "13.8px",
+            "tag": "P",
+            "text": "Cada vaga, uma árvore e um compromisso com o país."
+          },
+          {
+            "size": "11.7px",
+            "tag": "P",
+            "text": "Testemunhos"
+          },
+          {
+            "size": "12.75px",
+            "tag": "SPAN",
+            "text": "Profissional"
+          },
+          {
+            "size": "12.75px",
+            "tag": "SPAN",
+            "text": "Candidata · São Tomé"
+          },
+          {
+            "size": "12.75px",
+            "tag": "SPAN",
+            "text": "Gestor de RH"
+          },
+          {
+            "size": "12.75px",
+            "tag": "SPAN",
+            "text": "Candidata"
+          },
+          {
+            "size": "11.7px",
+            "tag": "P",
+            "text": "Partilhe a sua experiência"
+          },
+          {
+            "size": "12.75px",
+            "tag": "LABEL",
+            "text": "Nome *"
+          },
+          {
+            "size": "12.75px",
+            "tag": "LABEL",
+            "text": "Cargo / função (opcional)"
+          },
+          {
+            "size": "12.75px",
+            "tag": "SPAN",
+            "text": "Avaliação (opcional)"
+          },
+          {
+            "size": "12.75px",
+            "tag": "LABEL",
+            "text": "O seu testemunho *"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "0/600"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/sobre-nos",
+      "viewport": {
+        "width": 768,
+        "height": 900
+      }
+    },
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must only use permitted ARIA attributes",
+          "id": "aria-prohibited-attr",
+          "impact": "serious",
+          "targets": [
+            [
+              ".SobreNosPage_carouselSlide__CQXm5:nth-child(2) > .SobreNosPage_testimonialCard__jzHQh > .SobreNosPage_stars__ZZFca[aria-label=\"5 de 5 estrelas\"]"
+            ],
+            [
+              ".SobreNosPage_carouselSlide__CQXm5:nth-child(3) > .SobreNosPage_testimonialCard__jzHQh > .SobreNosPage_stars__ZZFca[aria-label=\"5 de 5 estrelas\"]"
+            ],
+            [
+              ".SobreNosPage_carouselSlide__CQXm5:nth-child(4) > .SobreNosPage_testimonialCard__jzHQh > .SobreNosPage_stars__ZZFca[aria-label=\"5 de 5 estrelas\"]"
+            ],
+            [
+              "span[aria-label=\"4 de 5 estrelas\"]"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1024,
+          "scrollHeight": 4628,
+          "scrollWidth": 1024
+        },
+        "duplicateIds": [],
+        "headingOneCount": 0,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 2,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 9,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 26
+          },
+          {
+            "height": 9,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 9
+          },
+          {
+            "height": 9,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 9
+          },
+          {
+            "height": 9,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 9
+          },
+          {
+            "height": 9,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 9
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 40
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 40
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 40
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 40
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 40
+          }
+        ],
+        "smallText": [
+          {
+            "size": "12.48px",
+            "tag": "P",
+            "text": "Quem somos"
+          },
+          {
+            "size": "12.48px",
+            "tag": "P",
+            "text": "O nosso lema"
+          },
+          {
+            "size": "12.48px",
+            "tag": "P",
+            "text": "A nossa equipa"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Engenheiro Físico e Programador"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Gestor"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Gestor"
+          },
+          {
+            "size": "12.48px",
+            "tag": "P",
+            "text": "A nossa comunidade"
+          },
+          {
+            "size": "12.48px",
+            "tag": "P",
+            "text": "Testemunhos"
+          },
+          {
+            "size": "13.6px",
+            "tag": "SPAN",
+            "text": "Profissional"
+          },
+          {
+            "size": "13.6px",
+            "tag": "SPAN",
+            "text": "Candidata · São Tomé"
+          },
+          {
+            "size": "13.6px",
+            "tag": "SPAN",
+            "text": "Gestor de RH"
+          },
+          {
+            "size": "13.6px",
+            "tag": "SPAN",
+            "text": "Candidata"
+          },
+          {
+            "size": "12.48px",
+            "tag": "P",
+            "text": "Partilhe a sua experiência"
+          },
+          {
+            "size": "13.6px",
+            "tag": "LABEL",
+            "text": "Nome *"
+          },
+          {
+            "size": "13.6px",
+            "tag": "LABEL",
+            "text": "Cargo / função (opcional)"
+          },
+          {
+            "size": "13.6px",
+            "tag": "SPAN",
+            "text": "Avaliação (opcional)"
+          },
+          {
+            "size": "13.6px",
+            "tag": "LABEL",
+            "text": "O seu testemunho *"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "0/600"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/sobre-nos",
+      "viewport": {
+        "width": 1024,
+        "height": 900
+      }
+    },
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must only use permitted ARIA attributes",
+          "id": "aria-prohibited-attr",
+          "impact": "serious",
+          "targets": [
+            [
+              ".SobreNosPage_carouselSlide__CQXm5:nth-child(2) > .SobreNosPage_testimonialCard__jzHQh > .SobreNosPage_stars__ZZFca[aria-label=\"5 de 5 estrelas\"]"
+            ],
+            [
+              ".SobreNosPage_carouselSlide__CQXm5:nth-child(3) > .SobreNosPage_testimonialCard__jzHQh > .SobreNosPage_stars__ZZFca[aria-label=\"5 de 5 estrelas\"]"
+            ],
+            [
+              ".SobreNosPage_carouselSlide__CQXm5:nth-child(4) > .SobreNosPage_testimonialCard__jzHQh > .SobreNosPage_stars__ZZFca[aria-label=\"5 de 5 estrelas\"]"
+            ],
+            [
+              "span[aria-label=\"4 de 5 estrelas\"]"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1440,
+          "scrollHeight": 4701,
+          "scrollWidth": 1440
+        },
+        "duplicateIds": [],
+        "headingOneCount": 0,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 2,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 9,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 26
+          },
+          {
+            "height": 9,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 9
+          },
+          {
+            "height": 9,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 9
+          },
+          {
+            "height": 9,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 9
+          },
+          {
+            "height": 9,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 9
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 40
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 40
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 40
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 40
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 40
+          }
+        ],
+        "smallText": [
+          {
+            "size": "12.48px",
+            "tag": "P",
+            "text": "Quem somos"
+          },
+          {
+            "size": "12.48px",
+            "tag": "P",
+            "text": "O nosso lema"
+          },
+          {
+            "size": "12.48px",
+            "tag": "P",
+            "text": "A nossa equipa"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Engenheiro Físico e Programador"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Gestor"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Gestor"
+          },
+          {
+            "size": "12.48px",
+            "tag": "P",
+            "text": "A nossa comunidade"
+          },
+          {
+            "size": "12.48px",
+            "tag": "P",
+            "text": "Testemunhos"
+          },
+          {
+            "size": "13.6px",
+            "tag": "SPAN",
+            "text": "Profissional"
+          },
+          {
+            "size": "13.6px",
+            "tag": "SPAN",
+            "text": "Candidata · São Tomé"
+          },
+          {
+            "size": "13.6px",
+            "tag": "SPAN",
+            "text": "Gestor de RH"
+          },
+          {
+            "size": "13.6px",
+            "tag": "SPAN",
+            "text": "Candidata"
+          },
+          {
+            "size": "12.48px",
+            "tag": "P",
+            "text": "Partilhe a sua experiência"
+          },
+          {
+            "size": "13.6px",
+            "tag": "LABEL",
+            "text": "Nome *"
+          },
+          {
+            "size": "13.6px",
+            "tag": "LABEL",
+            "text": "Cargo / função (opcional)"
+          },
+          {
+            "size": "13.6px",
+            "tag": "SPAN",
+            "text": "Avaliação (opcional)"
+          },
+          {
+            "size": "13.6px",
+            "tag": "LABEL",
+            "text": "O seu testemunho *"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "0/600"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/sobre-nos",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    }
+  ],
+  "route": "/sobre-nos",
+  "slug": "sobre-nos"
+}

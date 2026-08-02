@@ -1,0 +1,186 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "phase": "global-before",
+  "results": [
+    {
+      "accessibilityViolations": [],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 320,
+          "scrollHeight": 8828,
+          "scrollWidth": 320
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [],
+        "smallText": [
+          {
+            "size": "11.25px",
+            "tag": "P",
+            "text": "Talentos em destaque"
+          },
+          {
+            "size": "12.1875px",
+            "tag": "A",
+            "text": "Explorar"
+          },
+          {
+            "size": "11.25px",
+            "tag": "P",
+            "text": "bf"
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "Ver perfil→"
+          },
+          {
+            "size": "11.25px",
+            "tag": "P",
+            "text": "Profissional"
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "Ver perfil→"
+          },
+          {
+            "size": "11.25px",
+            "tag": "P",
+            "text": "Engenheiro Mecânico"
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "Ver perfil→"
+          },
+          {
+            "size": "12.1875px",
+            "tag": "SPAN",
+            "text": "Candidato"
+          },
+          {
+            "size": "12.1875px",
+            "tag": "A",
+            "text": "Criar conta"
+          },
+          {
+            "size": "12.1875px",
+            "tag": "SPAN",
+            "text": "Empregador"
+          },
+          {
+            "size": "12.1875px",
+            "tag": "A",
+            "text": "Criar conta de empresa"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      }
+    },
+    {
+      "accessibilityViolations": [],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1440,
+          "scrollHeight": 6009,
+          "scrollWidth": 1440
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [],
+        "smallText": [
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Talentos em destaque"
+          },
+          {
+            "size": "13px",
+            "tag": "A",
+            "text": "Explorar"
+          },
+          {
+            "size": "13px",
+            "tag": "P",
+            "text": "bf"
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "Ver perfil→"
+          },
+          {
+            "size": "13px",
+            "tag": "P",
+            "text": "Profissional"
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "Ver perfil→"
+          },
+          {
+            "size": "13px",
+            "tag": "P",
+            "text": "Engenheiro Mecânico"
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "Ver perfil→"
+          },
+          {
+            "size": "13px",
+            "tag": "SPAN",
+            "text": "Candidato"
+          },
+          {
+            "size": "13px",
+            "tag": "A",
+            "text": "Criar conta"
+          },
+          {
+            "size": "13px",
+            "tag": "SPAN",
+            "text": "Empregador"
+          },
+          {
+            "size": "13px",
+            "tag": "A",
+            "text": "Criar conta de empresa"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    }
+  ],
+  "route": "/",
+  "slug": "home"
+}

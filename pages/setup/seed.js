@@ -1,8 +1,11 @@
 import { useState } from 'react';
+import Head from 'next/head';
+import Link from 'next/link';
+import { FiAlertTriangle, FiArrowLeft, FiDatabase, FiPlay } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
-import { auth } from '../../lib/firebase'; // Ensure auth is imported for login if needed
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { requireAdminPageAuth } from '../../lib/adminPageGuard';
 import { addDocument, setDocument } from '../../lib/db';
+import styles from '../../styles/SeedPage.module.css';
 
 const FEATURED_POST = {
     id: 'featured-1',
@@ -511,9 +514,10 @@ const LINKS = [
 ];
 
 export default function SeedDataPage() {
-    const { user } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const [logs, setLogs] = useState([]);
     const [isSeeding, setIsSeeding] = useState(false);
+    const [confirmed, setConfirmed] = useState(false);
 
     const log = (message) => {
         setLogs(prev => [...prev, `${new Date().toLocaleTimeString()}: ${message}`]);
@@ -521,93 +525,94 @@ export default function SeedDataPage() {
 
     const seedData = async () => {
         if (!user) {
-            log('User not authenticated. Please log in.');
+            log('Sessão de administrador indisponível.');
             return;
         }
 
         setIsSeeding(true);
-        log('Starting detailed data seeding...');
+        log('A iniciar a preparação dos dados.');
 
         try {
             // 1. Featured Post
             await setDocument('posts', FEATURED_POST.id, FEATURED_POST);
-            log('Seeded FEATURED_POST');
+            log('Artigo em destaque preparado.');
 
             // 2. Posts
             for (const post of POSTS) {
                 await addDocument('posts', post);
             }
-            log(`Seeded ${POSTS.length} posts`);
+            log(`${POSTS.length} artigos preparados.`);
 
             // 3. Platform Stats
             for (const stat of PLATFORM_STATS) {
                 await setDocument('platform_stats', stat.id, stat);
             }
-            log('Seeded Platform Stats');
+            log('Estatísticas da plataforma preparadas.');
 
             // 4. News
             for (const item of NEWS) {
                 await addDocument('news', item);
             }
-            log('Seeded News');
+            log('Notícias preparadas.');
 
             // 5. Templates
             for (const item of TEMPLATES) {
                 await addDocument('resources_templates', item);
             }
-            log('Seeded Templates');
+            log('Modelos preparados.');
 
             // 6. Guides
             for (const item of GUIDES) {
                 await addDocument('resources_guides', item);
             }
-            log('Seeded Guides');
+            log('Guias preparados.');
 
             // 7. Tools
             for (const item of TOOLS) {
                 await setDocument('resources_tools', item.id, item);
             }
-            log('Seeded Tools');
+            log('Ferramentas preparadas.');
 
             // 8. FAQs
             for (const item of FAQS) {
                 await setDocument('resources_faqs', item.id, item);
             }
-            log('Seeded FAQs');
+            log('Perguntas frequentes preparadas.');
 
             // 9. Services
             for (const item of SERVICES) {
                 await setDocument('resources_services', item.id, item);
             }
-            log('Seeded Services');
+            log('Serviços preparados.');
 
             // 10. Courses
             for (const item of COURSES) {
                 await addDocument('resources_courses', item);
             }
-            log('Seeded Courses');
+            log('Cursos preparados.');
 
             // 11. Mentors
             for (const item of MENTORS) {
                 await addDocument('resources_mentors', item);
             }
-            log('Seeded Mentors');
+            log('Mentores preparados.');
 
             // 12. Testimonials
             for (const item of TESTIMONIALS) {
                 await addDocument('resources_testimonials', item);
             }
-            log('Seeded Testimonials');
+            log('Testemunhos preparados.');
 
             // 13. Links
             for (const item of LINKS) {
                 await addDocument('resources_links', item);
             }
-            log('Seeded Links');
+            log('Ligações úteis preparadas.');
 
-            log('✅ Data seeding completed successfully!');
+            log('Preparação de dados concluída com sucesso.');
+            setConfirmed(false);
         } catch (error) {
-            log(`❌ Error seeding data: ${error.message}`);
+            log(`Erro ao preparar os dados: ${error.message}`);
             console.error(error);
         } finally {
             setIsSeeding(false);
@@ -615,65 +620,84 @@ export default function SeedDataPage() {
     };
 
     return (
-        <div style={{ padding: '2rem', backgroundColor: '#09090b', color: 'white', minHeight: '100vh' }}>
-            <h1>Data Migration Utility</h1>
+        <>
+            <Head>
+                <title>Preparar dados de desenvolvimento | EmpregoSTP</title>
+            </Head>
+            <main className={styles.page}>
+                <div className={styles.container}>
+                    <Link href="/dashboard/admin" className={styles.backLink}>
+                        <FiArrowLeft aria-hidden="true" />
+                        Voltar ao painel de administração
+                    </Link>
 
-            {!user ? (
-                <div style={{ margin: '1rem 0' }}>
-                    <p>Please log in to seed data.</p>
-                    <button
-                        onClick={() => signInWithPopup(auth, new GoogleAuthProvider())}
-                        style={{ padding: '0.5rem 1rem', background: '#6366f1', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-                    >
-                        Login with Google
-                    </button>
-                </div>
-            ) : (
-                <div style={{ margin: '1rem 0' }}>
-                    <p>Logged in as: {user.email}</p>
-                    <button
-                        onClick={seedData}
-                        disabled={isSeeding}
-                        style={{
-                            padding: '0.75rem 1.5rem',
-                            background: isSeeding ? '#4b5563' : '#10b981',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '6px',
-                            cursor: isSeeding ? 'not-allowed' : 'pointer',
-                            fontSize: '1rem',
-                            fontWeight: 'bold'
-                        }}
-                    >
-                        {isSeeding ? 'Seeding...' : 'Start Data Seeding'}
-                    </button>
-                </div>
-            )}
+                    <header className={styles.header}>
+                        <span className={styles.eyebrow}>
+                            <FiDatabase aria-hidden="true" />
+                            Ferramenta interna
+                        </span>
+                        <h1>Preparar dados de desenvolvimento</h1>
+                        <p>Cria ou atualiza o conjunto de demonstração usado nas áreas públicas da plataforma.</p>
+                    </header>
 
-            <div style={{
-                marginTop: '2rem',
-                padding: '1rem',
-                background: '#18181b',
-                borderRadius: '8px',
-                border: '1px solid #27272a',
-                fontFamily: 'monospace',
-                maxHeight: '500px',
-                overflowY: 'auto'
-            }}>
-                {logs.map((log, i) => (
-                    <div key={i} style={{ marginBottom: '0.5rem', color: log.includes('❌') ? '#ef4444' : '#a1a1aa' }}>
-                        {log}
-                    </div>
-                ))}
-                {logs.length === 0 && <span style={{ color: '#52525b' }}>Logs will appear here...</span>}
-            </div>
-        </div>
+                    <section className={styles.controls} aria-labelledby="seed-controls-title">
+                        <div className={styles.warning}>
+                            <FiAlertTriangle aria-hidden="true" />
+                            <div>
+                                <h2 id="seed-controls-title">Confirme antes de executar</h2>
+                                <p>Algumas coleções recebem novos documentos em cada execução. Utilize esta ferramenta apenas no ambiente de desenvolvimento.</p>
+                            </div>
+                        </div>
+
+                        <p className={styles.session}>
+                            {authLoading ? 'A validar a sessão…' : user ? `Administrador: ${user.email}` : 'Sessão não disponível.'}
+                        </p>
+
+                        <label className={styles.confirmation}>
+                            <input
+                                type="checkbox"
+                                checked={confirmed}
+                                onChange={(event) => setConfirmed(event.target.checked)}
+                            />
+                            Confirmo que estou num ambiente de desenvolvimento.
+                        </label>
+
+                        <button
+                            type="button"
+                            onClick={seedData}
+                            disabled={authLoading || !user || !confirmed || isSeeding}
+                            className={styles.primaryButton}
+                        >
+                            <FiPlay aria-hidden="true" />
+                            {isSeeding ? 'A preparar dados…' : 'Preparar dados'}
+                        </button>
+                    </section>
+
+                    <section className={styles.logPanel} aria-labelledby="seed-log-title">
+                        <h2 id="seed-log-title">Registo da execução</h2>
+                        <div className={styles.log} role="log" aria-live="polite" aria-relevant="additions">
+                            {logs.map((entry, index) => (
+                                <p key={`${entry}-${index}`} className={entry.includes('Erro') ? styles.logError : undefined}>
+                                    {entry}
+                                </p>
+                            ))}
+                            {logs.length === 0 ? <p className={styles.logEmpty}>Os passos da execução aparecem aqui.</p> : null}
+                        </div>
+                    </section>
+                </div>
+            </main>
+        </>
     );
 }
 
-export async function getServerSideProps() {
+export async function getServerSideProps(context) {
   if (process.env.ENABLE_DEV_SEED_PAGE !== 'true') {
     return { notFound: true };
+  }
+
+  const authResult = await requireAdminPageAuth(context);
+  if (!authResult.ok) {
+    return { redirect: authResult.redirect };
   }
 
   return {

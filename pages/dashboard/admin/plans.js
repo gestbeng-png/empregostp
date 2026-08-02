@@ -2,10 +2,13 @@ import { useState, useEffect } from 'react';
 import { getAuth } from 'firebase/auth';
 import Link from 'next/link';
 import Head from 'next/head';
-import LandingHeader from '../../../components/LandingHeader';
 import { requireAdminPageAuth } from '../../../lib/adminPageGuard';
-import { normalizeUserType } from '../../../lib/defaultPlans';
+import {
+  normalizeUserType,
+  DEFAULT_EMPRESA_PLANS,
+} from '../../../lib/defaultPlans';
 import { getCandidateMarketingPlans } from '../../../lib/candidateCatalog';
+import { normalizeEmpresaPlanId } from '../../../lib/empresaPlanFeatures';
 import styles from '../../../styles/AdminPanel.module.css';
 
 // Os planos de candidato são fixos (Verificação, Profissional, Premium): o admin
@@ -30,9 +33,40 @@ function buildFixedCandidatePlans(firestorePlans) {
       id: base.id,
       type: 'candidato',
       priceLabel: override.priceLabel || base.priceLabel,
-      features: Array.isArray(override.features) && override.features.length
-        ? override.features
-        : base.features,
+      features:
+        Array.isArray(override.features) && override.features.length
+          ? override.features
+          : base.features,
+    };
+  });
+}
+
+// Os planos de empresa também são fixos (Básico, Profissional, PRO): são os
+// mesmos 3 tiers canónicos que as empresas veem no catálogo (getEmpresaPlanCatalog).
+// O admin edita-os; os valores do Firestore sobrepõem-se aos padrões.
+function buildFixedEmpresaPlans(firestorePlans) {
+  const byTier = (firestorePlans || [])
+    .filter((plan) => normalizeUserType(plan.type) === 'empresa')
+    .reduce((acc, plan) => {
+      const tier = normalizeEmpresaPlanId(plan.id, plan.name, plan);
+      if (!acc[tier]) acc[tier] = plan;
+      return acc;
+    }, {});
+
+  return DEFAULT_EMPRESA_PLANS.map((base) => {
+    const override = byTier[base.id] || {};
+    return {
+      ...base,
+      ...override,
+      // Editar escreve no documento que as empresas leem (id real do Firestore)
+      // ou, se ainda não existir, no id canónico do tier (o PUT faz upsert).
+      id: override.id || base.id,
+      type: 'empresa',
+      priceLabel: override.priceLabel || base.priceLabel,
+      features:
+        Array.isArray(override.features) && override.features.length
+          ? override.features
+          : base.features,
     };
   });
 }
@@ -44,7 +78,7 @@ const PLAN_SECTIONS = [
     accent: '#f59e0b',
     createBg: 'rgba(245, 158, 11, 0.18)',
     createBorder: 'rgba(245, 158, 11, 0.35)',
-    createColor: '#fbbf24'
+    createColor: '#fbbf24',
   },
   {
     type: 'candidato',
@@ -52,13 +86,15 @@ const PLAN_SECTIONS = [
     accent: '#10b981',
     createBg: 'rgba(16, 185, 129, 0.18)',
     createBorder: 'rgba(16, 185, 129, 0.35)',
-    createColor: '#34d399'
-  }
+    createColor: '#34d399',
+  },
 ];
 
 const getMessageTone = (message) => {
   const normalized = String(message || '').toLowerCase();
-  return normalized.includes('sucesso') || normalized.includes('aprovado') || normalized.includes('atualizado')
+  return normalized.includes('sucesso') ||
+    normalized.includes('aprovado') ||
+    normalized.includes('atualizado')
     ? styles.alertSuccess
     : styles.alertError;
 };
@@ -70,35 +106,35 @@ const getRequestStatusConfig = (status) => {
         label: 'Comprovativo enviado',
         backgroundColor: 'rgba(59, 130, 246, 0.18)',
         color: '#93c5fd',
-        border: '1px solid rgba(59, 130, 246, 0.3)'
+        border: '1px solid rgba(59, 130, 246, 0.3)',
       };
     case 'pending':
       return {
         label: 'Aguardando comprovativo',
         backgroundColor: 'rgba(245, 158, 11, 0.18)',
         color: '#fbbf24',
-        border: '1px solid rgba(245, 158, 11, 0.3)'
+        border: '1px solid rgba(245, 158, 11, 0.3)',
       };
     case 'approved':
       return {
         label: 'Aprovado',
         backgroundColor: 'rgba(16, 185, 129, 0.18)',
         color: '#34d399',
-        border: '1px solid rgba(16, 185, 129, 0.3)'
+        border: '1px solid rgba(16, 185, 129, 0.3)',
       };
     case 'rejected':
       return {
         label: 'Rejeitado',
         backgroundColor: 'rgba(239, 68, 68, 0.18)',
         color: '#f87171',
-        border: '1px solid rgba(239, 68, 68, 0.3)'
+        border: '1px solid rgba(239, 68, 68, 0.3)',
       };
     default:
       return {
         label: status || 'Desconhecido',
         backgroundColor: 'rgba(148, 163, 184, 0.18)',
         color: '#cbd5e1',
-        border: '1px solid rgba(148, 163, 184, 0.3)'
+        border: '1px solid rgba(148, 163, 184, 0.3)',
       };
   }
 };
@@ -109,7 +145,7 @@ const getUserTypeConfig = (userType) => {
       label: 'Empresa',
       backgroundColor: 'rgba(245, 158, 11, 0.18)',
       color: '#fbbf24',
-      border: '1px solid rgba(245, 158, 11, 0.3)'
+      border: '1px solid rgba(245, 158, 11, 0.3)',
     };
   }
 
@@ -117,7 +153,7 @@ const getUserTypeConfig = (userType) => {
     label: 'Candidato',
     backgroundColor: 'rgba(16, 185, 129, 0.18)',
     color: '#34d399',
-    border: '1px solid rgba(16, 185, 129, 0.3)'
+    border: '1px solid rgba(16, 185, 129, 0.3)',
   };
 };
 
@@ -131,13 +167,14 @@ const formatRequestDate = (request) => {
   return date.toLocaleDateString('pt-PT', {
     day: '2-digit',
     month: 'short',
-    year: 'numeric'
+    year: 'numeric',
   });
 };
 
 const formatPlanDuration = (duration) => {
   if (duration === 0) return '∞';
-  if (duration === null || duration === undefined || duration === '') return '---';
+  if (duration === null || duration === undefined || duration === '')
+    return '---';
   return `${duration}d`;
 };
 
@@ -171,7 +208,7 @@ export default function AdminPlans() {
     totalRequests: 0,
     pendingRequests: 0,
     approvedRequests: 0,
-    rejectedRequests: 0
+    rejectedRequests: 0,
   });
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
@@ -189,7 +226,7 @@ export default function AdminPlans() {
     destaque: false,
     curriculoDestacado: false,
     features: [],
-    isActive: true
+    isActive: true,
   });
 
   useEffect(() => {
@@ -207,13 +244,15 @@ export default function AdminPlans() {
       destaque: false,
       curriculoDestacado: false,
       features: [],
-      isActive: true
+      isActive: true,
     });
     setEditingPlan(null);
   };
 
   const openModal = (plan = null, typeForNew = 'empresa') => {
-    const resolvedType = plan ? (normalizeUserType(plan.type) || 'empresa') : typeForNew;
+    const resolvedType = plan
+      ? normalizeUserType(plan.type) || 'empresa'
+      : typeForNew;
     setPlanType(resolvedType);
 
     if (plan) {
@@ -222,7 +261,7 @@ export default function AdminPlans() {
         type: resolvedType,
         features: plan.features || [],
         vagasLimit: plan.vagasLimit?.toString() || '',
-        duration: plan.duration?.toString() || ''
+        duration: plan.duration?.toString() || '',
       });
       setEditingPlan(plan);
     } else {
@@ -236,7 +275,7 @@ export default function AdminPlans() {
         destaque: false,
         curriculoDestacado: false,
         features: [],
-        isActive: true
+        isActive: true,
       });
       setEditingPlan(null);
     }
@@ -258,7 +297,10 @@ export default function AdminPlans() {
     }
 
     if (name === 'features') {
-      setFormData((prev) => ({ ...prev, features: value.split('\n').filter((feature) => feature.trim()) }));
+      setFormData((prev) => ({
+        ...prev,
+        features: value.split('\n').filter((feature) => feature.trim()),
+      }));
       return;
     }
 
@@ -282,24 +324,32 @@ export default function AdminPlans() {
         type: planType,
         price: parseFloat(formData.price),
         duration: parseInt(formData.duration, 10),
-        vagasLimit: formData.vagasLimit ? parseInt(formData.vagasLimit, 10) : null
+        vagasLimit: formData.vagasLimit
+          ? parseInt(formData.vagasLimit, 10)
+          : null,
       };
 
-      const url = editingPlan ? `/api/admin/plans/${editingPlan.id}` : '/api/admin/plans';
+      const url = editingPlan
+        ? `/api/admin/plans/${editingPlan.id}`
+        : '/api/admin/plans';
       const method = editingPlan ? 'PUT' : 'POST';
 
       const res = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(planData)
+        body: JSON.stringify(planData),
       });
 
       if (!res.ok) throw new Error('Falha ao salvar plano');
 
-      setMessage(editingPlan ? 'Plano atualizado com sucesso!' : 'Plano criado com sucesso!');
+      setMessage(
+        editingPlan
+          ? 'Plano atualizado com sucesso!'
+          : 'Plano criado com sucesso!',
+      );
       await loadData();
       closeModal();
     } catch (error) {
@@ -325,8 +375,8 @@ export default function AdminPlans() {
       const res = await fetch(`/api/admin/plans/${planId}`, {
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (!res.ok) throw new Error('Falha ao excluir plano');
@@ -350,20 +400,28 @@ export default function AdminPlans() {
         return;
       }
 
-      const plansRes = await fetch('/api/admin/plans', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const requestHeaders = { Authorization: `Bearer ${token}` };
+      const [plansRes, requestsRes] = await Promise.all([
+        fetch('/api/admin/plans', { headers: requestHeaders }),
+        fetch('/api/admin/subscription-requests?status=all&pageSize=200', {
+          headers: requestHeaders,
+        }),
+      ]);
+
+      if (!plansRes.ok) throw new Error('Falha ao carregar planos');
       const plansData = await plansRes.json();
       setPlans(plansData.plans || []);
 
-      const requestsRes = await fetch('/api/admin/subscription-requests?status=all&pageSize=200', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
       let requestsArr = [];
       if (!requestsRes.ok) {
-        console.error('Erro ao buscar pedidos:', requestsRes.status, await requestsRes.text());
-        setMessage('Falha ao carregar pedidos. Verifique o console para detalhes.');
+        console.error(
+          'Erro ao buscar pedidos:',
+          requestsRes.status,
+          await requestsRes.text(),
+        );
+        setMessage(
+          'Falha ao carregar pedidos. Verifique o console para detalhes.',
+        );
         setRequests([]);
       } else {
         const requestsData = await requestsRes.json();
@@ -374,7 +432,8 @@ export default function AdminPlans() {
       const statsData = requestsArr.reduce(
         (acc, req) => {
           acc.totalRequests += 1;
-          if (req.status === 'pending' || req.status === 'payment_submitted') acc.pendingRequests += 1;
+          if (req.status === 'pending' || req.status === 'payment_submitted')
+            acc.pendingRequests += 1;
           if (req.status === 'approved') acc.approvedRequests += 1;
           if (req.status === 'rejected') acc.rejectedRequests += 1;
           return acc;
@@ -383,8 +442,8 @@ export default function AdminPlans() {
           totalRequests: 0,
           pendingRequests: 0,
           approvedRequests: 0,
-          rejectedRequests: 0
-        }
+          rejectedRequests: 0,
+        },
       );
 
       setStats(statsData);
@@ -410,14 +469,18 @@ export default function AdminPlans() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ action })
+        body: JSON.stringify({ action }),
       });
 
       if (!res.ok) throw new Error('Falha ao processar pedido');
 
-      setMessage(action === 'approve' ? 'Pedido aprovado com sucesso!' : 'Pedido rejeitado');
+      setMessage(
+        action === 'approve'
+          ? 'Pedido aprovado com sucesso!'
+          : 'Pedido rejeitado',
+      );
       await loadData();
     } catch (error) {
       console.error('Erro ao processar pedido:', error);
@@ -440,8 +503,8 @@ export default function AdminPlans() {
       const res = await fetch('/api/admin/plans/setup', {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (!res.ok) throw new Error('Falha ao criar planos');
@@ -456,11 +519,17 @@ export default function AdminPlans() {
     }
   }
 
-  const renderPlansTable = (planKind, sectionPlans, { allowDelete = true } = {}) => {
+  const renderPlansTable = (
+    planKind,
+    sectionPlans,
+    { allowDelete = true } = {},
+  ) => {
     if (!sectionPlans.length) {
       return (
         <div className={styles.emptyState}>
-          <p className={styles.emptyText}>Nenhum plano cadastrado para este tipo.</p>
+          <p className={styles.emptyText}>
+            Nenhum plano cadastrado para este tipo.
+          </p>
         </div>
       );
     }
@@ -475,34 +544,68 @@ export default function AdminPlans() {
                 <th className={styles.tableHeadCell}>Preço</th>
                 {planKind === 'empresa' ? (
                   <>
-                    <th className={`${styles.tableHeadCell} ${styles.alignCenter}`}>Vagas</th>
-                    <th className={`${styles.tableHeadCell} ${styles.alignCenter}`}>Destaque</th>
+                    <th
+                      className={`${styles.tableHeadCell} ${styles.alignCenter}`}
+                    >
+                      Vagas
+                    </th>
+                    <th
+                      className={`${styles.tableHeadCell} ${styles.alignCenter}`}
+                    >
+                      Destaque
+                    </th>
                   </>
                 ) : (
-                  <th className={`${styles.tableHeadCell} ${styles.alignCenter}`}>Currículo destacado</th>
+                  <th
+                    className={`${styles.tableHeadCell} ${styles.alignCenter}`}
+                  >
+                    Currículo destacado
+                  </th>
                 )}
-                <th className={`${styles.tableHeadCell} ${styles.alignCenter}`}>Duração</th>
+                <th className={`${styles.tableHeadCell} ${styles.alignCenter}`}>
+                  Duração
+                </th>
                 <th className={styles.tableHeadCell}>Recursos</th>
-                <th className={`${styles.tableHeadCell} ${styles.alignRight}`}>Ações</th>
+                <th className={`${styles.tableHeadCell} ${styles.alignRight}`}>
+                  Ações
+                </th>
               </tr>
             </thead>
             <tbody>
               {sectionPlans.map((plan) => (
                 <tr key={plan.id} className={styles.tableRow}>
-                  <td className={`${styles.tableCell} ${styles.tableCellStrong}`}>{plan.name}</td>
-                  <td className={`${styles.tableCell} ${styles.tableCellStrong}`}>{plan.priceLabel}</td>
+                  <td
+                    className={`${styles.tableCell} ${styles.tableCellStrong}`}
+                  >
+                    {plan.name}
+                  </td>
+                  <td
+                    className={`${styles.tableCell} ${styles.tableCellStrong}`}
+                  >
+                    {plan.priceLabel}
+                  </td>
                   {planKind === 'empresa' ? (
                     <>
-                      <td className={`${styles.tableCell} ${styles.alignCenter} ${styles.tableCellMuted}`}>
+                      <td
+                        className={`${styles.tableCell} ${styles.alignCenter} ${styles.tableCellMuted}`}
+                      >
                         {plan.vagasLimit === null ? '∞' : plan.vagasLimit}
                       </td>
-                      <td className={`${styles.tableCell} ${styles.alignCenter}`}>
+                      <td
+                        className={`${styles.tableCell} ${styles.alignCenter}`}
+                      >
                         <span
                           className={`${styles.badge} ${styles.badgeSmall}`}
                           style={{
-                            '--badge-bg': plan.destaque ? 'rgba(16, 185, 129, 0.18)' : 'rgba(100, 116, 139, 0.18)',
-                            '--badge-color': plan.destaque ? '#34d399' : '#94a3b8',
-                            '--badge-border': plan.destaque ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(100, 116, 139, 0.3)'
+                            '--badge-bg': plan.destaque
+                              ? 'rgba(16, 185, 129, 0.18)'
+                              : 'rgba(100, 116, 139, 0.18)',
+                            '--badge-color': plan.destaque
+                              ? '#34d399'
+                              : '#94a3b8',
+                            '--badge-border': plan.destaque
+                              ? '1px solid rgba(16, 185, 129, 0.3)'
+                              : '1px solid rgba(100, 116, 139, 0.3)',
                           }}
                         >
                           {plan.destaque ? 'Ativo' : 'Não'}
@@ -514,24 +617,40 @@ export default function AdminPlans() {
                       <span
                         className={`${styles.badge} ${styles.badgeSmall}`}
                         style={{
-                          '--badge-bg': plan.curriculoDestacado ? 'rgba(16, 185, 129, 0.18)' : 'rgba(100, 116, 139, 0.18)',
-                          '--badge-color': plan.curriculoDestacado ? '#34d399' : '#94a3b8',
-                          '--badge-border': plan.curriculoDestacado ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(100, 116, 139, 0.3)'
+                          '--badge-bg': plan.curriculoDestacado
+                            ? 'rgba(16, 185, 129, 0.18)'
+                            : 'rgba(100, 116, 139, 0.18)',
+                          '--badge-color': plan.curriculoDestacado
+                            ? '#34d399'
+                            : '#94a3b8',
+                          '--badge-border': plan.curriculoDestacado
+                            ? '1px solid rgba(16, 185, 129, 0.3)'
+                            : '1px solid rgba(100, 116, 139, 0.3)',
                         }}
                       >
                         {plan.curriculoDestacado ? 'Sim' : 'Não'}
                       </span>
                     </td>
                   )}
-                  <td className={`${styles.tableCell} ${styles.alignCenter} ${styles.tableCellMuted}`}>{formatPlanDuration(plan.duration)}</td>
-                  <td className={styles.tableCell}>{renderFeatureList(plan.features)}</td>
+                  <td
+                    className={`${styles.tableCell} ${styles.alignCenter} ${styles.tableCellMuted}`}
+                  >
+                    {formatPlanDuration(plan.duration)}
+                  </td>
+                  <td className={styles.tableCell}>
+                    {renderFeatureList(plan.features)}
+                  </td>
                   <td className={`${styles.tableCell} ${styles.alignRight}`}>
                     <div className={styles.buttonGroup}>
                       <button
                         type="button"
                         onClick={() => openModal(plan)}
                         className={`${styles.buttonBase} ${styles.buttonAccent} ${styles.buttonSmall}`}
-                        style={{ '--button-bg': 'rgba(59, 130, 246, 0.18)', '--button-border': 'rgba(59, 130, 246, 0.35)', '--button-color': '#93c5fd' }}
+                        style={{
+                          '--button-bg': 'rgba(59, 130, 246, 0.18)',
+                          '--button-border': 'rgba(59, 130, 246, 0.35)',
+                          '--button-color': '#93c5fd',
+                        }}
                       >
                         Editar
                       </button>
@@ -540,7 +659,11 @@ export default function AdminPlans() {
                           type="button"
                           onClick={() => handleDeletePlan(plan.id)}
                           className={`${styles.buttonBase} ${styles.buttonAccent} ${styles.buttonSmall}`}
-                          style={{ '--button-bg': 'rgba(239, 68, 68, 0.18)', '--button-border': 'rgba(239, 68, 68, 0.35)', '--button-color': '#fca5a5' }}
+                          style={{
+                            '--button-bg': 'rgba(239, 68, 68, 0.18)',
+                            '--button-border': 'rgba(239, 68, 68, 0.35)',
+                            '--button-color': '#fca5a5',
+                          }}
                         >
                           Excluir
                         </button>
@@ -556,34 +679,30 @@ export default function AdminPlans() {
     );
   };
 
-  const renderPlanSection = ({ type, title, accent, createBg, createBorder, createColor }) => {
+  const renderPlanSection = ({ type, title, accent }) => {
     const isCandidate = type === 'candidato';
     const sectionPlans = isCandidate
       ? buildFixedCandidatePlans(plans)
-      : plans.filter((plan) => normalizeUserType(plan.type) === type);
+      : buildFixedEmpresaPlans(plans);
 
     return (
       <section className={styles.section} key={type}>
         <div className={styles.sectionHeading}>
           <div className={styles.sectionTitleWrap}>
-            <h2 className={styles.sectionTitle} style={{ '--accent-color': accent }}>{title}</h2>
+            <h2
+              className={styles.sectionTitle}
+              style={{ '--accent-color': accent }}
+            >
+              {title}
+            </h2>
             <span className={styles.countBadge}>{sectionPlans.length}</span>
           </div>
-          {isCandidate ? (
-            <span className={styles.metaText}>Planos fixos — edite nome, preço e recursos.</span>
-          ) : (
-            <button
-              type="button"
-              onClick={() => openModal(null, type)}
-              className={`${styles.buttonBase} ${styles.buttonAccent} ${styles.buttonSmall}`}
-              style={{ '--button-bg': createBg, '--button-border': createBorder, '--button-color': createColor }}
-            >
-              + Novo plano
-            </button>
-          )}
+          <span className={styles.metaText}>
+            Planos fixos — edite nome, preço e recursos.
+          </span>
         </div>
 
-        {renderPlansTable(type, sectionPlans, { allowDelete: !isCandidate })}
+        {renderPlansTable(type, sectionPlans, { allowDelete: false })}
       </section>
     );
   };
@@ -592,7 +711,9 @@ export default function AdminPlans() {
     if (!requests.length) {
       return (
         <div className={styles.emptyState}>
-          <p className={styles.emptyText}>Nenhum pedido de assinatura encontrado.</p>
+          <p className={styles.emptyText}>
+            Nenhum pedido de assinatura encontrado.
+          </p>
         </div>
       );
     }
@@ -609,42 +730,70 @@ export default function AdminPlans() {
                 <th className={styles.tableHeadCell}>Preço</th>
                 <th className={styles.tableHeadCell}>Data do pedido</th>
                 <th className={styles.tableHeadCell}>Status</th>
-                <th className={`${styles.tableHeadCell} ${styles.alignCenter}`}>Ações</th>
+                <th className={`${styles.tableHeadCell} ${styles.alignCenter}`}>
+                  Ações
+                </th>
               </tr>
             </thead>
             <tbody>
               {requests.map((request) => {
                 const status = getRequestStatusConfig(request.status);
                 const userType = getUserTypeConfig(request.userType);
-                const canApprove = request.status === 'payment_submitted' || (Number(request.price || 0) === 0 && request.status === 'pending');
+                const canApprove =
+                  request.status === 'payment_submitted' ||
+                  (Number(request.price || 0) === 0 &&
+                    request.status === 'pending');
 
                 return (
                   <tr key={request.id} className={styles.tableRow}>
                     <td className={styles.tableCell}>
-                      <div className={styles.tableCellStrong}>{request.userName}</div>
+                      <div className={styles.tableCellStrong}>
+                        {request.userName}
+                      </div>
                       <div className={styles.metaText}>{request.userEmail}</div>
                     </td>
                     <td className={styles.tableCell}>
                       <span
                         className={`${styles.badge} ${styles.badgeSmall}`}
-                        style={{ '--badge-bg': userType.backgroundColor, '--badge-color': userType.color, '--badge-border': userType.border }}
+                        style={{
+                          '--badge-bg': userType.backgroundColor,
+                          '--badge-color': userType.color,
+                          '--badge-border': userType.border,
+                        }}
                       >
                         {userType.label}
                       </span>
                     </td>
-                    <td className={`${styles.tableCell} ${styles.tableCellStrong}`}>{request.planName}</td>
-                    <td className={`${styles.tableCell} ${styles.tableCellStrong}`}>{request.priceLabel}</td>
-                    <td className={`${styles.tableCell} ${styles.tableCellMuted}`}>{formatRequestDate(request)}</td>
+                    <td
+                      className={`${styles.tableCell} ${styles.tableCellStrong}`}
+                    >
+                      {request.planName}
+                    </td>
+                    <td
+                      className={`${styles.tableCell} ${styles.tableCellStrong}`}
+                    >
+                      {request.priceLabel}
+                    </td>
+                    <td
+                      className={`${styles.tableCell} ${styles.tableCellMuted}`}
+                    >
+                      {formatRequestDate(request)}
+                    </td>
                     <td className={styles.tableCell}>
                       <span
                         className={styles.badge}
-                        style={{ '--badge-bg': status.backgroundColor, '--badge-color': status.color, '--badge-border': status.border }}
+                        style={{
+                          '--badge-bg': status.backgroundColor,
+                          '--badge-color': status.color,
+                          '--badge-border': status.border,
+                        }}
                       >
                         {status.label}
                       </span>
                     </td>
                     <td className={`${styles.tableCell} ${styles.alignCenter}`}>
-                      {(request.status === 'pending' || request.status === 'payment_submitted') ? (
+                      {request.status === 'pending' ||
+                      request.status === 'payment_submitted' ? (
                         <div className={styles.buttonGroupCenter}>
                           <button
                             type="button"
@@ -652,9 +801,15 @@ export default function AdminPlans() {
                             disabled={loading || !canApprove}
                             className={`${styles.buttonBase} ${styles.buttonAccent} ${styles.buttonSmall}`}
                             style={{
-                              '--button-bg': canApprove ? 'rgba(16, 185, 129, 0.18)' : 'rgba(148, 163, 184, 0.12)',
-                              '--button-border': canApprove ? 'rgba(16, 185, 129, 0.32)' : 'rgba(148, 163, 184, 0.18)',
-                              '--button-color': canApprove ? '#34d399' : '#94a3b8'
+                              '--button-bg': canApprove
+                                ? 'rgba(16, 185, 129, 0.18)'
+                                : 'rgba(148, 163, 184, 0.12)',
+                              '--button-border': canApprove
+                                ? 'rgba(16, 185, 129, 0.32)'
+                                : 'rgba(148, 163, 184, 0.18)',
+                              '--button-color': canApprove
+                                ? '#34d399'
+                                : '#94a3b8',
                             }}
                           >
                             Aprovar
@@ -685,42 +840,78 @@ export default function AdminPlans() {
   return (
     <>
       <Head>
-        <title>Gerenciar Planos - Admin</title>
+        <title>Gerir planos - Admin</title>
       </Head>
-      <LandingHeader />
 
-      <main className={styles.page}>
+      <div className={styles.page}>
         <div className={styles.headerCard}>
           <div className={styles.headerCopy}>
             <Link
               href="/dashboard/admin"
               className={`${styles.linkButton} ${styles.buttonAccent} ${styles.buttonSmall}`}
-              style={{ '--button-bg': 'rgba(255, 255, 255, 0.04)', '--button-border': 'rgba(255, 255, 255, 0.1)', '--button-color': '#93c5fd' }}
+              style={{
+                '--button-bg': 'rgba(255, 255, 255, 0.04)',
+                '--button-border': 'rgba(255, 255, 255, 0.1)',
+                '--button-color': '#93c5fd',
+              }}
             >
               ← Voltar ao Dashboard
             </Link>
             <h1 className={styles.headerTitle}>Gestão de Planos</h1>
-            <p className={styles.headerSubtitle}>Gerencie planos ativos e acompanhe os pedidos de assinatura a partir do mesmo fluxo visual.</p>
+            <p className={styles.headerSubtitle}>
+              Gerencie planos ativos e acompanhe os pedidos de assinatura a
+              partir do mesmo fluxo visual.
+            </p>
           </div>
           <div className={styles.headerActions}>
-            <button type="button" onClick={handleCreatePlans} disabled={loading} className={`${styles.buttonBase} ${styles.buttonAccent}`} style={{ '--button-bg': 'rgba(59, 130, 246, 0.18)', '--button-border': 'rgba(59, 130, 246, 0.3)', '--button-color': '#60a5fa' }}>
+            <button
+              type="button"
+              onClick={handleCreatePlans}
+              disabled={loading}
+              className={`${styles.buttonBase} ${styles.buttonAccent}`}
+              style={{
+                '--button-bg': 'rgba(59, 130, 246, 0.18)',
+                '--button-border': 'rgba(59, 130, 246, 0.3)',
+                '--button-color': '#60a5fa',
+              }}
+            >
               Criar Planos Padrão
             </button>
           </div>
         </div>
 
         {message ? (
-          <div className={`${styles.alert} ${getMessageTone(message)}`}>
+          <div
+            role="status"
+            aria-live="polite"
+            className={`${styles.alert} ${getMessageTone(message)}`}
+          >
             {message}
           </div>
         ) : null}
 
         <section className={styles.section}>
           <div className={styles.gridStats}>
-            <StatCard title="Total de Pedidos" value={stats.totalRequests} color="#3b82f6" />
-            <StatCard title="Pendentes" value={stats.pendingRequests} color="#f59e0b" />
-            <StatCard title="Aprovados" value={stats.approvedRequests} color="#10b981" />
-            <StatCard title="Rejeitados" value={stats.rejectedRequests} color="#ef4444" />
+            <StatCard
+              title="Total de Pedidos"
+              value={stats.totalRequests}
+              color="#3b82f6"
+            />
+            <StatCard
+              title="Pendentes"
+              value={stats.pendingRequests}
+              color="#f59e0b"
+            />
+            <StatCard
+              title="Aprovados"
+              value={stats.approvedRequests}
+              color="#10b981"
+            />
+            <StatCard
+              title="Rejeitados"
+              value={stats.rejectedRequests}
+              color="#ef4444"
+            />
           </div>
         </section>
 
@@ -744,30 +935,40 @@ export default function AdminPlans() {
         {loading ? (
           <div className={styles.loadingState}>
             <div className={`${styles.spinner} ${styles.spinnerLarge}`} />
-            <p className={styles.loadingText}>Carregando gestão de planos...</p>
+            <p className={styles.loadingText}>A carregar planos...</p>
           </div>
         ) : activeTab === 'plans' ? (
-          <>
-            {PLAN_SECTIONS.map((section) => renderPlanSection(section))}
-          </>
+          <>{PLAN_SECTIONS.map((section) => renderPlanSection(section))}</>
         ) : (
-          <section className={styles.section}>
-            {renderRequestsTable()}
-          </section>
+          <section className={styles.section}>{renderRequestsTable()}</section>
         )}
-      </main>
+      </div>
 
       {isModalOpen ? (
         <div className={styles.modalOverlay} onClick={closeModal}>
-          <div className={`${styles.modalCard} ${styles.modalCardLarge}`} onClick={(event) => event.stopPropagation()}>
+          <div
+            className={`${styles.modalCard} ${styles.modalCardLarge}`}
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="plan-dialog-title"
+          >
             <div className={`${styles.modalHeader} ${styles.sectionHeading}`}>
               <div>
-                <h2 className={styles.modalTitle}>
-                  {editingPlan ? 'Editar Plano' : 'Criar Novo Plano'} — {planType === 'empresa' ? 'Empresa' : 'Candidato'}
+                <h2 id="plan-dialog-title" className={styles.modalTitle}>
+                  {editingPlan ? 'Editar Plano' : 'Criar Novo Plano'} —{' '}
+                  {planType === 'empresa' ? 'Empresa' : 'Candidato'}
                 </h2>
-                <p className={styles.modalSubtitle}>Atualize nome, preço, recursos e regras do plano selecionado.</p>
+                <p className={styles.modalSubtitle}>
+                  Atualize nome, preço, recursos e regras do plano selecionado.
+                </p>
               </div>
-              <button type="button" onClick={closeModal} className={`${styles.buttonBase} ${styles.buttonGhost} ${styles.buttonSmall}`}>
+              <button
+                type="button"
+                onClick={closeModal}
+                className={`${styles.buttonBase} ${styles.buttonGhost} ${styles.buttonSmall}`}
+                aria-label="Fechar edição do plano"
+              >
                 Fechar
               </button>
             </div>
@@ -775,28 +976,76 @@ export default function AdminPlans() {
             <form onSubmit={handleSubmit}>
               <div className={styles.formGrid}>
                 <div className={styles.formField}>
-                  <label htmlFor="plan-name" className={styles.formLabel}>Nome do Plano</label>
-                  <input id="plan-name" type="text" name="name" value={formData.name} onChange={handleInputChange} required className={styles.inputControl} />
+                  <label htmlFor="plan-name" className={styles.formLabel}>
+                    Nome do Plano
+                  </label>
+                  <input
+                    id="plan-name"
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    required
+                    className={styles.inputControl}
+                  />
                 </div>
 
                 <div className={styles.formField}>
-                  <label htmlFor="plan-price" className={styles.formLabel}>Preço (em Dobras)</label>
-                  <input id="plan-price" type="number" name="price" value={formData.price} onChange={handleInputChange} required className={styles.inputControl} />
+                  <label htmlFor="plan-price" className={styles.formLabel}>
+                    Preço (em Dobras)
+                  </label>
+                  <input
+                    id="plan-price"
+                    type="number"
+                    name="price"
+                    value={formData.price}
+                    onChange={handleInputChange}
+                    required
+                    className={styles.inputControl}
+                  />
                 </div>
 
                 <div className={styles.formField}>
-                  <label htmlFor="plan-price-label" className={styles.formLabel}>Rótulo de Preço</label>
-                  <input id="plan-price-label" type="text" name="priceLabel" value={formData.priceLabel} onChange={handleInputChange} required className={styles.inputControl} />
+                  <label
+                    htmlFor="plan-price-label"
+                    className={styles.formLabel}
+                  >
+                    Rótulo de Preço
+                  </label>
+                  <input
+                    id="plan-price-label"
+                    type="text"
+                    name="priceLabel"
+                    value={formData.priceLabel}
+                    onChange={handleInputChange}
+                    required
+                    className={styles.inputControl}
+                  />
                 </div>
 
                 <div className={styles.formField}>
-                  <label htmlFor="plan-duration" className={styles.formLabel}>Duração (em dias)</label>
-                  <input id="plan-duration" type="number" name="duration" value={formData.duration} onChange={handleInputChange} required className={styles.inputControl} />
+                  <label htmlFor="plan-duration" className={styles.formLabel}>
+                    Duração (em dias)
+                  </label>
+                  <input
+                    id="plan-duration"
+                    type="number"
+                    name="duration"
+                    value={formData.duration}
+                    onChange={handleInputChange}
+                    required
+                    className={styles.inputControl}
+                  />
                 </div>
 
                 {planType === 'empresa' ? (
                   <div className={styles.formField}>
-                    <label htmlFor="plan-vagas-limit" className={styles.formLabel}>Limite de Vagas</label>
+                    <label
+                      htmlFor="plan-vagas-limit"
+                      className={styles.formLabel}
+                    >
+                      Limite de Vagas
+                    </label>
                     <input
                       id="plan-vagas-limit"
                       type="number"
@@ -810,7 +1059,9 @@ export default function AdminPlans() {
                 ) : null}
 
                 <div className={`${styles.formField} ${styles.formFieldFull}`}>
-                  <label htmlFor="plan-features" className={styles.formLabel}>Recursos do Plano</label>
+                  <label htmlFor="plan-features" className={styles.formLabel}>
+                    Recursos do Plano
+                  </label>
                   <textarea
                     id="plan-features"
                     name="features"
@@ -823,29 +1074,62 @@ export default function AdminPlans() {
                 </div>
 
                 {planType === 'empresa' ? (
-                  <label className={`${styles.checkboxField} ${styles.formFieldFull}`}>
-                    <input type="checkbox" name="destaque" checked={formData.destaque} onChange={handleInputChange} />
+                  <label
+                    className={`${styles.checkboxField} ${styles.formFieldFull}`}
+                  >
+                    <input
+                      type="checkbox"
+                      name="destaque"
+                      checked={formData.destaque}
+                      onChange={handleInputChange}
+                    />
                     Vagas em destaque
                   </label>
                 ) : (
-                  <label className={`${styles.checkboxField} ${styles.formFieldFull}`}>
-                    <input type="checkbox" name="curriculoDestacado" checked={formData.curriculoDestacado} onChange={handleInputChange} />
+                  <label
+                    className={`${styles.checkboxField} ${styles.formFieldFull}`}
+                  >
+                    <input
+                      type="checkbox"
+                      name="curriculoDestacado"
+                      checked={formData.curriculoDestacado}
+                      onChange={handleInputChange}
+                    />
                     Currículo destacado
                   </label>
                 )}
 
-                <label className={`${styles.checkboxField} ${styles.formFieldFull}`}>
-                  <input type="checkbox" name="isActive" checked={formData.isActive} onChange={handleInputChange} />
+                <label
+                  className={`${styles.checkboxField} ${styles.formFieldFull}`}
+                >
+                  <input
+                    type="checkbox"
+                    name="isActive"
+                    checked={formData.isActive}
+                    onChange={handleInputChange}
+                  />
                   Plano ativo
                 </label>
               </div>
 
               <div className={styles.buttonGroupEnd}>
-                <button type="button" onClick={closeModal} className={`${styles.buttonBase} ${styles.buttonGhost}`}>
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className={`${styles.buttonBase} ${styles.buttonGhost}`}
+                >
                   Cancelar
                 </button>
-                <button type="submit" disabled={loading} className={`${styles.buttonBase} ${styles.buttonPrimary}`}>
-                  {loading ? 'Processando...' : editingPlan ? 'Atualizar Plano' : 'Criar Plano'}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className={`${styles.buttonBase} ${styles.buttonPrimary}`}
+                >
+                  {loading
+                    ? 'Processando...'
+                    : editingPlan
+                      ? 'Atualizar Plano'
+                      : 'Criar Plano'}
                 </button>
               </div>
             </form>

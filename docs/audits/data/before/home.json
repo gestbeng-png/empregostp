@@ -1,0 +1,1713 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "phase": "before",
+  "results": [
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              "a[href$=\"oAZRP7PW5OBDEQRssq2o\"] > .HomePage_postBody__We1XW > .HomePage_postMeta__MEY4N > span:nth-child(1)"
+            ],
+            [
+              "a[href$=\"oAZRP7PW5OBDEQRssq2o\"] > .HomePage_postBody__We1XW > .HomePage_postMeta__MEY4N > span:nth-child(2)"
+            ],
+            [
+              "a[href$=\"WkSlqXXX1SzU2sPqBsDM\"] > .HomePage_postBody__We1XW > .HomePage_postMeta__MEY4N > span:nth-child(1)"
+            ],
+            [
+              "a[href$=\"WkSlqXXX1SzU2sPqBsDM\"] > .HomePage_postBody__We1XW > .HomePage_postMeta__MEY4N > span:nth-child(2)"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 320,
+          "scrollHeight": 9057,
+          "scrollWidth": 320
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 26,
+            "tag": "A",
+            "text": "TODAS",
+            "width": 64
+          },
+          {
+            "height": 26,
+            "tag": "A",
+            "text": "TODAS",
+            "width": 64
+          },
+          {
+            "height": 26,
+            "tag": "A",
+            "text": "EXPLORAR",
+            "width": 88
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Criar conta",
+            "width": 105
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Registar",
+            "width": 80
+          }
+        ],
+        "smallText": [
+          {
+            "size": "10.8px",
+            "tag": "P",
+            "text": "Empregos em São Tomé e Príncipe"
+          },
+          {
+            "size": "13.65px",
+            "tag": "P",
+            "text": "Somos a plataforma que aproxima candidatos e empresas com uma experiência mais clara, rápida e acess"
+          },
+          {
+            "size": "11.25px",
+            "tag": "BUTTON",
+            "text": "BUSCA"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "M"
+          },
+          {
+            "size": "13.5px",
+            "tag": "STRONG",
+            "text": "web design"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Microaitec"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SMALL",
+            "text": "Contrato"
+          },
+          {
+            "size": "10.8px",
+            "tag": "EM",
+            "text": "OPEN"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "EC"
+          },
+          {
+            "size": "13.5px",
+            "tag": "STRONG",
+            "text": "Marketing"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Empresa Confidencial"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SMALL",
+            "text": "Temporário"
+          },
+          {
+            "size": "10.8px",
+            "tag": "EM",
+            "text": "OPEN"
+          },
+          {
+            "size": "10.5px",
+            "tag": "A",
+            "text": "TODAS"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Nova"
+          },
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "Aberta"
+          },
+          {
+            "size": "12.6px",
+            "tag": "SPAN",
+            "text": "M"
+          },
+          {
+            "size": "12.6px",
+            "tag": "P",
+            "text": "Microaitec"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "lembra"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "5d"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "Ver detalhes da vaga"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Nova"
+          },
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "Aberta"
+          },
+          {
+            "size": "12.6px",
+            "tag": "SPAN",
+            "text": "EC"
+          },
+          {
+            "size": "12.6px",
+            "tag": "P",
+            "text": "Empresa Confidencial"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "ntr"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Temporário"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "63d"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "Ver detalhes da vaga"
+          },
+          {
+            "size": "10.5px",
+            "tag": "A",
+            "text": "TODAS"
+          },
+          {
+            "size": "11.4px",
+            "tag": "P",
+            "text": "0 vagas"
+          },
+          {
+            "size": "11.4px",
+            "tag": "P",
+            "text": "0 vagas"
+          },
+          {
+            "size": "11.4px",
+            "tag": "P",
+            "text": "1 vaga"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Vagas ativas"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Empresas ativas"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Talentos registados"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "F"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "E"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "E"
+          },
+          {
+            "size": "10.2px",
+            "tag": "P",
+            "text": "Sobre nós"
+          },
+          {
+            "size": "10.5px",
+            "tag": "A",
+            "text": "PESQUISAR VAGAS"
+          },
+          {
+            "size": "10.5px",
+            "tag": "A",
+            "text": "CANDIDATAR-ME"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "F"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "E"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "E"
+          },
+          {
+            "size": "13.2px",
+            "tag": "P",
+            "text": "Registe-se gratuitamente e aceda ao ecossistema da plataforma."
+          },
+          {
+            "size": "13.2px",
+            "tag": "P",
+            "text": "Organize o seu perfil, currículo e informações principais numa única conta."
+          },
+          {
+            "size": "13.2px",
+            "tag": "P",
+            "text": "Descubra novas vagas, guarde oportunidades e acompanhe prazos com maior facilidade."
+          },
+          {
+            "size": "13.2px",
+            "tag": "P",
+            "text": "Submeta a sua candidatura e acompanhe o processo com mais clareza e confiança."
+          },
+          {
+            "size": "10.2px",
+            "tag": "P",
+            "text": "Talentos em destaque"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "F"
+          },
+          {
+            "size": "8.55px",
+            "tag": "SPAN",
+            "text": "Verificado"
+          },
+          {
+            "size": "13.2px",
+            "tag": "P",
+            "text": "bf"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Ver perfil"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "E"
+          },
+          {
+            "size": "8.55px",
+            "tag": "SPAN",
+            "text": "Verificado"
+          },
+          {
+            "size": "13.2px",
+            "tag": "P",
+            "text": "Profissional"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Ver perfil"
+          },
+          {
+            "size": "8.55px",
+            "tag": "SPAN",
+            "text": "Verificado"
+          },
+          {
+            "size": "13.2px",
+            "tag": "P",
+            "text": "Engenheiro Mecânico"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Ver perfil"
+          },
+          {
+            "size": "10.5px",
+            "tag": "A",
+            "text": "EXPLORAR"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Receba novidades, dicas e conteúdos do mercado de trabalho diretamente no seu email."
+          },
+          {
+            "size": "11.7px",
+            "tag": "BUTTON",
+            "text": "Submeter"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Tecnologia"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "O ano de 2026 marca uma virada decisiva na tecnologia global, com avanços simultâneos em computação "
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "12/07/2026"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "4 min"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Mercado"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "sssss"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "04/04/2026"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "5 min"
+          },
+          {
+            "size": "9.9px",
+            "tag": "SPAN",
+            "text": "Candidato"
+          },
+          {
+            "size": "10.5px",
+            "tag": "A",
+            "text": "Criar conta"
+          },
+          {
+            "size": "9.9px",
+            "tag": "SPAN",
+            "text": "Empregador"
+          },
+          {
+            "size": "10.5px",
+            "tag": "A",
+            "text": "Registar"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      }
+    },
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              "a[href$=\"oAZRP7PW5OBDEQRssq2o\"] > .HomePage_postBody__We1XW > .HomePage_postMeta__MEY4N > span:nth-child(1)"
+            ],
+            [
+              "a[href$=\"oAZRP7PW5OBDEQRssq2o\"] > .HomePage_postBody__We1XW > .HomePage_postMeta__MEY4N > span:nth-child(2)"
+            ],
+            [
+              "a[href$=\"WkSlqXXX1SzU2sPqBsDM\"] > .HomePage_postBody__We1XW > .HomePage_postMeta__MEY4N > span:nth-child(1)"
+            ],
+            [
+              "a[href$=\"WkSlqXXX1SzU2sPqBsDM\"] > .HomePage_postBody__We1XW > .HomePage_postMeta__MEY4N > span:nth-child(2)"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 768,
+          "scrollHeight": 7126,
+          "scrollWidth": 768
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 26,
+            "tag": "A",
+            "text": "TODAS",
+            "width": 64
+          },
+          {
+            "height": 26,
+            "tag": "A",
+            "text": "TODAS",
+            "width": 64
+          },
+          {
+            "height": 26,
+            "tag": "A",
+            "text": "EXPLORAR",
+            "width": 88
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Criar conta",
+            "width": 105
+          },
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Registar",
+            "width": 80
+          }
+        ],
+        "smallText": [
+          {
+            "size": "10.8px",
+            "tag": "P",
+            "text": "Empregos em São Tomé e Príncipe"
+          },
+          {
+            "size": "11.25px",
+            "tag": "BUTTON",
+            "text": "BUSCA"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "M"
+          },
+          {
+            "size": "13.5px",
+            "tag": "STRONG",
+            "text": "web design"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Microaitec"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SMALL",
+            "text": "Contrato"
+          },
+          {
+            "size": "10.8px",
+            "tag": "EM",
+            "text": "OPEN"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "EC"
+          },
+          {
+            "size": "13.5px",
+            "tag": "STRONG",
+            "text": "Marketing"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Empresa Confidencial"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SMALL",
+            "text": "Temporário"
+          },
+          {
+            "size": "10.8px",
+            "tag": "EM",
+            "text": "OPEN"
+          },
+          {
+            "size": "10.5px",
+            "tag": "A",
+            "text": "TODAS"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Nova"
+          },
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "Aberta"
+          },
+          {
+            "size": "12.6px",
+            "tag": "SPAN",
+            "text": "M"
+          },
+          {
+            "size": "12.6px",
+            "tag": "P",
+            "text": "Microaitec"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "lembra"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "5d"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "Ver detalhes da vaga"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Nova"
+          },
+          {
+            "size": "10.2px",
+            "tag": "SPAN",
+            "text": "Aberta"
+          },
+          {
+            "size": "12.6px",
+            "tag": "SPAN",
+            "text": "EC"
+          },
+          {
+            "size": "12.6px",
+            "tag": "P",
+            "text": "Empresa Confidencial"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "ntr"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Temporário"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "63d"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "Ver detalhes da vaga"
+          },
+          {
+            "size": "10.5px",
+            "tag": "A",
+            "text": "TODAS"
+          },
+          {
+            "size": "11.4px",
+            "tag": "P",
+            "text": "0 vagas"
+          },
+          {
+            "size": "11.4px",
+            "tag": "P",
+            "text": "0 vagas"
+          },
+          {
+            "size": "11.4px",
+            "tag": "P",
+            "text": "1 vaga"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Vagas ativas"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Empresas ativas"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Talentos registados"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "F"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "E"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "E"
+          },
+          {
+            "size": "10.2px",
+            "tag": "P",
+            "text": "Sobre nós"
+          },
+          {
+            "size": "10.5px",
+            "tag": "A",
+            "text": "PESQUISAR VAGAS"
+          },
+          {
+            "size": "10.5px",
+            "tag": "A",
+            "text": "CANDIDATAR-ME"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "F"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "E"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "E"
+          },
+          {
+            "size": "13.2px",
+            "tag": "P",
+            "text": "Registe-se gratuitamente e aceda ao ecossistema da plataforma."
+          },
+          {
+            "size": "13.2px",
+            "tag": "P",
+            "text": "Organize o seu perfil, currículo e informações principais numa única conta."
+          },
+          {
+            "size": "13.2px",
+            "tag": "P",
+            "text": "Descubra novas vagas, guarde oportunidades e acompanhe prazos com maior facilidade."
+          },
+          {
+            "size": "13.2px",
+            "tag": "P",
+            "text": "Submeta a sua candidatura e acompanhe o processo com mais clareza e confiança."
+          },
+          {
+            "size": "10.2px",
+            "tag": "P",
+            "text": "Talentos em destaque"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "F"
+          },
+          {
+            "size": "9.9px",
+            "tag": "SPAN",
+            "text": "Verificado"
+          },
+          {
+            "size": "13.2px",
+            "tag": "P",
+            "text": "bf"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Ver perfil"
+          },
+          {
+            "size": "13.5px",
+            "tag": "DIV",
+            "text": "E"
+          },
+          {
+            "size": "9.9px",
+            "tag": "SPAN",
+            "text": "Verificado"
+          },
+          {
+            "size": "13.2px",
+            "tag": "P",
+            "text": "Profissional"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Ver perfil"
+          },
+          {
+            "size": "9.9px",
+            "tag": "SPAN",
+            "text": "Verificado"
+          },
+          {
+            "size": "13.2px",
+            "tag": "P",
+            "text": "Engenheiro Mecânico"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Ver perfil"
+          },
+          {
+            "size": "10.5px",
+            "tag": "A",
+            "text": "EXPLORAR"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Receba novidades, dicas e conteúdos do mercado de trabalho diretamente no seu email."
+          },
+          {
+            "size": "11.7px",
+            "tag": "BUTTON",
+            "text": "Submeter"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Tecnologia"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "O ano de 2026 marca uma virada decisiva na tecnologia global, com avanços simultâneos em computação "
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "12/07/2026"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "4 min"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Mercado"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "sssss"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "04/04/2026"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "5 min"
+          },
+          {
+            "size": "9.9px",
+            "tag": "SPAN",
+            "text": "Candidato"
+          },
+          {
+            "size": "10.5px",
+            "tag": "A",
+            "text": "Criar conta"
+          },
+          {
+            "size": "9.9px",
+            "tag": "SPAN",
+            "text": "Empregador"
+          },
+          {
+            "size": "10.5px",
+            "tag": "A",
+            "text": "Registar"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/",
+      "viewport": {
+        "width": 768,
+        "height": 900
+      }
+    },
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              "a[href$=\"oAZRP7PW5OBDEQRssq2o\"] > .HomePage_postBody__We1XW > .HomePage_postMeta__MEY4N > span:nth-child(1)"
+            ],
+            [
+              "a[href$=\"oAZRP7PW5OBDEQRssq2o\"] > .HomePage_postBody__We1XW > .HomePage_postMeta__MEY4N > span:nth-child(2)"
+            ],
+            [
+              "a[href$=\"WkSlqXXX1SzU2sPqBsDM\"] > .HomePage_postBody__We1XW > .HomePage_postMeta__MEY4N > span:nth-child(1)"
+            ],
+            [
+              "a[href$=\"WkSlqXXX1SzU2sPqBsDM\"] > .HomePage_postBody__We1XW > .HomePage_postMeta__MEY4N > span:nth-child(2)"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1024,
+          "scrollHeight": 7308,
+          "scrollWidth": 1024
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 28,
+            "tag": "A",
+            "text": "TODAS",
+            "width": 68
+          },
+          {
+            "height": 28,
+            "tag": "A",
+            "text": "TODAS",
+            "width": 68
+          },
+          {
+            "height": 28,
+            "tag": "A",
+            "text": "EXPLORAR",
+            "width": 94
+          },
+          {
+            "height": 25,
+            "tag": "A",
+            "text": "Criar conta",
+            "width": 112
+          },
+          {
+            "height": 25,
+            "tag": "A",
+            "text": "Registar",
+            "width": 86
+          }
+        ],
+        "smallText": [
+          {
+            "size": "11.52px",
+            "tag": "P",
+            "text": "Empregos em São Tomé e Príncipe"
+          },
+          {
+            "size": "12px",
+            "tag": "BUTTON",
+            "text": "BUSCA"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "M"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Microaitec"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SMALL",
+            "text": "Contrato"
+          },
+          {
+            "size": "11.52px",
+            "tag": "EM",
+            "text": "OPEN"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "EC"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Empresa Confidencial"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SMALL",
+            "text": "Temporário"
+          },
+          {
+            "size": "11.52px",
+            "tag": "EM",
+            "text": "OPEN"
+          },
+          {
+            "size": "11.2px",
+            "tag": "A",
+            "text": "TODAS"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Nova"
+          },
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "Aberta"
+          },
+          {
+            "size": "13.44px",
+            "tag": "SPAN",
+            "text": "M"
+          },
+          {
+            "size": "13.44px",
+            "tag": "P",
+            "text": "Microaitec"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "lembra"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "5d"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "Ver detalhes da vaga"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Nova"
+          },
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "Aberta"
+          },
+          {
+            "size": "13.44px",
+            "tag": "SPAN",
+            "text": "EC"
+          },
+          {
+            "size": "13.44px",
+            "tag": "P",
+            "text": "Empresa Confidencial"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "ntr"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Temporário"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "63d"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "Ver detalhes da vaga"
+          },
+          {
+            "size": "11.2px",
+            "tag": "A",
+            "text": "TODAS"
+          },
+          {
+            "size": "12.16px",
+            "tag": "P",
+            "text": "0 vagas"
+          },
+          {
+            "size": "12.16px",
+            "tag": "P",
+            "text": "0 vagas"
+          },
+          {
+            "size": "12.16px",
+            "tag": "P",
+            "text": "1 vaga"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Vagas ativas"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Empresas ativas"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Talentos registados"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "F"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "E"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "E"
+          },
+          {
+            "size": "10.88px",
+            "tag": "P",
+            "text": "Sobre nós"
+          },
+          {
+            "size": "11.2px",
+            "tag": "A",
+            "text": "PESQUISAR VAGAS"
+          },
+          {
+            "size": "11.2px",
+            "tag": "A",
+            "text": "CANDIDATAR-ME"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "F"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "E"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "E"
+          },
+          {
+            "size": "10.88px",
+            "tag": "P",
+            "text": "Talentos em destaque"
+          },
+          {
+            "size": "10.56px",
+            "tag": "SPAN",
+            "text": "Verificado"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Ver perfil"
+          },
+          {
+            "size": "10.56px",
+            "tag": "SPAN",
+            "text": "Verificado"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Ver perfil"
+          },
+          {
+            "size": "10.56px",
+            "tag": "SPAN",
+            "text": "Verificado"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Ver perfil"
+          },
+          {
+            "size": "11.2px",
+            "tag": "A",
+            "text": "EXPLORAR"
+          },
+          {
+            "size": "12.48px",
+            "tag": "BUTTON",
+            "text": "Submeter"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Tecnologia"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "12/07/2026"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "4 min"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Mercado"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "04/04/2026"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "5 min"
+          },
+          {
+            "size": "10.56px",
+            "tag": "SPAN",
+            "text": "Candidato"
+          },
+          {
+            "size": "11.2px",
+            "tag": "A",
+            "text": "Criar conta"
+          },
+          {
+            "size": "10.56px",
+            "tag": "SPAN",
+            "text": "Empregador"
+          },
+          {
+            "size": "11.2px",
+            "tag": "A",
+            "text": "Registar"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/",
+      "viewport": {
+        "width": 1024,
+        "height": 900
+      }
+    },
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              "a[href$=\"oAZRP7PW5OBDEQRssq2o\"] > .HomePage_postBody__We1XW > .HomePage_postMeta__MEY4N > span:nth-child(1)"
+            ],
+            [
+              "a[href$=\"oAZRP7PW5OBDEQRssq2o\"] > .HomePage_postBody__We1XW > .HomePage_postMeta__MEY4N > span:nth-child(2)"
+            ],
+            [
+              "a[href$=\"WkSlqXXX1SzU2sPqBsDM\"] > .HomePage_postBody__We1XW > .HomePage_postMeta__MEY4N > span:nth-child(1)"
+            ],
+            [
+              "a[href$=\"WkSlqXXX1SzU2sPqBsDM\"] > .HomePage_postBody__We1XW > .HomePage_postMeta__MEY4N > span:nth-child(2)"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1440,
+          "scrollHeight": 5703,
+          "scrollWidth": 1440
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 28,
+            "tag": "A",
+            "text": "TODAS",
+            "width": 68
+          },
+          {
+            "height": 28,
+            "tag": "A",
+            "text": "TODAS",
+            "width": 68
+          },
+          {
+            "height": 28,
+            "tag": "A",
+            "text": "EXPLORAR",
+            "width": 94
+          },
+          {
+            "height": 25,
+            "tag": "A",
+            "text": "Criar conta",
+            "width": 112
+          },
+          {
+            "height": 25,
+            "tag": "A",
+            "text": "Registar",
+            "width": 86
+          }
+        ],
+        "smallText": [
+          {
+            "size": "11.52px",
+            "tag": "P",
+            "text": "Empregos em São Tomé e Príncipe"
+          },
+          {
+            "size": "12px",
+            "tag": "BUTTON",
+            "text": "BUSCA"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "M"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Microaitec"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SMALL",
+            "text": "Contrato"
+          },
+          {
+            "size": "11.52px",
+            "tag": "EM",
+            "text": "OPEN"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "EC"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Empresa Confidencial"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SMALL",
+            "text": "Temporário"
+          },
+          {
+            "size": "11.52px",
+            "tag": "EM",
+            "text": "OPEN"
+          },
+          {
+            "size": "11.2px",
+            "tag": "A",
+            "text": "TODAS"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Nova"
+          },
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "Aberta"
+          },
+          {
+            "size": "13.44px",
+            "tag": "SPAN",
+            "text": "M"
+          },
+          {
+            "size": "13.44px",
+            "tag": "P",
+            "text": "Microaitec"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "lembra"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "5d"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "Ver detalhes da vaga"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Nova"
+          },
+          {
+            "size": "10.88px",
+            "tag": "SPAN",
+            "text": "Aberta"
+          },
+          {
+            "size": "13.44px",
+            "tag": "SPAN",
+            "text": "EC"
+          },
+          {
+            "size": "13.44px",
+            "tag": "P",
+            "text": "Empresa Confidencial"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "ntr"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Temporário"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "63d"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "Ver detalhes da vaga"
+          },
+          {
+            "size": "11.2px",
+            "tag": "A",
+            "text": "TODAS"
+          },
+          {
+            "size": "12.16px",
+            "tag": "P",
+            "text": "0 vagas"
+          },
+          {
+            "size": "12.16px",
+            "tag": "P",
+            "text": "0 vagas"
+          },
+          {
+            "size": "12.16px",
+            "tag": "P",
+            "text": "1 vaga"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Vagas ativas"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Empresas ativas"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Talentos registados"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "F"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "E"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "E"
+          },
+          {
+            "size": "10.88px",
+            "tag": "P",
+            "text": "Sobre nós"
+          },
+          {
+            "size": "11.2px",
+            "tag": "A",
+            "text": "PESQUISAR VAGAS"
+          },
+          {
+            "size": "11.2px",
+            "tag": "A",
+            "text": "CANDIDATAR-ME"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "F"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "E"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "E"
+          },
+          {
+            "size": "10.88px",
+            "tag": "P",
+            "text": "Talentos em destaque"
+          },
+          {
+            "size": "10.56px",
+            "tag": "SPAN",
+            "text": "Verificado"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Ver perfil"
+          },
+          {
+            "size": "10.56px",
+            "tag": "SPAN",
+            "text": "Verificado"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Ver perfil"
+          },
+          {
+            "size": "10.56px",
+            "tag": "SPAN",
+            "text": "Verificado"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Ver perfil"
+          },
+          {
+            "size": "11.2px",
+            "tag": "A",
+            "text": "EXPLORAR"
+          },
+          {
+            "size": "12.48px",
+            "tag": "BUTTON",
+            "text": "Submeter"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Tecnologia"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "12/07/2026"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "4 min"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Mercado"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "04/04/2026"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "5 min"
+          },
+          {
+            "size": "10.56px",
+            "tag": "SPAN",
+            "text": "Candidato"
+          },
+          {
+            "size": "11.2px",
+            "tag": "A",
+            "text": "Criar conta"
+          },
+          {
+            "size": "10.56px",
+            "tag": "SPAN",
+            "text": "Empregador"
+          },
+          {
+            "size": "11.2px",
+            "tag": "A",
+            "text": "Registar"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    }
+  ],
+  "route": "/",
+  "slug": "home"
+}

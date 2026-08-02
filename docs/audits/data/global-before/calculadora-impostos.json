@@ -1,0 +1,64 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "phase": "global-before",
+  "results": [
+    {
+      "accessibilityViolations": [],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 320,
+          "scrollHeight": 800,
+          "scrollWidth": 320
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 0,
+          "main": 1,
+          "nav": 0
+        },
+        "shortTargets": [],
+        "smallText": [],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/login",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      }
+    },
+    {
+      "accessibilityViolations": [],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1440,
+          "scrollHeight": 1000,
+          "scrollWidth": 1440
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 0,
+          "main": 1,
+          "nav": 0
+        },
+        "shortTargets": [],
+        "smallText": [],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/login",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    }
+  ],
+  "route": "/recursos/calculadora-impostos",
+  "slug": "calculadora-impostos"
+}

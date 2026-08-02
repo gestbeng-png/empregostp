@@ -1,0 +1,49 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "phase": "after-browser-validation",
+  "route": "/recursos/gerador-cv",
+  "slug": "gerador-cv",
+  "results": [
+    {
+      "viewport": { "width": 320, "height": 800 },
+      "horizontalOverflow": 0,
+      "smallText": [],
+      "shortTargets": [],
+      "headingOneCount": 1,
+      "landmarks": { "main": 1, "nav": 1, "footer": 1 },
+      "duplicateIds": [],
+      "unlabeledFields": 0
+    },
+    {
+      "viewport": { "width": 768, "height": 900 },
+      "horizontalOverflow": 0,
+      "smallText": [],
+      "shortTargets": [],
+      "headingOneCount": 1,
+      "landmarks": { "main": 1, "nav": 1, "footer": 1 },
+      "duplicateIds": [],
+      "unlabeledFields": 0
+    },
+    {
+      "viewport": { "width": 1024, "height": 900 },
+      "horizontalOverflow": 0,
+      "smallText": [],
+      "shortTargets": [],
+      "headingOneCount": 1,
+      "landmarks": { "main": 1, "nav": 1, "footer": 1 },
+      "duplicateIds": [],
+      "unlabeledFields": 0
+    },
+    {
+      "viewport": { "width": 1440, "height": 1000 },
+      "horizontalOverflow": 0,
+      "smallText": [],
+      "shortTargets": [],
+      "headingOneCount": 1,
+      "landmarks": { "main": 1, "nav": 1, "footer": 1 },
+      "duplicateIds": [],
+      "unlabeledFields": 0
+    }
+  ],
+  "runnerNote": "Validação executada no navegador ativo. O runner Playwright isolado permanece bloqueado pelo sandbox do macOS antes da navegação."
+}

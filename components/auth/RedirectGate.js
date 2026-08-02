@@ -1,21 +1,16 @@
-import Image from "next/image";
-import styles from "../../styles/RedirectGate.module.css";
+import Image from 'next/image';
+import styles from '../../styles/RedirectGate.module.css';
 
-export default function RedirectGate({
-  title = "Redirecionando",
-  description,
-}) {
+export default function RedirectGate({ title = 'A encaminhar', description }) {
   return (
     <div className={styles.page}>
-      <div className={styles.backdrop} aria-hidden="true">
-        <span className={`${styles.orb} ${styles.orbPrimary}`} />
-        <span className={`${styles.orb} ${styles.orbSecondary}`} />
-        <span className={`${styles.orb} ${styles.orbTertiary}`} />
-        <span className={styles.gridPattern} />
-      </div>
-
       <main className={styles.main}>
-        <section className={styles.card}>
+        <section
+          className={styles.card}
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
+        >
           <div className={styles.logoWrap}>
             <Image
               src="/assets/Emprego STP Logo 2-wide.png"
@@ -27,7 +22,7 @@ export default function RedirectGate({
             />
           </div>
 
-          <span className={styles.kicker}>Aguarde um instante</span>
+          <span className={styles.kicker}>Só um instante</span>
           <h1 className={styles.title}>{title}</h1>
           {description ? (
             <p className={styles.description}>{description}</p>

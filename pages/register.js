@@ -1,18 +1,60 @@
-import { useEffect, useState } from "react";
-import { useRouter } from "next/router";
-import Link from "next/link";
-import Head from "next/head";
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+import Link from 'next/link';
+import Head from 'next/head';
 import {
   createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
-} from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-import nookies from "nookies";
-import auth from "../lib/firebaseAuth";
-import db from "../lib/firestore";
-import AuthShell from "../components/auth/AuthShell";
-import styles from "../styles/AuthPage.module.css";
+} from 'firebase/auth';
+import {
+  FiAlertCircle,
+  FiBriefcase,
+  FiCheck,
+  FiCheckCircle,
+  FiCircle,
+  FiMail,
+  FiUser,
+} from 'react-icons/fi';
+import { doc, getDoc } from 'firebase/firestore';
+import nookies from 'nookies';
+import auth from '../lib/firebaseAuth';
+import db from '../lib/firestore';
+import AuthShell from '../components/auth/AuthShell';
+import {
+  isValidEmail,
+  isStrongPassword,
+  getPasswordChecks,
+  normalizeEmail,
+} from '../lib/validation';
+import { INDUSTRY_SECTORS } from '../lib/companyOptions';
+import styles from '../styles/AuthPage.module.css';
+
+const ACCOUNT_TYPES = [
+  {
+    value: 'candidato',
+    title: 'Sou um candidato',
+    description:
+      'Crio o meu perfil, envio o currículo e apresento candidaturas.',
+    Icon: FiUser,
+    activeClassName: 'optionCardActiveBlue',
+  },
+  {
+    value: 'empresa',
+    title: 'Sou uma empresa',
+    description:
+      'Publico vagas e acompanho o recrutamento num painel dedicado.',
+    Icon: FiBriefcase,
+    activeClassName: 'optionCardActiveGreen',
+  },
+];
+
+function normalizeAccountType(value) {
+  if (value === 'empresa') return 'empresa';
+  if (value === 'candidato' || value === 'candidate') return 'candidato';
+  return '';
+}
 
 export default function Register() {
   const router = useRouter();
@@ -20,23 +62,83 @@ export default function Register() {
     ? router.query.type[0]
     : router.query.type;
 
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [userType, setUserType] = useState(
-    typeQuery === "empresa" ? "empresa" : "candidato",
-  );
-  const [error, setError] = useState("");
+  const normalizedTypeQuery = normalizeAccountType(typeQuery);
+  const [accountNames, setAccountNames] = useState({
+    candidato: '',
+    empresa: '',
+  });
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [userType, setUserType] = useState('');
+
+  // Campos adicionais para empresas
+  const [companyPhone, setCompanyPhone] = useState('');
+  const [companyNif, setCompanyNif] = useState('');
+  const [companySector, setCompanySector] = useState('');
+  const [companyLocation, setCompanyLocation] = useState('');
+
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
+  const [resendState, setResendState] = useState('');
+  const [passwordFocused, setPasswordFocused] = useState(false);
+
+  const passwordChecks = getPasswordChecks(password);
+  const passwordRules = [
+    { key: 'length', label: 'Mínimo de 8 caracteres' },
+    { key: 'uppercase', label: 'Uma letra maiúscula' },
+    { key: 'lowercase', label: 'Uma letra minúscula' },
+    { key: 'number', label: 'Um número' },
+    { key: 'special', label: 'Um símbolo especial' },
+  ];
+  const showPasswordRules = passwordFocused || password.length > 0;
+  const name = userType ? accountNames[userType] : '';
 
   useEffect(() => {
-    if (typeQuery === "empresa" || typeQuery === "candidato") {
-      setUserType(typeQuery);
+    if (normalizedTypeQuery) {
+      setUserType(normalizedTypeQuery);
     }
-  }, [typeQuery]);
+  }, [normalizedTypeQuery]);
+
+  const handleAccountTypeChange = (nextType) => {
+    setUserType(nextType);
+    setError('');
+  };
+
+  const handleNameChange = (event) => {
+    const value = event.target.value;
+    setAccountNames((currentNames) => ({
+      ...currentNames,
+      [userType]: value,
+    }));
+  };
+
+  const validateCompanyProfile = () => {
+    if (!name.trim()) return 'Introduza o nome da empresa.';
+    if (!companyPhone.trim())
+      return 'Introduza o telefone de contacto da empresa.';
+    if (!companyNif.trim()) return 'Introduza o NIF da empresa.';
+    if (!companySector) return 'Selecione o setor de atividade da empresa.';
+    if (!companyLocation.trim()) return 'Introduza a localização da empresa.';
+    return '';
+  };
 
   const handleGoogleRegister = async () => {
-    setError("");
+    setError('');
+
+    if (!userType) {
+      setError('Selecione o tipo de conta antes de continuar.');
+      return;
+    }
+
+    if (userType === 'empresa') {
+      const companyValidationError = validateCompanyProfile();
+      if (companyValidationError) {
+        setError(companyValidationError);
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
@@ -45,243 +147,542 @@ export default function Register() {
       const user = userCredential.user;
       const token = await user.getIdToken();
 
-      nookies.set(null, "token", token, {
+      nookies.set(null, 'token', token, {
         maxAge: 30 * 24 * 60 * 60,
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
       });
 
-      const userDocRef = doc(db, "users", user.uid);
+      const userDocRef = doc(db, 'users', user.uid);
       const userDoc = await getDoc(userDocRef);
 
       if (userDoc.exists()) {
         const userData = userDoc.data();
         const userTypeData = userData.userType;
 
-        if (userTypeData === "empresa") {
-          window.location.href = "/dashboard/empresa";
-        } else if (userTypeData === "admin") {
-          window.location.href = "/dashboard/admin";
+        if (userTypeData === 'empresa') {
+          window.location.href = '/dashboard/empresa';
+        } else if (userTypeData === 'admin') {
+          window.location.href = '/dashboard/admin';
         } else {
-          window.location.href = "/dashboard/candidato";
+          window.location.href = '/dashboard/candidato';
         }
         return;
       }
 
-      await fetch("/api/auth/setup-user", {
-        method: "POST",
+      const profileName =
+        userType === 'empresa'
+          ? name.trim()
+          : name.trim() || user.displayName || '';
+      const googlePayload = {
+        userType,
+        fullName: profileName,
+        name: profileName,
+        photoUrl: user.photoURL || '',
+        provider: 'google',
+      };
+
+      if (userType === 'empresa') {
+        googlePayload.phone = companyPhone.trim();
+        googlePayload.nif = companyNif.trim();
+        googlePayload.location = companyLocation.trim();
+        googlePayload.industrySectors = [companySector];
+      }
+
+      await fetch('/api/auth/setup-user', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          userType,
-          fullName: user.displayName || "",
-          photoUrl: user.photoURL || "",
-          provider: "google",
-        }),
+        body: JSON.stringify(googlePayload),
       });
 
-      if (userType === "empresa") {
-        window.location.href = "/dashboard/empresa";
+      if (userType === 'empresa') {
+        window.location.href = '/dashboard/empresa';
       } else {
-        window.location.href = "/dashboard/candidato";
+        window.location.href = '/dashboard/candidato';
       }
     } catch (err) {
-      console.error("Erro ao registrar com Google:", err);
+      console.error('Erro ao criar conta com Google:', err);
       setLoading(false);
 
-      if (err.code === "auth/popup-closed-by-user") {
-        setError("Registro cancelado.");
-      } else if (err.code === "auth/popup-blocked") {
-        setError("Popup bloqueado. Habilite popups para este site.");
+      if (err.code === 'auth/popup-closed-by-user') {
+        setError('Criação da conta cancelada.');
+      } else if (err.code === 'auth/popup-blocked') {
+        setError(
+          'A janela de autenticação foi bloqueada. Autorize janelas adicionais para este site.',
+        );
       } else {
-        setError("Erro ao registrar. Tente novamente.");
+        setError(
+          'Não foi possível criar a conta com o Google. Tente novamente.',
+        );
       }
     }
   };
 
+  const validate = () => {
+    if (!userType) return 'Selecione o tipo de conta.';
+    if (!name.trim()) {
+      return userType === 'empresa'
+        ? 'Introduza o nome da empresa.'
+        : 'Introduza o seu nome.';
+    }
+    if (!email.trim()) return 'Introduza o seu email.';
+    if (!isValidEmail(email)) return 'Introduza um email válido.';
+    if (!isStrongPassword(password))
+      return 'A senha deve ter pelo menos 8 caracteres, com letra maiúscula, letra minúscula, número e símbolo especial.';
+
+    if (userType === 'empresa') return validateCompanyProfile();
+
+    return '';
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setLoading(true);
+    setError('');
 
-    if (!name || !email || !password) {
-      setError("Todos os campos são obrigatórios.");
-      setLoading(false);
+    const validationError = validate();
+    if (validationError) {
+      setError(validationError);
       return;
     }
+
+    setLoading(true);
+    const normalizedEmail = normalizeEmail(email);
 
     try {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
-        email,
+        normalizedEmail,
         password,
       );
       const user = userCredential.user;
       const token = await user.getIdToken();
 
-      await fetch("/api/auth/setup-user", {
-        method: "POST",
+      const payload = {
+        userType,
+        fullName: name.trim(),
+        name: name.trim(),
+        provider: 'email',
+      };
+
+      if (userType === 'empresa') {
+        payload.phone = companyPhone.trim();
+        payload.nif = companyNif.trim();
+        payload.location = companyLocation.trim();
+        payload.industrySectors = [companySector];
+      }
+
+      await fetch('/api/auth/setup-user', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          userType,
-          fullName: name,
-          name,
-          provider: "email",
-        }),
+        body: JSON.stringify(payload),
       });
 
-      router.push("/login");
+      // Enviar o nosso email de confirmação (marca EmpregoSTP) e terminar
+      // sessão até o utilizador confirmar.
+      await fetch('/api/auth/send-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ name: name.trim() }),
+      });
+      await auth.signOut();
+
+      setVerificationSent(true);
+      setLoading(false);
     } catch (err) {
       setLoading(false);
-      if (err.code === "auth/email-already-in-use") {
-        setError("Este email já está em uso.");
-      } else if (err.code === "auth/weak-password") {
-        setError("Senha muito fraca. Use no mínimo 6 caracteres.");
+      if (err.code === 'auth/email-already-in-use') {
+        setError('Este email já está em uso.');
+      } else if (err.code === 'auth/weak-password') {
+        setError(
+          'A senha deve ter pelo menos 8 caracteres, com letra maiúscula, letra minúscula, número e símbolo especial.',
+        );
+      } else if (err.code === 'auth/invalid-email') {
+        setError('Introduza um email válido.');
       } else {
-        setError(err.message);
+        setError('Não foi possível criar a conta. Tente novamente.');
       }
     }
   };
 
+  const handleResendVerification = async () => {
+    setResendState('sending');
+    try {
+      const credential = await signInWithEmailAndPassword(
+        auth,
+        normalizeEmail(email),
+        password,
+      );
+      const token = await credential.user.getIdToken();
+      const response = await fetch('/api/auth/send-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ name: name.trim() }),
+      });
+      await auth.signOut();
+      if (!response.ok) throw new Error('resend_failed');
+      setResendState('sent');
+    } catch (err) {
+      console.error('Erro ao reenviar email de confirmação:', err);
+      setResendState('Não foi possível reenviar. Tente novamente.');
+    }
+  };
+
+  if (verificationSent) {
+    return (
+      <>
+        <Head>
+          <title>Confirmar email | EmpregoSTP</title>
+        </Head>
+
+        <AuthShell minimal>
+          <div className={styles.verifyScreen}>
+            <FiMail className={styles.verifyIcon} aria-hidden="true" />
+            <h1 className={styles.verifyTitle}>Confirme o seu email</h1>
+            <p className={styles.verifyText}>
+              Enviámos um link de confirmação para{' '}
+              <strong>{normalizeEmail(email)}</strong>. Abra o email e clique no
+              link para ativar a sua conta. Só poderá entrar depois de
+              confirmar.
+            </p>
+
+            {resendState === 'sent' ? (
+              <div className={styles.info} role="status" aria-live="polite">
+                <FiCheckCircle
+                  className={styles.errorIcon}
+                  aria-hidden="true"
+                />
+                <span>Email de confirmação reenviado.</span>
+              </div>
+            ) : resendState && resendState !== 'sending' ? (
+              <div className={styles.error} role="alert">
+                <FiAlertCircle
+                  className={styles.errorIcon}
+                  aria-hidden="true"
+                />
+                <span>{resendState}</span>
+              </div>
+            ) : null}
+
+            <Link href="/login" className={styles.primaryButton}>
+              Iniciar sessão
+            </Link>
+
+            <button
+              type="button"
+              onClick={handleResendVerification}
+              disabled={resendState === 'sending'}
+              className={styles.linkButton}
+            >
+              {resendState === 'sending'
+                ? 'A reenviar…'
+                : 'Não recebeu? Reenviar email'}
+            </button>
+          </div>
+        </AuthShell>
+      </>
+    );
+  }
+
   return (
     <>
       <Head>
-        <title>Criar Conta - EmpregoSTP</title>
+        <title>Criar conta | EmpregoSTP</title>
       </Head>
 
-      <AuthShell minimal>
+      <AuthShell minimal wide>
         <div className={styles.formHeader}>
-          <h2>Crie sua Conta</h2>
+          <h1>Criar conta</h1>
           <p>
-            Junte-se a nós para encontrar o emprego dos seus sonhos ou o
-            candidato perfeito
+            Escolha como pretende utilizar a plataforma. O formulário adapta-se
+            ao perfil selecionado.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.field}>
-            <label htmlFor="register-name" className={styles.fieldLabel}>
-              Nome completo
-            </label>
-            <input
-              id="register-name"
-              type="text"
-              placeholder="Nome Completo"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              autoComplete="name"
-              className={styles.input}
-            />
-          </div>
+        <form onSubmit={handleSubmit} className={styles.form} noValidate>
+          <fieldset className={`${styles.field} ${styles.accountTypeField}`}>
+            <legend className={styles.accountTypeLegend}>Tipo de conta</legend>
+            <div
+              className={`${styles.optionGrid} ${styles.registerOptionGrid}`}
+            >
+              {ACCOUNT_TYPES.map((accountType) => {
+                const { Icon } = accountType;
+                const isSelected = userType === accountType.value;
 
-          <div className={styles.field}>
-            <label htmlFor="register-email" className={styles.fieldLabel}>
-              E-mail
-            </label>
-            <input
-              id="register-email"
-              type="email"
-              placeholder="Seu melhor e-mail"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
-              className={styles.input}
-            />
-          </div>
-
-          <div className={styles.field}>
-            <label htmlFor="register-password" className={styles.fieldLabel}>
-              Senha
-            </label>
-            <input
-              id="register-password"
-              type="password"
-              placeholder="Crie uma senha (mínimo 6 caracteres)"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="new-password"
-              className={styles.input}
-            />
-          </div>
-
-          <div className={styles.field}>
-            <span className={styles.fieldLabel}>Tipo de conta</span>
-            <div className={styles.optionGrid}>
-              <label
-                className={`${styles.optionCard} ${
-                  userType === "candidato" ? styles.optionCardActiveBlue : ""
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="userType"
-                  value="candidato"
-                  checked={userType === "candidato"}
-                  onChange={(e) => setUserType(e.target.value)}
-                  className={styles.optionInput}
-                />
-                <span className={styles.optionText}>
-                  <span className={styles.optionTitle}>Sou um candidato</span>
-                  <span className={styles.optionMeta}>
-                    Crio perfil, envio currículo e candidato-me a vagas.
-                  </span>
-                </span>
-              </label>
-
-              <label
-                className={`${styles.optionCard} ${
-                  userType === "empresa" ? styles.optionCardActiveGreen : ""
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="userType"
-                  value="empresa"
-                  checked={userType === "empresa"}
-                  onChange={(e) => setUserType(e.target.value)}
-                  className={styles.optionInput}
-                />
-                <span className={styles.optionText}>
-                  <span className={styles.optionTitle}>Sou uma empresa</span>
-                  <span className={styles.optionMeta}>
-                    Publico vagas e acompanho recrutamento num painel dedicado.
-                  </span>
-                </span>
-              </label>
+                return (
+                  <label
+                    key={accountType.value}
+                    className={`${styles.optionCard} ${
+                      isSelected ? styles[accountType.activeClassName] : ''
+                    }`}
+                  >
+                    <span className={styles.optionIcon} aria-hidden="true">
+                      <Icon />
+                    </span>
+                    <span className={styles.optionText}>
+                      <span className={styles.optionTitle}>
+                        {accountType.title}
+                      </span>
+                      <span className={styles.optionMeta}>
+                        {accountType.description}
+                      </span>
+                    </span>
+                    <input
+                      type="radio"
+                      name="userType"
+                      value={accountType.value}
+                      checked={isSelected}
+                      onChange={() =>
+                        handleAccountTypeChange(accountType.value)
+                      }
+                      className={styles.optionInput}
+                    />
+                  </label>
+                );
+              })}
             </div>
-          </div>
+          </fieldset>
+
+          {userType ? (
+            <div className={styles.accountDetails} aria-live="polite">
+              <div className={styles.accountDetailsHeader}>
+                <span className={styles.accountDetailsIcon} aria-hidden="true">
+                  {userType === 'empresa' ? <FiBriefcase /> : <FiUser />}
+                </span>
+                <div>
+                  <h2>
+                    {userType === 'empresa'
+                      ? 'Dados da empresa'
+                      : 'Dados do candidato'}
+                  </h2>
+                  <p>
+                    {userType === 'empresa'
+                      ? 'Informações necessárias para publicar vagas e gerir candidaturas.'
+                      : 'Informações necessárias para criar o seu perfil profissional.'}
+                  </p>
+                </div>
+              </div>
+
+              <div className={styles.registrationFieldsGrid}>
+                <div className={styles.field}>
+                  <label htmlFor="register-name" className={styles.fieldLabel}>
+                    {userType === 'empresa'
+                      ? 'Nome da empresa'
+                      : 'Nome completo'}
+                  </label>
+                  <input
+                    id="register-name"
+                    type="text"
+                    placeholder={
+                      userType === 'empresa'
+                        ? 'Nome da sua empresa'
+                        : 'O seu nome completo'
+                    }
+                    value={name}
+                    onChange={handleNameChange}
+                    autoComplete={
+                      userType === 'empresa' ? 'organization' : 'name'
+                    }
+                    required
+                    className={styles.input}
+                  />
+                </div>
+
+                <div className={styles.field}>
+                  <label htmlFor="register-email" className={styles.fieldLabel}>
+                    {userType === 'empresa' ? 'Email profissional' : 'Email'}
+                  </label>
+                  <input
+                    id="register-email"
+                    type="email"
+                    placeholder={
+                      userType === 'empresa'
+                        ? 'contacto@suaempresa.st'
+                        : 'O seu email'
+                    }
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    autoComplete="email"
+                    required
+                    className={styles.input}
+                  />
+                </div>
+              </div>
+
+              {userType === 'empresa' ? (
+                <div className={styles.companyFields}>
+                  <div className={styles.field}>
+                    <label
+                      htmlFor="company-phone"
+                      className={styles.fieldLabel}
+                    >
+                      Telefone de contacto
+                    </label>
+                    <input
+                      id="company-phone"
+                      type="tel"
+                      placeholder="+239 XXX XXXX"
+                      value={companyPhone}
+                      onChange={(e) => setCompanyPhone(e.target.value)}
+                      autoComplete="tel"
+                      required
+                      className={styles.input}
+                    />
+                  </div>
+
+                  <div className={styles.field}>
+                    <label htmlFor="company-nif" className={styles.fieldLabel}>
+                      NIF da empresa
+                    </label>
+                    <input
+                      id="company-nif"
+                      type="text"
+                      placeholder="Número de identificação fiscal"
+                      value={companyNif}
+                      onChange={(e) => setCompanyNif(e.target.value)}
+                      required
+                      className={styles.input}
+                    />
+                  </div>
+
+                  <div className={styles.field}>
+                    <label
+                      htmlFor="company-sector"
+                      className={styles.fieldLabel}
+                    >
+                      Setor de atividade
+                    </label>
+                    <select
+                      id="company-sector"
+                      value={companySector}
+                      onChange={(e) => setCompanySector(e.target.value)}
+                      required
+                      className={styles.input}
+                    >
+                      <option value="">Selecione um setor</option>
+                      {INDUSTRY_SECTORS.map((sector) => (
+                        <option key={sector} value={sector}>
+                          {sector}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className={styles.field}>
+                    <label
+                      htmlFor="company-location"
+                      className={styles.fieldLabel}
+                    >
+                      Localização
+                    </label>
+                    <input
+                      id="company-location"
+                      type="text"
+                      placeholder="Cidade ou distrito"
+                      value={companyLocation}
+                      onChange={(e) => setCompanyLocation(e.target.value)}
+                      autoComplete="address-level2"
+                      required
+                      className={styles.input}
+                    />
+                  </div>
+                </div>
+              ) : null}
+
+              <div className={styles.field}>
+                <label
+                  htmlFor="register-password"
+                  className={styles.fieldLabel}
+                >
+                  Senha
+                </label>
+                <input
+                  id="register-password"
+                  type="password"
+                  placeholder="Crie uma senha forte"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onFocus={() => setPasswordFocused(true)}
+                  onBlur={() => setPasswordFocused(false)}
+                  autoComplete="new-password"
+                  aria-describedby="password-requirements"
+                  required
+                  className={styles.input}
+                />
+                {showPasswordRules ? (
+                  <ul
+                    id="password-requirements"
+                    className={styles.passwordRules}
+                    aria-live="polite"
+                  >
+                    {passwordRules.map((rule) => {
+                      const met = passwordChecks[rule.key];
+                      return (
+                        <li
+                          key={rule.key}
+                          className={`${styles.passwordRule} ${
+                            met ? styles.passwordRuleMet : ''
+                          }`}
+                        >
+                          <span
+                            className={styles.passwordRuleIcon}
+                            aria-hidden="true"
+                          >
+                            {met ? <FiCheck /> : <FiCircle />}
+                          </span>
+                          <span>{rule.label}</span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
 
           {error ? (
             <div className={styles.error} role="alert" aria-live="polite">
-              <span className={styles.errorIcon}>⚠️</span>
+              <FiAlertCircle className={styles.errorIcon} aria-hidden="true" />
               <span>{error}</span>
             </div>
           ) : null}
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !userType}
             className={styles.primaryButton}
           >
-            {loading ? "Criando conta..." : "Criar Conta"}
+            {loading
+              ? 'A criar conta…'
+              : userType === 'empresa'
+                ? 'Criar conta da empresa'
+                : userType === 'candidato'
+                  ? 'Criar conta de candidato'
+                  : 'Selecione o tipo de conta'}
           </button>
         </form>
 
         <div className={styles.divider} aria-hidden="true">
           <span className={styles.dividerLine} />
-          <span>Ou</span>
+          <span>ou</span>
           <span className={styles.dividerLine} />
         </div>
 
         <button
           type="button"
           onClick={handleGoogleRegister}
-          disabled={loading}
+          disabled={loading || !userType}
           className={styles.socialButton}
         >
           <svg
@@ -308,13 +709,19 @@ export default function Register() {
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
             />
           </svg>
-          {loading ? "Registrando..." : "Continuar com Google"}
+          {loading
+            ? 'A registar…'
+            : userType === 'empresa'
+              ? 'Continuar como empresa com Google'
+              : userType === 'candidato'
+                ? 'Continuar como candidato com Google'
+                : 'Selecione o tipo de conta para continuar'}
         </button>
 
         <p className={styles.footerNote}>
-          Já tem uma conta?{" "}
+          Já tem conta?{' '}
           <Link href="/login" className={styles.footerLink}>
-            Faça Login
+            Iniciar sessão
           </Link>
         </p>
       </AuthShell>

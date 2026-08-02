@@ -1,27 +1,27 @@
-import Head from "next/head";
-import Link from "next/link";
-import PublicPageShell from "../components/PublicPageShell";
-import styles from "../styles/LegalPage.module.css";
+import Head from 'next/head';
+import Link from 'next/link';
+import PublicPageShell from '../components/PublicPageShell';
+import styles from '../styles/LegalPage.module.css';
 
 export default function TermosPage() {
   return (
     <>
       <Head>
-        <title>Termos de Uso - EmpregoSTP</title>
+        <title>Termos de utilização | EmpregoSTP</title>
         <meta
           name="description"
           content="Termos de uso da plataforma EmpregoSTP."
         />
       </Head>
       <PublicPageShell>
-        <main className={styles.page}>
-          <section className={styles.panel}>
-            <h1 className={styles.title}>Termos de Uso</h1>
+        <div className={styles.page}>
+          <article className={styles.panel}>
+            <h1 className={styles.title}>Termos de utilização</h1>
             <div className={styles.copy}>
               <p>
-                Ao utilizar o EmpregoSTP, você concorda em fornecer informações
-                verdadeiras, utilizar a plataforma de forma lícita e respeitar
-                candidatos, empresas e administradores durante todas as
+                Ao utilizar o EmpregoSTP, o utilizador concorda em fornecer
+                informações verdadeiras, utilizar a plataforma de forma lícita e
+                respeitar candidatos, empresas e administradores em todas as
                 interações.
               </p>
               <p>
@@ -38,8 +38,8 @@ export default function TermosPage() {
                 Ver política de privacidade
               </Link>
             </div>
-          </section>
-        </main>
+          </article>
+        </div>
       </PublicPageShell>
     </>
   );

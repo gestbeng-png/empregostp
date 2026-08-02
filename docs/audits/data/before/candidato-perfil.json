@@ -1,0 +1,232 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "phase": "before",
+  "results": [
+    {
+      "accessibilityViolations": [],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 320,
+          "scrollHeight": 1879,
+          "scrollWidth": 320
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 2,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 22,
+            "tag": "A",
+            "text": "Candidatos Verificados",
+            "width": 183
+          }
+        ],
+        "smallText": [
+          {
+            "size": "13.5px",
+            "tag": "A",
+            "text": "Candidatos Verificados"
+          },
+          {
+            "size": "12.75px",
+            "tag": "SPAN",
+            "text": "Verificado"
+          },
+          {
+            "size": "13.8px",
+            "tag": "DIV",
+            "text": "Informações detalhadas deste candidato são exclusivas para empresas com plano elegível."
+          },
+          {
+            "size": "13.8px",
+            "tag": "P",
+            "text": "Interessado em contratar este candidato?"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Entrar como Empresa"
+          },
+          {
+            "size": "12.6px",
+            "tag": "P",
+            "text": "O contacto direto é reservado a empresas com acesso elegível ao banco de talentos."
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/candidatos/9rJhH0V5VxTYx2ZX7IAU3ITYEWB3",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      }
+    },
+    {
+      "accessibilityViolations": [],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 768,
+          "scrollHeight": 1265,
+          "scrollWidth": 768
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 2,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 22,
+            "tag": "A",
+            "text": "Candidatos Verificados",
+            "width": 183
+          }
+        ],
+        "smallText": [
+          {
+            "size": "13.5px",
+            "tag": "A",
+            "text": "Candidatos Verificados"
+          },
+          {
+            "size": "12.75px",
+            "tag": "SPAN",
+            "text": "Verificado"
+          },
+          {
+            "size": "13.8px",
+            "tag": "DIV",
+            "text": "Informações detalhadas deste candidato são exclusivas para empresas com plano elegível."
+          },
+          {
+            "size": "13.8px",
+            "tag": "P",
+            "text": "Interessado em contratar este candidato?"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Entrar como Empresa"
+          },
+          {
+            "size": "12.6px",
+            "tag": "P",
+            "text": "O contacto direto é reservado a empresas com acesso elegível ao banco de talentos."
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/candidatos/9rJhH0V5VxTYx2ZX7IAU3ITYEWB3",
+      "viewport": {
+        "width": 768,
+        "height": 900
+      }
+    },
+    {
+      "accessibilityViolations": [],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1024,
+          "scrollHeight": 1319,
+          "scrollWidth": 1024
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 2,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Candidatos Verificados",
+            "width": 194
+          }
+        ],
+        "smallText": [
+          {
+            "size": "13.6px",
+            "tag": "SPAN",
+            "text": "Verificado"
+          },
+          {
+            "size": "13.44px",
+            "tag": "P",
+            "text": "O contacto direto é reservado a empresas com acesso elegível ao banco de talentos."
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/candidatos/9rJhH0V5VxTYx2ZX7IAU3ITYEWB3",
+      "viewport": {
+        "width": 1024,
+        "height": 900
+      }
+    },
+    {
+      "accessibilityViolations": [],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1440,
+          "scrollHeight": 1102,
+          "scrollWidth": 1440
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 2,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 23,
+            "tag": "A",
+            "text": "Candidatos Verificados",
+            "width": 194
+          }
+        ],
+        "smallText": [
+          {
+            "size": "13.6px",
+            "tag": "SPAN",
+            "text": "Verificado"
+          },
+          {
+            "size": "13.44px",
+            "tag": "P",
+            "text": "O contacto direto é reservado a empresas com acesso elegível ao banco de talentos."
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/candidatos/9rJhH0V5VxTYx2ZX7IAU3ITYEWB3",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    }
+  ],
+  "route": "/candidatos/9rJhH0V5VxTYx2ZX7IAU3ITYEWB3",
+  "slug": "candidato-perfil"
+}

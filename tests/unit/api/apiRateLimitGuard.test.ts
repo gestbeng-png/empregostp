@@ -1,7 +1,7 @@
+import { enforceApiRateLimit, getClientIp } from '../../../lib/apiRateLimit';
 import { admin } from '../../../lib/firebaseAdmin';
 import { consumeFirestoreRateLimit } from '../../../lib/firestoreRateLimit';
 import { logServerWarning } from '../../../lib/serverLog';
-import { enforceApiRateLimit, getClientIp } from '../../../lib/apiRateLimit';
 
 jest.mock('../../../lib/firebaseAdmin', () => {
   const mockedAdmin = { firestore: jest.fn() };

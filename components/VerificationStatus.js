@@ -17,19 +17,6 @@ export default function VerificationStatus({
   const [loading, setLoading] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
 
-  useEffect(() => {
-    if (isOwner && userId) {
-      fetchVerificationStatus();
-      
-      // Poll status every 10 seconds while pending
-      const interval = setInterval(() => {
-        fetchVerificationStatus();
-      }, 10000);
-      
-      return () => clearInterval(interval);
-    }
-  }, [fetchVerificationStatus, userId, isOwner]);
-
   const fetchVerificationStatus = useCallback(async () => {
     try {
       setLoading(true);
@@ -61,19 +48,34 @@ export default function VerificationStatus({
     }
   }, [userId]);
 
+  useEffect(() => {
+    if (isOwner && userId) {
+      fetchVerificationStatus();
+
+      // Poll status every 10 seconds while pending
+      const interval = setInterval(() => {
+        fetchVerificationStatus();
+      }, 10000);
+
+      return () => clearInterval(interval);
+    }
+
+    return undefined;
+  }, [fetchVerificationStatus, userId, isOwner]);
+
   const getStatusColor = () => {
     switch (status) {
       case 'approved':
       case 'verified':
-        return '#10b981';
+        return '#168a55';
       case 'rejected':
-        return '#ef4444';
+        return '#c23d4f';
       case 'pending':
-        return '#f59e0b';
+        return '#a96612';
       case 'partial':
-        return '#a855f7';
+        return '#064bb5';
       default:
-        return '#6b7280';
+        return '#767f8c';
     }
   };
 
@@ -115,7 +117,7 @@ export default function VerificationStatus({
         {status === 'approved' || status === 'verified' ? (
           <VerificationBadge verified={true} size="sm" />
         ) : (
-          <span style={{ fontSize: '0.85rem', color: '#a0aec0' }}>
+          <span style={{ fontSize: '0.85rem', color: '#767f8c' }}>
             {getStatusLabel()}
           </span>
         )}
@@ -126,9 +128,9 @@ export default function VerificationStatus({
   const styles = {
     container: {
       padding: '1.5rem',
-      backgroundColor: 'rgba(255, 255, 255, 0.02)',
+      backgroundColor: '#ffffff',
       border: `1px solid ${getStatusColor()}40`,
-      borderRadius: '12px',
+      borderRadius: '8px',
       marginBottom: '2rem',
     },
     header: {
@@ -140,7 +142,7 @@ export default function VerificationStatus({
     title: {
       fontSize: '1.1rem',
       fontWeight: 'bold',
-      color: '#fff',
+      color: '#102441',
     },
     badge: {
       padding: '0.4rem 1rem',
@@ -152,35 +154,35 @@ export default function VerificationStatus({
       border: `1px solid ${getStatusColor()}40`,
     },
     message: {
-      color: '#a0aec0',
+      color: '#383750',
       fontSize: '0.95rem',
       marginBottom: '1rem',
     },
     rejectionBox: {
       marginTop: '1rem',
       padding: '1rem',
-      backgroundColor: 'rgba(239, 68, 68, 0.1)',
-      borderRadius: '8px',
-      border: '1px solid rgba(239, 68, 68, 0.2)',
-      color: '#fca5a5',
+      backgroundColor: '#fff1f2',
+      borderRadius: '4px',
+      border: '1px solid rgba(194, 61, 79, 0.25)',
+      color: '#c23d4f',
       fontSize: '0.9rem',
     },
     button: {
       padding: '0.75rem 1.5rem',
-      borderRadius: '8px',
+      borderRadius: '4px',
       border: 'none',
       fontWeight: '600',
       cursor: 'pointer',
       fontSize: '0.9rem',
       transition: 'all 0.3s',
-      background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+      background: '#064bb5',
       color: '#fff',
       marginTop: '1rem',
     },
     buttonAlt: {
-      background: 'rgba(59, 130, 246, 0.1)',
-      color: '#3b82f6',
-      border: '1px solid rgba(59, 130, 246, 0.3)',
+      background: '#eef4f8',
+      color: '#064bb5',
+      border: '1px solid rgba(6, 75, 181, 0.3)',
     },
   };
 
@@ -210,9 +212,13 @@ export default function VerificationStatus({
             disabled={loading}
             onMouseEnter={(e) =>
               !loading &&
-              (e.currentTarget.style.boxShadow = '0 10px 25px rgba(59, 130, 246, 0.4)')
+              (e.currentTarget.style.backgroundColor =
+                status === 'rejected' ? '#e4e5e8' : '#0a65cc')
             }
-            onMouseLeave={(e) => (e.currentTarget.style.boxShadow = 'none')}
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor =
+                status === 'rejected' ? '#eef4f8' : '#064bb5')
+            }
           >
             {status === 'rejected' ? 'Tentar Novamente' : 'Solicitar Verificação'}
           </button>

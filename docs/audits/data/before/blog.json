@@ -1,0 +1,1034 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "phase": "before",
+  "results": [
+    {
+      "accessibilityViolations": [],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 320,
+          "scrollHeight": 4705,
+          "scrollWidth": 320
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 2,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 43,
+            "tag": "BUTTON",
+            "text": "Todos3",
+            "width": 98
+          },
+          {
+            "height": 43,
+            "tag": "BUTTON",
+            "text": "Tecnologia1",
+            "width": 128
+          },
+          {
+            "height": 43,
+            "tag": "BUTTON",
+            "text": "Mercado1",
+            "width": 114
+          },
+          {
+            "height": 43,
+            "tag": "BUTTON",
+            "text": "Dicas1",
+            "width": 95
+          }
+        ],
+        "smallText": [
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Centro de imprensa"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Tecnologia"
+          },
+          {
+            "size": "12.6px",
+            "tag": "SPAN",
+            "text": "4 min"
+          },
+          {
+            "size": "12.6px",
+            "tag": "SPAN",
+            "text": "0 visualizações"
+          },
+          {
+            "size": "12.6px",
+            "tag": "SPAN",
+            "text": "12/07/2026"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Ler artigo"
+          },
+          {
+            "size": "10.8px",
+            "tag": "P",
+            "text": "Explorar"
+          },
+          {
+            "size": "12.3px",
+            "tag": "BUTTON",
+            "text": "Todos3"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "3"
+          },
+          {
+            "size": "12.3px",
+            "tag": "BUTTON",
+            "text": "Tecnologia1"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "1"
+          },
+          {
+            "size": "12.3px",
+            "tag": "BUTTON",
+            "text": "Mercado1"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "1"
+          },
+          {
+            "size": "12.3px",
+            "tag": "BUTTON",
+            "text": "Dicas1"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "1"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Mercado"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "sssss"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "EmpregoSTP"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "5 min"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "0"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Dicas"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Ajudamos a criar um CV"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "EmpregoSTP"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "5 min"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "0"
+          },
+          {
+            "size": "10.8px",
+            "tag": "P",
+            "text": "NOVIDADE"
+          },
+          {
+            "size": "13.5px",
+            "tag": "H4",
+            "text": "GPT‑5.6, Grok 4.5 e Muse Spark 1.1: a nova corrida global da IA em julho de 2026"
+          },
+          {
+            "size": "12.6px",
+            "tag": "P",
+            "text": "2026-07-12"
+          },
+          {
+            "size": "10.8px",
+            "tag": "P",
+            "text": "NOVIDADE"
+          },
+          {
+            "size": "13.5px",
+            "tag": "H4",
+            "text": "ggggg"
+          },
+          {
+            "size": "12.6px",
+            "tag": "P",
+            "text": "2026-02-03"
+          },
+          {
+            "size": "10.8px",
+            "tag": "P",
+            "text": "NOVIDADE"
+          },
+          {
+            "size": "13.5px",
+            "tag": "H4",
+            "text": "vvvvvv"
+          },
+          {
+            "size": "12.6px",
+            "tag": "P",
+            "text": "2026-02-03"
+          },
+          {
+            "size": "10.8px",
+            "tag": "P",
+            "text": "EVENTO"
+          },
+          {
+            "size": "13.5px",
+            "tag": "H4",
+            "text": "Limpeza PM"
+          },
+          {
+            "size": "12.6px",
+            "tag": "P",
+            "text": "2026-02-03"
+          },
+          {
+            "size": "12.75px",
+            "tag": "SPAN",
+            "text": "Tecnologia"
+          },
+          {
+            "size": "11.1px",
+            "tag": "SPAN",
+            "text": "1"
+          },
+          {
+            "size": "12.75px",
+            "tag": "SPAN",
+            "text": "Mercado"
+          },
+          {
+            "size": "11.1px",
+            "tag": "SPAN",
+            "text": "1"
+          },
+          {
+            "size": "12.75px",
+            "tag": "SPAN",
+            "text": "Dicas"
+          },
+          {
+            "size": "11.1px",
+            "tag": "SPAN",
+            "text": "1"
+          },
+          {
+            "size": "10.8px",
+            "tag": "P",
+            "text": "Newsletter"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/blog",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      }
+    },
+    {
+      "accessibilityViolations": [],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 768,
+          "scrollHeight": 3558,
+          "scrollWidth": 768
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 2,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 43,
+            "tag": "BUTTON",
+            "text": "Todos3",
+            "width": 98
+          },
+          {
+            "height": 43,
+            "tag": "BUTTON",
+            "text": "Tecnologia1",
+            "width": 128
+          },
+          {
+            "height": 43,
+            "tag": "BUTTON",
+            "text": "Mercado1",
+            "width": 114
+          },
+          {
+            "height": 43,
+            "tag": "BUTTON",
+            "text": "Dicas1",
+            "width": 95
+          }
+        ],
+        "smallText": [
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Centro de imprensa"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Tecnologia"
+          },
+          {
+            "size": "12.6px",
+            "tag": "SPAN",
+            "text": "4 min"
+          },
+          {
+            "size": "12.6px",
+            "tag": "SPAN",
+            "text": "0 visualizações"
+          },
+          {
+            "size": "12.6px",
+            "tag": "SPAN",
+            "text": "12/07/2026"
+          },
+          {
+            "size": "13.8px",
+            "tag": "A",
+            "text": "Ler artigo"
+          },
+          {
+            "size": "10.8px",
+            "tag": "P",
+            "text": "Explorar"
+          },
+          {
+            "size": "12.3px",
+            "tag": "BUTTON",
+            "text": "Todos3"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "3"
+          },
+          {
+            "size": "12.3px",
+            "tag": "BUTTON",
+            "text": "Tecnologia1"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "1"
+          },
+          {
+            "size": "12.3px",
+            "tag": "BUTTON",
+            "text": "Mercado1"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "1"
+          },
+          {
+            "size": "12.3px",
+            "tag": "BUTTON",
+            "text": "Dicas1"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "1"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Mercado"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "sssss"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "EmpregoSTP"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "5 min"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "0"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Dicas"
+          },
+          {
+            "size": "13.5px",
+            "tag": "P",
+            "text": "Ajudamos a criar um CV"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "EmpregoSTP"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "5 min"
+          },
+          {
+            "size": "11.4px",
+            "tag": "SPAN",
+            "text": "0"
+          },
+          {
+            "size": "10.8px",
+            "tag": "P",
+            "text": "NOVIDADE"
+          },
+          {
+            "size": "13.5px",
+            "tag": "H4",
+            "text": "GPT‑5.6, Grok 4.5 e Muse Spark 1.1: a nova corrida global da IA em julho de 2026"
+          },
+          {
+            "size": "12.6px",
+            "tag": "P",
+            "text": "2026-07-12"
+          },
+          {
+            "size": "10.8px",
+            "tag": "P",
+            "text": "NOVIDADE"
+          },
+          {
+            "size": "13.5px",
+            "tag": "H4",
+            "text": "ggggg"
+          },
+          {
+            "size": "12.6px",
+            "tag": "P",
+            "text": "2026-02-03"
+          },
+          {
+            "size": "10.8px",
+            "tag": "P",
+            "text": "NOVIDADE"
+          },
+          {
+            "size": "13.5px",
+            "tag": "H4",
+            "text": "vvvvvv"
+          },
+          {
+            "size": "12.6px",
+            "tag": "P",
+            "text": "2026-02-03"
+          },
+          {
+            "size": "10.8px",
+            "tag": "P",
+            "text": "EVENTO"
+          },
+          {
+            "size": "13.5px",
+            "tag": "H4",
+            "text": "Limpeza PM"
+          },
+          {
+            "size": "12.6px",
+            "tag": "P",
+            "text": "2026-02-03"
+          },
+          {
+            "size": "12.75px",
+            "tag": "SPAN",
+            "text": "Tecnologia"
+          },
+          {
+            "size": "11.1px",
+            "tag": "SPAN",
+            "text": "1"
+          },
+          {
+            "size": "12.75px",
+            "tag": "SPAN",
+            "text": "Mercado"
+          },
+          {
+            "size": "11.1px",
+            "tag": "SPAN",
+            "text": "1"
+          },
+          {
+            "size": "12.75px",
+            "tag": "SPAN",
+            "text": "Dicas"
+          },
+          {
+            "size": "11.1px",
+            "tag": "SPAN",
+            "text": "1"
+          },
+          {
+            "size": "10.8px",
+            "tag": "P",
+            "text": "Newsletter"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/blog",
+      "viewport": {
+        "width": 768,
+        "height": 900
+      }
+    },
+    {
+      "accessibilityViolations": [],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1024,
+          "scrollHeight": 3418,
+          "scrollWidth": 1024
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 2,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 44,
+            "tag": "BUTTON",
+            "text": "Todos3",
+            "width": 103
+          },
+          {
+            "height": 44,
+            "tag": "BUTTON",
+            "text": "Tecnologia1",
+            "width": 134
+          },
+          {
+            "height": 44,
+            "tag": "BUTTON",
+            "text": "Mercado1",
+            "width": 120
+          },
+          {
+            "height": 44,
+            "tag": "BUTTON",
+            "text": "Dicas1",
+            "width": 99
+          }
+        ],
+        "smallText": [
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Centro de imprensa"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Tecnologia"
+          },
+          {
+            "size": "13.44px",
+            "tag": "SPAN",
+            "text": "4 min"
+          },
+          {
+            "size": "13.44px",
+            "tag": "SPAN",
+            "text": "0 visualizações"
+          },
+          {
+            "size": "13.44px",
+            "tag": "SPAN",
+            "text": "12/07/2026"
+          },
+          {
+            "size": "11.52px",
+            "tag": "P",
+            "text": "Explorar"
+          },
+          {
+            "size": "13.12px",
+            "tag": "BUTTON",
+            "text": "Todos3"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "3"
+          },
+          {
+            "size": "13.12px",
+            "tag": "BUTTON",
+            "text": "Tecnologia1"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "1"
+          },
+          {
+            "size": "13.12px",
+            "tag": "BUTTON",
+            "text": "Mercado1"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "1"
+          },
+          {
+            "size": "13.12px",
+            "tag": "BUTTON",
+            "text": "Dicas1"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "1"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Mercado"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "EmpregoSTP"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "5 min"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "0"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Dicas"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "EmpregoSTP"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "5 min"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "0"
+          },
+          {
+            "size": "11.52px",
+            "tag": "P",
+            "text": "NOVIDADE"
+          },
+          {
+            "size": "13.44px",
+            "tag": "P",
+            "text": "2026-07-12"
+          },
+          {
+            "size": "11.52px",
+            "tag": "P",
+            "text": "NOVIDADE"
+          },
+          {
+            "size": "13.44px",
+            "tag": "P",
+            "text": "2026-02-03"
+          },
+          {
+            "size": "11.52px",
+            "tag": "P",
+            "text": "NOVIDADE"
+          },
+          {
+            "size": "13.44px",
+            "tag": "P",
+            "text": "2026-02-03"
+          },
+          {
+            "size": "11.52px",
+            "tag": "P",
+            "text": "EVENTO"
+          },
+          {
+            "size": "13.44px",
+            "tag": "P",
+            "text": "2026-02-03"
+          },
+          {
+            "size": "13.6px",
+            "tag": "SPAN",
+            "text": "Tecnologia"
+          },
+          {
+            "size": "11.84px",
+            "tag": "SPAN",
+            "text": "1"
+          },
+          {
+            "size": "13.6px",
+            "tag": "SPAN",
+            "text": "Mercado"
+          },
+          {
+            "size": "11.84px",
+            "tag": "SPAN",
+            "text": "1"
+          },
+          {
+            "size": "13.6px",
+            "tag": "SPAN",
+            "text": "Dicas"
+          },
+          {
+            "size": "11.84px",
+            "tag": "SPAN",
+            "text": "1"
+          },
+          {
+            "size": "11.52px",
+            "tag": "P",
+            "text": "Newsletter"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/blog",
+      "viewport": {
+        "width": 1024,
+        "height": 900
+      }
+    },
+    {
+      "accessibilityViolations": [],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1440,
+          "scrollHeight": 2835,
+          "scrollWidth": 1440
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 2,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 44,
+            "tag": "BUTTON",
+            "text": "Todos3",
+            "width": 103
+          },
+          {
+            "height": 44,
+            "tag": "BUTTON",
+            "text": "Tecnologia1",
+            "width": 134
+          },
+          {
+            "height": 44,
+            "tag": "BUTTON",
+            "text": "Mercado1",
+            "width": 120
+          },
+          {
+            "height": 44,
+            "tag": "BUTTON",
+            "text": "Dicas1",
+            "width": 99
+          }
+        ],
+        "smallText": [
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Centro de imprensa"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Tecnologia"
+          },
+          {
+            "size": "13.44px",
+            "tag": "SPAN",
+            "text": "4 min"
+          },
+          {
+            "size": "13.44px",
+            "tag": "SPAN",
+            "text": "0 visualizações"
+          },
+          {
+            "size": "13.44px",
+            "tag": "SPAN",
+            "text": "12/07/2026"
+          },
+          {
+            "size": "11.52px",
+            "tag": "P",
+            "text": "Explorar"
+          },
+          {
+            "size": "13.12px",
+            "tag": "BUTTON",
+            "text": "Todos3"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "3"
+          },
+          {
+            "size": "13.12px",
+            "tag": "BUTTON",
+            "text": "Tecnologia1"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "1"
+          },
+          {
+            "size": "13.12px",
+            "tag": "BUTTON",
+            "text": "Mercado1"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "1"
+          },
+          {
+            "size": "13.12px",
+            "tag": "BUTTON",
+            "text": "Dicas1"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "1"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Mercado"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "EmpregoSTP"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "5 min"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "0"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Dicas"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "EmpregoSTP"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "5 min"
+          },
+          {
+            "size": "12.16px",
+            "tag": "SPAN",
+            "text": "0"
+          },
+          {
+            "size": "11.52px",
+            "tag": "P",
+            "text": "NOVIDADE"
+          },
+          {
+            "size": "13.44px",
+            "tag": "P",
+            "text": "2026-07-12"
+          },
+          {
+            "size": "11.52px",
+            "tag": "P",
+            "text": "NOVIDADE"
+          },
+          {
+            "size": "13.44px",
+            "tag": "P",
+            "text": "2026-02-03"
+          },
+          {
+            "size": "11.52px",
+            "tag": "P",
+            "text": "NOVIDADE"
+          },
+          {
+            "size": "13.44px",
+            "tag": "P",
+            "text": "2026-02-03"
+          },
+          {
+            "size": "11.52px",
+            "tag": "P",
+            "text": "EVENTO"
+          },
+          {
+            "size": "13.44px",
+            "tag": "P",
+            "text": "2026-02-03"
+          },
+          {
+            "size": "13.6px",
+            "tag": "SPAN",
+            "text": "Tecnologia"
+          },
+          {
+            "size": "11.84px",
+            "tag": "SPAN",
+            "text": "1"
+          },
+          {
+            "size": "13.6px",
+            "tag": "SPAN",
+            "text": "Mercado"
+          },
+          {
+            "size": "11.84px",
+            "tag": "SPAN",
+            "text": "1"
+          },
+          {
+            "size": "13.6px",
+            "tag": "SPAN",
+            "text": "Dicas"
+          },
+          {
+            "size": "11.84px",
+            "tag": "SPAN",
+            "text": "1"
+          },
+          {
+            "size": "11.52px",
+            "tag": "P",
+            "text": "Newsletter"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/blog",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    }
+  ],
+  "route": "/blog",
+  "slug": "blog"
+}

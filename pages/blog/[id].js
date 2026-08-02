@@ -1,18 +1,90 @@
 import Head from "next/head";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { useState } from "react";
+import { FiArrowLeft, FiArrowRight, FiBookOpen } from "react-icons/fi";
 import PublicPageShell from "../../components/PublicPageShell";
 import { admin } from "../../lib/firebaseAdmin";
 import { isContentPublished } from "../../lib/contentPublication";
 import styles from "../../styles/BlogPostPage.module.css";
 
+function hasHtmlMarkup(content) {
+  return /<\/?[a-z][\s\S]*>/i.test(String(content || ""));
+}
+
+function PlainTextArticle({ content }) {
+  const blocks = String(content || "")
+    .split(/\n{2,}/)
+    .map((block) => block.trim())
+    .filter(Boolean);
+  const elements = [];
+
+  for (let index = 0; index < blocks.length; index += 1) {
+    const lines = blocks[index]
+      .split(/\n+/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+    const [firstLine, ...bodyLines] = lines;
+    const isSection =
+      index > 0 &&
+      bodyLines.length > 0 &&
+      firstLine.length <= 100 &&
+      !/[.!?;:]$/.test(firstLine);
+    const listItems = [];
+
+    if (bodyLines.at(-1)?.endsWith(":")) {
+      while (index + 1 < blocks.length) {
+        const nextLines = blocks[index + 1]
+          .split(/\n+/)
+          .map((line) => line.trim())
+          .filter(Boolean);
+        if (
+          nextLines.length !== 1 ||
+          /[.!?]$/.test(nextLines[0])
+        ) {
+          break;
+        }
+        listItems.push(nextLines[0]);
+        index += 1;
+      }
+    }
+
+    if (isSection) {
+      elements.push(
+        <section key={`${firstLine}-${index}`}>
+          <h2>{firstLine}</h2>
+          {bodyLines.map((line) => (
+            <p key={line}>{line}</p>
+          ))}
+          {listItems.length > 0 ? (
+            <ul>
+              {listItems.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          ) : null}
+        </section>,
+      );
+      continue;
+    }
+
+    elements.push(<p key={`${firstLine}-${index}`}>{lines.join(" ")}</p>);
+  }
+
+  return elements;
+}
+
 export default function BlogPost({ post }) {
   const router = useRouter();
+  const [failedHeroImage, setFailedHeroImage] = useState("");
 
   if (router.isFallback) {
     return (
       <PublicPageShell headerVariant="light">
-        <main className={styles.loadingState}>Carregando...</main>
+        <div className={styles.loadingState} role="status">
+          A carregar…
+        </div>
       </PublicPageShell>
     );
   }
@@ -20,18 +92,17 @@ export default function BlogPost({ post }) {
   if (!post) {
     return (
       <PublicPageShell headerVariant="light">
-        <main className={styles.notFound}>
+        <div className={styles.notFound}>
           <h1>Artigo não encontrado</h1>
           <Link href="/blog" className={styles.notFoundLink}>
             Voltar ao blog
           </Link>
-        </main>
+        </div>
       </PublicPageShell>
     );
   }
 
-  const heroImage =
-    post.image || "https://via.placeholder.com/1200x600?text=EmpregoSTP";
+  const showHeroImage = post.image && failedHeroImage !== post.image;
 
   return (
     <>
@@ -41,27 +112,50 @@ export default function BlogPost({ post }) {
       </Head>
 
       <PublicPageShell headerVariant="light">
-        <main className={styles.page}>
-          <section
-            className={styles.hero}
-            style={{
-              backgroundImage: `linear-gradient(180deg, rgba(30, 43, 77, 0.14), rgba(30, 43, 77, 0.62)), url(${heroImage})`,
-            }}
+        <div className={styles.page}>
+          <nav
+            className={styles.articleNavigation}
+            aria-label="Navegação do artigo"
           >
+            <Link href="/blog" className={styles.backLink}>
+              <span className={styles.backLinkIcon} aria-hidden="true">
+                <FiArrowLeft />
+              </span>
+              <span>Voltar ao blog</span>
+            </Link>
+            <span className={styles.navigationContext}>
+              Centro de Imprensa <span aria-hidden="true">/</span>{" "}
+              <strong>{post.category}</strong>
+            </span>
+          </nav>
+
+          <section className={styles.hero}>
+            {showHeroImage ? (
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={post.image}
+                  alt=""
+                  className={styles.heroImage}
+                  onError={() => setFailedHeroImage(post.image)}
+                />
+              </>
+            ) : (
+              <div className={styles.heroFallback} aria-hidden="true">
+                <Image
+                  src="/assets/Emprego STP Logo 2-wide.png"
+                  alt=""
+                  width={320}
+                  height={96}
+                  className={styles.heroFallbackLogo}
+                />
+                <FiBookOpen />
+              </div>
+            )}
             <div className={styles.heroOverlay} />
             <div className={styles.heroInner}>
-              <Link href="/blog" className={styles.backLink}>
-                ← Voltar ao blog
-              </Link>
               <div className={styles.metaRow}>
-                <span
-                  className={styles.categoryPill}
-                  style={{
-                    "--category-bg": `${post.color || "#2057d7"}18`,
-                    "--category-border": `${post.color || "#2057d7"}30`,
-                    "--category-color": post.color || "#2057d7",
-                  }}
-                >
+                <span className={styles.categoryPill}>
                   {post.category}
                 </span>
                 <span className={styles.metaText}>
@@ -79,12 +173,21 @@ export default function BlogPost({ post }) {
           </section>
 
           <article className={styles.articleShell}>
-            <div
-              className={styles.articleContent}
-              dangerouslySetInnerHTML={{ __html: post.content }}
-            />
+            <div className={styles.articleContent}>
+              {hasHtmlMarkup(post.content) ? (
+                <div dangerouslySetInnerHTML={{ __html: post.content }} />
+              ) : (
+                <PlainTextArticle content={post.content} />
+              )}
+            </div>
+            <footer className={styles.articleFooter}>
+              <Link href="/blog" className={styles.allPostsLink}>
+                Ver todas as publicações
+                <FiArrowRight aria-hidden="true" />
+              </Link>
+            </footer>
           </article>
-        </main>
+        </div>
       </PublicPageShell>
     </>
   );
@@ -119,18 +222,22 @@ export async function getStaticProps({ params }) {
       return { notFound: true };
     }
 
-    const serializeField = (value) => {
-      if (!value) return null;
-      if (value.toDate) return value.toDate().toISOString();
+    // Recursively convert any Firestore Timestamp / Date into an ISO string so
+    // the whole document is JSON-serializable for getStaticProps.
+    const serializeValue = (value) => {
+      if (value === null || value === undefined) return null;
+      if (typeof value?.toDate === "function") return value.toDate().toISOString();
       if (value instanceof Date) return value.toISOString();
+      if (Array.isArray(value)) return value.map(serializeValue);
+      if (typeof value === "object") {
+        return Object.fromEntries(
+          Object.entries(value).map(([key, val]) => [key, serializeValue(val)])
+        );
+      }
       return value;
     };
 
-    const serializedPost = {
-      ...post,
-      createdAt: serializeField(post.createdAt),
-      updatedAt: serializeField(post.updatedAt),
-    };
+    const serializedPost = serializeValue(post);
 
     return {
       props: { post: serializedPost },

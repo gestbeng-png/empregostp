@@ -159,13 +159,6 @@ export default async function handler(req, res) {
           ? null // Plano ilimitado (sem expiração)
           : admin.firestore.Timestamp.fromMillis(now.toMillis() + (durationDays * 24 * 60 * 60 * 1000));
         
-        console.log(`Aprovando plano ${request.planId} para usuário ${request.userId}:`, {
-          planName,
-          durationDays,
-          endDate: endDate ? endDate.toDate().toISOString() : 'Ilimitado',
-          planEndDate: endDate
-        });
-        
         // Atualizar assinatura do usuário com dados consolidados
         const subscriptionRef = admin.firestore().collection('subscriptions').doc(request.userId);
         const subscriptionData = {
@@ -360,12 +353,10 @@ export default async function handler(req, res) {
     if (error?.code === 'REQUEST_NOT_FOUND') {
       return res.status(404).json({ error: error.message });
     }
-    console.error('Erro ao processar pedido:', error);
-    console.error('Stack trace:', error.stack);
-    return res.status(500).json({ 
+    logServerError('admin_subscription_requests_id.processar_pedido_failed', error);
+    return res.status(500).json({
       error: 'Erro ao processar pedido',
-      message: error.message || 'Erro desconhecido',
-      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      message: 'Erro ao processar pedido'
     });
   }
 } 

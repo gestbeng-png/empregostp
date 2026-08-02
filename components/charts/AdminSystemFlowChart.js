@@ -5,7 +5,7 @@ import {
   XAxis,
   CartesianGrid,
   Tooltip,
-} from "recharts";
+} from 'recharts';
 
 export default function AdminSystemFlowChart({ data = [] }) {
   return (
@@ -13,29 +13,31 @@ export default function AdminSystemFlowChart({ data = [] }) {
       <BarChart data={data}>
         <CartesianGrid
           strokeDasharray="3 3"
-          stroke="rgba(21, 37, 79, 0.08)"
+          stroke="var(--border-strong)"
           vertical={false}
         />
         <XAxis
           dataKey="name"
-          stroke="#607394"
-          fontSize={12}
+          stroke="var(--text-3)"
+          fontSize={14}
           axisLine={false}
           tickLine={false}
         />
         <Tooltip
           contentStyle={{
-            backgroundColor: "#ffffff",
-            border: "1px solid rgba(21, 37, 79, 0.08)",
-            borderRadius: "12px",
-            color: "#162a55",
-            boxShadow: "0 18px 30px rgba(15, 23, 42, 0.08)",
+            backgroundColor: 'var(--surface)',
+            border: '1px solid var(--border)',
+            borderRadius: '10px',
+            color: 'var(--text-1)',
+            boxShadow: 'none',
           }}
+          labelStyle={{ color: 'var(--text-1)', fontWeight: 700 }}
+          itemStyle={{ color: 'var(--blue)' }}
         />
         <Bar
           dataKey="value"
-          fill="#2057d7"
-          radius={[10, 10, 0, 0]}
+          fill="var(--blue)"
+          radius={[4, 4, 0, 0]}
           barSize={34}
         />
       </BarChart>

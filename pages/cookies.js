@@ -1,21 +1,21 @@
-import Head from "next/head";
-import Link from "next/link";
-import PublicPageShell from "../components/PublicPageShell";
-import styles from "../styles/LegalPage.module.css";
+import Head from 'next/head';
+import Link from 'next/link';
+import PublicPageShell from '../components/PublicPageShell';
+import styles from '../styles/LegalPage.module.css';
 
 export default function CookiesPage() {
   return (
     <>
       <Head>
-        <title>Cookies - EmpregoSTP</title>
+        <title>Cookies | EmpregoSTP</title>
         <meta
           name="description"
           content="Informações sobre cookies e tecnologias semelhantes no EmpregoSTP."
         />
       </Head>
       <PublicPageShell>
-        <main className={styles.page}>
-          <section className={styles.panel}>
+        <div className={styles.page}>
+          <article className={styles.panel}>
             <h1 className={styles.title}>Cookies</h1>
             <div className={styles.copy}>
               <p>
@@ -33,8 +33,8 @@ export default function CookiesPage() {
                 Ver política de privacidade completa
               </Link>
             </div>
-          </section>
-        </main>
+          </article>
+        </div>
       </PublicPageShell>
     </>
   );

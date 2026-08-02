@@ -1,5 +1,7 @@
 import { admin } from '../../../lib/firebaseAdmin';
 import { getDefaultBasicPlanForUserType } from '../../../lib/defaultPlans';
+import { isValidEmail } from '../../../lib/validation';
+import { logServerError } from '../../../lib/serverLog';
 
 /**
  * Inicializa o documento Firestore do utilizador com o plano básico.
@@ -23,7 +25,23 @@ export default async function handler(req, res) {
     const decodedToken = await admin.auth().verifyIdToken(token);
     const uid = decodedToken.uid;
 
-    const { userType, fullName, name, photoUrl, provider } = req.body;
+    // Validação de email no servidor (defesa em profundidade — o front-end já
+    // valida, mas nunca confiamos apenas no cliente).
+    if (!isValidEmail(decodedToken.email)) {
+      return res.status(400).json({ error: 'Email inválido.' });
+    }
+
+    const {
+      userType,
+      fullName,
+      name,
+      photoUrl,
+      provider,
+      phone,
+      nif,
+      location,
+      industrySectors,
+    } = req.body;
 
     const normalizedUserType = userType === 'empresa' ? 'empresa' : 'candidato';
     const basicPlanId = normalizedUserType === 'empresa' ? 'basic_empresa' : 'basic_candidato';
@@ -64,6 +82,17 @@ export default async function handler(req, res) {
     if (normalizedUserType === 'empresa') {
       userData.vagasLimit = basicPlan.vagasLimit ?? 1;
       userData.destaque = Boolean(basicPlan.destaque);
+
+      // Informações adicionais recolhidas no registo da empresa.
+      if (typeof phone === 'string' && phone.trim()) userData.phone = phone.trim();
+      if (typeof nif === 'string' && nif.trim()) userData.nif = nif.trim();
+      if (typeof location === 'string' && location.trim()) userData.location = location.trim();
+      if (Array.isArray(industrySectors)) {
+        const sectors = industrySectors
+          .filter((s) => typeof s === 'string' && s.trim())
+          .map((s) => s.trim());
+        if (sectors.length) userData.industrySectors = sectors;
+      }
     } else {
       userData.curriculoDestacado = Boolean(basicPlan.curriculoDestacado);
       userData.destaque = Boolean(basicPlan.curriculoDestacado);
@@ -74,7 +103,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ message: 'Utilizador configurado com sucesso', planId: basicPlanId });
   } catch (error) {
-    console.error('Erro em setup-user:', error);
+    logServerError('auth_setup_user.em_setup_user_failed', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 }

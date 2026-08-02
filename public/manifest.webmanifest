@@ -4,8 +4,8 @@
   "description": "Plataforma de vagas, candidaturas e recrutamento em São Tomé e Príncipe.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#020617",
-  "theme_color": "#0a0a0f",
+  "background_color": "#eef4f8",
+  "theme_color": "#102441",
   "lang": "pt-PT",
   "icons": [
     {

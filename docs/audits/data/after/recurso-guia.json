@@ -1,0 +1,54 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "phase": "after-browser-validation",
+  "route": "/recursos/guia/guia-entrevista-candidato",
+  "slug": "recurso-guia",
+  "results": [
+    {
+      "viewport": { "width": 320, "height": 800 },
+      "scrollHeight": 2292,
+      "horizontalOverflow": 0,
+      "headingOneCount": 1,
+      "landmarks": { "main": 1, "nav": 1, "footer": 1 },
+      "smallText": [],
+      "shortTargets": [],
+      "duplicateIds": [],
+      "unlabeledFields": 0
+    },
+    {
+      "viewport": { "width": 768, "height": 900 },
+      "scrollHeight": 1612,
+      "horizontalOverflow": 0,
+      "headingOneCount": 1,
+      "landmarks": { "main": 1, "nav": 1, "footer": 1 },
+      "smallText": [],
+      "shortTargets": [],
+      "duplicateIds": [],
+      "unlabeledFields": 0
+    },
+    {
+      "viewport": { "width": 1024, "height": 900 },
+      "scrollHeight": 1805,
+      "horizontalOverflow": 0,
+      "headingOneCount": 1,
+      "landmarks": { "main": 1, "nav": 1, "footer": 1 },
+      "smallText": [],
+      "shortTargets": [],
+      "duplicateIds": [],
+      "unlabeledFields": 0
+    },
+    {
+      "viewport": { "width": 1440, "height": 1000 },
+      "scrollHeight": 1647,
+      "horizontalOverflow": 0,
+      "headingOneCount": 1,
+      "landmarks": { "main": 1, "nav": 1, "footer": 1 },
+      "smallText": [],
+      "shortTargets": [],
+      "duplicateIds": [],
+      "unlabeledFields": 0
+    }
+  ],
+  "mainContentContrastFailures": [],
+  "runnerNote": "Validação executada no navegador ativo. O Chromium isolado do Playwright foi bloqueado pelo sandbox antes da navegação."
+}

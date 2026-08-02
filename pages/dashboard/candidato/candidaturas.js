@@ -1,8 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import Head from "next/head";
-import LandingHeader from "../../../components/LandingHeader";
+import {
+  FiAlertCircle,
+  FiArrowLeft,
+  FiBriefcase,
+  FiRefreshCw,
+  FiSearch,
+} from "react-icons/fi";
 import {
   downloadInterviewICS,
   formatMaybeDateTimePt,
@@ -11,9 +17,26 @@ import {
 } from "../../../lib/interviewClient";
 import styles from "../../../styles/CandidaturasPage.module.css";
 
+const ALLOWED_FILTERS = [
+  "all",
+  "pending",
+  "interview",
+  "approved",
+  "rejected",
+];
+
+const hasValidScheduledInterview = (app) => {
+  const scheduledAt = app?.interviewDetails?.scheduledAt;
+  if (!scheduledAt) return false;
+  const time = new Date(scheduledAt).getTime();
+  return !Number.isNaN(time);
+};
+
 export default function CandidaturasPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
   const [applications, setApplications] = useState([]);
   const [filter, setFilter] = useState("all");
 
@@ -32,8 +55,7 @@ export default function CandidaturasPage() {
     if (!router.isReady) return;
     const q = router.query.filter;
     if (typeof q !== "string") return;
-    const allowed = ["all", "pending", "interview", "approved", "rejected"];
-    if (allowed.includes(q)) {
+    if (ALLOWED_FILTERS.includes(q)) {
       setFilter(q);
     }
   }, [router.isReady, router.query.filter]);
@@ -41,6 +63,8 @@ export default function CandidaturasPage() {
   useEffect(() => {
     async function fetchApplications() {
       try {
+        setLoading(true);
+        setError("");
         const { getAuth } = await import("firebase/auth");
         const auth = getAuth();
         const currentUser = auth.currentUser;
@@ -62,53 +86,69 @@ export default function CandidaturasPage() {
           return;
         }
 
-        const json = await res.json();
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(
+            json.error || "Não foi possível carregar as candidaturas.",
+          );
+        }
         setApplications(json.applications || []);
-        setLoading(false);
       } catch (err) {
         console.error("Erro ao carregar candidaturas:", err);
+        setError(
+          err?.message ||
+            "Não foi possível carregar as candidaturas. Tente novamente.",
+        );
+      } finally {
         setLoading(false);
       }
     }
     fetchApplications();
-  }, [router]);
+  }, [router, reloadKey]);
 
-  const hasValidScheduledInterview = (app) => {
-    const scheduledAt = app?.interviewDetails?.scheduledAt;
-    if (!scheduledAt) return false;
-    const t = new Date(scheduledAt).getTime();
-    return !Number.isNaN(t);
-  };
+  const { sortedApplications, stats } = useMemo(() => {
+    const nextStats = {
+      total: applications.length,
+      pending: 0,
+      interview: 0,
+      approved: 0,
+      rejected: 0,
+    };
 
-  const sortedApplications = [...applications].sort((a, b) => {
-    const ta = a?.appliedAt
-      ? new Date(a.appliedAt).getTime()
-      : a?.createdAt
-        ? new Date(a.createdAt).getTime()
-        : 0;
-    const tb = b?.appliedAt
-      ? new Date(b.appliedAt).getTime()
-      : b?.createdAt
-        ? new Date(b.createdAt).getTime()
-        : 0;
-    return tb - ta;
-  });
+    applications.forEach((application) => {
+      const status = application?.status || "pending";
+      if (status === "pending") nextStats.pending += 1;
+      if (status === "approved") nextStats.approved += 1;
+      if (status === "rejected") nextStats.rejected += 1;
+      if (hasValidScheduledInterview(application)) nextStats.interview += 1;
+    });
 
-  const filteredApplications = sortedApplications.filter((app) => {
-    if (filter === "all") return true;
-    if (filter === "interview") return hasValidScheduledInterview(app);
-    if (filter === "pending") return app.status === "pending" || !app.status;
-    return app.status === filter;
-  });
+    const sorted = [...applications].sort((a, b) => {
+      const rawA = a?.appliedAt || a?.createdAt;
+      const rawB = b?.appliedAt || b?.createdAt;
+      const timeA = rawA ? new Date(rawA).getTime() : 0;
+      const timeB = rawB ? new Date(rawB).getTime() : 0;
+      return (Number.isNaN(timeB) ? 0 : timeB) -
+        (Number.isNaN(timeA) ? 0 : timeA);
+    });
 
-  const stats = {
-    total: applications.length,
-    pending: applications.filter((a) => a.status === "pending" || !a.status)
-      .length,
-    interview: applications.filter((a) => hasValidScheduledInterview(a)).length,
-    approved: applications.filter((a) => a.status === "approved").length,
-    rejected: applications.filter((a) => a.status === "rejected").length,
-  };
+    return { sortedApplications: sorted, stats: nextStats };
+  }, [applications]);
+
+  const filteredApplications = useMemo(
+    () =>
+      sortedApplications.filter((application) => {
+        if (filter === "all") return true;
+        if (filter === "interview") {
+          return hasValidScheduledInterview(application);
+        }
+        if (filter === "pending") {
+          return application.status === "pending" || !application.status;
+        }
+        return application.status === filter;
+      }),
+    [filter, sortedApplications],
+  );
 
   if (loading) {
     return (
@@ -116,11 +156,45 @@ export default function CandidaturasPage() {
         <Head>
           <title>Minhas Candidaturas - EmpregoSTP</title>
         </Head>
-        <LandingHeader />
-        <main className={styles.loadingPage}>
+        <div className={styles.loadingPage} aria-live="polite">
           <div className={styles.loadingSpinner} aria-hidden="true" />
-          <p className={styles.loadingText}>Carregando candidaturas...</p>
-        </main>
+          <div>
+            <strong>A carregar candidaturas</strong>
+            <p className={styles.loadingText}>A organizar o seu histórico mais recente.</p>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (error) {
+    return (
+      <>
+        <Head>
+          <title>Minhas Candidaturas - EmpregoSTP</title>
+        </Head>
+        <div className={styles.page}>
+          <div className={styles.container}>
+            <Link href="/dashboard/candidato" className={styles.backLink}>
+              <FiArrowLeft aria-hidden="true" />
+              <span>Voltar ao dashboard</span>
+            </Link>
+            <section className={styles.errorState} role="alert">
+              <span className={styles.errorIcon} aria-hidden="true">
+                <FiAlertCircle />
+              </span>
+              <h1>Não foi possível carregar as candidaturas</h1>
+              <p>{error}</p>
+              <button
+                type="button"
+                className={styles.retryButton}
+                onClick={() => setReloadKey((value) => value + 1)}
+              >
+                <FiRefreshCw aria-hidden="true" /> Tentar novamente
+              </button>
+            </section>
+          </div>
+        </div>
       </>
     );
   }
@@ -130,9 +204,7 @@ export default function CandidaturasPage() {
       <Head>
         <title>Minhas Candidaturas - EmpregoSTP</title>
       </Head>
-      <LandingHeader />
-
-      <main className={styles.page}>
+      <div className={styles.page}>
         <div className={styles.container}>
           {(() => {
             const isInterviewView = filter === "interview";
@@ -140,20 +212,11 @@ export default function CandidaturasPage() {
               <>
                 <header className={styles.hero}>
                   <Link href="/dashboard/candidato" className={styles.backLink}>
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      aria-hidden="true"
-                    >
-                      <path d="M19 12H5M12 19l-7-7 7-7" />
-                    </svg>
-                    <span>Voltar ao Dashboard</span>
+                    <FiArrowLeft aria-hidden="true" />
+                    <span>Voltar ao dashboard</span>
                   </Link>
 
+                  <div className={styles.heroMain}>
                   <div className={styles.heroCopy}>
                     <span className={styles.heroEyebrow}>
                       {isInterviewView
@@ -162,14 +225,18 @@ export default function CandidaturasPage() {
                     </span>
                     <h1 className={styles.heroTitle}>
                       {isInterviewView
-                        ? "Minhas Entrevistas"
-                        : "Minhas Candidaturas"}
+                        ? "Minhas entrevistas"
+                        : "Minhas candidaturas"}
                     </h1>
                     <p className={styles.heroDescription}>
                       {isInterviewView
-                        ? "Veja data, local e link das entrevistas agendadas."
-                        : "Acompanhe todas as suas inscrições e status"}
+                        ? "Consulte datas, locais e links das entrevistas agendadas."
+                        : "Acompanhe cada processo e saiba qual é o próximo passo."}
                     </p>
+                  </div>
+                  <Link href="/vagas" className={styles.heroAction}>
+                    <FiSearch aria-hidden="true" /> Procurar vagas
+                  </Link>
                   </div>
                 </header>
 
@@ -229,13 +296,16 @@ export default function CandidaturasPage() {
                   <section className={styles.cards}>
                     {filteredApplications.map((application, index) => (
                       <ApplicationDetailCard
-                        key={application.id || index}
+                        key={application.id || application.jobId || index}
                         application={application}
                       />
                     ))}
                   </section>
                 ) : (
                   <section className={styles.emptyState}>
+                    <span className={styles.emptyIcon} aria-hidden="true">
+                      <FiBriefcase />
+                    </span>
                     <h3 className={styles.emptyTitle}>
                       {filter === "all"
                         ? "Nenhuma candidatura ainda"
@@ -253,12 +323,12 @@ export default function CandidaturasPage() {
                     </h3>
                     <p className={styles.emptyDescription}>
                       {filter === "all"
-                        ? "Comece a se candidatar para vagas que combinam com você"
-                        : "Tente mudar o filtro para ver outras candidaturas"}
+                        ? "Explore as vagas e candidate-se às oportunidades alinhadas com o seu perfil."
+                        : "Escolha outro filtro para consultar as restantes candidaturas."}
                     </p>
                     {filter === "all" ? (
                       <Link href="/vagas" className={styles.emptyAction}>
-                        Buscar Vagas
+                        Procurar vagas
                       </Link>
                     ) : null}
                   </section>
@@ -267,7 +337,7 @@ export default function CandidaturasPage() {
             );
           })()}
         </div>
-      </main>
+      </div>
     </>
   );
 }

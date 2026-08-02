@@ -1,24 +1,91 @@
-import Head from "next/head";
-import Link from "next/link";
-import { useMemo, useState } from "react";
-import PublicPageShell from "../components/PublicPageShell";
-import { admin } from "../lib/firebaseAdmin";
+import Head from 'next/head';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useMemo, useState } from 'react';
+import {
+  FiArrowRight,
+  FiCalendar,
+  FiClock,
+  FiExternalLink,
+  FiMail,
+  FiSearch,
+  FiX,
+} from 'react-icons/fi';
+import PublicPageShell from '../components/PublicPageShell';
+import { admin } from '../lib/firebaseAdmin';
 import {
   safeText,
   safeTimestampToISOString,
   safeTimestampToMillis,
-} from "../lib/firestoreNormalize";
+} from '../lib/firestoreNormalize';
 import {
   isContentPublished,
   normalizeContentStatus,
-} from "../lib/contentPublication";
-import styles from "../styles/BlogPage.module.css";
+} from '../lib/contentPublication';
+import styles from '../styles/BlogPage.module.css';
+
+const POSTS_BATCH_SIZE = 4;
+
+function normalizeSearchText(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+}
+
+function normalizeAccentColor(value) {
+  const color = String(value || '').trim();
+  return /^#[0-9a-f]{3,8}$/i.test(color) ? color : '#2563eb';
+}
+
+function BlogImage({ post, priority = false, className, fallbackClassName }) {
+  const [failed, setFailed] = useState(false);
+
+  if (post.image && !failed) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={post.image}
+        alt={`Imagem do artigo ${post.title}`}
+        className={className}
+        loading={priority ? 'eager' : 'lazy'}
+        decoding="async"
+        fetchPriority={priority ? 'high' : 'auto'}
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+
+  return (
+    <div
+      className={fallbackClassName}
+      role="img"
+      aria-label={`Identidade visual do artigo ${post.title}`}
+      style={{ '--post-accent': normalizeAccentColor(post.color) }}
+    >
+      <span className={styles.mediaFallbackLabel} aria-hidden="true">
+        EmpregoSTP Journal
+      </span>
+      <span className={styles.mediaFallbackMonogram} aria-hidden="true">
+        {String(post.category || 'E').trim().charAt(0).toUpperCase() || 'E'}
+      </span>
+      <Image
+        src="/assets/Emprego STP Logo 2-wide.png"
+        alt=""
+        width={260}
+        height={72}
+        className={styles.mediaFallbackLogo}
+      />
+    </div>
+  );
+}
 
 export async function getServerSideProps(context) {
   const fetchWithFallback = async (collectionName) => {
     const collectionRef = admin.firestore().collection(collectionName);
     try {
-      return await collectionRef.orderBy("createdAt", "desc").get();
+      return await collectionRef.orderBy('createdAt', 'desc').get();
     } catch (error) {
       console.warn(
         `[blog] fallback sem orderBy em ${collectionName}:`,
@@ -36,13 +103,13 @@ export async function getServerSideProps(context) {
 
   try {
     context?.res?.setHeader?.(
-      "Cache-Control",
-      "public, s-maxage=60, stale-while-revalidate=300",
+      'Cache-Control',
+      'public, s-maxage=60, stale-while-revalidate=300',
     );
 
     const [postsSnapshot, newsSnapshot] = await Promise.all([
-      fetchWithFallback("posts"),
-      fetchWithFallback("news"),
+      fetchWithFallback('posts'),
+      fetchWithFallback('news'),
     ]);
 
     const posts = postsSnapshot.docs
@@ -53,13 +120,13 @@ export async function getServerSideProps(context) {
 
         return {
           id: doc.id,
-          title: safeText(data.title, "Sem título"),
-          excerpt: safeText(data.excerpt, ""),
-          category: safeText(data.category, "Geral"),
-          author: safeText(data.author, "EmpregoSTP"),
-          image: safeText(data.image, ""),
-          readTime: safeText(data.readTime, "5 min"),
-          color: safeText(data.color, "#2057d7"),
+          title: safeText(data.title, 'Sem título'),
+          excerpt: safeText(data.excerpt, ''),
+          category: safeText(data.category, 'Geral'),
+          author: safeText(data.author, 'EmpregoSTP'),
+          image: safeText(data.image, ''),
+          readTime: safeText(data.readTime, '5 min'),
+          color: safeText(data.color, '#2057d7'),
           views: Number(data.views) || 0,
           featured: Boolean(data.featured),
           status: normalizeContentStatus(data.status),
@@ -81,11 +148,11 @@ export async function getServerSideProps(context) {
 
         return {
           id: doc.id,
-          title: safeText(data.title, "Sem título"),
-          category: safeText(data.category, "Atualização"),
+          title: safeText(data.title, 'Sem título'),
+          category: safeText(data.category, 'Atualização'),
           date: safeText(
             data.date,
-            createdAt ? new Date(createdAt).toLocaleDateString("pt-PT") : "",
+            createdAt ? new Date(createdAt).toLocaleDateString('pt-PT') : '',
           ),
           status: normalizeContentStatus(data.status),
           createdAt,
@@ -106,7 +173,7 @@ export async function getServerSideProps(context) {
       },
     };
   } catch (error) {
-    console.error("Error fetching blog data:", error);
+    console.error('Error fetching blog data:', error);
     return {
       props: {
         initialPosts: [],
@@ -116,96 +183,113 @@ export async function getServerSideProps(context) {
   }
 }
 
-const icons = {
-  clock: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="12" cy="12" r="10" />
-      <polyline points="12 6 12 12 16 14" />
-    </svg>
-  ),
-  eye: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  ),
-  arrow: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <line x1="5" y1="12" x2="19" y2="12" />
-      <polyline points="12 5 19 12 12 19" />
-    </svg>
-  ),
-  search: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="11" cy="11" r="8" />
-      <line x1="21" y1="21" x2="16.65" y2="16.65" />
-    </svg>
-  ),
-  trending: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-      <polyline points="17 6 23 6 23 12" />
-    </svg>
-  ),
-  users: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
-    </svg>
-  ),
-};
-
 function formatDate(value) {
-  if (!value) return "Data desconhecida";
+  if (!value) return 'Data desconhecida';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString("pt-PT", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
+  return date.toLocaleDateString('pt-PT', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
   });
 }
 
 export default function BlogPage({ initialPosts = [], initialNews = [] }) {
-  const [activeCategory, setActiveCategory] = useState("todos");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState('todos');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [visiblePostCount, setVisiblePostCount] = useState(POSTS_BATCH_SIZE);
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterState, setNewsletterState] = useState({
+    status: 'idle',
+    message: '',
+  });
   const posts = initialPosts;
   const news = initialNews;
 
-  const categories = useMemo(
-    () => [
-      { id: "todos", label: "Todos", count: posts.length },
-      ...Array.from(
-        new Set(posts.map((post) => post.category).filter(Boolean)),
-      ).map((category) => ({
+  const categories = useMemo(() => {
+    const counts = new Map();
+    posts.forEach((post) => {
+      if (!post.category) return;
+      counts.set(post.category, (counts.get(post.category) || 0) + 1);
+    });
+
+    return [
+      { id: 'todos', label: 'Todos', count: posts.length },
+      ...Array.from(counts, ([category, count]) => ({
         id: category,
         label: category,
-        count: posts.filter((post) => post.category === category).length,
+        count,
       })),
-    ],
-    [posts],
-  );
+    ];
+  }, [posts]);
 
   const filteredPosts = useMemo(() => {
-    const normalizedSearch = searchQuery.toLowerCase().trim();
+    const normalizedSearch = normalizeSearchText(searchQuery);
     return posts.filter((post) => {
       const matchesCategory =
-        activeCategory === "todos" || post.category === activeCategory;
+        activeCategory === 'todos' || post.category === activeCategory;
       const matchesSearch =
         !normalizedSearch ||
-        post.title.toLowerCase().includes(normalizedSearch) ||
-        post.excerpt?.toLowerCase().includes(normalizedSearch);
+        normalizeSearchText(post.title).includes(normalizedSearch) ||
+        normalizeSearchText(post.excerpt).includes(normalizedSearch);
       return matchesCategory && matchesSearch;
     });
   }, [activeCategory, posts, searchQuery]);
 
   const featuredPost = filteredPosts[0] || null;
   const remainingPosts = filteredPosts.slice(featuredPost ? 1 : 0);
+  const visiblePosts = remainingPosts.slice(0, visiblePostCount);
+  const canLoadMore = visiblePostCount < remainingPosts.length;
 
-  const handleNewsletterSubmit = (event) => {
+  const handleCategoryChange = (categoryId) => {
+    setActiveCategory(categoryId);
+    setVisiblePostCount(POSTS_BATCH_SIZE);
+  };
+
+  const handleNewsletterSubmit = async (event) => {
     event.preventDefault();
-    alert("Obrigado por subscrever! Receberá novidades em breve.");
+    const email = newsletterEmail.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setNewsletterState({
+        status: 'error',
+        message: 'Introduza um email válido.',
+      });
+      return;
+    }
+
+    setNewsletterState({ status: 'loading', message: '' });
+
+    try {
+      const response = await fetch('/api/newsletter/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, source: 'blog' }),
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        setNewsletterState({
+          status: 'error',
+          message:
+            data.error ||
+            'Não foi possível concluir a subscrição. Tente novamente.',
+        });
+        return;
+      }
+
+      setNewsletterState({
+        status: 'success',
+        message: data.message || 'Subscrição confirmada. Obrigado.',
+      });
+      setNewsletterEmail('');
+    } catch (error) {
+      setNewsletterState({
+        status: 'error',
+        message:
+          'Não foi possível estabelecer a ligação. Tente novamente dentro de momentos.',
+      });
+    }
   };
 
   return (
@@ -219,158 +303,234 @@ export default function BlogPage({ initialPosts = [], initialNews = [] }) {
       </Head>
 
       <PublicPageShell headerVariant="light">
-        <main className={styles.page}>
-          <section className={styles.hero}>
-            <div className={styles.heroInner}>
-              <div className={styles.heroBadge}>
-                <span className={styles.heroBadgeIcon}>{icons.trending}</span>
-                <span>Centro de imprensa</span>
-              </div>
-              <h1 className={styles.heroTitle}>Blog & Novidades</h1>
+        <div className={styles.page}>
+          <div className={styles.blogBody}>
+            <section className={styles.hero} aria-labelledby="blog-page-title">
+              <p className={styles.heroEyebrow}>
+                <span className={styles.heroEyebrowDesktop}>
+                  Centro de Imprensa
+                </span>
+                <span className={styles.heroEyebrowMobile}>
+                  Blog e novidades
+                </span>
+              </p>
+              <h1 id="blog-page-title" className={styles.heroTitle}>
+                <span className={styles.heroTitleDesktop}>
+                  Blog e novidades.
+                </span>
+                <span className={styles.heroTitleMobile}>
+                  Centro de Imprensa
+                </span>
+              </h1>
               <p className={styles.heroSubtitle}>
                 Artigos, dicas de carreira, novidades do EmpregoSTP e histórias
                 de sucesso da maior plataforma de emprego em São Tomé e
                 Príncipe.
               </p>
+            </section>
 
-              <div className={styles.searchBar}>
-                <span className={styles.searchIcon}>{icons.search}</span>
-                <input
-                  type="text"
-                  placeholder="Pesquisar artigos..."
-                  aria-label="Pesquisar artigos do blog"
-                  value={searchQuery}
-                  onChange={(event) => setSearchQuery(event.target.value)}
-                  className={styles.searchInput}
-                />
-              </div>
-            </div>
-          </section>
-
-          <section className={styles.content}>
             {featuredPost ? (
               <article className={styles.featuredCard}>
-                <div
-                  className={styles.featuredMedia}
-                  style={{
-                    backgroundImage: `linear-gradient(180deg, rgba(30, 43, 77, 0.08), rgba(30, 43, 77, 0.28)), url(${
-                      featuredPost.image ||
-                      "https://via.placeholder.com/1200x800?text=EmpregoSTP"
-                    })`,
-                  }}
-                />
-                <div className={styles.featuredBody}>
-                  <span
-                    className={styles.categoryPill}
-                    style={{
-                      "--category-bg": `${featuredPost.color || "#2057d7"}18`,
-                      "--category-border": `${featuredPost.color || "#2057d7"}30`,
-                      "--category-color": featuredPost.color || "#2057d7",
-                    }}
-                  >
+                <div className={styles.featuredMedia}>
+                  <BlogImage
+                    post={featuredPost}
+                    priority
+                    className={styles.featuredMediaImage}
+                    fallbackClassName={styles.featuredMediaFallback}
+                  />
+                  <span className={styles.featuredCategory}>
                     {featuredPost.category}
                   </span>
-                  <h2 className={styles.featuredTitle}>{featuredPost.title}</h2>
+                </div>
+                <div className={styles.featuredBody}>
+                  <div className={styles.featuredMetaDesktop}>
+                    <span>
+                      <FiCalendar aria-hidden="true" />
+                      {formatDate(featuredPost.createdAt)}
+                    </span>
+                    <span className={styles.metaDot} aria-hidden="true" />
+                    <span>
+                      <FiClock aria-hidden="true" />
+                      {featuredPost.readTime} leitura
+                    </span>
+                  </div>
+                  <h2 className={styles.featuredTitle}>
+                    <Link href={`/blog/${featuredPost.id}`}>
+                      {featuredPost.title}
+                    </Link>
+                  </h2>
                   <p className={styles.featuredExcerpt}>
                     {featuredPost.excerpt}
                   </p>
-                  <div className={styles.metaRow}>
-                    <span className={styles.metaItem}>
-                      {icons.clock}
+                  <div className={styles.featuredMetaMobile}>
+                    <span>
+                      <FiClock aria-hidden="true" />
                       {featuredPost.readTime}
                     </span>
-                    <span className={styles.metaItem}>
-                      {icons.eye}
-                      {featuredPost.views} visualizações
-                    </span>
-                    <span className={styles.metaItem}>
-                      {formatDate(featuredPost.createdAt)}
-                    </span>
+                    <span className={styles.metaDot} aria-hidden="true" />
+                    <span>{formatDate(featuredPost.createdAt)}</span>
                   </div>
+                  <span className={styles.srOnly}>
+                    {featuredPost.views} visualizações
+                  </span>
                   <Link
                     href={`/blog/${featuredPost.id}`}
                     className={styles.featuredButton}
                   >
                     Ler artigo
-                    <span className={styles.inlineIcon}>{icons.arrow}</span>
+                    <FiArrowRight
+                      className={styles.inlineIcon}
+                      aria-hidden="true"
+                    />
                   </Link>
                 </div>
               </article>
-            ) : null}
+            ) : (
+              <section className={styles.emptyFeatured} aria-live="polite">
+                <h2>Nenhum artigo publicado</h2>
+                <p>
+                  Assim que houver novas publicações, elas aparecerão nesta
+                  página.
+                </p>
+              </section>
+            )}
 
-            <div className={styles.layout}>
-              <div className={styles.mainColumn}>
-                <div className={styles.sectionHeader}>
-                  <div>
-                    <p className={styles.sectionEyebrow}>Explorar</p>
-                    <h2 className={styles.sectionTitle}>
-                      Publicações recentes
-                    </h2>
-                  </div>
-                  <div className={styles.categories}>
-                    {categories.map((category) => {
-                      const active = activeCategory === category.id;
-                      return (
-                        <button
-                          key={category.id}
-                          type="button"
-                          className={`${styles.categoryTab} ${
-                            active ? styles.categoryTabActive : ""
-                          }`}
-                          onClick={() => setActiveCategory(category.id)}
-                        >
-                          {category.label}
-                          <span className={styles.categoryCount}>
-                            {category.count}
-                          </span>
-                        </button>
-                      );
-                    })}
+            <div className={styles.editorialGrid}>
+              <section
+                className={styles.recentSection}
+                aria-labelledby="recent-posts-title"
+              >
+                <div className={styles.recentHeader}>
+                  <h2 id="recent-posts-title" className={styles.sectionTitle}>
+                    Publicações recentes
+                  </h2>
+                  <div className={styles.recentControls}>
+                    <div
+                      className={styles.categories}
+                      role="group"
+                      aria-label="Filtrar publicações por categoria"
+                    >
+                      {categories.map((category) => {
+                        const active = activeCategory === category.id;
+                        return (
+                          <button
+                            key={category.id}
+                            type="button"
+                            className={`${styles.categoryTab} ${
+                              active ? styles.categoryTabActive : ''
+                            }`}
+                            onClick={() => handleCategoryChange(category.id)}
+                            aria-pressed={active}
+                          >
+                            {category.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <button
+                      type="button"
+                      className={`${styles.searchToggle} ${
+                        searchQuery ? styles.searchToggleActive : ''
+                      }`}
+                      onClick={() => setSearchOpen((open) => !open)}
+                      aria-expanded={searchOpen}
+                      aria-controls="blog-search-panel"
+                      aria-label={
+                        searchOpen
+                          ? 'Fechar pesquisa de artigos'
+                          : 'Pesquisar artigos'
+                      }
+                    >
+                      {searchOpen ? (
+                        <FiX aria-hidden="true" />
+                      ) : (
+                        <FiSearch aria-hidden="true" />
+                      )}
+                    </button>
                   </div>
                 </div>
 
-                {remainingPosts.length > 0 ? (
+                {searchOpen ? (
+                  <div id="blog-search-panel" className={styles.searchPanel}>
+                    <FiSearch aria-hidden="true" />
+                    <input
+                      type="search"
+                      autoFocus
+                      placeholder="Pesquisar por título ou tema…"
+                      aria-label="Pesquisar artigos do blog"
+                      value={searchQuery}
+                      onChange={(event) => {
+                        setSearchQuery(event.target.value);
+                        setVisiblePostCount(POSTS_BATCH_SIZE);
+                      }}
+                    />
+                  </div>
+                ) : null}
+
+                <p className={styles.srOnly} role="status" aria-live="polite">
+                  {filteredPosts.length === 1
+                    ? '1 publicação encontrada'
+                    : `${filteredPosts.length} publicações encontradas`}
+                </p>
+
+                {visiblePosts.length > 0 ? (
                   <div className={styles.postsGrid}>
-                    {remainingPosts.map((post) => (
-                      <Link
-                        key={post.id}
-                        href={`/blog/${post.id}`}
-                        className={styles.postCard}
-                      >
-                        <span
-                          className={styles.categoryPill}
-                          style={{
-                            "--category-bg": `${post.color || "#2057d7"}18`,
-                            "--category-border": `${post.color || "#2057d7"}30`,
-                            "--category-color": post.color || "#2057d7",
-                          }}
+                    {visiblePosts.map((post) => (
+                      <article key={post.id} className={styles.postCard}>
+                        <Link
+                          href={`/blog/${post.id}`}
+                          className={styles.postCardLink}
                         >
-                          {post.category}
-                        </span>
-                        <h3 className={styles.postTitle}>{post.title}</h3>
-                        <p className={styles.postExcerpt}>{post.excerpt}</p>
-                        <div className={styles.postFooter}>
-                          <span className={styles.postAuthor}>
-                            {post.author}
-                          </span>
-                          <div className={styles.postMeta}>
-                            <span className={styles.postMetaItem}>
-                              {icons.clock}
-                              {post.readTime}
-                            </span>
-                            <span className={styles.postMetaItem}>
-                              {icons.eye}
-                              {post.views}
+                          <div className={styles.postMedia}>
+                            <BlogImage
+                              post={post}
+                              className={styles.postMediaImage}
+                              fallbackClassName={styles.postMediaFallback}
+                            />
+                            <span className={styles.postCategoryDesktop}>
+                              {post.category}
                             </span>
                           </div>
-                        </div>
-                      </Link>
+                          <div className={styles.postBody}>
+                            <span className={styles.postCategoryMobile}>
+                              {post.category}
+                            </span>
+                            <div className={styles.postMetaDesktop}>
+                              <span>{formatDate(post.createdAt)}</span>
+                              <span
+                                className={styles.metaDot}
+                                aria-hidden="true"
+                              />
+                              <span>{post.readTime} leitura</span>
+                            </div>
+                            <h3 className={styles.postTitle}>{post.title}</h3>
+                            <p className={styles.postExcerpt}>{post.excerpt}</p>
+                            <div className={styles.postMetaMobile}>
+                              <span>{post.author}</span>
+                              <span
+                                className={styles.metaDot}
+                                aria-hidden="true"
+                              />
+                              <span>{post.readTime}</span>
+                            </div>
+                            <span className={styles.postReadMore}>
+                              Ler mais
+                              <FiArrowRight aria-hidden="true" />
+                            </span>
+                            <span className={styles.srOnly}>
+                              {post.views} visualizações
+                            </span>
+                          </div>
+                        </Link>
+                      </article>
                     ))}
                   </div>
                 ) : (
                   <div className={styles.emptyState}>
                     <h3 className={styles.emptyTitle}>
-                      Nenhum artigo encontrado
+                      {featuredPost
+                        ? 'Sem outras publicações nesta seleção'
+                        : 'Nenhum artigo encontrado'}
                     </h3>
                     <p className={styles.emptyText}>
                       Ajuste a pesquisa ou escolha outra categoria para ver mais
@@ -378,85 +538,142 @@ export default function BlogPage({ initialPosts = [], initialNews = [] }) {
                     </p>
                   </div>
                 )}
-              </div>
 
-              <aside className={styles.sidebar}>
-                <section className={styles.sidebarCard}>
-                  <h3 className={styles.sidebarTitle}>
-                    <span className={styles.sidebarIcon}>{icons.trending}</span>
-                    Atualizações rápidas
-                  </h3>
-                  <div className={styles.newsList}>
-                    {news.length > 0 ? (
-                      news.map((item) => (
-                        <article key={item.id} className={styles.newsItem}>
-                          <p className={styles.newsCategory}>{item.category}</p>
-                          <h4 className={styles.newsTitle}>{item.title}</h4>
-                          <p className={styles.newsDate}>{item.date}</p>
-                        </article>
-                      ))
-                    ) : (
-                      <p className={styles.sidebarText}>
-                        Ainda não existem atualizações recentes publicadas.
-                      </p>
-                    )}
-                  </div>
-                </section>
+                {canLoadMore ? (
+                  <button
+                    type="button"
+                    className={styles.loadMoreButton}
+                    onClick={() =>
+                      setVisiblePostCount(
+                        (current) => current + POSTS_BATCH_SIZE,
+                      )
+                    }
+                  >
+                    Carregar mais publicações
+                  </button>
+                ) : null}
+              </section>
 
-                <section className={styles.sidebarCard}>
-                  <h3 className={styles.sidebarTitle}>
-                    <span className={styles.sidebarIcon}>{icons.users}</span>
-                    Categorias
-                  </h3>
-                  <div className={styles.sidebarCategoryList}>
-                    {categories
-                      .filter((item) => item.id !== "todos")
-                      .map((item) => (
-                        <button
-                          key={item.id}
-                          type="button"
-                          className={styles.sidebarCategoryItem}
-                          onClick={() => setActiveCategory(item.id)}
-                        >
-                          <span>{item.label}</span>
-                          <span className={styles.sidebarCategoryCount}>
-                            {item.count}
-                          </span>
-                        </button>
-                      ))}
-                  </div>
-                </section>
-              </aside>
-            </div>
-
-            <section className={styles.newsletter}>
-              <div className={styles.newsletterCopy}>
-                <p className={styles.sectionEyebrow}>Newsletter</p>
-                <h2 className={styles.newsletterTitle}>
+              <section
+                className={styles.newsletter}
+                aria-labelledby="newsletter-title"
+              >
+                <span className={styles.newsletterIcon} aria-hidden="true">
+                  <FiMail />
+                </span>
+                <h2 id="newsletter-title" className={styles.newsletterTitle}>
                   Receba novidades do mercado de trabalho
                 </h2>
                 <p className={styles.newsletterText}>
-                  Subscreva para acompanhar novos artigos, atualizações do
-                  EmpregoSTP e tendências de carreira em São Tomé e Príncipe.
+                  Inscreva-se na nossa newsletter semanal para receber as
+                  melhores dicas e vagas diretamente no seu email.
                 </p>
-              </div>
-              <form
-                className={styles.newsletterForm}
-                onSubmit={handleNewsletterSubmit}
+                <form
+                  className={styles.newsletterForm}
+                  onSubmit={handleNewsletterSubmit}
+                >
+                  <input
+                    type="email"
+                    placeholder="O seu email profissional"
+                    aria-label="Email para subscrever a newsletter"
+                    className={styles.newsletterInput}
+                    value={newsletterEmail}
+                    onChange={(event) => {
+                      setNewsletterEmail(event.target.value);
+                      if (newsletterState.status !== 'idle') {
+                        setNewsletterState({ status: 'idle', message: '' });
+                      }
+                    }}
+                    disabled={newsletterState.status === 'loading'}
+                  />
+                  <button
+                    type="submit"
+                    className={styles.newsletterButton}
+                    disabled={newsletterState.status === 'loading'}
+                  >
+                    {newsletterState.status === 'loading'
+                      ? 'A subscrever…'
+                      : 'Subscrever'}
+                  </button>
+                  {newsletterState.message ? (
+                    <p
+                      className={`${styles.newsletterFeedback} ${
+                        newsletterState.status === 'error'
+                          ? styles.newsletterFeedbackError
+                          : styles.newsletterFeedbackSuccess
+                      }`}
+                      role="status"
+                      aria-live="polite"
+                    >
+                      {newsletterState.message}
+                    </p>
+                  ) : null}
+                </form>
+              </section>
+
+              <section
+                className={styles.categoryPanel}
+                aria-labelledby="blog-categories-title"
               >
-                <input
-                  type="email"
-                  placeholder="Seu email"
-                  aria-label="Seu email"
-                  className={styles.newsletterInput}
-                />
-                <button type="submit" className={styles.newsletterButton}>
-                  Subscrever
-                </button>
-              </form>
-            </section>
-          </section>
-        </main>
+                <h2 id="blog-categories-title" className={styles.panelTitle}>
+                  Categorias
+                </h2>
+                <div className={styles.categoryList}>
+                  {categories
+                    .filter((item) => item.id !== 'todos')
+                    .map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        className={styles.categoryListItem}
+                        onClick={() => handleCategoryChange(item.id)}
+                        aria-pressed={activeCategory === item.id}
+                      >
+                        <span>{item.label}</span>
+                        <span className={styles.categoryListCount}>
+                          {item.count}
+                        </span>
+                      </button>
+                    ))}
+                </div>
+              </section>
+
+              <section
+                className={styles.updatesPanel}
+                aria-labelledby="quick-updates-title"
+              >
+                <h2 id="quick-updates-title" className={styles.panelTitle}>
+                  <span className={styles.updatesBolt} aria-hidden="true">
+                    ↯
+                  </span>
+                  Atualizações rápidas
+                </h2>
+                <div className={styles.newsList}>
+                  {news.length > 0 ? (
+                    news.map((item) => (
+                      <article key={item.id} className={styles.newsItem}>
+                        <div className={styles.newsHeading}>
+                          <h3 className={styles.newsTitle}>{item.title}</h3>
+                          <FiExternalLink aria-hidden="true" />
+                        </div>
+                        <div className={styles.newsMeta}>
+                          <span className={styles.newsCategory}>
+                            {item.category}
+                          </span>
+                          <span className={styles.newsDate}>{item.date}</span>
+                        </div>
+                      </article>
+                    ))
+                  ) : (
+                    <p className={styles.panelEmptyText}>
+                      Ainda não existem atualizações recentes publicadas.
+                    </p>
+                  )}
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
       </PublicPageShell>
     </>
   );

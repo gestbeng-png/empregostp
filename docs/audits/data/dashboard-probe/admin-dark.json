@@ -1,0 +1,329 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "phase": "dashboard-probe",
+  "results": [
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              ".panel-header > div > h2"
+            ],
+            [
+              ".panel-header > div > p"
+            ]
+          ]
+        },
+        {
+          "help": "Documents must have <title> element to aid in navigation",
+          "id": "document-title",
+          "impact": "serious",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 320,
+          "scrollHeight": 1238,
+          "scrollWidth": 392
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 72,
+        "landmarks": {
+          "footer": 0,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 39,
+            "tag": "A",
+            "text": "Saltar para o conteúdo",
+            "width": 179
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 41,
+            "tag": "BUTTON",
+            "text": "Exportar",
+            "width": 95
+          },
+          {
+            "height": 41,
+            "tag": "BUTTON",
+            "text": "Criar registo",
+            "width": 119
+          },
+          {
+            "height": 41,
+            "tag": "A",
+            "text": "Ver atividade",
+            "width": 143
+          }
+        ],
+        "smallText": [
+          {
+            "size": "10.8px",
+            "tag": "TH",
+            "text": "Item"
+          },
+          {
+            "size": "10.8px",
+            "tag": "TH",
+            "text": "Estado"
+          },
+          {
+            "size": "10.8px",
+            "tag": "TH",
+            "text": "Atualização"
+          },
+          {
+            "size": "13.125px",
+            "tag": "TD",
+            "text": "Processo de recrutamento"
+          },
+          {
+            "size": "13.125px",
+            "tag": "SPAN",
+            "text": "Em análise"
+          },
+          {
+            "size": "13.125px",
+            "tag": "TD",
+            "text": "Hoje, 10:30"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/__dashboard-accessibility-audit?role=admin&theme=dark",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      }
+    },
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              ".panel-header > div > h2"
+            ],
+            [
+              ".panel-header > div > p"
+            ]
+          ]
+        },
+        {
+          "help": "Documents must have <title> element to aid in navigation",
+          "id": "document-title",
+          "impact": "serious",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1440,
+          "scrollHeight": 1000,
+          "scrollWidth": 1440
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 0,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 39,
+            "tag": "A",
+            "text": "Saltar para o conteúdo",
+            "width": 179
+          },
+          {
+            "height": 39,
+            "tag": "A",
+            "text": "",
+            "width": 271
+          },
+          {
+            "height": 41,
+            "tag": "A",
+            "text": "Visão geral",
+            "width": 251
+          },
+          {
+            "height": 41,
+            "tag": "A",
+            "text": "Utilizadores",
+            "width": 251
+          },
+          {
+            "height": 41,
+            "tag": "A",
+            "text": "Vagas",
+            "width": 251
+          },
+          {
+            "height": 41,
+            "tag": "A",
+            "text": "Verificações",
+            "width": 251
+          },
+          {
+            "height": 41,
+            "tag": "A",
+            "text": "Blog",
+            "width": 251
+          },
+          {
+            "height": 41,
+            "tag": "A",
+            "text": "Notícias",
+            "width": 251
+          },
+          {
+            "height": 41,
+            "tag": "A",
+            "text": "Recursos",
+            "width": 251
+          },
+          {
+            "height": 41,
+            "tag": "A",
+            "text": "Serviços",
+            "width": 251
+          },
+          {
+            "height": 41,
+            "tag": "A",
+            "text": "Serviços RH",
+            "width": 251
+          },
+          {
+            "height": 41,
+            "tag": "A",
+            "text": "Testemunhos",
+            "width": 251
+          },
+          {
+            "height": 41,
+            "tag": "A",
+            "text": "Planos",
+            "width": 251
+          },
+          {
+            "height": 41,
+            "tag": "A",
+            "text": "Pagamentos",
+            "width": 251
+          },
+          {
+            "height": 41,
+            "tag": "A",
+            "text": "Solicitações",
+            "width": 251
+          },
+          {
+            "height": 41,
+            "tag": "A",
+            "text": "Afiliados",
+            "width": 251
+          },
+          {
+            "height": 41,
+            "tag": "A",
+            "text": "Relatórios",
+            "width": 251
+          },
+          {
+            "height": 41,
+            "tag": "A",
+            "text": "Auditoria",
+            "width": 251
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 38
+          },
+          {
+            "height": 41,
+            "tag": "BUTTON",
+            "text": "Exportar",
+            "width": 95
+          },
+          {
+            "height": 41,
+            "tag": "BUTTON",
+            "text": "Criar registo",
+            "width": 119
+          },
+          {
+            "height": 41,
+            "tag": "A",
+            "text": "Ver atividade",
+            "width": 143
+          }
+        ],
+        "smallText": [
+          {
+            "size": "11.52px",
+            "tag": "TH",
+            "text": "Item"
+          },
+          {
+            "size": "11.52px",
+            "tag": "TH",
+            "text": "Estado"
+          },
+          {
+            "size": "11.52px",
+            "tag": "TH",
+            "text": "Atualização"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/__dashboard-accessibility-audit?role=admin&theme=dark",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    }
+  ],
+  "route": "/__dashboard-accessibility-audit?role=admin&theme=dark",
+  "slug": "admin-dark"
+}

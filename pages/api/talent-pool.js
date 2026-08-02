@@ -2,6 +2,11 @@ import { admin } from '../../lib/firebaseAdmin';
 import { canAccessTalentPool, getEmpresaPlanSummary } from '../../lib/empresaPlanFeatures';
 import { normalizeUserType } from '../../lib/defaultPlans';
 import { buildCandidateVisibility, compareCandidatesByVisibility, isCandidateVerified } from '../../lib/candidateProfileInsights';
+import {
+  canCandidateAppearInTalentPool,
+  getCandidatePrivacy,
+} from '../../lib/candidatePrivacy';
+import { logServerError } from '../../lib/serverLog';
 
 /**
  * GET /api/talent-pool
@@ -15,12 +20,12 @@ import { buildCandidateVisibility, compareCandidatesByVisibility, isCandidateVer
  */
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
+    res.setHeader('Allow', ['GET']);
     return res.status(405).json({ error: 'Método não permitido' });
   }
 
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    res.setHeader('Allow', ['GET']);
     return res.status(401).json({ error: 'Token de autenticação não fornecido' });
   }
   const token = authHeader.split('Bearer ')[1];
@@ -117,6 +122,7 @@ export default async function handler(req, res) {
 
       // Double-check type in case legacy docs have wrong userType.
       if (normalizeUserType(u.userType) !== 'candidato') continue;
+      if (!canCandidateAppearInTalentPool(d)) continue;
 
       const verified = isCandidateVerified(u, d);
       if (!verified) continue;
@@ -137,6 +143,11 @@ export default async function handler(req, res) {
       }
 
       const visibility = buildCandidateVisibility(u, d);
+      const privacy = getCandidatePrivacy(d);
+      const canExposeCv = Boolean(
+        privacy.showContactInfo &&
+          planSummary.features?.canViewCandidateContact,
+      );
 
       candidates.push({
         id: candidateId,
@@ -147,7 +158,10 @@ export default async function handler(req, res) {
         skillsHard: Array.isArray(d.skillsHard) ? d.skillsHard.join(', ') : (d.skillsHard || ''),
         availableForWork: d.availableForWork || false,
         photoUrl: d.photoUrl || u.photoUrl || null,
-        cvUrl: d.cvUrl || u.cvUrl || null,
+        // Só a existência do CV; o download passa por
+        // /api/files/candidate-cv, que reavalia a permissão e assina um URL
+        // de curta duração em vez de devolver o link permanente.
+        hasCv: canExposeCv && Boolean(d.cvUrl || u.cvUrl),
         verified: true,
         highlighted: visibility.highlighted,
         profileComplete: visibility.isProfileComplete,
@@ -165,7 +179,7 @@ export default async function handler(req, res) {
       total: candidates.length
     });
   } catch (error) {
-    console.error('Erro ao buscar banco de talentos:', error);
+    logServerError('talent_pool.buscar_banco_de_talentos_failed', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 }

@@ -13,24 +13,27 @@ const formatDateTime = (value) => {
     month: '2-digit',
     year: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   });
 };
 
 const sanitizeFileName = (value = '') => value.replace(/[^a-zA-Z0-9._-]/g, '-');
 
-const readFileAsDataUrl = (file) => new Promise((resolve, reject) => {
-  const reader = new FileReader();
-  reader.onload = () => resolve(String(reader.result || ''));
-  reader.onerror = () => reject(new Error('Não foi possível ler o ficheiro selecionado.'));
-  reader.readAsDataURL(file);
-});
+const readFileAsDataUrl = (file) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = () =>
+      reject(new Error('Não foi possível ler o ficheiro selecionado.'));
+    reader.readAsDataURL(file);
+  });
 
 export default function ManualPaymentProofCard({
   request,
   title = 'Enviar comprovativo',
   description = 'Depois da transferência, envie o comprovativo por aqui para revisão do administrador.',
-  onSubmitted
+  embedded = false,
+  onSubmitted,
 }) {
   const [file, setFile] = useState(null);
   const [note, setNote] = useState('');
@@ -40,7 +43,8 @@ export default function ManualPaymentProofCard({
 
   const instructions = request?.paymentInstructions || {};
   const hasProof = Boolean(request?.paymentProof?.url);
-  const submittedAt = request?.paymentProof?.submittedAt || request?.updatedAt || null;
+  const submittedAt =
+    request?.paymentProof?.submittedAt || request?.updatedAt || null;
 
   const buttonLabel = useMemo(() => {
     if (submitting) return 'A enviar...';
@@ -62,7 +66,7 @@ export default function ManualPaymentProofCard({
     }
 
     if (file.size > MAX_FILE_SIZE) {
-      setError('O comprovativo deve ter no máximo 10MB.');
+      setError('O comprovativo deve ter no máximo 10 MB.');
       return;
     }
 
@@ -71,53 +75,68 @@ export default function ManualPaymentProofCard({
       const auth = getAuth();
       const user = auth.currentUser;
       if (!user) {
-        setError('Sessão expirada. Faça login novamente.');
+        setError('A sessão expirou. Inicie sessão novamente.');
         return;
       }
 
       const token = await user.getIdToken();
       const fileBase64 = await readFileAsDataUrl(file);
-      const safeName = sanitizeFileName(file.name || `comprovativo-${Date.now()}`);
+      const safeName = sanitizeFileName(
+        file.name || `comprovativo-${Date.now()}`,
+      );
 
-      const response = await fetch(`/api/subscription-requests/${request.id}/payment-proof`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+      const response = await fetch(
+        `/api/subscription-requests/${request.id}/payment-proof`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            fileBase64,
+            proofName: safeName,
+            note,
+            contentType: file.type || '',
+            size: file.size,
+          }),
         },
-        body: JSON.stringify({
-          fileBase64,
-          proofName: safeName,
-          note,
-          contentType: file.type || '',
-          size: file.size
-        })
-      });
+      );
 
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        throw new Error(data.error || data.message || 'Não foi possível enviar o comprovativo.');
+        throw new Error(
+          data.error ||
+            data.message ||
+            'Não foi possível enviar o comprovativo.',
+        );
       }
 
-      setSuccess('Comprovativo enviado com sucesso. Aguarde a revisão do administrador.');
+      setSuccess(
+        'Comprovativo enviado com sucesso. Aguarde a revisão do administrador.',
+      );
       setFile(null);
       setNote('');
       onSubmitted?.(data.request || null);
     } catch (uploadError) {
-      setError(uploadError.message || 'Não foi possível enviar o comprovativo.');
+      setError(
+        uploadError.message || 'Não foi possível enviar o comprovativo.',
+      );
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <section className={styles.card}>
+    <section className={`${styles.card} ${embedded ? styles.embedded : ''}`}>
       <div className={styles.header}>
         <div>
           <h3>{title}</h3>
           <p>{description}</p>
         </div>
-        <span className={`${styles.status} ${hasProof ? styles.statusSubmitted : styles.statusPending}`}>
+        <span
+          className={`${styles.status} ${hasProof ? styles.statusSubmitted : styles.statusPending}`}
+        >
           {hasProof ? 'Comprovativo enviado' : 'Aguardando comprovativo'}
         </span>
       </div>
@@ -129,7 +148,10 @@ export default function ManualPaymentProofCard({
         </div>
         <div>
           <span>Valor</span>
-          <strong>{instructions.amount || request.price || 0} {instructions.currency || 'Dobras'}</strong>
+          <strong>
+            {instructions.amount || request.price || 0}{' '}
+            {instructions.currency || 'Dobras'}
+          </strong>
         </div>
         <div>
           <span>Email</span>
@@ -143,11 +165,26 @@ export default function ManualPaymentProofCard({
         )}
       </div>
 
-      {(instructions.accountNumber || instructions.accountName || instructions.bankName || instructions.message) && (
+      {(instructions.accountNumber ||
+        instructions.accountName ||
+        instructions.bankName ||
+        instructions.message) && (
         <div className={styles.instructionsBox}>
-          {instructions.accountNumber && <p><strong>Conta:</strong> {instructions.accountNumber}</p>}
-          {instructions.accountName && <p><strong>Titular:</strong> {instructions.accountName}</p>}
-          {instructions.bankName && <p><strong>Banco:</strong> {instructions.bankName}</p>}
+          {instructions.accountNumber && (
+            <p>
+              <strong>Conta:</strong> {instructions.accountNumber}
+            </p>
+          )}
+          {instructions.accountName && (
+            <p>
+              <strong>Titular:</strong> {instructions.accountName}
+            </p>
+          )}
+          {instructions.bankName && (
+            <p>
+              <strong>Banco:</strong> {instructions.bankName}
+            </p>
+          )}
           {instructions.message && <p>{instructions.message}</p>}
         </div>
       )}
@@ -160,12 +197,24 @@ export default function ManualPaymentProofCard({
               {request.paymentProof.name || 'Abrir comprovativo'}
             </a>
           </p>
-          {request.paymentProof.note && <p><strong>Nota:</strong> {request.paymentProof.note}</p>}
+          {request.paymentProof.note && (
+            <p>
+              <strong>Nota:</strong> {request.paymentProof.note}
+            </p>
+          )}
         </div>
       )}
 
-      {error && <div className={styles.errorBox}>{error}</div>}
-      {success && <div className={styles.successBox}>{success}</div>}
+      {error && (
+        <div className={styles.errorBox} role="alert">
+          {error}
+        </div>
+      )}
+      {success && (
+        <div className={styles.successBox} role="status">
+          {success}
+        </div>
+      )}
 
       <form className={styles.form} onSubmit={handleSubmit}>
         <label className={styles.fileField}>

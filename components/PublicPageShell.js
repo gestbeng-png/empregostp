@@ -1,14 +1,14 @@
-import LandingHeader from "./LandingHeader";
-import Footer from "./home/Footer";
-import styles from "../styles/PublicPageShell.module.css";
+import LandingHeader from './LandingHeader';
+import Footer from './home/Footer';
+import styles from '../styles/PublicPageShell.module.css';
 
 export default function PublicPageShell({
   children,
-  headerVariant = "light",
+  headerVariant = 'light',
   showFooter = true,
 }) {
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} workbridgePublicShell`}>
       <a href="#main-content" className="skipLink">
         Ir para o conteúdo
       </a>
@@ -19,7 +19,10 @@ export default function PublicPageShell({
         <span className={styles.gridPattern} />
       </div>
       <LandingHeader variant={headerVariant} />
-      <main id="main-content" className={styles.content}>
+      <main
+        id="main-content"
+        className={`${styles.content} workbridgePublicContent`}
+      >
         {children}
       </main>
       {showFooter ? <Footer /> : null}

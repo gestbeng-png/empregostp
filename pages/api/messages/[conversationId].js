@@ -1,5 +1,7 @@
 import { admin } from '../../../lib/firebaseAdmin';
 import { canSendDirectMessage, getEmpresaPlanSummary } from '../../../lib/empresaPlanFeatures';
+import { canUsersContinueConversation } from '../../../lib/conversationPolicy';
+import { logServerError } from '../../../lib/serverLog';
 
 /**
  * GET  /api/messages/[conversationId]  — lista mensagens de uma conversa
@@ -46,11 +48,11 @@ export default async function handler(req, res) {
         .collection('conversations')
         .doc(conversationId)
         .collection('messages')
-        .orderBy('createdAt', 'asc')
+        .orderBy('createdAt', 'desc')
         .limit(100)
         .get();
 
-      const messages = messagesSnapshot.docs.map((doc) => ({
+      const messages = [...messagesSnapshot.docs].reverse().map((doc) => ({
         id: doc.id,
         ...doc.data(),
         createdAt: doc.data().createdAt?.toDate?.()?.toISOString() || null
@@ -93,19 +95,39 @@ export default async function handler(req, res) {
     try {
       const now = admin.firestore.FieldValue.serverTimestamp();
       const otherParticipantId = convData.participants.find((p) => p !== uid);
+      if (!otherParticipantId) {
+        return res.status(409).json({ error: 'A conversa não tem um destinatário válido' });
+      }
 
-      // Adicionar mensagem à subcollection
-      const msgRef = await admin.firestore()
-        .collection('conversations')
-        .doc(conversationId)
-        .collection('messages')
-        .add({
-          senderId: uid,
-          text: text.trim(),
-          createdAt: now
-        });
+      const participantDoc = await admin
+        .firestore()
+        .collection('users')
+        .doc(otherParticipantId)
+        .get();
+      if (!participantDoc.exists) {
+        return res.status(404).json({ error: 'Destinatário não encontrado' });
+      }
+      const participantData = participantDoc.data() || {};
+      const conversationPolicy = canUsersContinueConversation({
+        requester: requesterData,
+        participant: participantData,
+      });
+      if (!conversationPolicy.allowed) {
+        return res.status(403).json({ error: conversationPolicy.reason });
+      }
 
-      // Atualizar última mensagem e unread count do destinatário
+      const firestore = admin.firestore();
+      const msgRef = convRef.collection('messages').doc();
+      const batch = firestore.batch();
+
+      // A mensagem e o resumo da conversa têm de ficar sempre sincronizados.
+      // Se a conversa tiver sido removida, o update falha e nada é gravado.
+      batch.set(msgRef, {
+        senderId: uid,
+        text: text.trim(),
+        createdAt: now
+      });
+
       const updateData = {
         lastMessage: text.trim().substring(0, 100),
         updatedAt: now
@@ -113,14 +135,16 @@ export default async function handler(req, res) {
       if (otherParticipantId) {
         updateData[`unreadCounts.${otherParticipantId}`] = admin.firestore.FieldValue.increment(1);
       }
-      await convRef.update(updateData);
+      batch.update(convRef, updateData);
+      await batch.commit();
 
       return res.status(201).json({ messageId: msgRef.id });
     } catch (error) {
-      console.error('Erro ao enviar mensagem:', error);
+      logServerError('messages_conversationid.enviar_mensagem_failed', error);
       return res.status(500).json({ error: 'Erro interno do servidor' });
     }
   }
 
+  res.setHeader('Allow', ['GET', 'POST']);
   return res.status(405).json({ error: 'Método não permitido' });
 }

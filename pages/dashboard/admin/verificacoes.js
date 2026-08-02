@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { getAuth } from 'firebase/auth';
-import LandingHeader from '../../../components/LandingHeader';
 import { requireAdminPageAuth } from '../../../lib/adminPageGuard';
 import { VERIFICATION_TYPE_CONFIG } from '../../../lib/candidateVerification';
 import styles from '../../../styles/AdminPanel.module.css';
@@ -40,7 +39,13 @@ const STATUS_CONFIG = {
   },
 };
 
-const TYPE_ORDER = ['identity', 'certificates', 'academic', 'experience', 'competencies'];
+const TYPE_ORDER = [
+  'identity',
+  'certificates',
+  'academic',
+  'experience',
+  'competencies',
+];
 
 function formatDate(dateStr) {
   if (!dateStr) return '—';
@@ -68,9 +73,9 @@ function StatCard({ title, value, color }) {
 
 function getOrderedItems(verification) {
   const itemMap = verification?.verificationItems || {};
-  return TYPE_ORDER
-    .map((type) => itemMap[type])
-    .filter((item) => item && item.requested);
+  return TYPE_ORDER.map((type) => itemMap[type]).filter(
+    (item) => item && item.requested,
+  );
 }
 
 export default function AdminVerificacoes() {
@@ -103,7 +108,9 @@ export default function AdminVerificacoes() {
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || data.message || 'Erro ao carregar verificações');
+        throw new Error(
+          data.error || data.message || 'Erro ao carregar verificações',
+        );
       }
 
       if (res.status === 304) {
@@ -150,7 +157,8 @@ export default function AdminVerificacoes() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || data.message || 'Erro ao processar');
+      if (!res.ok)
+        throw new Error(data.error || data.message || 'Erro ao processar');
 
       const nextVerification = data.verification
         ? {
@@ -163,7 +171,9 @@ export default function AdminVerificacoes() {
 
       if (nextVerification) {
         setVerifications((prev) =>
-          prev.map((item) => (item.id === verification.id ? nextVerification : item))
+          prev.map((item) =>
+            item.id === verification.id ? nextVerification : item,
+          ),
         );
         setSelectedVerification(nextVerification);
       }
@@ -188,18 +198,24 @@ export default function AdminVerificacoes() {
     }
   }
 
-  const stats = useMemo(() => ({
-    pending: verifications.filter((item) => item.summary?.pendingCount > 0).length,
-    verified: verifications.filter((item) => item.summary?.publicVerified).length,
-    total: verifications.length,
-  }), [verifications]);
+  const stats = useMemo(
+    () => ({
+      pending: verifications.filter((item) => item.summary?.pendingCount > 0)
+        .length,
+      verified: verifications.filter((item) => item.summary?.publicVerified)
+        .length,
+      total: verifications.length,
+    }),
+    [verifications],
+  );
 
   const closeModal = () => {
     setSelectedVerification(null);
     setReviewReason('');
   };
 
-  const requestedTypeCount = (verification) => getOrderedItems(verification).length;
+  const requestedTypeCount = (verification) =>
+    getOrderedItems(verification).length;
 
   return (
     <>
@@ -207,20 +223,25 @@ export default function AdminVerificacoes() {
         <title>Verificações | Admin EmpregoSTP</title>
       </Head>
 
-      <LandingHeader />
-
-      <main className={`${styles.page} ${styles.pageNarrow}`}>
+      <div className={`${styles.page} ${styles.pageNarrow}`}>
         <div className={styles.headerCard}>
           <div className={styles.headerCopy}>
             <Link
               href="/dashboard/admin"
               className={`${styles.linkButton} ${styles.buttonAccent} ${styles.buttonSmall}`}
-              style={{ '--button-bg': 'rgba(255, 255, 255, 0.05)', '--button-border': 'rgba(255, 255, 255, 0.1)', '--button-color': '#93c5fd' }}
+              style={{
+                '--button-bg': 'rgba(255, 255, 255, 0.05)',
+                '--button-border': 'rgba(255, 255, 255, 0.1)',
+                '--button-color': '#93c5fd',
+              }}
             >
               ← Voltar ao Dashboard
             </Link>
             <h1 className={styles.headerTitle}>Verificações</h1>
-            <p className={styles.headerSubtitle}>Painel por tipo de verificação, com checklist e evidências por candidato.</p>
+            <p className={styles.headerSubtitle}>
+              Painel por tipo de verificação, com checklist e evidências por
+              candidato.
+            </p>
           </div>
           <div className={styles.headerActions}>
             <button
@@ -228,7 +249,11 @@ export default function AdminVerificacoes() {
               onClick={fetchVerifications}
               disabled={loading}
               className={`${styles.buttonBase} ${styles.buttonAccent}`}
-              style={{ '--button-bg': 'rgba(255, 255, 255, 0.08)', '--button-border': 'rgba(255, 255, 255, 0.12)', '--button-color': 'rgba(255, 255, 255, 0.85)' }}
+              style={{
+                '--button-bg': 'rgba(255, 255, 255, 0.08)',
+                '--button-border': 'rgba(255, 255, 255, 0.12)',
+                '--button-color': 'rgba(255, 255, 255, 0.85)',
+              }}
             >
               Atualizar
             </button>
@@ -237,20 +262,36 @@ export default function AdminVerificacoes() {
 
         <section className={styles.section}>
           <div className={styles.gridStats}>
-            <StatCard title="Com itens pendentes" value={stats.pending} color="#f59e0b" />
-            <StatCard title="Perfis públicos verificados" value={stats.verified} color="#10b981" />
-            <StatCard title="Total carregados" value={stats.total} color="#64748b" />
+            <StatCard
+              title="Com itens pendentes"
+              value={stats.pending}
+              color="#f59e0b"
+            />
+            <StatCard
+              title="Perfis públicos verificados"
+              value={stats.verified}
+              color="#10b981"
+            />
+            <StatCard
+              title="Total carregados"
+              value={stats.total}
+              color="#64748b"
+            />
           </div>
         </section>
 
         {message.text ? (
-          <div className={`${styles.alert} ${message.ok ? styles.alertSuccess : styles.alertError}`}>
+          <div
+            role="status"
+            aria-live="polite"
+            className={`${styles.alert} ${message.ok ? styles.alertSuccess : styles.alertError}`}
+          >
             {message.text}
           </div>
         ) : null}
 
         {error ? (
-          <div className={`${styles.alert} ${styles.alertError}`}>
+          <div role="alert" className={`${styles.alert} ${styles.alertError}`}>
             {error}
           </div>
         ) : null}
@@ -264,7 +305,9 @@ export default function AdminVerificacoes() {
               </div>
             ) : verifications.length === 0 ? (
               <div className={styles.emptyState}>
-                <p className={styles.emptyText}>Nenhuma verificação encontrada.</p>
+                <p className={styles.emptyText}>
+                  Nenhuma verificação encontrada.
+                </p>
               </div>
             ) : (
               <div className={styles.tableWrap}>
@@ -276,28 +319,58 @@ export default function AdminVerificacoes() {
                       <th className={styles.tableHeadCell}>Última submissão</th>
                       <th className={styles.tableHeadCell}>Tipos</th>
                       <th className={styles.tableHeadCell}>Resumo</th>
-                      <th className={styles.tableHeadCell}>Status</th>
-                      <th className={`${styles.tableHeadCell} ${styles.alignRight}`}>Ações</th>
+                      <th className={styles.tableHeadCell}>Estado</th>
+                      <th
+                        className={`${styles.tableHeadCell} ${styles.alignRight}`}
+                      >
+                        Ações
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {verifications.map((verification) => {
-                      const status = STATUS_CONFIG[verification.status] || STATUS_CONFIG.draft;
+                      const status =
+                        STATUS_CONFIG[verification.status] ||
+                        STATUS_CONFIG.draft;
                       return (
                         <tr key={verification.id} className={styles.tableRow}>
                           <td className={styles.tableCell}>
-                            <Link href={`/dashboard/admin/users/${verification.uid}`} className={styles.proofLink}>
+                            <Link
+                              href={`/dashboard/admin/users/${verification.uid}`}
+                              className={styles.proofLink}
+                            >
                               {verification.candidateName}
                             </Link>
                           </td>
-                          <td className={`${styles.tableCell} ${styles.tableCellSoft}`}>{verification.candidateEmail}</td>
-                          <td className={`${styles.tableCell} ${styles.tableCellSoft} ${styles.nowrap}`}>{formatDate(verification.updatedAt || verification.submittedAt)}</td>
+                          <td
+                            className={`${styles.tableCell} ${styles.tableCellSoft}`}
+                          >
+                            {verification.candidateEmail}
+                          </td>
+                          <td
+                            className={`${styles.tableCell} ${styles.tableCellSoft} ${styles.nowrap}`}
+                          >
+                            {formatDate(
+                              verification.updatedAt ||
+                                verification.submittedAt,
+                            )}
+                          </td>
                           <td className={styles.tableCell}>
-                            <span className={`${styles.badge} ${styles.badgeSmall}`} style={{ '--badge-bg': 'rgba(255,255,255,0.08)', '--badge-color': '#e2e8f0', '--badge-border': '1px solid rgba(255,255,255,0.08)' }}>
+                            <span
+                              className={`${styles.badge} ${styles.badgeSmall}`}
+                              style={{
+                                '--badge-bg': 'rgba(255,255,255,0.08)',
+                                '--badge-color': '#e2e8f0',
+                                '--badge-border':
+                                  '1px solid rgba(255,255,255,0.08)',
+                              }}
+                            >
                               {requestedTypeCount(verification)} tipo(s)
                             </span>
                           </td>
-                          <td className={`${styles.tableCell} ${styles.tableCellSoft}`}>
+                          <td
+                            className={`${styles.tableCell} ${styles.tableCellSoft}`}
+                          >
                             {verification.summary
                               ? `${verification.summary.approvedCount || 0} aprovados • ${verification.summary.pendingCount || 0} pendentes`
                               : '—'}
@@ -305,17 +378,29 @@ export default function AdminVerificacoes() {
                           <td className={styles.tableCell}>
                             <span
                               className={styles.badge}
-                              style={{ '--badge-bg': status.background, '--badge-color': status.color, '--badge-border': status.border }}
+                              style={{
+                                '--badge-bg': status.background,
+                                '--badge-color': status.color,
+                                '--badge-border': status.border,
+                              }}
                             >
                               {status.label}
                             </span>
                           </td>
-                          <td className={`${styles.tableCell} ${styles.alignRight}`}>
+                          <td
+                            className={`${styles.tableCell} ${styles.alignRight}`}
+                          >
                             <button
                               type="button"
-                              onClick={() => setSelectedVerification(verification)}
+                              onClick={() =>
+                                setSelectedVerification(verification)
+                              }
                               className={`${styles.buttonBase} ${styles.buttonAccent} ${styles.buttonSmall}`}
-                              style={{ '--button-bg': 'rgba(59, 130, 246, 0.2)', '--button-border': 'rgba(59, 130, 246, 0.3)', '--button-color': '#60a5fa' }}
+                              style={{
+                                '--button-bg': 'rgba(59, 130, 246, 0.2)',
+                                '--button-border': 'rgba(59, 130, 246, 0.3)',
+                                '--button-color': '#60a5fa',
+                              }}
                             >
                               Ver detalhes
                             </button>
@@ -329,15 +414,24 @@ export default function AdminVerificacoes() {
             )}
           </div>
         </section>
-      </main>
+      </div>
 
       {selectedVerification ? (
         <div className={styles.modalOverlay} onClick={closeModal}>
-          <div className={`${styles.modalCard} ${styles.modalCardLarge}`} onClick={(event) => event.stopPropagation()}>
+          <div
+            className={`${styles.modalCard} ${styles.modalCardLarge}`}
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="verification-review-title"
+          >
             <div className={styles.modalHeader}>
-              <h2 className={styles.modalTitle}>Painel de revisão</h2>
+              <h2 id="verification-review-title" className={styles.modalTitle}>
+                Painel de revisão
+              </h2>
               <p className={styles.modalSubtitle}>
-                {selectedVerification.candidateName} • {selectedVerification.candidateEmail}
+                {selectedVerification.candidateName} •{' '}
+                {selectedVerification.candidateEmail}
               </p>
             </div>
 
@@ -345,20 +439,44 @@ export default function AdminVerificacoes() {
               <div className={styles.modalInfoCard}>
                 <h3 className={styles.modalInfoTitle}>Resumo</h3>
                 <div className={styles.buttonGroup}>
-                  <span className={styles.badge} style={{ '--badge-bg': 'rgba(59, 130, 246, 0.14)', '--badge-color': '#93c5fd', '--badge-border': '1px solid rgba(59, 130, 246, 0.2)' }}>
+                  <span
+                    className={styles.badge}
+                    style={{
+                      '--badge-bg': 'rgba(59, 130, 246, 0.14)',
+                      '--badge-color': '#93c5fd',
+                      '--badge-border': '1px solid rgba(59, 130, 246, 0.2)',
+                    }}
+                  >
                     {selectedVerification.summary?.approvedCount || 0} aprovados
                   </span>
-                  <span className={styles.badge} style={{ '--badge-bg': 'rgba(245, 158, 11, 0.14)', '--badge-color': '#fbbf24', '--badge-border': '1px solid rgba(245, 158, 11, 0.2)' }}>
+                  <span
+                    className={styles.badge}
+                    style={{
+                      '--badge-bg': 'rgba(245, 158, 11, 0.14)',
+                      '--badge-color': '#fbbf24',
+                      '--badge-border': '1px solid rgba(245, 158, 11, 0.2)',
+                    }}
+                  >
                     {selectedVerification.summary?.pendingCount || 0} pendentes
                   </span>
-                  <span className={styles.badge} style={{ '--badge-bg': 'rgba(239, 68, 68, 0.14)', '--badge-color': '#f87171', '--badge-border': '1px solid rgba(239, 68, 68, 0.2)' }}>
-                    {selectedVerification.summary?.rejectedCount || 0} rejeitados
+                  <span
+                    className={styles.badge}
+                    style={{
+                      '--badge-bg': 'rgba(239, 68, 68, 0.14)',
+                      '--badge-color': '#f87171',
+                      '--badge-border': '1px solid rgba(239, 68, 68, 0.2)',
+                    }}
+                  >
+                    {selectedVerification.summary?.rejectedCount || 0}{' '}
+                    rejeitados
                   </span>
                 </div>
               </div>
 
               <div className={styles.formField}>
-                <label htmlFor="review-reason" className={styles.formLabel}>Nota de revisão</label>
+                <label htmlFor="review-reason" className={styles.formLabel}>
+                  Nota de revisão
+                </label>
                 <textarea
                   id="review-reason"
                   value={reviewReason}
@@ -371,17 +489,29 @@ export default function AdminVerificacoes() {
 
               <div className={styles.verificationReviewGrid}>
                 {getOrderedItems(selectedVerification).map((item) => {
-                  const itemStatus = STATUS_CONFIG[item.status] || STATUS_CONFIG.draft;
+                  const itemStatus =
+                    STATUS_CONFIG[item.status] || STATUS_CONFIG.draft;
                   return (
-                    <article key={item.type} className={styles.verificationReviewCard}>
+                    <article
+                      key={item.type}
+                      className={styles.verificationReviewCard}
+                    >
                       <div className={styles.verificationReviewHeader}>
                         <div>
-                          <h3 className={styles.verificationReviewTitle}>{item.label}</h3>
-                          <p className={styles.verificationReviewText}>{item.description}</p>
+                          <h3 className={styles.verificationReviewTitle}>
+                            {item.label}
+                          </h3>
+                          <p className={styles.verificationReviewText}>
+                            {item.description}
+                          </p>
                         </div>
                         <span
                           className={styles.badge}
-                          style={{ '--badge-bg': itemStatus.background, '--badge-color': itemStatus.color, '--badge-border': itemStatus.border }}
+                          style={{
+                            '--badge-bg': itemStatus.background,
+                            '--badge-color': itemStatus.color,
+                            '--badge-border': itemStatus.border,
+                          }}
                         >
                           {itemStatus.label}
                         </span>
@@ -389,8 +519,17 @@ export default function AdminVerificacoes() {
 
                       <div className={styles.verificationChecklistAdmin}>
                         {item.checklist?.map((check) => (
-                          <div key={`${item.type}-${check.id}`} className={styles.verificationChecklistAdminItem}>
-                            <span className={check.completed ? styles.verificationCheckDone : styles.verificationCheckPending}>
+                          <div
+                            key={`${item.type}-${check.id}`}
+                            className={styles.verificationChecklistAdminItem}
+                          >
+                            <span
+                              className={
+                                check.completed
+                                  ? styles.verificationCheckDone
+                                  : styles.verificationCheckPending
+                              }
+                            >
                               {check.completed ? '✓' : '•'}
                             </span>
                             <div>
@@ -404,46 +543,91 @@ export default function AdminVerificacoes() {
                       {item.evidence?.length ? (
                         <div className={styles.verificationEvidenceList}>
                           {item.evidence.map((evidence) => (
-                            <div key={evidence.id} className={styles.verificationEvidenceItem}>
+                            <div
+                              key={evidence.id}
+                              className={styles.verificationEvidenceItem}
+                            >
                               <strong>{evidence.label}</strong>
                               {evidence.url ? (
-                                <a href={evidence.url} target="_blank" rel="noreferrer" className={styles.proofLink}>
+                                <a
+                                  href={evidence.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className={styles.proofLink}
+                                >
                                   Abrir evidência
                                 </a>
                               ) : (
                                 <p>{evidence.text || 'Sem detalhe textual.'}</p>
                               )}
-                              <span>{evidence.source === 'submission' ? 'Submetido no pedido' : 'Puxado do perfil atual'}</span>
+                              <span>
+                                {evidence.source === 'submission'
+                                  ? 'Submetido no pedido'
+                                  : 'Puxado do perfil atual'}
+                              </span>
                             </div>
                           ))}
                         </div>
                       ) : (
-                        <p className={styles.proofNote}>Sem evidências anexadas neste tipo.</p>
+                        <p className={styles.proofNote}>
+                          Sem evidências anexadas neste tipo.
+                        </p>
                       )}
 
                       {item.status === 'pending' ? (
-                        <div className={styles.buttonGroup} style={{ justifyContent: 'flex-end' }}>
+                        <div
+                          className={styles.buttonGroup}
+                          style={{ justifyContent: 'flex-end' }}
+                        >
                           <button
                             type="button"
-                            disabled={processingKey === `${selectedVerification.id}:${item.type}:approve`}
-                            onClick={() => processAction(selectedVerification, 'approve', item.type)}
+                            disabled={
+                              processingKey ===
+                              `${selectedVerification.id}:${item.type}:approve`
+                            }
+                            onClick={() =>
+                              processAction(
+                                selectedVerification,
+                                'approve',
+                                item.type,
+                              )
+                            }
                             className={`${styles.buttonBase} ${styles.buttonAccent} ${styles.buttonSmall}`}
-                            style={{ '--button-bg': 'rgba(16, 185, 129, 0.15)', '--button-border': 'rgba(16,185,129,0.3)', '--button-color': '#34d399' }}
+                            style={{
+                              '--button-bg': 'rgba(16, 185, 129, 0.15)',
+                              '--button-border': 'rgba(16,185,129,0.3)',
+                              '--button-color': '#34d399',
+                            }}
                           >
                             Aprovar tipo
                           </button>
                           <button
                             type="button"
-                            disabled={processingKey === `${selectedVerification.id}:${item.type}:reject`}
-                            onClick={() => processAction(selectedVerification, 'reject', item.type)}
+                            disabled={
+                              processingKey ===
+                              `${selectedVerification.id}:${item.type}:reject`
+                            }
+                            onClick={() =>
+                              processAction(
+                                selectedVerification,
+                                'reject',
+                                item.type,
+                              )
+                            }
                             className={`${styles.buttonBase} ${styles.buttonAccent} ${styles.buttonSmall}`}
-                            style={{ '--button-bg': 'rgba(239, 68, 68, 0.12)', '--button-border': 'rgba(239,68,68,0.3)', '--button-color': '#f87171' }}
+                            style={{
+                              '--button-bg': 'rgba(239, 68, 68, 0.12)',
+                              '--button-border': 'rgba(239,68,68,0.3)',
+                              '--button-color': '#f87171',
+                            }}
                           >
                             Rejeitar tipo
                           </button>
                         </div>
                       ) : item.reviewReason ? (
-                        <p className={styles.proofNote}>Motivo: {item.reviewReason}</p>
+                        <p className={styles.proofNote}>
+                          Motivo: {item.reviewReason}
+                        </p>
                       ) : null}
                     </article>
                   );
@@ -451,8 +635,15 @@ export default function AdminVerificacoes() {
               </div>
             </div>
 
-            <div className={styles.buttonGroupEnd} style={{ marginTop: '2rem' }}>
-              <button type="button" onClick={closeModal} className={`${styles.buttonBase} ${styles.buttonGhost}`}>
+            <div
+              className={styles.buttonGroupEnd}
+              style={{ marginTop: '2rem' }}
+            >
+              <button
+                type="button"
+                onClick={closeModal}
+                className={`${styles.buttonBase} ${styles.buttonGhost}`}
+              >
                 Fechar
               </button>
             </div>

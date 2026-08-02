@@ -1,45 +1,30 @@
-import Link from "next/link";
-import {
-  FaPhone,
-  FaEnvelope,
-  FaFacebook,
-  FaInstagram,
-  FaLinkedin,
-  FaTwitter,
-} from "react-icons/fa";
-import styles from "../../styles/Footer.module.css";
+import Image from 'next/image';
+import Link from 'next/link';
+import { FiMail, FiPhone } from 'react-icons/fi';
+import styles from '../../styles/Footer.module.css';
 
 const candidateLinks = [
-  { label: "Encontrar Vagas", href: "/vagas" },
-  { label: "Criar Currículo", href: "/recursos/gerador-cv" },
-  { label: "Alertas de Vagas", href: "/dashboard/candidato" },
-  { label: "Dicas de Carreira", href: "/blog" },
+  { label: 'Encontrar vagas', href: '/vagas' },
+  { label: 'Criar currículo', href: '/recursos/gerador-cv' },
+  { label: 'Dicas de carreira', href: '/blog' },
 ];
 
 const companyLinks = [
-  { label: "Publicar Vagas", href: "/dashboard/empresa/vaga/criar-vaga" },
-  { label: "Buscar Candidatos", href: "/candidatos" },
-  { label: "Planos e Preços", href: "/premium/empresa" },
-  { label: "Recursos", href: "/recursos" },
+  { label: 'Publicar vagas', href: '/dashboard/empresa/vaga/criar-vaga' },
+  { label: 'Procurar candidatos', href: '/#candidatos-verificados' },
+  { label: 'Recursos', href: '/recursos' },
 ];
 
 const companyInfoLinks = [
-  { label: "Sobre Nós", href: "/sobre-nos" },
-  { label: "Blog", href: "/blog" },
-  { label: "Contato", href: "/sobre-nos" },
-  { label: "Privacidade", href: "/politica-privacidade" },
-];
-
-const socialLinks = [
-  { href: "#", label: "Facebook", Icon: FaFacebook },
-  { href: "#", label: "Instagram", Icon: FaInstagram },
-  { href: "#", label: "LinkedIn", Icon: FaLinkedin },
-  { href: "#", label: "Twitter", Icon: FaTwitter },
+  { label: 'Sobre nós', href: '/sobre-nos' },
+  { label: 'Blog', href: '/blog' },
+  { label: 'Contactos', href: '/contacto' },
+  { label: 'Privacidade', href: '/politica-privacidade' },
 ];
 
 function FooterLinkGroup({ title, links }) {
   return (
-    <div>
+    <nav className={styles.linkGroup} aria-label={`Links de ${title}`}>
       <h4 className={styles.sectionTitle}>{title}</h4>
       <ul className={styles.links}>
         {links.map((item) => (
@@ -50,34 +35,53 @@ function FooterLinkGroup({ title, links }) {
           </li>
         ))}
       </ul>
-    </div>
+    </nav>
   );
 }
 
 export default function Footer() {
   return (
-    <footer className={styles.footer}>
+    <footer className={`${styles.footer} workbridgeFooter`}>
       <div className={styles.inner}>
+        <div className={styles.signatureRail}>
+          <span className={styles.signaturePlace}>
+            São Tomé e Príncipe · Linha do Equador
+          </span>
+          <span className={styles.signatureMessage}>
+            Talento local. Impacto global.
+          </span>
+        </div>
+
         <div className={styles.grid}>
           <div className={styles.brandBlock}>
             <Link href="/" className={styles.brand}>
               <span className={styles.brandMark}>
-                <img
+                <Image
                   src="/assets/Emprego STP Logo 2-wide.png"
                   alt="EmpregoSTP"
                   className={styles.brandLogo}
-                  width="619"
-                  height="169"
-                  loading="lazy"
-                  decoding="async"
+                  width={619}
+                  height={169}
+                  sizes="(max-width: 640px) 220px, 250px"
                 />
               </span>
             </Link>
+            <p className={styles.brandStatement}>
+              Ligamos pessoas, empresas e oportunidades para fazer avançar o
+              talento de São Tomé e Príncipe.
+            </p>
+          </div>
 
+          <FooterLinkGroup title="Candidatos" links={candidateLinks} />
+          <FooterLinkGroup title="Empresas" links={companyLinks} />
+          <FooterLinkGroup title="Plataforma" links={companyInfoLinks} />
+
+          <nav className={styles.contactGroup} aria-label="Contactos">
+            <h4 className={styles.sectionTitle}>Contacto</h4>
             <div className={styles.contactList}>
               <a href="tel:+2399869673" className={styles.contactItem}>
                 <span className={styles.contactIcon}>
-                  <FaPhone />
+                  <FiPhone aria-hidden="true" />
                 </span>
                 <span>+239 986 9673</span>
               </a>
@@ -86,29 +90,12 @@ export default function Footer() {
                 className={styles.contactItem}
               >
                 <span className={styles.contactIcon}>
-                  <FaEnvelope />
+                  <FiMail aria-hidden="true" />
                 </span>
                 <span>suporte@empregos.st</span>
               </a>
             </div>
-
-            <div className={styles.socialList}>
-              {socialLinks.map(({ href, label, Icon }) => (
-                <a
-                  key={label}
-                  href={href}
-                  className={styles.socialLink}
-                  aria-label={label}
-                >
-                  <Icon />
-                </a>
-              ))}
-            </div>
-          </div>
-
-          <FooterLinkGroup title="Candidatos" links={candidateLinks} />
-          <FooterLinkGroup title="Empresas" links={companyLinks} />
-          <FooterLinkGroup title="Plataforma" links={companyInfoLinks} />
+          </nav>
         </div>
       </div>
 

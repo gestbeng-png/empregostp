@@ -1,0 +1,40 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "phase": "before-browser-validation",
+  "route": "/recursos/gerador-cv",
+  "slug": "gerador-cv",
+  "results": [
+    {
+      "viewport": { "width": 320, "height": 800 },
+      "horizontalOverflow": 223,
+      "smallTextCount": 4,
+      "shortTargetCount": 1,
+      "headingOneCount": 1,
+      "landmarks": { "main": 1, "nav": 1, "footer": 1 }
+    },
+    {
+      "viewport": { "width": 768, "height": 900 },
+      "horizontalOverflow": 0,
+      "smallTextCount": 4,
+      "shortTargetCount": 1,
+      "headingOneCount": 1,
+      "landmarks": { "main": 1, "nav": 1, "footer": 1 }
+    },
+    {
+      "viewport": { "width": 1024, "height": 900 },
+      "horizontalOverflow": 0,
+      "smallTextCount": 1,
+      "shortTargetCount": 1,
+      "headingOneCount": 1,
+      "landmarks": { "main": 1, "nav": 1, "footer": 1 }
+    },
+    {
+      "viewport": { "width": 1440, "height": 1000 },
+      "horizontalOverflow": 0,
+      "smallTextCount": 1,
+      "shortTargetCount": 1,
+      "headingOneCount": 1,
+      "landmarks": { "main": 1, "nav": 1, "footer": 1 }
+    }
+  ]
+}

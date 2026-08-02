@@ -1,10 +1,11 @@
-import Image from "next/image";
-import Link from "next/link";
-import styles from "../../styles/AuthPage.module.css";
+import Image from 'next/image';
+import Link from 'next/link';
+import styles from '../../styles/AuthPage.module.css';
 
 export default function AuthShell({
-  tone = "blue",
+  tone = 'blue',
   minimal = false,
+  wide = false,
   eyebrow,
   panelTitle,
   panelDescription,
@@ -12,20 +13,17 @@ export default function AuthShell({
   children,
 }) {
   const toneClass =
-    tone === "green" ? styles.brandPanelGreen : styles.brandPanelBlue;
+    tone === 'green' ? styles.brandPanelGreen : styles.brandPanelBlue;
 
   return (
     <div className={styles.page}>
-      <div className={styles.backdrop} aria-hidden="true">
-        <span className={`${styles.orb} ${styles.orbPrimary}`} />
-        <span className={`${styles.orb} ${styles.orbSecondary}`} />
-        <span className={`${styles.orb} ${styles.orbTertiary}`} />
-        <span className={styles.gridPattern} />
-      </div>
-
       <main className={styles.main}>
         {minimal ? (
-          <section className={styles.shellMinimal}>
+          <section
+            className={`${styles.shellMinimal} ${
+              wide ? styles.shellMinimalWide : ''
+            }`}
+          >
             <section className={styles.formPanelCompact}>
               <Link
                 href="/"
@@ -42,7 +40,13 @@ export default function AuthShell({
                 />
               </Link>
 
-              <div className={styles.formPanelInner}>{children}</div>
+              <div
+                className={`${styles.formPanelInner} ${
+                  wide ? styles.formPanelInnerWide : ''
+                }`}
+              >
+                {children}
+              </div>
             </section>
           </section>
         ) : (

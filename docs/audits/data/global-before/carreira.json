@@ -1,0 +1,152 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "phase": "global-before",
+  "results": [
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              ".CarreiraPage_courseCard__VEp6R:nth-child(1) > .CarreiraPage_courseMeta__PrEqS > span:nth-child(1)"
+            ],
+            [
+              ".CarreiraPage_courseCard__VEp6R:nth-child(1) > .CarreiraPage_courseMeta__PrEqS > span:nth-child(2)"
+            ],
+            [
+              ".CarreiraPage_courseCard__VEp6R:nth-child(1) > .CarreiraPage_courseMeta__PrEqS > span:nth-child(3)"
+            ],
+            [
+              ".CarreiraPage_courseCard__VEp6R:nth-child(2) > .CarreiraPage_courseMeta__PrEqS > span:nth-child(1)"
+            ],
+            [
+              ".CarreiraPage_courseCard__VEp6R:nth-child(2) > .CarreiraPage_courseMeta__PrEqS > span:nth-child(2)"
+            ],
+            [
+              ".CarreiraPage_courseCard__VEp6R:nth-child(2) > .CarreiraPage_courseMeta__PrEqS > span:nth-child(3)"
+            ],
+            [
+              ".CarreiraPage_courseCard__VEp6R:nth-child(3) > .CarreiraPage_courseMeta__PrEqS > span:nth-child(1)"
+            ],
+            [
+              ".CarreiraPage_courseCard__VEp6R:nth-child(3) > .CarreiraPage_courseMeta__PrEqS > span:nth-child(2)"
+            ],
+            [
+              ".CarreiraPage_courseCard__VEp6R:nth-child(3) > .CarreiraPage_courseMeta__PrEqS > span:nth-child(3)"
+            ],
+            [
+              ".CarreiraPage_courseCard__VEp6R:nth-child(4) > .CarreiraPage_courseMeta__PrEqS > span:nth-child(1)"
+            ],
+            [
+              ".CarreiraPage_courseCard__VEp6R:nth-child(4) > .CarreiraPage_courseMeta__PrEqS > span:nth-child(2)"
+            ],
+            [
+              ".CarreiraPage_courseCard__VEp6R:nth-child(4) > .CarreiraPage_courseMeta__PrEqS > span:nth-child(3)"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 320,
+          "scrollHeight": 10239,
+          "scrollWidth": 320
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [],
+        "smallText": [],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/carreira",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      }
+    },
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              ".CarreiraPage_courseCard__VEp6R:nth-child(1) > .CarreiraPage_courseMeta__PrEqS > span:nth-child(1)"
+            ],
+            [
+              ".CarreiraPage_courseCard__VEp6R:nth-child(1) > .CarreiraPage_courseMeta__PrEqS > span:nth-child(2)"
+            ],
+            [
+              ".CarreiraPage_courseCard__VEp6R:nth-child(1) > .CarreiraPage_courseMeta__PrEqS > span:nth-child(3)"
+            ],
+            [
+              ".CarreiraPage_courseCard__VEp6R:nth-child(2) > .CarreiraPage_courseMeta__PrEqS > span:nth-child(1)"
+            ],
+            [
+              ".CarreiraPage_courseCard__VEp6R:nth-child(2) > .CarreiraPage_courseMeta__PrEqS > span:nth-child(2)"
+            ],
+            [
+              ".CarreiraPage_courseCard__VEp6R:nth-child(2) > .CarreiraPage_courseMeta__PrEqS > span:nth-child(3)"
+            ],
+            [
+              ".CarreiraPage_courseCard__VEp6R:nth-child(3) > .CarreiraPage_courseMeta__PrEqS > span:nth-child(1)"
+            ],
+            [
+              ".CarreiraPage_courseCard__VEp6R:nth-child(3) > .CarreiraPage_courseMeta__PrEqS > span:nth-child(2)"
+            ],
+            [
+              ".CarreiraPage_courseCard__VEp6R:nth-child(3) > .CarreiraPage_courseMeta__PrEqS > span:nth-child(3)"
+            ],
+            [
+              ".CarreiraPage_courseCard__VEp6R:nth-child(4) > .CarreiraPage_courseMeta__PrEqS > span:nth-child(1)"
+            ],
+            [
+              ".CarreiraPage_courseCard__VEp6R:nth-child(4) > .CarreiraPage_courseMeta__PrEqS > span:nth-child(2)"
+            ],
+            [
+              ".CarreiraPage_courseCard__VEp6R:nth-child(4) > .CarreiraPage_courseMeta__PrEqS > span:nth-child(3)"
+            ]
+          ]
+        }
+      ],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1440,
+          "scrollHeight": 5722,
+          "scrollWidth": 1440
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [],
+        "smallText": [],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/carreira",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    }
+  ],
+  "route": "/carreira",
+  "slug": "carreira"
+}

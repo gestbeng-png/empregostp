@@ -10,6 +10,7 @@ import { getFirebaseStorageErrorMessage } from "../../../../lib/firebaseStorageE
 import { normalizeSkillsAssessmentInput } from "../../../../lib/skillsAssessment";
 import { FiArrowLeft } from "react-icons/fi";
 import DashboardShell from "../../../../components/dashboard/DashboardShell";
+import styles from "../../../../styles/EmpresaJobForm.module.css";
 
 const EMPLOYMENT_TYPES = [
   "Tempo Integral",
@@ -598,145 +599,58 @@ export default function CriarVaga() {
         subtitle="Gestão de publicações"
         profile={{ name: "Empresa", role: "Empresa" }}
       >
-        <div className="dash-page">
+        <div className={`dash-page ${styles.page}`}>
           {/* Header */}
-          <div style={{ marginBottom: "2rem" }}>
+          <header className={styles.pageHeader}>
             <Link href="/dashboard/empresa?tab=jobs" className="dash-back">
               <FiArrowLeft /> Voltar às vagas
             </Link>
-          <h1
-            style={{
-              margin: "0 0 0.5rem 0",
-              fontSize: "2rem",
-              color: "#162a55",
-              fontWeight: "700",
-            }}
-          >
-            {isEditMode ? "Editar Vaga" : "Criar Nova Vaga"}
-          </h1>
-          <p style={{ margin: 0, color: "#607394", fontSize: "0.95rem" }}>
-            {isEditMode
-              ? "Atualize os detalhes da vaga sem perder o histórico de candidaturas"
-              : "Preencha os detalhes da vaga para atrair os melhores candidatos"}
-          </p>
-        </div>
+            <span className={styles.eyebrow}>Operação de recrutamento</span>
+            <h1 className={styles.pageTitle}>
+              {isEditMode ? "Editar vaga" : "Criar nova vaga"}
+            </h1>
+            <p className={styles.pageDescription}>
+              {isEditMode
+                ? "Atualize a publicação sem perder o histórico de candidaturas."
+                : "Estruture a oportunidade em quatro etapas e reveja tudo antes de publicar."}
+            </p>
+          </header>
 
         {/* Step Indicator */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginBottom: "2rem",
-            background: "#ffffff",
-            borderRadius: "12px",
-            padding: "1rem",
-          }}
-        >
+        <ol className={styles.stepper} aria-label="Progresso da publicação">
           {steps.map((step, i) => (
-            <div
+            <li
               key={step.num}
-              style={{ display: "flex", alignItems: "center", flex: 1 }}
+              className={`${styles.step} ${currentStep >= step.num ? styles.stepActive : ""} ${currentStep > step.num ? styles.stepComplete : ""}`}
+              aria-current={currentStep === step.num ? "step" : undefined}
             >
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  flex: 1,
-                }}
-              >
-                <div
-                  style={{
-                    width: "36px",
-                    height: "36px",
-                    borderRadius: "50%",
-                    background: currentStep >= step.num ? "#2057d7" : "#e2ecf9",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: currentStep >= step.num ? "white" : "#607394",
-                    fontWeight: "600",
-                    fontSize: "0.9rem",
-                    marginBottom: "0.5rem",
-                  }}
-                >
+              <div className={styles.stepContent}>
+                <span className={styles.stepNumber} aria-hidden="true">
                   {currentStep > step.num ? "✓" : step.num}
-                </div>
-                <span
-                  style={{
-                    fontSize: "0.75rem",
-                    color: currentStep >= step.num ? "#162a55" : "#607394",
-                    fontWeight: "500",
-                  }}
-                >
-                  {step.label}
                 </span>
+                <span className={styles.stepLabel}>{step.label}</span>
               </div>
-              {i < steps.length - 1 && (
-                <div
-                  style={{
-                    height: "2px",
-                    flex: 1,
-                    background: currentStep > step.num ? "#2057d7" : "#e2ecf9",
-                    marginBottom: "1.5rem",
-                  }}
-                />
-              )}
-            </div>
+              {i < steps.length - 1 ? <span className={styles.stepLine} aria-hidden="true" /> : null}
+            </li>
           ))}
-        </div>
+        </ol>
 
         {/* Mensagens */}
         {success && (
-          <div
-            style={{
-              background: "rgba(217, 255, 47, 0.22)",
-              border: "1px solid rgba(217, 255, 47, 0.45)",
-              borderRadius: "12px",
-              padding: "1rem 1.25rem",
-              marginBottom: "1.5rem",
-              color: "#2057d7",
-              fontWeight: "600",
-            }}
-          >
+          <div className={`${styles.feedback} ${styles.feedbackSuccess}`} role="status" aria-live="polite">
             {success}
           </div>
         )}
 
         {error && (
-          <div
-            style={{
-              background: "rgba(239, 68, 68, 0.12)",
-              border: "1px solid rgba(239, 68, 68, 0.35)",
-              borderRadius: "12px",
-              padding: "1rem 1.25rem",
-              marginBottom: "1.5rem",
-              color: "#b91c1c",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "0.85rem",
-              }}
-            >
+          <div className={`${styles.feedback} ${styles.feedbackError}`} role="alert">
+            <div className={styles.feedbackBody}>
               <span>{error}</span>
               {errorAction?.href && (
                 <div>
                   <Link
                     href={errorAction.href}
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      padding: "0.75rem 1rem",
-                      borderRadius: "10px",
-                      textDecoration: "none",
-                      fontWeight: "700",
-                      color: "#ffffff",
-                      background: "#2057d7",
-                    }}
+                    className={styles.feedbackAction}
                   >
                     {errorAction.label}
                   </Link>
@@ -747,36 +661,17 @@ export default function CriarVaga() {
         )}
 
         {isLoadingExisting && (
-          <div
-            style={{
-              background: "rgba(95, 184, 245, 0.14)",
-              border: "1px solid rgba(95, 184, 245, 0.28)",
-              borderRadius: "12px",
-              padding: "1rem 1.25rem",
-              marginBottom: "1.5rem",
-              color: "#2057d7",
-              fontWeight: "600",
-            }}
-          >
+          <div className={`${styles.feedback} ${styles.feedbackInfo}`} role="status" aria-live="polite">
             A carregar os dados da vaga...
           </div>
         )}
 
         {/* Formulário */}
-        <form
-          onSubmit={handleSubmit}
-          style={{ display: "flex", flexDirection: "column", gap: "2rem" }}
-        >
+        <form onSubmit={handleSubmit} className={styles.form}>
           {/* Step 1: Informações Básicas */}
           {currentStep === 1 && (
             <FormSection title="Informações Básicas">
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "1rem",
-                }}
-              >
+              <div className={styles.gridTwo}>
                 <InputField
                   label="Título da Vaga *"
                   name="titulo"
@@ -832,13 +727,7 @@ export default function CriarVaga() {
           {/* Step 2: Detalhes */}
           {currentStep === 2 && (
             <FormSection title="Detalhes da Vaga">
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                  gap: "1.5rem",
-                }}
-              >
+              <div className={styles.gridFour}>
                 <InputField
                   label="Localização *"
                   name="localizacao"
@@ -890,14 +779,7 @@ export default function CriarVaga() {
                 />
               </div>
 
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
-                  gap: "1.5rem",
-                  marginTop: "1.5rem",
-                }}
-              >
+              <div className={styles.gridThree}>
                 <InputField
                   label="Salário Mínimo (Db)"
                   name="salarioDe"
@@ -926,57 +808,27 @@ export default function CriarVaga() {
                 />
               </div>
 
-              <div
-                style={{ display: "flex", gap: "2rem", marginTop: "1.5rem" }}
-              >
-                <label
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.75rem",
-                    color: "#162a55",
-                    fontWeight: "600",
-                    cursor: "pointer",
-                  }}
-                >
+              <div className={styles.toggleGrid}>
+                <label className={styles.toggleCard}>
                   <input
                     type="checkbox"
                     name="remoto"
                     checked={jobData.remoto}
                     onChange={handleChange}
-                    style={{
-                      width: "20px",
-                      height: "20px",
-                      accentColor: "#2057d7",
-                      cursor: "pointer",
-                    }}
+                    className={styles.checkbox}
                   />
-                  Trabalho Remoto
+                  <span>Trabalho remoto</span>
                 </label>
 
-                <label
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.75rem",
-                    color: "#162a55",
-                    fontWeight: "600",
-                    cursor: "pointer",
-                  }}
-                >
+                <label className={styles.toggleCard}>
                   <input
                     type="checkbox"
                     name="destaque"
                     checked={jobData.destaque}
                     onChange={handleChange}
-                    style={{
-                      width: "20px",
-                      height: "20px",
-                      accentColor: "#2057d7",
-                      cursor: "pointer",
-                    }}
+                    className={styles.checkbox}
                   />
-                  Vaga em Destaque
+                  <span>Vaga em destaque</span>
                 </label>
               </div>
 
@@ -995,48 +847,18 @@ export default function CriarVaga() {
           {currentStep === 3 && (
             <FormSection title="Documentos e Período">
               {/* TDR Upload */}
-              <div style={{ marginBottom: "1.5rem" }}>
-                <label
-                  style={{
-                    display: "block",
-                    color: "#162a55",
-                    fontWeight: "600",
-                    fontSize: "0.9rem",
-                    marginBottom: "0.75rem",
-                  }}
-                >
+              <div className={styles.uploadBlock}>
+                <span className={styles.fieldLabel}>
                   Termos de Referência (TDR)
-                </label>
-                <p
-                  style={{
-                    color: "#607394",
-                    fontSize: "0.85rem",
-                    marginBottom: "1rem",
-                  }}
-                >
+                </span>
+                <p className={styles.fieldHint}>
                   Envie um documento PDF ou Word com os termos de referência
                   detalhados da vaga (opcional)
                 </p>
 
                 {jobData.tdrUrl ? (
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      padding: "1rem",
-                      background: "rgba(95, 184, 245, 0.16)",
-                      border: "1px solid rgba(95, 184, 245, 0.28)",
-                      borderRadius: "12px",
-                    }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "0.75rem",
-                      }}
-                    >
+                  <div className={styles.uploadedFile}>
+                    <div className={styles.fileIdentity}>
                       <svg
                         width="24"
                         height="24"
@@ -1049,20 +871,14 @@ export default function CriarVaga() {
                         <polyline points="14 2 14 8 20 8" />
                       </svg>
                       <div>
-                        <p
-                          style={{
-                            margin: 0,
-                            color: "#1e2b4d",
-                            fontWeight: "600",
-                          }}
-                        >
+                        <p className={styles.fileName}>
                           {jobData.tdrFileName}
                         </p>
                         <a
                           href={jobData.tdrUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          style={{ color: "#2057d7", fontSize: "0.85rem" }}
+                          className={styles.fileLink}
                         >
                           Ver documento
                         </a>
@@ -1071,34 +887,13 @@ export default function CriarVaga() {
                     <button
                       type="button"
                       onClick={removeTDR}
-                      style={{
-                        padding: "0.5rem 1rem",
-                        background: "rgba(239, 68, 68, 0.2)",
-                        border: "1px solid rgba(239, 68, 68, 0.35)",
-                        borderRadius: "8px",
-                        color: "#b91c1c",
-                        fontWeight: "600",
-                        cursor: "pointer",
-                      }}
+                      className={styles.removeButton}
                     >
                       Remover
                     </button>
                   </div>
                 ) : (
-                  <label
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      padding: "2rem",
-                      background: "#ffffff",
-                      border: "2px dashed rgba(32, 87, 215, 0.25)",
-                      borderRadius: "12px",
-                      cursor: uploadingTDR ? "not-allowed" : "pointer",
-                      transition: "all 0.3s ease",
-                    }}
-                  >
+                  <label className={`${styles.dropzone} ${uploadingTDR ? styles.dropzoneDisabled : ""}`}>
                     <svg
                       width="40"
                       height="40"
@@ -1106,42 +901,30 @@ export default function CriarVaga() {
                       fill="none"
                       stroke="#2057d7"
                       strokeWidth="2"
-                      style={{ marginBottom: "1rem" }}
+                      className={styles.dropzoneIcon}
                     >
                       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                       <polyline points="17 8 12 3 7 8" />
                       <line x1="12" y1="3" x2="12" y2="15" />
                     </svg>
-                    <span
-                      style={{
-                        color: "#162a55",
-                        fontWeight: "600",
-                        marginBottom: "0.25rem",
-                      }}
-                    >
+                    <span className={styles.dropzoneTitle}>
                       {uploadingTDR ? "A enviar..." : "Clique para enviar TDR"}
                     </span>
-                    <span style={{ color: "#607394", fontSize: "0.85rem" }}>
+                    <span className={styles.dropzoneHint}>
                       PDF ou Word (máx. 10MB)
                     </span>
                     <input
                       type="file"
                       accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                       onChange={handleTDRUpload}
-                      style={{ display: "none" }}
+                      className={styles.hiddenInput}
                       disabled={uploadingTDR}
                     />
                   </label>
                 )}
               </div>
 
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                  gap: "1.5rem",
-                }}
-              >
+              <div className={styles.gridTwo}>
                 <InputField
                   label="Data de Abertura *"
                   name="dataAbertura"
@@ -1176,63 +959,24 @@ export default function CriarVaga() {
                 placeholder="Separe por vírgula: marketing, vendas, gestão..."
               />
 
-              <div
-                style={{
-                  padding: "1.25rem",
-                  background: "rgba(95, 184, 245, 0.18)",
-                  border: "1px solid rgba(95, 184, 245, 0.35)",
-                  borderRadius: "12px",
-                }}
-              >
-                <div style={{ marginBottom: "1.25rem" }}>
-                  <h3
-                    style={{
-                      margin: "0 0 0.35rem 0",
-                      color: "#162a55",
-                      fontSize: "1rem",
-                    }}
-                  >
+              <div className={styles.advancedPanel}>
+                <div className={styles.advancedHeader}>
+                  <h3 className={styles.advancedTitle}>
                     Acesso premium da candidatura
                   </h3>
-                  <p
-                    style={{ margin: 0, color: "#607394", fontSize: "0.9rem" }}
-                  >
+                  <p className={styles.advancedDescription}>
                     Configure vagas premium, acesso antecipado e carta de
                     apresentação sem afetar vagas antigas.
                   </p>
                 </div>
 
-                <div
-                  style={{
-                    display: "grid",
-                    gap: "1rem",
-                    marginBottom: "1.5rem",
-                  }}
-                >
-                  <label
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      gap: "1rem",
-                      padding: "1rem",
-                      borderRadius: "12px",
-                      background: "#ffffff",
-                      border: "1px solid rgba(32, 87, 215, 0.16)",
-                      cursor: "pointer",
-                    }}
-                  >
+                <div className={styles.optionStack}>
+                  <label className={styles.optionCard}>
                     <div>
-                      <strong
-                        style={{
-                          display: "block",
-                          color: "#162a55",
-                          marginBottom: "0.25rem",
-                        }}
-                      >
+                      <strong className={styles.optionTitle}>
                         Vaga premium
                       </strong>
-                      <span style={{ color: "#607394", fontSize: "0.85rem" }}>
+                      <span className={styles.optionDescription}>
                         Apenas candidatos Profissional e Premium podem
                         candidatar-se.
                       </span>
@@ -1242,35 +986,16 @@ export default function CriarVaga() {
                       name="premiumOnly"
                       checked={jobData.premiumOnly}
                       onChange={handleChange}
-                      style={{
-                        width: "18px",
-                        height: "18px",
-                        accentColor: "#2057d7",
-                      }}
+                      className={styles.checkbox}
                     />
                   </label>
 
-                  <div
-                    style={{
-                      display: "grid",
-                      gap: "0.85rem",
-                      padding: "1rem",
-                      borderRadius: "12px",
-                      background: "#ffffff",
-                      border: "1px solid rgba(32, 87, 215, 0.16)",
-                    }}
-                  >
+                  <div className={`${styles.optionCard} ${styles.optionCardStack}`}>
                     <div>
-                      <strong
-                        style={{
-                          display: "block",
-                          color: "#162a55",
-                          marginBottom: "0.25rem",
-                        }}
-                      >
+                      <strong className={styles.optionTitle}>
                         Acesso antecipado
                       </strong>
-                      <span style={{ color: "#607394", fontSize: "0.85rem" }}>
+                      <span className={styles.optionDescription}>
                         Durante o período escolhido, a candidatura fica aberta
                         primeiro para candidatos Profissional e Premium.
                       </span>
@@ -1292,30 +1017,12 @@ export default function CriarVaga() {
                     />
                   </div>
 
-                  <label
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      gap: "1rem",
-                      padding: "1rem",
-                      borderRadius: "12px",
-                      background: "#ffffff",
-                      border: "1px solid rgba(32, 87, 215, 0.16)",
-                      cursor: "pointer",
-                    }}
-                  >
+                  <label className={styles.optionCard}>
                     <div>
-                      <strong
-                        style={{
-                          display: "block",
-                          color: "#162a55",
-                          marginBottom: "0.25rem",
-                        }}
-                      >
+                      <strong className={styles.optionTitle}>
                         Carta de apresentação obrigatória
                       </strong>
-                      <span style={{ color: "#607394", fontSize: "0.85rem" }}>
+                      <span className={styles.optionDescription}>
                         Exige uma carta personalizada no envio da candidatura.
                       </span>
                     </div>
@@ -1324,72 +1031,34 @@ export default function CriarVaga() {
                       name="requireCoverLetter"
                       checked={jobData.requireCoverLetter}
                       onChange={handleChange}
-                      style={{
-                        width: "18px",
-                        height: "18px",
-                        accentColor: "#2057d7",
-                      }}
+                      className={styles.checkbox}
                     />
                   </label>
                 </div>
 
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    gap: "1rem",
-                    alignItems: "flex-start",
-                    marginBottom: "1rem",
-                    flexWrap: "wrap",
-                  }}
-                >
+                <div className={styles.assessmentHeader}>
                   <div>
-                    <h3
-                      style={{
-                        margin: "0 0 0.35rem 0",
-                        color: "#162a55",
-                        fontSize: "1rem",
-                      }}
-                    >
+                    <h3 className={styles.advancedTitle}>
                       Teste de habilidades
                     </h3>
-                    <p
-                      style={{
-                        margin: 0,
-                        color: "#607394",
-                        fontSize: "0.9rem",
-                      }}
-                    >
+                    <p className={styles.advancedDescription}>
                       Adicione perguntas rápidas para filtrar melhor os
                       candidatos antes da entrevista.
                     </p>
                   </div>
-                  <label
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "0.6rem",
-                      color: "#162a55",
-                      fontWeight: "600",
-                      cursor: "pointer",
-                    }}
-                  >
+                  <label className={styles.assessmentToggle}>
                     <input
                       type="checkbox"
                       checked={jobData.skillsAssessment.enabled}
                       onChange={handleAssessmentToggle}
-                      style={{
-                        width: "18px",
-                        height: "18px",
-                        accentColor: "#2057d7",
-                      }}
+                      className={styles.checkbox}
                     />
                     Ativar teste
                   </label>
                 </div>
 
                 {jobData.skillsAssessment.enabled && (
-                  <div style={{ display: "grid", gap: "1rem" }}>
+                  <div className={styles.assessmentBody}>
                     <InputField
                       label="Nota mínima para aprovação (%)"
                       name="assessmentPassingScore"
@@ -1401,30 +1070,14 @@ export default function CriarVaga() {
                       min={0}
                     />
 
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        gap: "1rem",
-                        flexWrap: "wrap",
-                      }}
-                    >
-                      <span style={{ color: "#162a55", fontWeight: "600" }}>
+                    <div className={styles.assessmentToolbar}>
+                      <span className={styles.assessmentCount}>
                         {jobData.skillsAssessment.questions.length} pergunta(s)
                       </span>
                       <button
                         type="button"
                         onClick={handleAddAssessmentQuestion}
-                        style={{
-                          padding: "0.65rem 1rem",
-                          background: "#ffffff",
-                          border: "1px solid rgba(21, 37, 79, 0.12)",
-                          borderRadius: "10px",
-                          color: "#2057d7",
-                          fontWeight: "600",
-                          cursor: "pointer",
-                        }}
+                        className={styles.secondaryButton}
                       >
                         Adicionar pergunta
                       </button>
@@ -1432,26 +1085,9 @@ export default function CriarVaga() {
 
                     {jobData.skillsAssessment.questions.map(
                       (question, questionIndex) => (
-                        <div
-                          key={question.id}
-                          style={{
-                            display: "grid",
-                            gap: "0.85rem",
-                            padding: "1rem",
-                            borderRadius: "12px",
-                            background: "#ffffff",
-                            border: "1px solid rgba(32, 87, 215, 0.16)",
-                          }}
-                        >
-                          <div
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              gap: "1rem",
-                              alignItems: "center",
-                            }}
-                          >
-                            <strong style={{ color: "#2057d7" }}>
+                        <div key={question.id} className={styles.questionCard}>
+                          <div className={styles.questionHeader}>
+                            <strong className={styles.questionTitle}>
                               Pergunta {questionIndex + 1}
                             </strong>
                             <button
@@ -1459,14 +1095,7 @@ export default function CriarVaga() {
                               onClick={() =>
                                 handleRemoveAssessmentQuestion(questionIndex)
                               }
-                              style={{
-                                padding: "0.45rem 0.7rem",
-                                background: "rgba(239, 68, 68, 0.12)",
-                                border: "1px solid rgba(239, 68, 68, 0.3)",
-                                borderRadius: "8px",
-                                color: "#b91c1c",
-                                cursor: "pointer",
-                              }}
+                              className={styles.removeButton}
                             >
                               Remover
                             </button>
@@ -1487,16 +1116,9 @@ export default function CriarVaga() {
                             placeholder="Ex.: Qual prática reduz regressões em produção?"
                           />
 
-                          <div style={{ display: "grid", gap: "0.75rem" }}>
+                          <div className={styles.optionsList}>
                             {question.options.map((option, optionIndex) => (
-                              <div
-                                key={`${question.id}-${optionIndex}`}
-                                style={{
-                                  display: "flex",
-                                  gap: "0.75rem",
-                                  alignItems: "center",
-                                }}
-                              >
+                              <div key={`${question.id}-${optionIndex}`} className={styles.optionRow}>
                                 <input
                                   type="radio"
                                   name={`correct-option-${question.id}`}
@@ -1511,6 +1133,7 @@ export default function CriarVaga() {
                                       optionIndex,
                                     )
                                   }
+                                  className={styles.radio}
                                 />
                                 <input
                                   type="text"
@@ -1523,14 +1146,7 @@ export default function CriarVaga() {
                                     )
                                   }
                                   placeholder={`Opção ${optionIndex + 1}`}
-                                  style={{
-                                    flex: 1,
-                                    padding: "0.7rem 0.9rem",
-                                    background: "#ffffff",
-                                    border: "1px solid rgba(21, 37, 79, 0.12)",
-                                    borderRadius: "10px",
-                                    color: "#162a55",
-                                  }}
+                                  className={styles.optionInput}
                                 />
                                 {question.options.length > 2 && (
                                   <button
@@ -1541,15 +1157,8 @@ export default function CriarVaga() {
                                         optionIndex,
                                       )
                                     }
-                                    style={{
-                                      padding: "0.5rem 0.7rem",
-                                      background: "rgba(239, 68, 68, 0.12)",
-                                      border:
-                                        "1px solid rgba(239, 68, 68, 0.24)",
-                                      borderRadius: "8px",
-                                      color: "#b91c1c",
-                                      cursor: "pointer",
-                                    }}
+                                    className={styles.iconRemoveButton}
+                                    aria-label={`Remover opção ${optionIndex + 1}`}
                                   >
                                     ×
                                   </button>
@@ -1564,15 +1173,7 @@ export default function CriarVaga() {
                               onClick={() =>
                                 handleAddAssessmentOption(questionIndex)
                               }
-                              style={{
-                                justifySelf: "flex-start",
-                                padding: "0.6rem 0.9rem",
-                                background: "transparent",
-                                border: "1px dashed rgba(32, 87, 215, 0.3)",
-                                borderRadius: "10px",
-                                color: "#2057d7",
-                                cursor: "pointer",
-                              }}
+                              className={styles.addOptionButton}
                             >
                               Adicionar opção
                             </button>
@@ -1589,7 +1190,7 @@ export default function CriarVaga() {
           {/* Step 4: Revisão */}
           {currentStep === 4 && (
             <FormSection title="Revisão Final">
-              <div style={{ display: "grid", gap: "1.5rem" }}>
+              <div className={styles.reviewList}>
                 <ReviewItem label="Título" value={jobData.titulo} />
                 <ReviewItem label="Descrição" value={jobData.descricao} />
                 <ReviewItem label="Localização" value={jobData.localizacao} />
@@ -1650,46 +1251,22 @@ export default function CriarVaga() {
           )}
 
           {/* Botões de Navegação */}
-          <div
-            style={{
-              display: "flex",
-              gap: "1rem",
-              justifyContent: "space-between",
-              paddingTop: "1.5rem",
-              borderTop: "1px solid rgba(21, 37, 79, 0.1)",
-            }}
-          >
+          <div className={styles.formActions}>
             <div>
               {currentStep > 1 && (
                 <button
                   type="button"
                   onClick={prevStep}
-                  style={{
-                    padding: "0.875rem 1.5rem",
-                    background: "#ffffff",
-                    border: "1px solid rgba(21, 37, 79, 0.12)",
-                    borderRadius: "10px",
-                    color: "#162a55",
-                    fontWeight: "600",
-                    cursor: "pointer",
-                  }}
+                  className={styles.secondaryButton}
                 >
                   Voltar
                 </button>
               )}
             </div>
-            <div style={{ display: "flex", gap: "1rem" }}>
+            <div className={styles.actionGroup}>
               <Link
                 href="/dashboard/empresa"
-                style={{
-                  padding: "0.875rem 1.5rem",
-                  background: "transparent",
-                  border: "1px solid rgba(21, 37, 79, 0.12)",
-                  borderRadius: "10px",
-                  color: "#607394",
-                  textDecoration: "none",
-                  fontWeight: "600",
-                }}
+                className={styles.cancelButton}
               >
                 Cancelar
               </Link>
@@ -1697,15 +1274,7 @@ export default function CriarVaga() {
                 <button
                   type="button"
                   onClick={nextStep}
-                  style={{
-                    padding: "0.875rem 1.5rem",
-                    background: "#2057d7",
-                    border: "none",
-                    borderRadius: "10px",
-                    color: "#ffffff",
-                    fontWeight: "600",
-                    cursor: "pointer",
-                  }}
+                  className={styles.primaryButton}
                 >
                   Continuar
                 </button>
@@ -1713,18 +1282,7 @@ export default function CriarVaga() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  style={{
-                    padding: "0.875rem 2rem",
-                    background: isLoading
-                      ? "linear-gradient(135deg, rgba(32, 87, 215, 0.45), rgba(95, 184, 245, 0.45))"
-                      : "linear-gradient(135deg, #2057d7, #5fb8f5)",
-                    border: "none",
-                    borderRadius: "10px",
-                    color: "#ffffff",
-                    fontWeight: "600",
-                    cursor: isLoading ? "not-allowed" : "pointer",
-                    opacity: isLoading ? 0.6 : 1,
-                  }}
+                  className={styles.primaryButton}
                 >
                   {isLoading
                     ? isEditMode
@@ -1747,29 +1305,9 @@ export default function CriarVaga() {
 // Review Item Component
 function ReviewItem({ label, value }) {
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "flex-start",
-        padding: "0.75rem 0",
-        borderBottom: "1px solid rgba(21, 37, 79, 0.08)",
-      }}
-    >
-      <span style={{ color: "#607394", fontWeight: "500" }}>{label}</span>
-      <span
-        style={{
-          color: "#162a55",
-          fontWeight: "500",
-          maxWidth: "60%",
-          textAlign: "right",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          display: "-webkit-box",
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: "vertical",
-        }}
-      >
+    <div className={styles.reviewItem}>
+      <span className={styles.reviewLabel}>{label}</span>
+      <span className={styles.reviewValue}>
         {value || "-"}
       </span>
     </div>
@@ -1779,28 +1317,14 @@ function ReviewItem({ label, value }) {
 // Componentes de Formulário
 function FormSection({ title, children }) {
   return (
-    <div
-      style={{
-        background: "#ffffff",
-        border: "1px solid rgba(21, 37, 79, 0.08)",
-        borderRadius: "14px",
-        padding: "1.75rem",
-      }}
-    >
-      <h2
-        style={{
-          margin: "0 0 1.5rem 0",
-          fontSize: "1.25rem",
-          color: "#162a55",
-          fontWeight: "600",
-        }}
-      >
+    <section className={styles.formSection}>
+      <h2 className={styles.sectionTitle}>
         {title}
       </h2>
-      <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+      <div className={styles.sectionBody}>
         {children}
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -1815,12 +1339,8 @@ function InputField({
   min,
 }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-      <label
-        style={{ color: "#162a55", fontWeight: "600", fontSize: "0.875rem" }}
-      >
-        {label}
-      </label>
+    <label className={styles.field}>
+      <span className={styles.fieldLabel}>{label}</span>
       <input
         type={type}
         name={name}
@@ -1829,25 +1349,9 @@ function InputField({
         placeholder={placeholder}
         required={required}
         min={min}
-        style={{
-          padding: "0.75rem 1rem",
-          background: "#ffffff",
-          border: "1px solid rgba(21, 37, 79, 0.12)",
-          borderRadius: "10px",
-          color: "#162a55",
-          fontSize: "0.9rem",
-          transition: "all 0.2s ease",
-        }}
-        onFocus={(e) => {
-          e.currentTarget.style.borderColor = "#2057d7";
-          e.currentTarget.style.background = "#ffffff";
-        }}
-        onBlur={(e) => {
-          e.currentTarget.style.borderColor = "rgba(21, 37, 79, 0.12)";
-          e.currentTarget.style.background = "#ffffff";
-        }}
+        className={styles.input}
       />
-    </div>
+    </label>
   );
 }
 
@@ -1860,44 +1364,25 @@ function SelectField({
   required = false,
 }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-      <label
-        style={{ color: "#162a55", fontWeight: "600", fontSize: "0.875rem" }}
-      >
-        {label}
-      </label>
+    <label className={styles.field}>
+      <span className={styles.fieldLabel}>{label}</span>
       <select
         name={name}
         value={value}
         onChange={onChange}
         required={required}
-        style={{
-          padding: "0.75rem 1rem",
-          background: "#ffffff",
-          border: "1px solid rgba(21, 37, 79, 0.12)",
-          borderRadius: "10px",
-          color: "#162a55",
-          fontSize: "0.9rem",
-          cursor: "pointer",
-          appearance: "none",
-          backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23607394' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-          backgroundPosition: "right 0.75rem center",
-          backgroundRepeat: "no-repeat",
-          backgroundSize: "1.25rem 1.25rem",
-          paddingRight: "2.5rem",
-        }}
+        className={`${styles.input} ${styles.select}`}
       >
         {options.map((opt) => (
           <option
             key={opt.value}
             value={opt.value}
-            style={{ background: "#ffffff", color: "#162a55" }}
           >
             {opt.label}
           </option>
         ))}
       </select>
-    </div>
+    </label>
   );
 }
 
@@ -1911,12 +1396,8 @@ function TextAreaField({
   required = false,
 }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-      <label
-        style={{ color: "#162a55", fontWeight: "600", fontSize: "0.875rem" }}
-      >
-        {label}
-      </label>
+    <label className={styles.field}>
+      <span className={styles.fieldLabel}>{label}</span>
       <textarea
         name={name}
         value={value}
@@ -1924,27 +1405,8 @@ function TextAreaField({
         placeholder={placeholder}
         rows={rows}
         required={required}
-        style={{
-          padding: "0.75rem 1rem",
-          background: "#ffffff",
-          border: "1px solid rgba(21, 37, 79, 0.12)",
-          borderRadius: "10px",
-          color: "#162a55",
-          fontSize: "0.9rem",
-          resize: "vertical",
-          fontFamily: "inherit",
-          lineHeight: 1.5,
-          transition: "all 0.2s ease",
-        }}
-        onFocus={(e) => {
-          e.currentTarget.style.borderColor = "#2057d7";
-          e.currentTarget.style.background = "#ffffff";
-        }}
-        onBlur={(e) => {
-          e.currentTarget.style.borderColor = "rgba(21, 37, 79, 0.12)";
-          e.currentTarget.style.background = "#ffffff";
-        }}
+        className={`${styles.input} ${styles.textarea}`}
       />
-    </div>
+    </label>
   );
 }

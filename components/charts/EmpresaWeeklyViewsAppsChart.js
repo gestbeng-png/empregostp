@@ -5,7 +5,7 @@ import {
   XAxis,
   CartesianGrid,
   Tooltip,
-} from "recharts";
+} from 'recharts';
 
 export default function EmpresaWeeklyViewsAppsChart({ data = [] }) {
   return (
@@ -14,52 +14,42 @@ export default function EmpresaWeeklyViewsAppsChart({ data = [] }) {
         data={data}
         margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
       >
-        <defs>
-          <linearGradient id="empresaColorViews" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#2057d7" stopOpacity={0.24} />
-            <stop offset="95%" stopColor="#2057d7" stopOpacity={0} />
-          </linearGradient>
-          <linearGradient id="empresaColorApps" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#5fb8f5" stopOpacity={0.24} />
-            <stop offset="95%" stopColor="#5fb8f5" stopOpacity={0} />
-          </linearGradient>
-        </defs>
         <CartesianGrid
-          stroke="rgba(148,163,184,0.16)"
+          stroke="var(--border-strong)"
           strokeDasharray="3 3"
           vertical={false}
         />
         <XAxis
           dataKey="name"
-          stroke="#607394"
+          stroke="var(--text-3)"
           axisLine={false}
           tickLine={false}
-          fontSize={12}
+          fontSize={14}
         />
         <Tooltip
           contentStyle={{
-            backgroundColor: "#ffffff",
-            border: "1px solid rgba(148,163,184,0.14)",
-            borderRadius: "10px",
-            boxShadow: "0 12px 28px rgba(15,23,42,0.1)",
+            backgroundColor: 'var(--surface)',
+            border: '1px solid var(--border)',
+            borderRadius: '10px',
+            boxShadow: 'none',
           }}
-          labelStyle={{ color: "#162a55", fontWeight: 700 }}
+          labelStyle={{ color: 'var(--text-1)', fontWeight: 700 }}
         />
         <Area
           type="monotone"
           dataKey="views"
-          stroke="#2057d7"
+          stroke="var(--blue)"
           strokeWidth={2.5}
-          fillOpacity={1}
-          fill="url(#empresaColorViews)"
+          fillOpacity={0.16}
+          fill="var(--sky)"
         />
         <Area
           type="monotone"
           dataKey="apps"
-          stroke="#5fb8f5"
+          stroke="var(--text-1)"
           strokeWidth={2.5}
-          fillOpacity={1}
-          fill="url(#empresaColorApps)"
+          fillOpacity={0.12}
+          fill="var(--lime)"
         />
       </AreaChart>
     </ResponsiveContainer>

@@ -1,0 +1,2824 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "phase": "before",
+  "results": [
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              ".RecursosPage_guideCard__MzWbQ:nth-child(1) > .RecursosPage_guideContent__J3LoC > .RecursosPage_guideFooter__RKT8d > .RecursosPage_guideMeta__amBzz > .RecursosPage_guideMetaItem__QZOBV:nth-child(1)"
+            ],
+            [
+              ".RecursosPage_guideCard__MzWbQ:nth-child(1) > .RecursosPage_guideContent__J3LoC > .RecursosPage_guideFooter__RKT8d > .RecursosPage_guideMeta__amBzz > .RecursosPage_guideMetaItem__QZOBV:nth-child(2)"
+            ],
+            [
+              ".RecursosPage_guideCard__MzWbQ:nth-child(2) > .RecursosPage_guideContent__J3LoC > .RecursosPage_guideFooter__RKT8d > .RecursosPage_guideMeta__amBzz > .RecursosPage_guideMetaItem__QZOBV:nth-child(1)"
+            ],
+            [
+              ".RecursosPage_guideCard__MzWbQ:nth-child(2) > .RecursosPage_guideContent__J3LoC > .RecursosPage_guideFooter__RKT8d > .RecursosPage_guideMeta__amBzz > .RecursosPage_guideMetaItem__QZOBV:nth-child(2)"
+            ],
+            [
+              ".RecursosPage_guideCard__MzWbQ:nth-child(3) > .RecursosPage_guideContent__J3LoC > .RecursosPage_guideFooter__RKT8d > .RecursosPage_guideMeta__amBzz > .RecursosPage_guideMetaItem__QZOBV:nth-child(1)"
+            ],
+            [
+              ".RecursosPage_guideCard__MzWbQ:nth-child(3) > .RecursosPage_guideContent__J3LoC > .RecursosPage_guideFooter__RKT8d > .RecursosPage_guideMeta__amBzz > .RecursosPage_guideMetaItem__QZOBV:nth-child(2)"
+            ],
+            [
+              ".RecursosPage_guideCard__MzWbQ:nth-child(4) > .RecursosPage_guideContent__J3LoC > .RecursosPage_guideFooter__RKT8d > .RecursosPage_guideMeta__amBzz > .RecursosPage_guideMetaItem__QZOBV:nth-child(1)"
+            ],
+            [
+              ".RecursosPage_guideCard__MzWbQ:nth-child(4) > .RecursosPage_guideContent__J3LoC > .RecursosPage_guideFooter__RKT8d > .RecursosPage_guideMeta__amBzz > .RecursosPage_guideMetaItem__QZOBV:nth-child(2)"
+            ]
+          ]
+        }
+      ],
+      "errors": [
+        "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. carta-motivacao"
+      ],
+      "metrics": {
+        "document": {
+          "clientWidth": 320,
+          "scrollHeight": 8317,
+          "scrollWidth": 320
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 36,
+            "tag": "BUTTON",
+            "text": "Todos",
+            "width": 65
+          },
+          {
+            "height": 36,
+            "tag": "BUTTON",
+            "text": "Candidatos",
+            "width": 95
+          },
+          {
+            "height": 36,
+            "tag": "BUTTON",
+            "text": "Empresas",
+            "width": 86
+          },
+          {
+            "height": 37,
+            "tag": "BUTTON",
+            "text": "Todos",
+            "width": 70
+          },
+          {
+            "height": 37,
+            "tag": "BUTTON",
+            "text": "CV",
+            "width": 50
+          },
+          {
+            "height": 37,
+            "tag": "BUTTON",
+            "text": "Carta",
+            "width": 65
+          },
+          {
+            "height": 37,
+            "tag": "BUTTON",
+            "text": "Contrato",
+            "width": 85
+          },
+          {
+            "height": 37,
+            "tag": "BUTTON",
+            "text": "Freelancer",
+            "width": 97
+          },
+          {
+            "height": 37,
+            "tag": "BUTTON",
+            "text": "Outros",
+            "width": 73
+          },
+          {
+            "height": 30,
+            "tag": "A",
+            "text": "Baixar",
+            "width": 76
+          },
+          {
+            "height": 36,
+            "tag": "A",
+            "text": "Ler guia",
+            "width": 71
+          },
+          {
+            "height": 36,
+            "tag": "A",
+            "text": "Baixar anexo",
+            "width": 118
+          },
+          {
+            "height": 36,
+            "tag": "A",
+            "text": "Ler guia",
+            "width": 71
+          },
+          {
+            "height": 36,
+            "tag": "A",
+            "text": "Baixar anexo",
+            "width": 118
+          },
+          {
+            "height": 36,
+            "tag": "A",
+            "text": "Ler guia",
+            "width": 71
+          },
+          {
+            "height": 36,
+            "tag": "A",
+            "text": "Baixar anexo",
+            "width": 118
+          },
+          {
+            "height": 36,
+            "tag": "A",
+            "text": "Ler guia",
+            "width": 71
+          },
+          {
+            "height": 36,
+            "tag": "A",
+            "text": "Baixar anexo",
+            "width": 118
+          },
+          {
+            "height": 40,
+            "tag": "A",
+            "text": "Desbloquear recurso",
+            "width": 188
+          },
+          {
+            "height": 40,
+            "tag": "A",
+            "text": "Desbloquear recurso",
+            "width": 188
+          },
+          {
+            "height": 40,
+            "tag": "A",
+            "text": "Desbloquear recurso",
+            "width": 188
+          },
+          {
+            "height": 40,
+            "tag": "A",
+            "text": "Usar Ferramenta",
+            "width": 162
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Visitar site",
+            "width": 82
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Visitar site",
+            "width": 82
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Visitar site",
+            "width": 82
+          }
+        ],
+        "smallText": [
+          {
+            "size": "12.75px",
+            "tag": "SPAN",
+            "text": "Centro de Recursos"
+          },
+          {
+            "size": "12px",
+            "tag": "BUTTON",
+            "text": "Todos"
+          },
+          {
+            "size": "12px",
+            "tag": "BUTTON",
+            "text": "Candidatos"
+          },
+          {
+            "size": "12px",
+            "tag": "BUTTON",
+            "text": "Empresas"
+          },
+          {
+            "size": "12.75px",
+            "tag": "BUTTON",
+            "text": "Todos"
+          },
+          {
+            "size": "12.75px",
+            "tag": "BUTTON",
+            "text": "CV"
+          },
+          {
+            "size": "12.75px",
+            "tag": "BUTTON",
+            "text": "Carta"
+          },
+          {
+            "size": "12.75px",
+            "tag": "BUTTON",
+            "text": "Contrato"
+          },
+          {
+            "size": "12.75px",
+            "tag": "BUTTON",
+            "text": "Freelancer"
+          },
+          {
+            "size": "12.75px",
+            "tag": "BUTTON",
+            "text": "Outros"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "CV"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "TXT"
+          },
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Modelo objetivo para candidaturas formais e vagas administrativas."
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "2453 downloads"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Em breve"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "CV"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "TXT"
+          },
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Layout enxuto para tecnologia, marketing e areas digitais."
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "3124 downloads"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Em breve"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Carta"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "TXT"
+          },
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Estrutura pronta para personalizar candidatura por vaga."
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "2918 downloads"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Em breve"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "TXT"
+          },
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Checklist para empresas publicarem vagas claras e atrativas."
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "1650 downloads"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Em breve"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "TXT"
+          },
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Estrutura de proposta para acelerar aprovacao interna e fechamento."
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "982 downloads"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Em breve"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Freelancer"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "TXT"
+          },
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Modelo para projetos pontuais com clausulas essenciais."
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "1432 downloads"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Em breve"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Carta"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "PDF"
+          },
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Estrutura pronta para personalizar candidatura por vaga."
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "2918 downloads"
+          },
+          {
+            "size": "11.25px",
+            "tag": "A",
+            "text": "Baixar"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Outros"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Documento"
+          },
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Para fazer uma carta tem que ter ........."
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "0 downloads"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Em breve"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Carreira"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Popular"
+          },
+          {
+            "size": "12.75px",
+            "tag": "P",
+            "text": "Preparacao pratica para entrevistas presenciais e remotas."
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "15 min"
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "24 páginas"
+          },
+          {
+            "size": "11.7px",
+            "tag": "A",
+            "text": "Ler guia"
+          },
+          {
+            "size": "11.7px",
+            "tag": "A",
+            "text": "Baixar anexo"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Carreira"
+          },
+          {
+            "size": "12.75px",
+            "tag": "P",
+            "text": "Como negociar remuneracao com argumentos objetivos."
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "12 min"
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "18 páginas"
+          },
+          {
+            "size": "11.7px",
+            "tag": "A",
+            "text": "Ler guia"
+          },
+          {
+            "size": "11.7px",
+            "tag": "A",
+            "text": "Baixar anexo"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Recrutamento"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Popular"
+          },
+          {
+            "size": "12.75px",
+            "tag": "P",
+            "text": "Roteiro para triagem, entrevista e avaliacao de candidatos."
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "18 min"
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "30 páginas"
+          },
+          {
+            "size": "11.7px",
+            "tag": "A",
+            "text": "Ler guia"
+          },
+          {
+            "size": "11.7px",
+            "tag": "A",
+            "text": "Baixar anexo"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Gestao"
+          },
+          {
+            "size": "12.75px",
+            "tag": "P",
+            "text": "Plano de 30 dias para integracao e produtividade inicial."
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "14 min"
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "20 páginas"
+          },
+          {
+            "size": "11.7px",
+            "tag": "A",
+            "text": "Ler guia"
+          },
+          {
+            "size": "11.7px",
+            "tag": "A",
+            "text": "Baixar anexo"
+          },
+          {
+            "size": "12.75px",
+            "tag": "P",
+            "text": "Crie um CV completo em 2 colunas e exporte um PDF A4 bem formatado."
+          },
+          {
+            "size": "12.75px",
+            "tag": "A",
+            "text": "Desbloquear recurso"
+          },
+          {
+            "size": "11.25px",
+            "tag": "P",
+            "text": "Disponivel apenas para plano Profissional."
+          },
+          {
+            "size": "12.75px",
+            "tag": "P",
+            "text": "Estimativa de faixa salarial para candidatos e orcamento para empresas."
+          },
+          {
+            "size": "12.75px",
+            "tag": "A",
+            "text": "Desbloquear recurso"
+          },
+          {
+            "size": "11.25px",
+            "tag": "P",
+            "text": "Disponivel apenas para plano Profissional."
+          },
+          {
+            "size": "12.75px",
+            "tag": "P",
+            "text": "Estimativa de descontos e salario liquido para diferentes perfis."
+          },
+          {
+            "size": "12.75px",
+            "tag": "A",
+            "text": "Desbloquear recurso"
+          },
+          {
+            "size": "11.25px",
+            "tag": "P",
+            "text": "Disponivel apenas para plano Profissional."
+          },
+          {
+            "size": "12.75px",
+            "tag": "P",
+            "text": "Essa ferramenta te ajuda a criar CV profissional"
+          },
+          {
+            "size": "12.75px",
+            "tag": "A",
+            "text": "Usar Ferramenta"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Governo"
+          },
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Portal oficial com informacoes sobre legislacao e servicos publicos."
+          },
+          {
+            "size": "12px",
+            "tag": "A",
+            "text": "Visitar site"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Negocios"
+          },
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Informacoes sobre empresas, negocios e oportunidades comerciais."
+          },
+          {
+            "size": "12px",
+            "tag": "A",
+            "text": "Visitar site"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Governo"
+          },
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Informacoes sobre contribuicoes, beneficios e pensoes."
+          },
+          {
+            "size": "12px",
+            "tag": "A",
+            "text": "Visitar site"
+          },
+          {
+            "size": "11.25px",
+            "tag": "P",
+            "text": "Email"
+          },
+          {
+            "size": "11.25px",
+            "tag": "P",
+            "text": "Telefone"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/recursos",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      }
+    },
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              ".RecursosPage_guideCard__MzWbQ:nth-child(1) > .RecursosPage_guideContent__J3LoC > .RecursosPage_guideFooter__RKT8d > .RecursosPage_guideMeta__amBzz > .RecursosPage_guideMetaItem__QZOBV:nth-child(1)"
+            ],
+            [
+              ".RecursosPage_guideCard__MzWbQ:nth-child(1) > .RecursosPage_guideContent__J3LoC > .RecursosPage_guideFooter__RKT8d > .RecursosPage_guideMeta__amBzz > .RecursosPage_guideMetaItem__QZOBV:nth-child(2)"
+            ],
+            [
+              ".RecursosPage_guideCard__MzWbQ:nth-child(2) > .RecursosPage_guideContent__J3LoC > .RecursosPage_guideFooter__RKT8d > .RecursosPage_guideMeta__amBzz > .RecursosPage_guideMetaItem__QZOBV:nth-child(1)"
+            ],
+            [
+              ".RecursosPage_guideCard__MzWbQ:nth-child(2) > .RecursosPage_guideContent__J3LoC > .RecursosPage_guideFooter__RKT8d > .RecursosPage_guideMeta__amBzz > .RecursosPage_guideMetaItem__QZOBV:nth-child(2)"
+            ],
+            [
+              ".RecursosPage_guideCard__MzWbQ:nth-child(3) > .RecursosPage_guideContent__J3LoC > .RecursosPage_guideFooter__RKT8d > .RecursosPage_guideMeta__amBzz > .RecursosPage_guideMetaItem__QZOBV:nth-child(1)"
+            ],
+            [
+              ".RecursosPage_guideCard__MzWbQ:nth-child(3) > .RecursosPage_guideContent__J3LoC > .RecursosPage_guideFooter__RKT8d > .RecursosPage_guideMeta__amBzz > .RecursosPage_guideMetaItem__QZOBV:nth-child(2)"
+            ],
+            [
+              ".RecursosPage_guideCard__MzWbQ:nth-child(4) > .RecursosPage_guideContent__J3LoC > .RecursosPage_guideFooter__RKT8d > .RecursosPage_guideMeta__amBzz > .RecursosPage_guideMetaItem__QZOBV:nth-child(1)"
+            ],
+            [
+              ".RecursosPage_guideCard__MzWbQ:nth-child(4) > .RecursosPage_guideContent__J3LoC > .RecursosPage_guideFooter__RKT8d > .RecursosPage_guideMeta__amBzz > .RecursosPage_guideMetaItem__QZOBV:nth-child(2)"
+            ]
+          ]
+        }
+      ],
+      "errors": [
+        "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. carta-motivacao"
+      ],
+      "metrics": {
+        "document": {
+          "clientWidth": 768,
+          "scrollHeight": 6589,
+          "scrollWidth": 768
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 36,
+            "tag": "BUTTON",
+            "text": "Todos",
+            "width": 65
+          },
+          {
+            "height": 36,
+            "tag": "BUTTON",
+            "text": "Candidatos",
+            "width": 95
+          },
+          {
+            "height": 36,
+            "tag": "BUTTON",
+            "text": "Empresas",
+            "width": 86
+          },
+          {
+            "height": 37,
+            "tag": "BUTTON",
+            "text": "Todos",
+            "width": 70
+          },
+          {
+            "height": 37,
+            "tag": "BUTTON",
+            "text": "CV",
+            "width": 50
+          },
+          {
+            "height": 37,
+            "tag": "BUTTON",
+            "text": "Carta",
+            "width": 65
+          },
+          {
+            "height": 37,
+            "tag": "BUTTON",
+            "text": "Contrato",
+            "width": 85
+          },
+          {
+            "height": 37,
+            "tag": "BUTTON",
+            "text": "Freelancer",
+            "width": 97
+          },
+          {
+            "height": 37,
+            "tag": "BUTTON",
+            "text": "Outros",
+            "width": 73
+          },
+          {
+            "height": 30,
+            "tag": "A",
+            "text": "Baixar",
+            "width": 76
+          },
+          {
+            "height": 36,
+            "tag": "A",
+            "text": "Ler guia",
+            "width": 71
+          },
+          {
+            "height": 36,
+            "tag": "A",
+            "text": "Baixar anexo",
+            "width": 118
+          },
+          {
+            "height": 36,
+            "tag": "A",
+            "text": "Ler guia",
+            "width": 71
+          },
+          {
+            "height": 36,
+            "tag": "A",
+            "text": "Baixar anexo",
+            "width": 118
+          },
+          {
+            "height": 36,
+            "tag": "A",
+            "text": "Ler guia",
+            "width": 71
+          },
+          {
+            "height": 36,
+            "tag": "A",
+            "text": "Baixar anexo",
+            "width": 118
+          },
+          {
+            "height": 36,
+            "tag": "A",
+            "text": "Ler guia",
+            "width": 71
+          },
+          {
+            "height": 36,
+            "tag": "A",
+            "text": "Baixar anexo",
+            "width": 118
+          },
+          {
+            "height": 40,
+            "tag": "A",
+            "text": "Desbloquear recurso",
+            "width": 188
+          },
+          {
+            "height": 40,
+            "tag": "A",
+            "text": "Desbloquear recurso",
+            "width": 188
+          },
+          {
+            "height": 40,
+            "tag": "A",
+            "text": "Desbloquear recurso",
+            "width": 188
+          },
+          {
+            "height": 40,
+            "tag": "A",
+            "text": "Usar Ferramenta",
+            "width": 162
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Visitar site",
+            "width": 82
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Visitar site",
+            "width": 82
+          },
+          {
+            "height": 19,
+            "tag": "A",
+            "text": "Visitar site",
+            "width": 82
+          }
+        ],
+        "smallText": [
+          {
+            "size": "12.75px",
+            "tag": "SPAN",
+            "text": "Centro de Recursos"
+          },
+          {
+            "size": "12px",
+            "tag": "BUTTON",
+            "text": "Todos"
+          },
+          {
+            "size": "12px",
+            "tag": "BUTTON",
+            "text": "Candidatos"
+          },
+          {
+            "size": "12px",
+            "tag": "BUTTON",
+            "text": "Empresas"
+          },
+          {
+            "size": "12.75px",
+            "tag": "BUTTON",
+            "text": "Todos"
+          },
+          {
+            "size": "12.75px",
+            "tag": "BUTTON",
+            "text": "CV"
+          },
+          {
+            "size": "12.75px",
+            "tag": "BUTTON",
+            "text": "Carta"
+          },
+          {
+            "size": "12.75px",
+            "tag": "BUTTON",
+            "text": "Contrato"
+          },
+          {
+            "size": "12.75px",
+            "tag": "BUTTON",
+            "text": "Freelancer"
+          },
+          {
+            "size": "12.75px",
+            "tag": "BUTTON",
+            "text": "Outros"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "CV"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "TXT"
+          },
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Modelo objetivo para candidaturas formais e vagas administrativas."
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "2453 downloads"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Em breve"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "CV"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "TXT"
+          },
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Layout enxuto para tecnologia, marketing e areas digitais."
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "3124 downloads"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Em breve"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Carta"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "TXT"
+          },
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Estrutura pronta para personalizar candidatura por vaga."
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "2918 downloads"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Em breve"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "TXT"
+          },
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Checklist para empresas publicarem vagas claras e atrativas."
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "1650 downloads"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Em breve"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "TXT"
+          },
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Estrutura de proposta para acelerar aprovacao interna e fechamento."
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "982 downloads"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Em breve"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Freelancer"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "TXT"
+          },
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Modelo para projetos pontuais com clausulas essenciais."
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "1432 downloads"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Em breve"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Carta"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "PDF"
+          },
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Estrutura pronta para personalizar candidatura por vaga."
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "2918 downloads"
+          },
+          {
+            "size": "11.25px",
+            "tag": "A",
+            "text": "Baixar"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Outros"
+          },
+          {
+            "size": "10.5px",
+            "tag": "SPAN",
+            "text": "Documento"
+          },
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Para fazer uma carta tem que ter ........."
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "0 downloads"
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Em breve"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Carreira"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Popular"
+          },
+          {
+            "size": "12.75px",
+            "tag": "P",
+            "text": "Preparacao pratica para entrevistas presenciais e remotas."
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "15 min"
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "24 páginas"
+          },
+          {
+            "size": "11.7px",
+            "tag": "A",
+            "text": "Ler guia"
+          },
+          {
+            "size": "11.7px",
+            "tag": "A",
+            "text": "Baixar anexo"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Carreira"
+          },
+          {
+            "size": "12.75px",
+            "tag": "P",
+            "text": "Como negociar remuneracao com argumentos objetivos."
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "12 min"
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "18 páginas"
+          },
+          {
+            "size": "11.7px",
+            "tag": "A",
+            "text": "Ler guia"
+          },
+          {
+            "size": "11.7px",
+            "tag": "A",
+            "text": "Baixar anexo"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Recrutamento"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Popular"
+          },
+          {
+            "size": "12.75px",
+            "tag": "P",
+            "text": "Roteiro para triagem, entrevista e avaliacao de candidatos."
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "18 min"
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "30 páginas"
+          },
+          {
+            "size": "11.7px",
+            "tag": "A",
+            "text": "Ler guia"
+          },
+          {
+            "size": "11.7px",
+            "tag": "A",
+            "text": "Baixar anexo"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Gestao"
+          },
+          {
+            "size": "12.75px",
+            "tag": "P",
+            "text": "Plano de 30 dias para integracao e produtividade inicial."
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "14 min"
+          },
+          {
+            "size": "11.25px",
+            "tag": "SPAN",
+            "text": "20 páginas"
+          },
+          {
+            "size": "11.7px",
+            "tag": "A",
+            "text": "Ler guia"
+          },
+          {
+            "size": "11.7px",
+            "tag": "A",
+            "text": "Baixar anexo"
+          },
+          {
+            "size": "12.75px",
+            "tag": "P",
+            "text": "Crie um CV completo em 2 colunas e exporte um PDF A4 bem formatado."
+          },
+          {
+            "size": "12.75px",
+            "tag": "A",
+            "text": "Desbloquear recurso"
+          },
+          {
+            "size": "11.25px",
+            "tag": "P",
+            "text": "Disponivel apenas para plano Profissional."
+          },
+          {
+            "size": "12.75px",
+            "tag": "P",
+            "text": "Estimativa de faixa salarial para candidatos e orcamento para empresas."
+          },
+          {
+            "size": "12.75px",
+            "tag": "A",
+            "text": "Desbloquear recurso"
+          },
+          {
+            "size": "11.25px",
+            "tag": "P",
+            "text": "Disponivel apenas para plano Profissional."
+          },
+          {
+            "size": "12.75px",
+            "tag": "P",
+            "text": "Estimativa de descontos e salario liquido para diferentes perfis."
+          },
+          {
+            "size": "12.75px",
+            "tag": "A",
+            "text": "Desbloquear recurso"
+          },
+          {
+            "size": "11.25px",
+            "tag": "P",
+            "text": "Disponivel apenas para plano Profissional."
+          },
+          {
+            "size": "12.75px",
+            "tag": "P",
+            "text": "Essa ferramenta te ajuda a criar CV profissional"
+          },
+          {
+            "size": "12.75px",
+            "tag": "A",
+            "text": "Usar Ferramenta"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Governo"
+          },
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Portal oficial com informacoes sobre legislacao e servicos publicos."
+          },
+          {
+            "size": "12px",
+            "tag": "A",
+            "text": "Visitar site"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Negocios"
+          },
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Informacoes sobre empresas, negocios e oportunidades comerciais."
+          },
+          {
+            "size": "12px",
+            "tag": "A",
+            "text": "Visitar site"
+          },
+          {
+            "size": "9.75px",
+            "tag": "SPAN",
+            "text": "Governo"
+          },
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Informacoes sobre contribuicoes, beneficios e pensoes."
+          },
+          {
+            "size": "12px",
+            "tag": "A",
+            "text": "Visitar site"
+          },
+          {
+            "size": "11.25px",
+            "tag": "P",
+            "text": "Email"
+          },
+          {
+            "size": "11.25px",
+            "tag": "P",
+            "text": "Telefone"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/recursos",
+      "viewport": {
+        "width": 768,
+        "height": 900
+      }
+    },
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              ".RecursosPage_guideCard__MzWbQ:nth-child(1) > .RecursosPage_guideContent__J3LoC > .RecursosPage_guideFooter__RKT8d > .RecursosPage_guideMeta__amBzz > .RecursosPage_guideMetaItem__QZOBV:nth-child(1)"
+            ],
+            [
+              ".RecursosPage_guideCard__MzWbQ:nth-child(1) > .RecursosPage_guideContent__J3LoC > .RecursosPage_guideFooter__RKT8d > .RecursosPage_guideMeta__amBzz > .RecursosPage_guideMetaItem__QZOBV:nth-child(2)"
+            ],
+            [
+              ".RecursosPage_guideCard__MzWbQ:nth-child(2) > .RecursosPage_guideContent__J3LoC > .RecursosPage_guideFooter__RKT8d > .RecursosPage_guideMeta__amBzz > .RecursosPage_guideMetaItem__QZOBV:nth-child(1)"
+            ],
+            [
+              ".RecursosPage_guideCard__MzWbQ:nth-child(2) > .RecursosPage_guideContent__J3LoC > .RecursosPage_guideFooter__RKT8d > .RecursosPage_guideMeta__amBzz > .RecursosPage_guideMetaItem__QZOBV:nth-child(2)"
+            ],
+            [
+              ".RecursosPage_guideCard__MzWbQ:nth-child(3) > .RecursosPage_guideContent__J3LoC > .RecursosPage_guideFooter__RKT8d > .RecursosPage_guideMeta__amBzz > .RecursosPage_guideMetaItem__QZOBV:nth-child(1)"
+            ],
+            [
+              ".RecursosPage_guideCard__MzWbQ:nth-child(3) > .RecursosPage_guideContent__J3LoC > .RecursosPage_guideFooter__RKT8d > .RecursosPage_guideMeta__amBzz > .RecursosPage_guideMetaItem__QZOBV:nth-child(2)"
+            ],
+            [
+              ".RecursosPage_guideCard__MzWbQ:nth-child(4) > .RecursosPage_guideContent__J3LoC > .RecursosPage_guideFooter__RKT8d > .RecursosPage_guideMeta__amBzz > .RecursosPage_guideMetaItem__QZOBV:nth-child(1)"
+            ],
+            [
+              ".RecursosPage_guideCard__MzWbQ:nth-child(4) > .RecursosPage_guideContent__J3LoC > .RecursosPage_guideFooter__RKT8d > .RecursosPage_guideMeta__amBzz > .RecursosPage_guideMetaItem__QZOBV:nth-child(2)"
+            ]
+          ]
+        }
+      ],
+      "errors": [
+        "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. carta-motivacao"
+      ],
+      "metrics": {
+        "document": {
+          "clientWidth": 1024,
+          "scrollHeight": 5179,
+          "scrollWidth": 1024
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "Todos",
+            "width": 69
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "Candidatos",
+            "width": 101
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "Empresas",
+            "width": 92
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "Todos",
+            "width": 74
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "CV",
+            "width": 54
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "Carta",
+            "width": 70
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "Contrato",
+            "width": 91
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "Freelancer",
+            "width": 103
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "Outros",
+            "width": 78
+          },
+          {
+            "height": 32,
+            "tag": "A",
+            "text": "Baixar",
+            "width": 80
+          },
+          {
+            "height": 38,
+            "tag": "A",
+            "text": "Ler guia",
+            "width": 76
+          },
+          {
+            "height": 38,
+            "tag": "A",
+            "text": "Baixar anexo",
+            "width": 125
+          },
+          {
+            "height": 38,
+            "tag": "A",
+            "text": "Ler guia",
+            "width": 76
+          },
+          {
+            "height": 38,
+            "tag": "A",
+            "text": "Baixar anexo",
+            "width": 125
+          },
+          {
+            "height": 38,
+            "tag": "A",
+            "text": "Ler guia",
+            "width": 76
+          },
+          {
+            "height": 38,
+            "tag": "A",
+            "text": "Baixar anexo",
+            "width": 125
+          },
+          {
+            "height": 38,
+            "tag": "A",
+            "text": "Ler guia",
+            "width": 76
+          },
+          {
+            "height": 38,
+            "tag": "A",
+            "text": "Baixar anexo",
+            "width": 125
+          },
+          {
+            "height": 43,
+            "tag": "A",
+            "text": "Desbloquear recurso",
+            "width": 199
+          },
+          {
+            "height": 43,
+            "tag": "A",
+            "text": "Desbloquear recurso",
+            "width": 199
+          },
+          {
+            "height": 43,
+            "tag": "A",
+            "text": "Desbloquear recurso",
+            "width": 199
+          },
+          {
+            "height": 43,
+            "tag": "A",
+            "text": "Usar Ferramenta",
+            "width": 171
+          },
+          {
+            "height": 20,
+            "tag": "A",
+            "text": "Visitar site",
+            "width": 87
+          },
+          {
+            "height": 20,
+            "tag": "A",
+            "text": "Visitar site",
+            "width": 87
+          },
+          {
+            "height": 20,
+            "tag": "A",
+            "text": "Visitar site",
+            "width": 87
+          }
+        ],
+        "smallText": [
+          {
+            "size": "13.6px",
+            "tag": "SPAN",
+            "text": "Centro de Recursos"
+          },
+          {
+            "size": "12.8px",
+            "tag": "BUTTON",
+            "text": "Todos"
+          },
+          {
+            "size": "12.8px",
+            "tag": "BUTTON",
+            "text": "Candidatos"
+          },
+          {
+            "size": "12.8px",
+            "tag": "BUTTON",
+            "text": "Empresas"
+          },
+          {
+            "size": "13.6px",
+            "tag": "BUTTON",
+            "text": "Todos"
+          },
+          {
+            "size": "13.6px",
+            "tag": "BUTTON",
+            "text": "CV"
+          },
+          {
+            "size": "13.6px",
+            "tag": "BUTTON",
+            "text": "Carta"
+          },
+          {
+            "size": "13.6px",
+            "tag": "BUTTON",
+            "text": "Contrato"
+          },
+          {
+            "size": "13.6px",
+            "tag": "BUTTON",
+            "text": "Freelancer"
+          },
+          {
+            "size": "13.6px",
+            "tag": "BUTTON",
+            "text": "Outros"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "CV"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "TXT"
+          },
+          {
+            "size": "12.8px",
+            "tag": "P",
+            "text": "Modelo objetivo para candidaturas formais e vagas administrativas."
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "2453 downloads"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Em breve"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "CV"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "TXT"
+          },
+          {
+            "size": "12.8px",
+            "tag": "P",
+            "text": "Layout enxuto para tecnologia, marketing e areas digitais."
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "3124 downloads"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Em breve"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Carta"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "TXT"
+          },
+          {
+            "size": "12.8px",
+            "tag": "P",
+            "text": "Estrutura pronta para personalizar candidatura por vaga."
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "2918 downloads"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Em breve"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "TXT"
+          },
+          {
+            "size": "12.8px",
+            "tag": "P",
+            "text": "Checklist para empresas publicarem vagas claras e atrativas."
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "1650 downloads"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Em breve"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "TXT"
+          },
+          {
+            "size": "12.8px",
+            "tag": "P",
+            "text": "Estrutura de proposta para acelerar aprovacao interna e fechamento."
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "982 downloads"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Em breve"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Freelancer"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "TXT"
+          },
+          {
+            "size": "12.8px",
+            "tag": "P",
+            "text": "Modelo para projetos pontuais com clausulas essenciais."
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "1432 downloads"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Em breve"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Carta"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "PDF"
+          },
+          {
+            "size": "12.8px",
+            "tag": "P",
+            "text": "Estrutura pronta para personalizar candidatura por vaga."
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "2918 downloads"
+          },
+          {
+            "size": "12px",
+            "tag": "A",
+            "text": "Baixar"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Outros"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Documento"
+          },
+          {
+            "size": "12.8px",
+            "tag": "P",
+            "text": "Para fazer uma carta tem que ter ........."
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "0 downloads"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Em breve"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Carreira"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Popular"
+          },
+          {
+            "size": "13.6px",
+            "tag": "P",
+            "text": "Preparacao pratica para entrevistas presenciais e remotas."
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "15 min"
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "24 páginas"
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Ler guia"
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Baixar anexo"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Carreira"
+          },
+          {
+            "size": "13.6px",
+            "tag": "P",
+            "text": "Como negociar remuneracao com argumentos objetivos."
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "12 min"
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "18 páginas"
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Ler guia"
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Baixar anexo"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Recrutamento"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Popular"
+          },
+          {
+            "size": "13.6px",
+            "tag": "P",
+            "text": "Roteiro para triagem, entrevista e avaliacao de candidatos."
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "18 min"
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "30 páginas"
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Ler guia"
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Baixar anexo"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Gestao"
+          },
+          {
+            "size": "13.6px",
+            "tag": "P",
+            "text": "Plano de 30 dias para integracao e produtividade inicial."
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "14 min"
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "20 páginas"
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Ler guia"
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Baixar anexo"
+          },
+          {
+            "size": "13.6px",
+            "tag": "P",
+            "text": "Crie um CV completo em 2 colunas e exporte um PDF A4 bem formatado."
+          },
+          {
+            "size": "13.6px",
+            "tag": "A",
+            "text": "Desbloquear recurso"
+          },
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Disponivel apenas para plano Profissional."
+          },
+          {
+            "size": "13.6px",
+            "tag": "P",
+            "text": "Estimativa de faixa salarial para candidatos e orcamento para empresas."
+          },
+          {
+            "size": "13.6px",
+            "tag": "A",
+            "text": "Desbloquear recurso"
+          },
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Disponivel apenas para plano Profissional."
+          },
+          {
+            "size": "13.6px",
+            "tag": "P",
+            "text": "Estimativa de descontos e salario liquido para diferentes perfis."
+          },
+          {
+            "size": "13.6px",
+            "tag": "A",
+            "text": "Desbloquear recurso"
+          },
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Disponivel apenas para plano Profissional."
+          },
+          {
+            "size": "13.6px",
+            "tag": "P",
+            "text": "Essa ferramenta te ajuda a criar CV profissional"
+          },
+          {
+            "size": "13.6px",
+            "tag": "A",
+            "text": "Usar Ferramenta"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Governo"
+          },
+          {
+            "size": "12.8px",
+            "tag": "P",
+            "text": "Portal oficial com informacoes sobre legislacao e servicos publicos."
+          },
+          {
+            "size": "12.8px",
+            "tag": "A",
+            "text": "Visitar site"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Negocios"
+          },
+          {
+            "size": "12.8px",
+            "tag": "P",
+            "text": "Informacoes sobre empresas, negocios e oportunidades comerciais."
+          },
+          {
+            "size": "12.8px",
+            "tag": "A",
+            "text": "Visitar site"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Governo"
+          },
+          {
+            "size": "12.8px",
+            "tag": "P",
+            "text": "Informacoes sobre contribuicoes, beneficios e pensoes."
+          },
+          {
+            "size": "12.8px",
+            "tag": "A",
+            "text": "Visitar site"
+          },
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Email"
+          },
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Telefone"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/recursos",
+      "viewport": {
+        "width": 1024,
+        "height": 900
+      }
+    },
+    {
+      "accessibilityViolations": [
+        {
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              ".RecursosPage_guideCard__MzWbQ:nth-child(1) > .RecursosPage_guideContent__J3LoC > .RecursosPage_guideFooter__RKT8d > .RecursosPage_guideMeta__amBzz > .RecursosPage_guideMetaItem__QZOBV:nth-child(1)"
+            ],
+            [
+              ".RecursosPage_guideCard__MzWbQ:nth-child(1) > .RecursosPage_guideContent__J3LoC > .RecursosPage_guideFooter__RKT8d > .RecursosPage_guideMeta__amBzz > .RecursosPage_guideMetaItem__QZOBV:nth-child(2)"
+            ],
+            [
+              ".RecursosPage_guideCard__MzWbQ:nth-child(2) > .RecursosPage_guideContent__J3LoC > .RecursosPage_guideFooter__RKT8d > .RecursosPage_guideMeta__amBzz > .RecursosPage_guideMetaItem__QZOBV:nth-child(1)"
+            ],
+            [
+              ".RecursosPage_guideCard__MzWbQ:nth-child(2) > .RecursosPage_guideContent__J3LoC > .RecursosPage_guideFooter__RKT8d > .RecursosPage_guideMeta__amBzz > .RecursosPage_guideMetaItem__QZOBV:nth-child(2)"
+            ],
+            [
+              ".RecursosPage_guideCard__MzWbQ:nth-child(3) > .RecursosPage_guideContent__J3LoC > .RecursosPage_guideFooter__RKT8d > .RecursosPage_guideMeta__amBzz > .RecursosPage_guideMetaItem__QZOBV:nth-child(1)"
+            ],
+            [
+              ".RecursosPage_guideCard__MzWbQ:nth-child(3) > .RecursosPage_guideContent__J3LoC > .RecursosPage_guideFooter__RKT8d > .RecursosPage_guideMeta__amBzz > .RecursosPage_guideMetaItem__QZOBV:nth-child(2)"
+            ],
+            [
+              ".RecursosPage_guideCard__MzWbQ:nth-child(4) > .RecursosPage_guideContent__J3LoC > .RecursosPage_guideFooter__RKT8d > .RecursosPage_guideMeta__amBzz > .RecursosPage_guideMetaItem__QZOBV:nth-child(1)"
+            ],
+            [
+              ".RecursosPage_guideCard__MzWbQ:nth-child(4) > .RecursosPage_guideContent__J3LoC > .RecursosPage_guideFooter__RKT8d > .RecursosPage_guideMeta__amBzz > .RecursosPage_guideMetaItem__QZOBV:nth-child(2)"
+            ]
+          ]
+        }
+      ],
+      "errors": [
+        "Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. carta-motivacao"
+      ],
+      "metrics": {
+        "document": {
+          "clientWidth": 1440,
+          "scrollHeight": 4649,
+          "scrollWidth": 1440
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "Todos",
+            "width": 69
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "Candidatos",
+            "width": 101
+          },
+          {
+            "height": 38,
+            "tag": "BUTTON",
+            "text": "Empresas",
+            "width": 92
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "Todos",
+            "width": 74
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "CV",
+            "width": 54
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "Carta",
+            "width": 70
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "Contrato",
+            "width": 91
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "Freelancer",
+            "width": 103
+          },
+          {
+            "height": 40,
+            "tag": "BUTTON",
+            "text": "Outros",
+            "width": 78
+          },
+          {
+            "height": 32,
+            "tag": "A",
+            "text": "Baixar",
+            "width": 80
+          },
+          {
+            "height": 38,
+            "tag": "A",
+            "text": "Ler guia",
+            "width": 76
+          },
+          {
+            "height": 38,
+            "tag": "A",
+            "text": "Baixar anexo",
+            "width": 125
+          },
+          {
+            "height": 38,
+            "tag": "A",
+            "text": "Ler guia",
+            "width": 76
+          },
+          {
+            "height": 38,
+            "tag": "A",
+            "text": "Baixar anexo",
+            "width": 125
+          },
+          {
+            "height": 38,
+            "tag": "A",
+            "text": "Ler guia",
+            "width": 76
+          },
+          {
+            "height": 38,
+            "tag": "A",
+            "text": "Baixar anexo",
+            "width": 125
+          },
+          {
+            "height": 38,
+            "tag": "A",
+            "text": "Ler guia",
+            "width": 76
+          },
+          {
+            "height": 38,
+            "tag": "A",
+            "text": "Baixar anexo",
+            "width": 125
+          },
+          {
+            "height": 43,
+            "tag": "A",
+            "text": "Desbloquear recurso",
+            "width": 199
+          },
+          {
+            "height": 43,
+            "tag": "A",
+            "text": "Desbloquear recurso",
+            "width": 199
+          },
+          {
+            "height": 43,
+            "tag": "A",
+            "text": "Desbloquear recurso",
+            "width": 199
+          },
+          {
+            "height": 43,
+            "tag": "A",
+            "text": "Usar Ferramenta",
+            "width": 171
+          },
+          {
+            "height": 20,
+            "tag": "A",
+            "text": "Visitar site",
+            "width": 87
+          },
+          {
+            "height": 20,
+            "tag": "A",
+            "text": "Visitar site",
+            "width": 87
+          },
+          {
+            "height": 20,
+            "tag": "A",
+            "text": "Visitar site",
+            "width": 87
+          }
+        ],
+        "smallText": [
+          {
+            "size": "13.6px",
+            "tag": "SPAN",
+            "text": "Centro de Recursos"
+          },
+          {
+            "size": "12.8px",
+            "tag": "BUTTON",
+            "text": "Todos"
+          },
+          {
+            "size": "12.8px",
+            "tag": "BUTTON",
+            "text": "Candidatos"
+          },
+          {
+            "size": "12.8px",
+            "tag": "BUTTON",
+            "text": "Empresas"
+          },
+          {
+            "size": "13.6px",
+            "tag": "BUTTON",
+            "text": "Todos"
+          },
+          {
+            "size": "13.6px",
+            "tag": "BUTTON",
+            "text": "CV"
+          },
+          {
+            "size": "13.6px",
+            "tag": "BUTTON",
+            "text": "Carta"
+          },
+          {
+            "size": "13.6px",
+            "tag": "BUTTON",
+            "text": "Contrato"
+          },
+          {
+            "size": "13.6px",
+            "tag": "BUTTON",
+            "text": "Freelancer"
+          },
+          {
+            "size": "13.6px",
+            "tag": "BUTTON",
+            "text": "Outros"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "CV"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "TXT"
+          },
+          {
+            "size": "12.8px",
+            "tag": "P",
+            "text": "Modelo objetivo para candidaturas formais e vagas administrativas."
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "2453 downloads"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Em breve"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "CV"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "TXT"
+          },
+          {
+            "size": "12.8px",
+            "tag": "P",
+            "text": "Layout enxuto para tecnologia, marketing e areas digitais."
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "3124 downloads"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Em breve"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Carta"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "TXT"
+          },
+          {
+            "size": "12.8px",
+            "tag": "P",
+            "text": "Estrutura pronta para personalizar candidatura por vaga."
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "2918 downloads"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Em breve"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "TXT"
+          },
+          {
+            "size": "12.8px",
+            "tag": "P",
+            "text": "Checklist para empresas publicarem vagas claras e atrativas."
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "1650 downloads"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Em breve"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "TXT"
+          },
+          {
+            "size": "12.8px",
+            "tag": "P",
+            "text": "Estrutura de proposta para acelerar aprovacao interna e fechamento."
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "982 downloads"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Em breve"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Freelancer"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "TXT"
+          },
+          {
+            "size": "12.8px",
+            "tag": "P",
+            "text": "Modelo para projetos pontuais com clausulas essenciais."
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "1432 downloads"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Em breve"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Carta"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "PDF"
+          },
+          {
+            "size": "12.8px",
+            "tag": "P",
+            "text": "Estrutura pronta para personalizar candidatura por vaga."
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "2918 downloads"
+          },
+          {
+            "size": "12px",
+            "tag": "A",
+            "text": "Baixar"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Outros"
+          },
+          {
+            "size": "11.2px",
+            "tag": "SPAN",
+            "text": "Documento"
+          },
+          {
+            "size": "12.8px",
+            "tag": "P",
+            "text": "Para fazer uma carta tem que ter ........."
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "0 downloads"
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Em breve"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Carreira"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Popular"
+          },
+          {
+            "size": "13.6px",
+            "tag": "P",
+            "text": "Preparacao pratica para entrevistas presenciais e remotas."
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "15 min"
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "24 páginas"
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Ler guia"
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Baixar anexo"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Carreira"
+          },
+          {
+            "size": "13.6px",
+            "tag": "P",
+            "text": "Como negociar remuneracao com argumentos objetivos."
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "12 min"
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "18 páginas"
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Ler guia"
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Baixar anexo"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Recrutamento"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Popular"
+          },
+          {
+            "size": "13.6px",
+            "tag": "P",
+            "text": "Roteiro para triagem, entrevista e avaliacao de candidatos."
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "18 min"
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "30 páginas"
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Ler guia"
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Baixar anexo"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Gestao"
+          },
+          {
+            "size": "13.6px",
+            "tag": "P",
+            "text": "Plano de 30 dias para integracao e produtividade inicial."
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "14 min"
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "20 páginas"
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Ler guia"
+          },
+          {
+            "size": "12.48px",
+            "tag": "A",
+            "text": "Baixar anexo"
+          },
+          {
+            "size": "13.6px",
+            "tag": "P",
+            "text": "Crie um CV completo em 2 colunas e exporte um PDF A4 bem formatado."
+          },
+          {
+            "size": "13.6px",
+            "tag": "A",
+            "text": "Desbloquear recurso"
+          },
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Disponivel apenas para plano Profissional."
+          },
+          {
+            "size": "13.6px",
+            "tag": "P",
+            "text": "Estimativa de faixa salarial para candidatos e orcamento para empresas."
+          },
+          {
+            "size": "13.6px",
+            "tag": "A",
+            "text": "Desbloquear recurso"
+          },
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Disponivel apenas para plano Profissional."
+          },
+          {
+            "size": "13.6px",
+            "tag": "P",
+            "text": "Estimativa de descontos e salario liquido para diferentes perfis."
+          },
+          {
+            "size": "13.6px",
+            "tag": "A",
+            "text": "Desbloquear recurso"
+          },
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Disponivel apenas para plano Profissional."
+          },
+          {
+            "size": "13.6px",
+            "tag": "P",
+            "text": "Essa ferramenta te ajuda a criar CV profissional"
+          },
+          {
+            "size": "13.6px",
+            "tag": "A",
+            "text": "Usar Ferramenta"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Governo"
+          },
+          {
+            "size": "12.8px",
+            "tag": "P",
+            "text": "Portal oficial com informacoes sobre legislacao e servicos publicos."
+          },
+          {
+            "size": "12.8px",
+            "tag": "A",
+            "text": "Visitar site"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Negocios"
+          },
+          {
+            "size": "12.8px",
+            "tag": "P",
+            "text": "Informacoes sobre empresas, negocios e oportunidades comerciais."
+          },
+          {
+            "size": "12.8px",
+            "tag": "A",
+            "text": "Visitar site"
+          },
+          {
+            "size": "10.4px",
+            "tag": "SPAN",
+            "text": "Governo"
+          },
+          {
+            "size": "12.8px",
+            "tag": "P",
+            "text": "Informacoes sobre contribuicoes, beneficios e pensoes."
+          },
+          {
+            "size": "12.8px",
+            "tag": "A",
+            "text": "Visitar site"
+          },
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Email"
+          },
+          {
+            "size": "12px",
+            "tag": "P",
+            "text": "Telefone"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/recursos",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    }
+  ],
+  "route": "/recursos",
+  "slug": "recursos"
+}

@@ -1,5 +1,5 @@
-import Head from "next/head";
-import Link from "next/link";
+import Head from 'next/head';
+import Link from 'next/link';
 import {
   FiArrowRight,
   FiBarChart2,
@@ -11,102 +11,116 @@ import {
   FiShield,
   FiStar,
   FiTarget,
+  FiUser,
   FiUsers,
   FiZap,
-} from "react-icons/fi";
-import PublicPageShell from "../components/PublicPageShell";
-import { DEFAULT_EMPRESA_PLANS } from "../lib/defaultPlans";
-import styles from "../styles/EmpresasPage.module.css";
+} from 'react-icons/fi';
+import PublicPageShell from '../components/PublicPageShell';
+import {
+  fetchActiveEmpresaPlans,
+  getEmpresaPlanCatalog,
+} from '../lib/empresaPlansCatalog';
+import styles from '../styles/EmpresasStitchPage.module.css';
 
 const RECRUITMENT_TOOLS = [
   {
-    title: "Perfil Institucional",
+    title: 'Perfil institucional',
     description:
-      "Cria um perfil completo da tua empresa com verificação oficial.",
+      'Crie um perfil completo da sua empresa com verificação oficial.',
     Icon: FiHome,
   },
   {
-    title: "Publicação de Vagas",
+    title: 'Publicação de vagas',
     description:
-      "Publica vagas em minutos com formulário intuitivo e templates profissionais.",
+      'Publique vagas em minutos com um formulário intuitivo e modelos profissionais.',
     Icon: FiZap,
   },
   {
-    title: "Banco de Talentos",
+    title: 'Banco de talentos',
     description:
-      "Acede a uma base de candidatos qualificados e filtra por competências.",
+      'Aceda a uma base de candidatos qualificados e filtre por competências.',
     Icon: FiUsers,
   },
   {
-    title: "Triagem Inteligente",
+    title: 'Triagem inteligente',
     description:
-      "Filtra candidatos automaticamente com base nos requisitos da vaga.",
+      'Filtre candidatos automaticamente com base nos requisitos da vaga.',
     Icon: FiFilter,
   },
   {
-    title: "Match Automático",
+    title: 'Sugestões automáticas',
     description:
-      "A plataforma sugere os candidatos mais compatíveis com cada vaga.",
+      'A plataforma sugere os candidatos mais compatíveis com cada vaga.',
     Icon: FiTarget,
   },
   {
-    title: "Relatórios",
+    title: 'Relatórios',
     description:
-      "Analisa o desempenho das vagas e o processo de recrutamento com dados reais.",
+      'Analise o desempenho das vagas e o processo de recrutamento com dados reais.',
     Icon: FiBarChart2,
   },
   {
-    title: "Destaque de Vagas",
+    title: 'Destaque de vagas',
     description:
-      "Destaca as tuas vagas para aparecerem no topo das pesquisas.",
+      'Destaque as suas vagas para aparecerem no topo das pesquisas.',
     Icon: FiStar,
   },
   {
-    title: "Empresa Verificada",
+    title: 'Empresa verificada',
     description:
-      "Obtém o badge de empresa verificada e aumenta a confiança dos candidatos.",
+      'Obtenha o selo de empresa verificada e aumente a confiança dos candidatos.',
     Icon: FiShield,
   },
   {
-    title: "Serviço RH",
+    title: 'Serviço de RH',
     description:
-      "Recrutamento assistido por especialistas: triagem, shortlist, entrevistas, avaliação de competências e relatórios profissionais.",
+      'Recrutamento assistido por especialistas: triagem, seleção, entrevistas, avaliação de competências e relatórios profissionais.',
     Icon: FiBriefcase,
   },
 ];
 
 const COMPANY_STEPS = [
   {
-    number: "01",
-    title: "Cria o Perfil da Empresa",
+    number: '01',
+    title: 'Crie o perfil da empresa',
     description:
-      "Regista a tua empresa e obtém verificação oficial para aumentar a credibilidade.",
+      'Registe a sua empresa e obtenha a verificação oficial para aumentar a credibilidade.',
   },
   {
-    number: "02",
-    title: "Publica a Vaga",
+    number: '02',
+    title: 'Publique a vaga',
     description:
-      "Define os requisitos, responsabilidades e benefícios da posição em aberto.",
+      'Define os requisitos, responsabilidades e benefícios da posição em aberto.',
   },
   {
-    number: "03",
-    title: "Recebe Candidaturas",
+    number: '03',
+    title: 'Receba candidaturas',
     description:
-      "A plataforma filtra e sugere os candidatos mais compatíveis automaticamente.",
+      'A plataforma filtra e sugere os candidatos mais compatíveis automaticamente.',
   },
   {
-    number: "04",
-    title: "Avalia e Contrata",
+    number: '04',
+    title: 'Avalie e contrate',
     description:
-      "Cria shortlists, agenda entrevistas e toma decisões informadas com dados reais.",
+      'Crie listas de candidatos, marque entrevistas e tome decisões informadas com dados reais.',
   },
 ];
 
-const COMPANY_PLANS = DEFAULT_EMPRESA_PLANS.filter((plan) =>
-  ["basic_empresa", "professional_empresa", "unlimited_empresa"].includes(plan.id),
-);
-
-export default function EmpresasPage() {
+/**
+ * @param {{
+ *   companyPlans?: Array<{
+ *     id: string;
+ *     name: string;
+ *     price: number;
+ *     priceLabel: string;
+ *     pricePeriodLabel?: string;
+ *     description?: string;
+ *     popular?: boolean;
+ *     features: string[];
+ *   }>;
+ * }} props
+ */
+export default function EmpresasPage({ companyPlans = [] }) {
   return (
     <>
       <Head>
@@ -123,13 +137,20 @@ export default function EmpresasPage() {
             <div className={styles.container}>
               <div className={styles.heroGrid}>
                 <div className={styles.heroCopy}>
-                  <span className={styles.heroEyebrow}>Recrutamento para empresas</span>
+                  <span className={styles.heroEyebrow}>
+                    EmpregoSTP para empresas
+                  </span>
                   <h1 className={styles.heroTitle}>
-                    Contrate melhor. <span>Com menos complexidade.</span>
+                    Recrutamento
+                    <br />
+                    para empresas
                   </h1>
+                  <p className={styles.heroLead}>
+                    Contrate melhor. Com menos complexidade.
+                  </p>
                   <p className={styles.heroText}>
-                    Publique vagas, organize candidaturas e encontre profissionais
-                    preparados para fazer a sua empresa avançar.
+                    Publique vagas, organize candidaturas e encontre
+                    profissionais preparados para fazer a sua empresa avançar.
                   </p>
 
                   <div className={styles.heroActions}>
@@ -142,23 +163,34 @@ export default function EmpresasPage() {
                     </Link>
                     <Link href="/candidatos" className={styles.secondaryAction}>
                       <FiSearch aria-hidden="true" />
-                      Encontrar candidatos
+                      Procurar candidatos
                     </Link>
                   </div>
 
                   <div className={styles.heroAssurance}>
-                    <span><FiCheck aria-hidden="true" /></span>
-                    Comece gratuitamente e escolha um plano quando precisar de mais alcance.
+                    <span>
+                      <FiCheck aria-hidden="true" />
+                    </span>
+                    Comece gratuitamente e escolha um plano quando precisar de
+                    mais alcance.
                   </div>
                 </div>
 
-                <div className={styles.recruitmentPanel} aria-label="Exemplo do painel de recrutamento">
+                <div
+                  className={styles.recruitmentPanel}
+                  role="group"
+                  aria-label="Exemplo do painel de recrutamento"
+                >
                   <div className={styles.panelHeader}>
                     <div>
-                      <span className={styles.panelKicker}>Painel de recrutamento</span>
+                      <span className={styles.panelKicker}>
+                        Painel de recrutamento
+                      </span>
                       <strong>Processo em curso</strong>
                     </div>
-                    <span className={styles.liveBadge}><i /> Ativo</span>
+                    <span className={styles.liveBadge}>
+                      <i /> Ativo
+                    </span>
                   </div>
 
                   <div className={styles.jobSummary}>
@@ -174,25 +206,35 @@ export default function EmpresasPage() {
                     <div className={styles.pipelineItem}>
                       <span>Recebidas</span>
                       <strong>24</strong>
-                      <i><b /></i>
+                      <i>
+                        <b />
+                      </i>
                     </div>
                     <div className={styles.pipelineItem}>
-                      <span>Shortlist</span>
+                      <span>Seleção</span>
                       <strong>8</strong>
-                      <i><b /></i>
+                      <i>
+                        <b />
+                      </i>
                     </div>
                     <div className={styles.pipelineItem}>
                       <span>Entrevistas</span>
                       <strong>3</strong>
-                      <i><b /></i>
+                      <i>
+                        <b />
+                      </i>
                     </div>
                   </div>
 
                   <div className={styles.candidatePreview}>
                     <div className={styles.candidateAvatars} aria-hidden="true">
-                      <span>AM</span><span>JM</span><span>LC</span>
+                      <span>AM</span>
+                      <span>JM</span>
+                      <span>LC</span>
                     </div>
-                    <p><strong>3 candidatos</strong> prontos para entrevista</p>
+                    <p>
+                      <strong>3 candidatos</strong> prontos para entrevista
+                    </p>
                     <FiArrowRight aria-hidden="true" />
                   </div>
                 </div>
@@ -200,11 +242,58 @@ export default function EmpresasPage() {
             </div>
           </section>
 
-          <section className={styles.valueStrip} aria-label="Benefícios principais">
+          <section
+            className={styles.valueStrip}
+            aria-label="Benefícios principais"
+          >
             <div className={`${styles.container} ${styles.valueGrid}`}>
-              <div><FiZap /><span><strong>Publicação simples</strong>Crie uma vaga em poucos minutos</span></div>
-              <div><FiTarget /><span><strong>Candidatos relevantes</strong>Filtre por perfil e competências</span></div>
-              <div><FiShield /><span><strong>Processo organizado</strong>Acompanhe cada candidatura</span></div>
+              <div>
+                <FiZap />
+                <span>
+                  <strong>Publicação simples</strong>Crie uma vaga em poucos
+                  minutos
+                </span>
+              </div>
+              <div>
+                <FiTarget />
+                <span>
+                  <strong>Candidatos relevantes</strong>Filtre por perfil e
+                  competências
+                </span>
+              </div>
+              <div>
+                <FiShield />
+                <span>
+                  <strong>Processo organizado</strong>Acompanhe cada candidatura
+                </span>
+              </div>
+            </div>
+          </section>
+
+          <section className={styles.stepsSection}>
+            <div className={styles.container}>
+              <div className={styles.sectionIntro}>
+                <span className={styles.sectionEyebrow}>Um processo claro</span>
+                <h2 className={styles.stepsTitle}>Da vaga à contratação</h2>
+                <p className={styles.subtitle}>
+                  Quatro passos para transformar uma necessidade da equipa numa
+                  contratação segura.
+                </p>
+              </div>
+
+              <div className={styles.stepsGrid}>
+                {COMPANY_STEPS.map((step) => (
+                  <article key={step.number} className={styles.stepCard}>
+                    <span className={styles.stepNumber}>{step.number}</span>
+                    <div>
+                      <h3 className={styles.stepTitle}>{step.title}</h3>
+                      <p className={styles.stepDescription}>
+                        {step.description}
+                      </p>
+                    </div>
+                  </article>
+                ))}
+              </div>
             </div>
           </section>
 
@@ -221,13 +310,18 @@ export default function EmpresasPage() {
                 </p>
               </div>
 
-              <div className={styles.toolsGrid}>
+              <div
+                className={styles.toolsGrid}
+                role="region"
+                aria-label="Ferramentas de recrutamento"
+                tabIndex={0}
+              >
                 {RECRUITMENT_TOOLS.map(({ title, description, Icon }) => (
                   <article key={title} className={styles.toolCard}>
                     <span className={styles.toolIcon} aria-hidden="true">
                       <Icon />
                     </span>
-                    <h2 className={styles.toolTitle}>{title}</h2>
+                    <h3 className={styles.toolTitle}>{title}</h3>
                     <p className={styles.toolDescription}>{description}</p>
                   </article>
                 ))}
@@ -235,70 +329,61 @@ export default function EmpresasPage() {
             </div>
           </section>
 
-          <section className={styles.stepsSection}>
-            <div className={styles.container}>
-              <div className={styles.sectionIntro}>
-                <span className={styles.sectionEyebrow}>Um processo claro</span>
-                <h2 className={styles.stepsTitle}>Da vaga à contratação</h2>
-                <p className={styles.subtitle}>
-                  Quatro passos para transformar uma necessidade da equipa numa contratação segura.
-                </p>
-              </div>
-
-              <div className={styles.stepsGrid}>
-                {COMPANY_STEPS.map((step) => (
-                  <article key={step.number} className={styles.stepCard}>
-                    <span className={styles.stepNumber}>{step.number}</span>
-                    <div>
-                      <h3 className={styles.stepTitle}>{step.title}</h3>
-                      <p className={styles.stepDescription}>{step.description}</p>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          <section className={styles.plansSection}>
+          <section className={styles.plansSection} id="planos">
             <div className={styles.container}>
               <div className={styles.plansIntro}>
                 <span className={styles.sectionEyebrow}>Planos flexíveis</span>
                 <h2 className={styles.plansTitle}>Planos para empresas</h2>
                 <p className={styles.plansSubtitle}>
-                  Escolhe o plano certo para publicar vagas, destacar
+                  Escolha o plano certo para publicar vagas, destacar
                   oportunidades e recrutar com mais eficiência.
                 </p>
               </div>
 
               <div className={styles.plansGrid}>
-                {COMPANY_PLANS.map((plan) => {
-                  const isPopular = plan.id === "professional_empresa";
+                {companyPlans.map((plan) => {
+                  const isPopular = Boolean(plan.popular);
                   return (
                     <article
                       key={plan.id}
                       className={`${styles.planCard} ${
-                        isPopular ? styles.planCardPopular : ""
+                        isPopular ? styles.planCardPopular : ''
                       }`}
                     >
                       {isPopular ? (
                         <span className={styles.planBadge}>Mais escolhido</span>
                       ) : null}
                       <h3 className={styles.planName}>{plan.name}</h3>
-                      <p className={styles.planPrice}>{plan.priceLabel}</p>
+                      <p className={styles.planPrice}>
+                        {plan.priceLabel}
+                        {plan.pricePeriodLabel ? (
+                          <span className={styles.planPricePeriod}>
+                            {plan.pricePeriodLabel}
+                          </span>
+                        ) : null}
+                      </p>
+                      <p className={styles.planDescription}>
+                        {plan.description}
+                      </p>
                       <ul className={styles.planFeatures}>
-                        {plan.features.slice(0, 6).map((feature) => (
-                          <li key={feature}><FiCheck aria-hidden="true" />{feature}</li>
+                        {plan.features.slice(0, 8).map((feature, index) => (
+                          <li key={`${feature}-${index}`}>
+                            <FiCheck aria-hidden="true" />
+                            {feature}
+                          </li>
                         ))}
                       </ul>
                       <Link
                         href={
                           plan.price === 0
-                            ? "/register?type=empresa"
-                            : "/premium/empresa"
+                            ? '/register?type=empresa'
+                            : '/premium/empresa'
                         }
                         className={styles.planAction}
                       >
-                        {plan.price === 0 ? "Começar grátis" : "Ver plano"}
+                        {plan.price === 0
+                          ? 'Começar gratuitamente'
+                          : 'Ver plano'}
                       </Link>
                     </article>
                   );
@@ -311,19 +396,66 @@ export default function EmpresasPage() {
             <div className={styles.container}>
               <div className={styles.closingPanel}>
                 <div>
-                  <span className={styles.closingEyebrow}>Pronto para recrutar?</span>
+                  <span className={styles.closingEyebrow}>
+                    Pronto para recrutar?
+                  </span>
                   <h2>Encontre a próxima pessoa certa para a sua equipa.</h2>
-                  <p>Crie a sua conta de empresa e publique a primeira oportunidade.</p>
+                  <p>
+                    Crie a sua conta de empresa e publique a primeira
+                    oportunidade.
+                  </p>
                 </div>
-                <Link href="/register?type=empresa" className={styles.closingAction}>
+                <Link
+                  href="/register?type=empresa"
+                  className={styles.closingAction}
+                >
                   Criar conta de empresa
                   <FiArrowRight aria-hidden="true" />
                 </Link>
               </div>
             </div>
           </section>
+
+          <nav className={styles.mobileBottomNav} aria-label="Navegação rápida">
+            <Link href="/empresas" aria-current="page">
+              <FiHome aria-hidden="true" />
+              <span>Empresas</span>
+            </Link>
+            <Link href="/vagas">
+              <FiBriefcase aria-hidden="true" />
+              <span>Vagas</span>
+            </Link>
+            <Link href="/candidatos">
+              <FiUsers aria-hidden="true" />
+              <span>Candidatos</span>
+            </Link>
+            <Link href="/dashboard">
+              <FiUser aria-hidden="true" />
+              <span>Painel</span>
+            </Link>
+          </nav>
         </div>
       </PublicPageShell>
     </>
   );
+}
+
+export async function getServerSideProps() {
+  try {
+    const { admin } = await import('../lib/firebaseAdmin');
+    const sourcePlans = await fetchActiveEmpresaPlans(admin);
+
+    return {
+      props: {
+        companyPlans: getEmpresaPlanCatalog(sourcePlans),
+      },
+    };
+  } catch (error) {
+    console.error('Erro ao carregar planos empresariais públicos:', error);
+    return {
+      props: {
+        companyPlans: getEmpresaPlanCatalog([]),
+      },
+    };
+  }
 }

@@ -1,37 +1,63 @@
-import React, { useEffect, useMemo, useState } from "react";
-import Head from "next/head";
-import Link from "next/link";
-import { useRouter } from "next/router";
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import Head from 'next/head';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
 import {
   FiArrowRight,
   FiBell,
+  FiBookmark,
   FiBriefcase,
   FiCheckCircle,
+  FiChevronDown,
   FiChevronUp,
   FiClock,
-  FiGrid,
-  FiHeart,
-  FiList,
+  FiDollarSign,
+  FiHome,
+  FiInfo,
   FiMapPin,
-  FiStar,
+  FiSearch,
+  FiSliders,
+  FiUser,
   FiX,
-  FiZap,
-} from "react-icons/fi";
-import PublicPageShell from "../../components/PublicPageShell";
-import styles from "../../styles/VagasPage.module.css";
+} from 'react-icons/fi';
+import PublicPageShell from '../../components/PublicPageShell';
+import {
+  filterPublicJobsByCompany,
+  projectPublicJob,
+} from '../../lib/publicJob';
+import styles from '../../styles/VagasPage.module.css';
 
 function normalizeSearchValue(value) {
-  if (Array.isArray(value)) return value.join(" ");
-  return String(value || "");
+  if (Array.isArray(value)) return value.join(' ');
+  return String(value || '');
 }
 
-function parseList(value) {
-  if (!value) return [];
-  if (Array.isArray(value)) return value.filter(Boolean);
-  return String(value)
-    .split(/\n|,|;/g)
-    .map((item) => item.trim())
-    .filter(Boolean);
+function getRouteQueryValue(value) {
+  return typeof value === 'string' ? value : '';
+}
+
+function filterJobsByRouteQuery(jobs, query = {}) {
+  let result = [...jobs];
+  const search = getRouteQueryValue(query.search).toLowerCase().trim();
+  const category = getRouteQueryValue(query.categoria).toLowerCase().trim();
+  const company = getRouteQueryValue(query.empresa);
+
+  if (search) {
+    result = result.filter((job) => matchesSearch(job, search));
+  }
+  if (category) {
+    result = result.filter(
+      (job) =>
+        String(job.categoria || '')
+          .toLowerCase()
+          .trim() === category,
+    );
+  }
+  if (company) {
+    result = filterPublicJobsByCompany(result, company);
+  }
+
+  return result;
 }
 
 function matchesSearch(job, term) {
@@ -41,335 +67,464 @@ function matchesSearch(job, term) {
     job.localizacao,
     job.categoria,
     job.tipoContrato,
+    job.empresaNome,
+    job.companyName,
     ...(Array.isArray(job.palavrasChave) ? job.palavrasChave : []),
     normalizeSearchValue(job.requisitos),
     normalizeSearchValue(job.beneficios),
   ]
-    .join(" ")
+    .join(' ')
     .toLowerCase();
 
   return haystack.includes(term);
 }
 
+function isClosedJob(job) {
+  const status = String(job?.status || '')
+    .trim()
+    .toLowerCase();
+  return [
+    'closed',
+    'fechada',
+    'inactive',
+    'inativa',
+    'expired',
+    'expirada',
+  ].includes(status);
+}
+
 function compareRecentJobs(a, b) {
+  const aIsClosed = isClosedJob(a);
+  const bIsClosed = isClosedJob(b);
+  if (aIsClosed !== bIsClosed) return aIsClosed ? 1 : -1;
   if (a.destaque && !b.destaque) return -1;
   if (!a.destaque && b.destaque) return 1;
   if (a.premiumOnly && !b.premiumOnly) return -1;
   if (!a.premiumOnly && b.premiumOnly) return 1;
-  return new Date(b.createdAt || b.publishedAt || 0) - new Date(a.createdAt || a.publishedAt || 0);
+  return (
+    new Date(b.createdAt || b.publishedAt || 0) -
+    new Date(a.createdAt || a.publishedAt || 0)
+  );
 }
 
-function normalizeContractType(value = "") {
-  const normalized = String(value || "").toLowerCase();
+function normalizeContractType(value = '') {
+  const normalized = String(value || '').toLowerCase();
   const types = {
-    "full-time": "Full-time",
-    "tempo integral": "Full-time",
-    "part-time": "Part-time",
-    "meio período": "Part-time",
-    "meio periodo": "Part-time",
-    contract: "Contrato",
-    contrato: "Contrato",
-    internship: "Estágio",
-    estagio: "Estágio",
-    estágio: "Estágio",
-    freelance: "Freelance",
-    temporário: "Temporário",
-    temporario: "Temporário",
-    voluntariado: "Voluntariado",
+    'full-time': 'Tempo integral',
+    'tempo integral': 'Tempo integral',
+    'part-time': 'Meio período',
+    'meio período': 'Meio período',
+    'meio periodo': 'Meio período',
+    contract: 'Contrato',
+    contrato: 'Contrato',
+    internship: 'Estágio',
+    estagio: 'Estágio',
+    estágio: 'Estágio',
+    freelance: 'Freelance',
+    temporário: 'Temporário',
+    temporario: 'Temporário',
+    voluntariado: 'Voluntariado',
   };
 
-  return types[normalized] || value || "Não informado";
+  return types[normalized] || value || 'Não informado';
 }
 
-function formatPublishedAgo(value) {
-  if (!value) return "agora";
+function formatPublishedAgo(value, now = Date.now()) {
+  if (!value) return 'agora';
 
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "agora";
+  if (Number.isNaN(date.getTime())) return 'agora';
 
-  const diffMs = Date.now() - date.getTime();
+  const diffMs = now - date.getTime();
   const minutes = Math.floor(diffMs / 60000);
   const hours = Math.floor(diffMs / 3600000);
   const days = Math.floor(diffMs / 86400000);
 
-  if (days >= 1) return `há ${days} dia${days === 1 ? "" : "s"}`;
+  if (days >= 1) return `há ${days} dia${days === 1 ? '' : 's'}`;
   if (hours >= 1) return `há ${hours}h`;
   if (minutes >= 1) return `há ${minutes}m`;
-  return "agora";
+  return 'agora';
 }
 
 function parseMoney(value) {
   if (!value && value !== 0) return null;
-  const numeric = Number.parseFloat(
-    String(value)
-      .replace(/[^\d,.-]/g, "")
-      .replace(",", "."),
-  );
+  const raw = String(value)
+    .trim()
+    .replace(/\s/g, '')
+    .replace(/[^\d,.-]/g, '');
+  if (!raw) return null;
+
+  let normalized = raw;
+  if (raw.includes('.') && raw.includes(',')) {
+    normalized =
+      raw.lastIndexOf(',') > raw.lastIndexOf('.')
+        ? raw.replace(/\./g, '').replace(',', '.')
+        : raw.replace(/,/g, '');
+  } else if (/^-?\d{1,3}(\.\d{3})+$/.test(raw)) {
+    normalized = raw.replace(/\./g, '');
+  } else if (/^-?\d{1,3}(,\d{3})+$/.test(raw)) {
+    normalized = raw.replace(/,/g, '');
+  } else {
+    normalized = raw.replace(',', '.');
+  }
+
+  const numeric = Number.parseFloat(normalized);
   return Number.isFinite(numeric) ? numeric : null;
 }
 
 function formatCompactMoney(value) {
   const numeric = parseMoney(value);
-  if (numeric === null) return "";
+  if (numeric === null) return '';
   return Math.round(numeric)
     .toString()
-    .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
 
 function formatSalary(fromValue, toValue) {
   const from = formatCompactMoney(fromValue);
   const to = formatCompactMoney(toValue);
 
-  if (from && to && from !== to) return `${from}-${to}`;
+  if (from && to && from !== to) return `${from} a ${to}`;
   if (from) return from;
   if (to) return to;
-  return "A combinar";
-}
-
-function getCompanyInitials(label) {
-  return (
-    String(label || "STP")
-      .split(" ")
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part.charAt(0).toUpperCase())
-      .join("") || "STP"
-  );
+  return 'A combinar';
 }
 
 function isRemoteJob(job) {
-  const text = `${job.modalidade || ""} ${job.regime || ""}`.toLowerCase();
-  return Boolean(job.remoto) || text.includes("remoto");
+  const text = `${job.modalidade || ''} ${job.regime || ''}`.toLowerCase();
+  return Boolean(job.remoto) || text.includes('remoto');
 }
 
 function isHybridJob(job) {
-  const text = `${job.modalidade || ""} ${job.regime || ""} ${job.localizacao || ""}`.toLowerCase();
-  return text.includes("hibrido") || text.includes("híbrido");
+  const text =
+    `${job.modalidade || ''} ${job.regime || ''} ${job.localizacao || ''}`.toLowerCase();
+  return text.includes('hibrido') || text.includes('híbrido');
 }
 
 function getModalityLabel(job) {
-  if (isHybridJob(job)) return "Híbrido";
-  if (isRemoteJob(job)) return "Remoto";
-  return "Presencial";
+  if (isHybridJob(job)) return 'Híbrido';
+  if (isRemoteJob(job)) return 'Remoto';
+  const text =
+    `${job.modalidade || ''} ${job.regime || ''} ${job.localizacao || ''}`.toLowerCase();
+  if (job.remoto === false || text.includes('presencial')) return 'Presencial';
+  return 'Modalidade não indicada';
 }
 
-function getApplicationCount(job, fallback = 0) {
-  const count = Number(
-    job.applicationCount ||
-      job.applicationsCount ||
-      job.candidaturasCount ||
-      job.totalApplications ||
-      fallback,
-  );
-  return Number.isFinite(count) && count > 0 ? count : fallback;
+function isOnSiteJob(job) {
+  return getModalityLabel(job) === 'Presencial';
 }
 
 function getExperienceBucket(job) {
-  const text = `${job.nivelExperiencia || ""} ${job.experiencia || ""}`.toLowerCase();
+  const text =
+    `${job.nivelExperiencia || ''} ${job.experiencia || ''}`.toLowerCase();
 
-  if (text.includes("5+") || text.includes("+5") || text.includes("sénior") || text.includes("senior")) {
-    return "5+";
+  if (
+    text.includes('5+') ||
+    text.includes('+5') ||
+    text.includes('sénior') ||
+    text.includes('senior')
+  ) {
+    return '5+';
   }
-  if (text.includes("3-5") || text.includes("3 a 5")) return "3-5";
-  if (text.includes("1-3") || text.includes("1 a 3") || text.includes("júnior") || text.includes("junior")) {
-    return "1-3";
+  if (text.includes('3-5') || text.includes('3 a 5')) return '3-5';
+  if (
+    text.includes('1-3') ||
+    text.includes('1 a 3') ||
+    text.includes('júnior') ||
+    text.includes('junior')
+  ) {
+    return '1-3';
   }
-  if (text.includes("sem") || text.includes("entry") || text.includes("0-2") || text.includes("iniciante")) {
-    return "sem";
+  if (
+    text.includes('sem') ||
+    text.includes('entry') ||
+    text.includes('0-2') ||
+    text.includes('iniciante')
+  ) {
+    return 'sem';
   }
-  return "";
+  return '';
 }
 
 function getExperienceLabel(bucket) {
   const labels = {
-    sem: "Sem experiência",
-    "1-3": "1-3 anos",
-    "3-5": "3-5 anos",
-    "5+": "5+ anos",
+    sem: 'Sem experiência',
+    '1-3': '1 a 3 anos',
+    '3-5': '3 a 5 anos',
+    '5+': 'Mais de 5 anos',
   };
   return labels[bucket] || bucket;
-}
-
-function getMatchPercent(job, index = 0) {
-  const base = Number(job.matchPercent || job.match || 0);
-  if (base > 0) return Math.min(96, Math.max(42, Math.round(base)));
-  const seed = String(job.id || job.titulo || index).split("").reduce((sum, char) => sum + char.charCodeAt(0), 0);
-  return 62 + (seed % 25);
-}
-
-function getCardFlag(job, index, match) {
-  const closingDate = job.dataFecho ? new Date(job.dataFecho) : null;
-  const daysToClose =
-    closingDate && !Number.isNaN(closingDate.getTime())
-      ? Math.ceil((closingDate.getTime() - Date.now()) / 86400000)
-      : null;
-
-  if (job.destaque || (daysToClose !== null && daysToClose <= 5 && daysToClose >= 0)) {
-    return { label: "Urgente", variant: "urgent" };
-  }
-  if (match >= 82 || index % 5 === 3) {
-    return { label: "Popular", variant: "popular" };
-  }
-  return null;
-}
-
-function getBadgeBackground(seedText) {
-  const palettes = [
-    "linear-gradient(135deg, #10a6c7 0%, #2bd4ea 100%)",
-    "linear-gradient(135deg, #23a958 0%, #39d47d 100%)",
-    "linear-gradient(135deg, #e17b00 0%, #f59e0b 100%)",
-    "linear-gradient(135deg, #8758f2 0%, #bf63ff 100%)",
-    "linear-gradient(135deg, #5b5eea 0%, #7c83ff 100%)",
-    "linear-gradient(135deg, #d9335b 0%, #f35f7f 100%)",
-  ];
-  const seed = String(seedText || "STP")
-    .split("")
-    .reduce((sum, char) => sum + char.charCodeAt(0), 0);
-  return palettes[seed % palettes.length];
-}
-
-function getJobTags(job) {
-  return Array.from(
-    new Set(
-      [
-        normalizeContractType(job.tipoContrato),
-        job.categoria,
-        job.nivelExperiencia,
-        ...(Array.isArray(job.palavrasChave) ? job.palavrasChave : []),
-        ...parseList(job.competencias || job.requisitos).slice(0, 3),
-      ]
-        .map((tag) => String(tag || "").trim())
-        .filter(Boolean),
-    ),
-  ).slice(0, 4);
 }
 
 function countBy(items, predicate) {
   return items.reduce((total, item) => total + (predicate(item) ? 1 : 0), 0);
 }
 
-function JobCard({ job, index, viewMode }) {
-  const companyName = job.empresaNome || job.companyName || "Empresa";
-  const initials = getCompanyInitials(companyName);
-  const match = getMatchPercent(job, index);
-  const flag = getCardFlag(job, index, match);
-  const tags = getJobTags(job).slice(0, 3);
+function getPaginationItems(currentPage, totalPages) {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
+  }
+
+  const items = [1];
+  const start = Math.max(2, currentPage - 1);
+  const end = Math.min(totalPages - 1, currentPage + 1);
+
+  if (start > 2) items.push('start-ellipsis');
+  for (let page = start; page <= end; page += 1) items.push(page);
+  if (end < totalPages - 1) items.push('end-ellipsis');
+  items.push(totalPages);
+
+  return items;
+}
+
+const JOBS_PER_PAGE = 6;
+const MOBILE_JOBS_BATCH = 3;
+
+function getCompanyInitials(value = '') {
+  return (
+    String(value || 'Empresa')
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part.charAt(0).toUpperCase())
+      .join('') || 'ES'
+  );
+}
+
+function isNewJob(job, now = Date.now()) {
+  const value = job.publicadoEm || job.publishedAt || job.createdAt;
+  if (!value) return false;
+  const timestamp = new Date(value).getTime();
+  if (!Number.isFinite(timestamp)) return false;
+  const age = now - timestamp;
+  return age >= 0 && age <= 24 * 60 * 60 * 1000;
+}
+
+function JobCard({ job, referenceNow }) {
+  const companyName = job.empresaNome || job.companyName || 'Empresa';
+  const salary = formatSalary(job.salarioDe, job.salarioAte);
+  const currency = job.currency || 'STD';
+  const salaryLabel =
+    salary === 'A combinar' ? salary : `${salary} ${currency}`;
+  const featured =
+    job.destaque === true || job.featured === true || job.isFeatured === true;
+  const closed = isClosedJob(job);
+  const recentlyPublished = isNewJob(job, referenceNow);
+  const publishedAt = job.publicadoEm || job.publishedAt || job.createdAt;
+  const companyLogo = job.empresaLogo || job.companyLogo;
+  const modality = getModalityLabel(job);
+  const contract = normalizeContractType(job.tipoContrato);
+  const cardClassName = [
+    styles.jobCard,
+    closed ? styles.jobCardClosed : '',
+    featured ? styles.jobCardFeatured : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
-    <article className={`${styles.jobCard} ${viewMode === "list" ? styles.jobCardList : ""}`}>
-      <div className={styles.jobCardTop}>
-        <div
-          className={styles.companyBadge}
-          style={{ background: getBadgeBackground(companyName) }}
-        >
-          {job.empresaLogo ? (
+    <article className={cardClassName}>
+      <div className={styles.jobCardIdentity}>
+        <div className={styles.companyLogo}>
+          {companyLogo ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={job.empresaLogo} alt={companyName} className={styles.companyLogo} />
+            <img
+              src={companyLogo}
+              alt={`Logótipo de ${companyName}`}
+              loading="lazy"
+              decoding="async"
+            />
           ) : (
-            initials
+            <span>{getCompanyInitials(companyName)}</span>
           )}
         </div>
-        <div className={styles.cardActions}>
-          {flag ? (
-            <span className={`${styles.cardFlag} ${styles[`cardFlag${flag.variant}`]}`}>
-              {flag.variant === "urgent" ? <FiZap size={16} /> : <FiStar size={16} />}
-              {flag.label}
-            </span>
-          ) : null}
-          <button
-            type="button"
-            className={`${styles.favoriteButton} ${index === 0 ? styles.favoriteButtonActive : ""}`}
-            aria-label="Guardar vaga"
-          >
-            <FiHeart size={22} />
-          </button>
-        </div>
+        {recentlyPublished || featured ? (
+          <span className={styles.newBadge}>
+            {recentlyPublished ? 'Novo' : 'Destaque'}
+          </span>
+        ) : null}
       </div>
 
-      <div>
-        <Link href={`/vaga/${job.id}`} className={styles.jobTitle}>
-          {job.titulo}
+      <div className={styles.jobCardContent}>
+        <Link href={`/vaga/${job.id}`} className={styles.jobTitleLink}>
+          <h3>{job.titulo}</h3>
         </Link>
-        <p className={styles.companyLine}>
+        <p className={styles.companyName}>
           {companyName}
-          {job.companyVerified ? <FiCheckCircle size={16} /> : null}
-          {job.rating ? (
-            <span className={styles.rating}>
-              <FiStar size={15} /> {job.rating}
+          {job.companyVerified ? (
+            <span title="Empresa verificada" aria-label="Empresa verificada">
+              <FiCheckCircle aria-hidden="true" />
             </span>
           ) : null}
         </p>
-      </div>
 
-      <div className={styles.jobMeta}>
-        <span>
-          <FiMapPin size={17} />
-          {job.localizacao || "São Tomé"} · {getModalityLabel(job)}
-        </span>
-        <span>
-          <FiClock size={17} />
-          {formatPublishedAgo(job.publicadoEm || job.publishedAt || job.createdAt)}
-        </span>
-      </div>
-
-      {tags.length > 0 ? (
-        <div className={styles.jobTags}>
-          {tags.map((tag) => (
-            <span key={tag}>{tag}</span>
-          ))}
-        </div>
-      ) : null}
-
-      <div className={styles.cardDivider} />
-
-      <div className={styles.jobCardFooter}>
-        <div>
-          <strong className={styles.salaryValue}>{formatSalary(job.salarioDe, job.salarioAte)}</strong>
-          <span className={styles.salaryUnit}>STD/mês</span>
-        </div>
-        <div className={styles.matchMini}>
-          <span className={styles.matchMiniTrack}>
-            <span style={{ width: `${match}%` }} />
+        <div className={styles.jobPrimaryMeta}>
+          <span>
+            <FiMapPin aria-hidden="true" />
+            {job.localizacao || 'São Tomé e Príncipe'}
           </span>
-          <strong>{match}% match</strong>
+          <span className={styles.statusMeta}>
+            <FiInfo aria-hidden="true" />
+            <span
+              className={closed ? styles.statusBadgeClosed : styles.statusBadge}
+            >
+              {closed ? 'Encerrada' : 'Aberta'}
+            </span>
+          </span>
+          <span>
+            <FiClock aria-hidden="true" />
+            Publicada {formatPublishedAgo(publishedAt, referenceNow)}
+          </span>
         </div>
+
+        <div className={styles.jobTags} aria-label="Características da vaga">
+          <span className={styles.salaryTag}>
+            <FiDollarSign aria-hidden="true" />
+            {salaryLabel}
+          </span>
+          <span className={styles.contractTag}>
+            <FiBriefcase aria-hidden="true" />
+            {contract}
+          </span>
+          <span className={styles.modalityTag}>{modality}</span>
+        </div>
+
+        {job.descricao ? (
+          <p className={styles.jobDescription}>{job.descricao}</p>
+        ) : null}
       </div>
 
-      <Link href={`/vaga/${job.id}`} className={styles.applyCardButton}>
-        Candidatar <FiArrowRight size={22} />
-      </Link>
+      <div className={styles.jobCardActions}>
+        {closed ? (
+          <span className={styles.closedAction}>Vaga encerrada</span>
+        ) : (
+          <Link
+            href={`/vaga/${job.id}#candidatura`}
+            className={styles.applyAction}
+          >
+            Candidatar
+            <FiArrowRight aria-hidden="true" />
+          </Link>
+        )}
+        <Link href={`/vaga/${job.id}`} className={styles.detailsAction}>
+          Ver detalhes
+        </Link>
+      </div>
     </article>
   );
 }
 
-export default function VagasPage({ initialJobs = [] }) {
+export default function VagasPage({ initialJobs = [], referenceNow = 0 }) {
   const router = useRouter();
   const jobs = initialJobs;
-  const [filteredJobs, setFilteredJobs] = useState(initialJobs);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredJobs, setFilteredJobs] = useState(() =>
+    filterJobsByRouteQuery(initialJobs, router.query),
+  );
+  const [searchTerm, setSearchTerm] = useState(() =>
+    getRouteQueryValue(router.query.search),
+  );
   const [filters, setFilters] = useState({
-    localizacao: "",
-    tipoContrato: "",
-    status: "",
-    categoria: "",
-    modalidade: "",
-    experiencia: "",
+    empresa: getRouteQueryValue(router.query.empresa),
+    localizacao: '',
+    tipoContrato: '',
+    status: '',
+    categoria: getRouteQueryValue(router.query.categoria),
+    modalidade: '',
+    experiencia: '',
     showFeatured: false,
   });
   const [minSalary, setMinSalary] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-  const [sortBy, setSortBy] = useState("recentes");
-  const [viewMode, setViewMode] = useState("grid");
-  const [alertEmail, setAlertEmail] = useState("");
-  const [alertState, setAlertState] = useState({ status: "idle", message: "" });
+  const [sortBy, setSortBy] = useState('recentes');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [mobileVisibleCount, setMobileVisibleCount] =
+    useState(MOBILE_JOBS_BATCH);
+  const [isMobileView, setIsMobileView] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [alertEmail, setAlertEmail] = useState('');
+  const [alertState, setAlertState] = useState({ status: 'idle', message: '' });
+  const [collapsedSections, setCollapsedSections] = useState({});
+  const filtersPanelRef = useRef(null);
+
+  const toggleSection = (key) =>
+    setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }));
+
+  const renderFilterHeader = (key, title) => (
+    <button
+      type="button"
+      className={styles.filterSectionHeader}
+      aria-expanded={!collapsedSections[key]}
+      onClick={() => toggleSection(key)}
+    >
+      <h3>{title}</h3>
+      {collapsedSections[key] ? (
+        <FiChevronDown size={18} />
+      ) : (
+        <FiChevronUp size={18} />
+      )}
+    </button>
+  );
 
   useEffect(() => {
-    setSearchTerm(typeof router.query.search === "string" ? router.query.search : "");
+    setSearchTerm(
+      typeof router.query.search === 'string' ? router.query.search : '',
+    );
     setFilters((prev) => ({
       ...prev,
-      categoria: typeof router.query.categoria === "string" ? router.query.categoria : "",
+      categoria:
+        typeof router.query.categoria === 'string'
+          ? router.query.categoria
+          : '',
+      empresa:
+        typeof router.query.empresa === 'string' ? router.query.empresa : '',
     }));
-  }, [router.query.search, router.query.categoria]);
+  }, [router.query.search, router.query.categoria, router.query.empresa]);
+
+  useEffect(() => {
+    if (!filtersOpen || !isMobileView) return undefined;
+
+    const previousFocus = document.activeElement;
+    const previousOverflow = document.body.style.overflow;
+    const panel = filtersPanelRef.current;
+    const focusableSelector =
+      'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href]';
+
+    document.body.style.overflow = 'hidden';
+    panel
+      ?.querySelector('button[aria-label="Fechar filtros"]')
+      ?.focus({ preventScroll: true });
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setFiltersOpen(false);
+        return;
+      }
+      if (event.key !== 'Tab' || !panel) return;
+
+      const focusable = [...panel.querySelectorAll(focusableSelector)].filter(
+        (element) => element.getClientRects().length > 0,
+      );
+      if (!focusable.length) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+      previousFocus?.focus?.({ preventScroll: true });
+    };
+  }, [filtersOpen, isMobileView]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -382,12 +537,23 @@ export default function VagasPage({ initialJobs = [] }) {
         result = result.filter((job) => matchesSearch(job, normalizedSearch));
       }
 
+      if (filters.empresa) {
+        result = filterPublicJobsByCompany(result, filters.empresa);
+      }
+
       if (filters.localizacao) {
-        result = result.filter((job) => job.localizacao === filters.localizacao);
+        const normalizedLocation = filters.localizacao.toLowerCase().trim();
+        result = result.filter((job) =>
+          String(job.localizacao || '')
+            .toLowerCase()
+            .includes(normalizedLocation),
+        );
       }
 
       if (filters.tipoContrato) {
-        result = result.filter((job) => job.tipoContrato === filters.tipoContrato);
+        result = result.filter(
+          (job) => job.tipoContrato === filters.tipoContrato,
+        );
       }
 
       if (filters.status) {
@@ -397,49 +563,60 @@ export default function VagasPage({ initialJobs = [] }) {
       if (filters.categoria) {
         result = result.filter(
           (job) =>
-            String(job.categoria || "").toLowerCase() ===
+            String(job.categoria || '').toLowerCase() ===
             String(filters.categoria).toLowerCase(),
         );
       }
 
       if (filters.experiencia) {
-        result = result.filter((job) => getExperienceBucket(job) === filters.experiencia);
+        result = result.filter(
+          (job) => getExperienceBucket(job) === filters.experiencia,
+        );
       }
 
-      if (filters.modalidade === "remoto") {
+      if (filters.modalidade === 'remoto') {
         result = result.filter((job) => isRemoteJob(job));
-      } else if (filters.modalidade === "hibrido") {
+      } else if (filters.modalidade === 'hibrido') {
         result = result.filter((job) => isHybridJob(job));
-      } else if (filters.modalidade === "presencial") {
-        result = result.filter((job) => !isRemoteJob(job) && !isHybridJob(job));
+      } else if (filters.modalidade === 'presencial') {
+        result = result.filter(isOnSiteJob);
       }
 
       if (filters.showFeatured) {
         result = result.filter(
-          (job) => job.destaque === true || job.featured === true || job.isFeatured === true,
+          (job) =>
+            job.destaque === true ||
+            job.featured === true ||
+            job.isFeatured === true,
         );
       }
 
       if (minSalary > 0) {
         result = result.filter((job) => {
-          const salary = parseMoney(job.salarioAte) || parseMoney(job.salarioDe) || 0;
+          const salary =
+            parseMoney(job.salarioAte) || parseMoney(job.salarioDe) || 0;
           return salary >= minSalary;
         });
       }
 
-      if (sortBy === "recentes") {
+      if (sortBy === 'recentes') {
         result.sort(compareRecentJobs);
-      } else if (sortBy === "prazo") {
+      } else if (sortBy === 'prazo') {
         result.sort((a, b) => {
           if (a.destaque && !b.destaque) return -1;
           if (!a.destaque && b.destaque) return 1;
-          return new Date(a.dataFecho || "9999-12-31") - new Date(b.dataFecho || "9999-12-31");
+          return (
+            new Date(a.dataFecho || '9999-12-31') -
+            new Date(b.dataFecho || '9999-12-31')
+          );
         });
-      } else if (sortBy === "salario") {
+      } else if (sortBy === 'salario') {
         result.sort((a, b) => {
           if (a.destaque && !b.destaque) return -1;
           if (!a.destaque && b.destaque) return 1;
-          return (parseMoney(b.salarioDe) || 0) - (parseMoney(a.salarioDe) || 0);
+          return (
+            (parseMoney(b.salarioDe) || 0) - (parseMoney(a.salarioDe) || 0)
+          );
         });
       }
 
@@ -450,68 +627,128 @@ export default function VagasPage({ initialJobs = [] }) {
     return () => clearTimeout(timeoutId);
   }, [filters, jobs, minSalary, searchTerm, sortBy]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+    setMobileVisibleCount(MOBILE_JOBS_BATCH);
+  }, [filters, minSalary, searchTerm, sortBy]);
+
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 720px)');
+    const syncViewport = () => setIsMobileView(media.matches);
+    syncViewport();
+    media.addEventListener('change', syncViewport);
+    return () => media.removeEventListener('change', syncViewport);
+  }, []);
+
   const localizacoes = useMemo(
     () => [...new Set(jobs.map((job) => job.localizacao).filter(Boolean))],
+    [jobs],
+  );
+  const categorias = useMemo(
+    () => [...new Set(jobs.map((job) => job.categoria).filter(Boolean))],
     [jobs],
   );
   const tiposContrato = useMemo(
     () => [...new Set(jobs.map((job) => job.tipoContrato).filter(Boolean))],
     [jobs],
   );
-  const featuredJob = useMemo(
-    () => jobs.find((job) => job.destaque || job.premiumOnly) || jobs[0] || null,
-    [jobs],
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredJobs.length / JOBS_PER_PAGE),
   );
-  const featuredMatch = featuredJob ? getMatchPercent(featuredJob, 0) : 80;
-  const featuredTags = featuredJob ? getJobTags(featuredJob) : [];
-  const featuredApplications = featuredJob ? getApplicationCount(featuredJob, 12) : 12;
+  const visibleJobs = useMemo(() => {
+    if (isMobileView) {
+      return filteredJobs.slice(0, mobileVisibleCount);
+    }
+    const offset = (currentPage - 1) * JOBS_PER_PAGE;
+    return filteredJobs.slice(offset, offset + JOBS_PER_PAGE);
+  }, [currentPage, filteredJobs, isMobileView, mobileVisibleCount]);
+  const paginationItems = useMemo(
+    () => getPaginationItems(currentPage, totalPages),
+    [currentPage, totalPages],
+  );
   const maxSalary = useMemo(() => {
     const highest = jobs.reduce((max, job) => {
-      const salary = parseMoney(job.salarioAte) || parseMoney(job.salarioDe) || 0;
+      const salary =
+        parseMoney(job.salarioAte) || parseMoney(job.salarioDe) || 0;
       return Math.max(max, salary);
     }, 0);
     return Math.max(30000, Math.ceil(highest / 5000) * 5000 || 30000);
   }, [jobs]);
-  const experienceBuckets = ["sem", "1-3", "3-5", "5+"];
+  const salaryCurrency = jobs[0]?.currency || 'STD';
+  const experienceBuckets = ['sem', '1-3', '3-5', '5+'];
+  const filteredCompanyName =
+    jobs.find((job) => job.companyId === filters.empresa)?.empresaNome ||
+    jobs.find((job) => job.companyId === filters.empresa)?.companyName ||
+    '';
   const activeFilterChips = [
-    searchTerm.trim() ? { key: "search", label: searchTerm.trim() } : null,
-    filters.categoria ? { key: "categoria", label: filters.categoria } : null,
-    filters.tipoContrato ? { key: "tipoContrato", label: normalizeContractType(filters.tipoContrato) } : null,
-    filters.modalidade ? { key: "modalidade", label: filters.modalidade === "hibrido" ? "Híbrido" : filters.modalidade } : null,
-    filters.experiencia ? { key: "experiencia", label: getExperienceLabel(filters.experiencia) } : null,
-    filters.localizacao ? { key: "localizacao", label: filters.localizacao } : null,
-    minSalary > 0 ? { key: "minSalary", label: `+${formatCompactMoney(minSalary)} STD` } : null,
-    filters.showFeatured ? { key: "showFeatured", label: "Destaque" } : null,
+    searchTerm.trim() ? { key: 'search', label: searchTerm.trim() } : null,
+    filters.empresa
+      ? {
+          key: 'empresa',
+          label: filteredCompanyName
+            ? `Empresa: ${filteredCompanyName}`
+            : 'Empresa selecionada',
+        }
+      : null,
+    filters.categoria ? { key: 'categoria', label: filters.categoria } : null,
+    filters.tipoContrato
+      ? {
+          key: 'tipoContrato',
+          label: normalizeContractType(filters.tipoContrato),
+        }
+      : null,
+    filters.modalidade
+      ? {
+          key: 'modalidade',
+          label:
+            filters.modalidade === 'hibrido' ? 'Híbrido' : filters.modalidade,
+        }
+      : null,
+    filters.experiencia
+      ? { key: 'experiencia', label: getExperienceLabel(filters.experiencia) }
+      : null,
+    filters.localizacao
+      ? { key: 'localizacao', label: filters.localizacao }
+      : null,
+    minSalary > 0
+      ? {
+          key: 'minSalary',
+          label: `+${formatCompactMoney(minSalary)} ${salaryCurrency}`,
+        }
+      : null,
+    filters.showFeatured ? { key: 'showFeatured', label: 'Destaque' } : null,
   ].filter(Boolean);
 
   const clearFilter = (key) => {
-    if (key === "search") {
-      setSearchTerm("");
+    if (key === 'search') {
+      setSearchTerm('');
       return;
     }
-    if (key === "minSalary") {
+    if (key === 'minSalary') {
       setMinSalary(0);
       return;
     }
     setFilters((prev) => ({
       ...prev,
-      [key]: key === "showFeatured" ? false : "",
+      [key]: key === 'showFeatured' ? false : '',
     }));
   };
 
   const clearFilters = () => {
-    setSearchTerm("");
+    setSearchTerm('');
     setFilters({
-      localizacao: "",
-      tipoContrato: "",
-      status: "",
-      categoria: "",
-      modalidade: "",
-      experiencia: "",
+      empresa: '',
+      localizacao: '',
+      tipoContrato: '',
+      status: '',
+      categoria: '',
+      modalidade: '',
+      experiencia: '',
       showFeatured: false,
     });
     setMinSalary(0);
-    setSortBy("recentes");
+    setSortBy('recentes');
   };
 
   const handleSearchSubmit = (event) => {
@@ -521,16 +758,16 @@ export default function VagasPage({ initialJobs = [] }) {
   const handleActivateAlert = async () => {
     const email = alertEmail.trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setAlertState({ status: "error", message: "Introduza um email válido." });
+      setAlertState({ status: 'error', message: 'Introduza um email válido.' });
       return;
     }
 
-    setAlertState({ status: "loading", message: "" });
+    setAlertState({ status: 'loading', message: '' });
 
     try {
-      const response = await fetch("/api/job-alerts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/job-alerts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email,
           filters: {
@@ -549,20 +786,21 @@ export default function VagasPage({ initialJobs = [] }) {
 
       if (!response.ok) {
         setAlertState({
-          status: "error",
-          message: data.error || "Não foi possível ativar o alerta.",
+          status: 'error',
+          message: data.error || 'Não foi possível ativar o alerta.',
         });
         return;
       }
 
       setAlertState({
-        status: "success",
-        message: data.message || "Alerta ativado! Vamos avisar-te por email.",
+        status: 'success',
+        message: data.message || 'Alerta ativado. Vamos avisar-te por email.',
       });
     } catch (error) {
       setAlertState({
-        status: "error",
-        message: "Erro de ligação. Tente novamente dentro de momentos.",
+        status: 'error',
+        message:
+          'Não foi possível estabelecer a ligação. Tenta novamente dentro de momentos.',
       });
     }
   };
@@ -570,99 +808,169 @@ export default function VagasPage({ initialJobs = [] }) {
   return (
     <>
       <Head>
-        <title>Vagas de Emprego - EmpregoSTP</title>
+        <title>Vagas de emprego | EmpregoSTP</title>
         <meta
           name="description"
-          content="Descubra vagas com filtros úteis, match visual e candidaturas rápidas em São Tomé e Príncipe."
+          content="Descubra vagas com filtros úteis, compatibilidade visual e candidaturas rápidas em São Tomé e Príncipe."
         />
       </Head>
 
-      <PublicPageShell headerVariant="light">
-        <main className={styles.page}>
-          {featuredJob ? (
-            <section className={styles.featuredHero}>
-              <div className={styles.featuredCopy}>
-                <div className={styles.heroLogo}>{getCompanyInitials(featuredJob.empresaNome || featuredJob.companyName)}</div>
-                <div className={styles.sponsorPill}>
-                  <FiStar size={18} />
-                  Patrocinada · Destaque
-                </div>
-                <h1>{featuredJob.titulo}</h1>
-                <p className={styles.heroCompany}>
-                  {featuredJob.empresaNome || featuredJob.companyName || "Empresa"}
-                  {featuredJob.companyVerified ? <FiCheckCircle size={22} /> : null}
-                  <span>· {featuredApplications} colaboradores</span>
-                </p>
-                <p className={styles.heroDescription}>
-                  {featuredJob.descricao ||
-                    "Constrói uma carreira com oportunidades verificadas, contexto claro e candidatura rápida na EmpregoSTP."}
-                </p>
+      <PublicPageShell headerVariant="light" showFooter={!isMobileView}>
+        <div className={styles.page}>
+          <section className={styles.searchSection}>
+            <div className={styles.heroCopy}>
+              <span className={styles.heroEyebrow}>
+                Oportunidades em destaque
+              </span>
+              <h1>Encontre a vaga certa para o seu próximo passo.</h1>
+              <p>
+                Explore oportunidades em São Tomé e Príncipe e candidate-se
+                diretamente às vagas que combinam com o seu perfil.
+              </p>
+            </div>
+            <form
+              id="job-search"
+              className={styles.searchBar}
+              onSubmit={handleSearchSubmit}
+            >
+              <label className={styles.searchField}>
+                <FiSearch size={22} aria-hidden="true" />
+                <span className={styles.srOnly}>
+                  Cargo, palavra-chave ou empresa
+                </span>
+                <input
+                  type="search"
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                  placeholder="Cargo, palavra-chave ou empresa"
+                />
+              </label>
 
-                <div className={styles.heroMeta}>
-                  <span>
-                    <FiMapPin />
-                    {featuredJob.localizacao || "São Tomé"} · {getModalityLabel(featuredJob)}
-                  </span>
-                  <span>
-                    <FiBriefcase />
-                    {normalizeContractType(featuredJob.tipoContrato)}
-                  </span>
-                  <span>
-                    <FiClock />
-                    {formatPublishedAgo(featuredJob.publishedAt || featuredJob.createdAt)}
-                  </span>
-                </div>
+              <span className={styles.searchDivider} aria-hidden="true" />
 
-                {featuredTags.length > 0 ? (
-                  <div className={styles.heroTags}>
-                    {featuredTags.map((tag) => (
-                      <span key={tag}>{tag}</span>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
+              <label className={styles.searchField}>
+                <FiMapPin size={22} aria-hidden="true" />
+                <span className={styles.srOnly}>Localização</span>
+                <input
+                  type="search"
+                  list="job-locations"
+                  value={filters.localizacao}
+                  onChange={(event) =>
+                    setFilters((current) => ({
+                      ...current,
+                      localizacao: event.target.value,
+                    }))
+                  }
+                  placeholder="Localização (ex: São Tomé)"
+                />
+                <datalist id="job-locations">
+                  {localizacoes.map((localizacao) => (
+                    <option key={localizacao} value={localizacao} />
+                  ))}
+                </datalist>
+              </label>
 
-              <aside className={styles.heroActionCard}>
-                <div className={styles.heroMatch}>
-                  <div className={styles.matchRing} style={{ "--match": `${featuredMatch}%` }}>
-                    <span>{featuredMatch}%</span>
-                  </div>
-                  <div>
-                    <strong>Match alto</strong>
-                    <span>tens 4 de 5 skills</span>
-                  </div>
-                </div>
-                <div className={styles.heroCardDivider} />
-                <div className={styles.heroSalaryBlock}>
-                  <span>Salário</span>
-                  <strong>
-                    {formatSalary(featuredJob.salarioDe, featuredJob.salarioAte)}
-                    <small> STD/mês</small>
-                  </strong>
-                </div>
-                <Link href={`/vaga/${featuredJob.id}`} className={styles.heroApplyButton}>
-                  Candidatar agora <FiArrowRight size={26} />
-                </Link>
-                <Link href={`/vaga/${featuredJob.id}`} className={styles.heroSaveButton}>
-                  <FiHeart size={24} /> Guardar vaga
-                </Link>
-              </aside>
-            </section>
-          ) : null}
+              <button type="submit" className={styles.searchSubmit}>
+                <FiSearch size={18} aria-hidden="true" />
+                Procurar vagas
+              </button>
+            </form>
+
+            <div
+              className={styles.mobileQuickFilters}
+              aria-label="Filtros rápidos"
+            >
+              <button
+                type="button"
+                onClick={() => setFiltersOpen(true)}
+                aria-expanded={filtersOpen}
+                aria-controls="job-filters-panel"
+              >
+                <span>{filters.categoria || 'Categoria'}</span>
+                <FiChevronDown aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setFiltersOpen(true)}
+                aria-expanded={filtersOpen}
+                aria-controls="job-filters-panel"
+              >
+                <span>
+                  {filters.tipoContrato
+                    ? normalizeContractType(filters.tipoContrato)
+                    : 'Tipo de contrato'}
+                </span>
+                <FiChevronDown aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setFiltersOpen(true)}
+                aria-expanded={filtersOpen}
+                aria-controls="job-filters-panel"
+              >
+                <span>
+                  {minSalary
+                    ? `+${formatCompactMoney(minSalary)} ${salaryCurrency}`
+                    : 'Faixa salarial'}
+                </span>
+                <FiChevronDown aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                className={
+                  filters.modalidade === 'remoto'
+                    ? styles.quickFilterActive
+                    : ''
+                }
+                onClick={() =>
+                  setFilters((current) => ({
+                    ...current,
+                    modalidade: current.modalidade === 'remoto' ? '' : 'remoto',
+                  }))
+                }
+              >
+                Remoto
+              </button>
+            </div>
+          </section>
 
           <section className={styles.discoverySection}>
-            <form className={styles.filtersPanel} onSubmit={handleSearchSubmit}>
+            <form
+              ref={filtersPanelRef}
+              id="job-filters-panel"
+              className={`${styles.filtersPanel} ${
+                filtersOpen ? styles.filtersPanelOpen : ''
+              }`}
+              onSubmit={handleSearchSubmit}
+              role={filtersOpen && isMobileView ? 'dialog' : undefined}
+              aria-modal={filtersOpen && isMobileView ? 'true' : undefined}
+              aria-label="Filtros de vagas"
+            >
               <div className={styles.filtersTop}>
                 <h2>Filtros</h2>
-                <button type="button" onClick={clearFilters}>
-                  Limpar
-                </button>
+                <div className={styles.filterActions}>
+                  <button type="button" onClick={clearFilters}>
+                    Limpar
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.mobileFiltersClose}
+                    onClick={() => setFiltersOpen(false)}
+                    aria-label="Fechar filtros"
+                  >
+                    <FiX size={20} />
+                  </button>
+                </div>
               </div>
 
               {activeFilterChips.length > 0 ? (
                 <div className={styles.activeFilters}>
                   {activeFilterChips.map((chip) => (
-                    <button key={chip.key} type="button" onClick={() => clearFilter(chip.key)}>
+                    <button
+                      key={chip.key}
+                      type="button"
+                      onClick={() => clearFilter(chip.key)}
+                    >
                       {chip.label} <FiX size={16} />
                     </button>
                   ))}
@@ -670,99 +978,132 @@ export default function VagasPage({ initialJobs = [] }) {
               ) : null}
 
               <div className={styles.filterSection}>
-                <div className={styles.filterSectionHeader}>
-                  <h3>Tipo de contrato</h3>
-                  <FiChevronUp size={18} />
-                </div>
-                {tiposContrato.slice(0, 6).map((tipo) => (
-                  <label key={tipo} className={styles.checkRow}>
-                    <input
-                      type="checkbox"
-                      checked={filters.tipoContrato === tipo}
-                      onChange={() =>
-                        setFilters((prev) => ({
-                          ...prev,
-                          tipoContrato: prev.tipoContrato === tipo ? "" : tipo,
-                        }))
-                      }
-                    />
-                    <span>{normalizeContractType(tipo)}</span>
-                    <strong>{countBy(jobs, (job) => job.tipoContrato === tipo)}</strong>
-                  </label>
-                ))}
+                {renderFilterHeader('categoria', 'Categoria')}
+                {!collapsedSections.categoria &&
+                  categorias.slice(0, 6).map((categoria) => (
+                    <label key={categoria} className={styles.checkRow}>
+                      <input
+                        type="checkbox"
+                        checked={filters.categoria === categoria}
+                        onChange={() =>
+                          setFilters((prev) => ({
+                            ...prev,
+                            categoria:
+                              prev.categoria === categoria ? '' : categoria,
+                          }))
+                        }
+                      />
+                      <span>{categoria}</span>
+                      <strong>
+                        {countBy(jobs, (job) => job.categoria === categoria)}
+                      </strong>
+                    </label>
+                  ))}
               </div>
 
               <div className={styles.filterSection}>
-                <div className={styles.filterSectionHeader}>
-                  <h3>Modalidade</h3>
-                  <FiChevronUp size={18} />
-                </div>
-                {[
-                  ["presencial", "Presencial", countBy(jobs, (job) => !isRemoteJob(job) && !isHybridJob(job))],
-                  ["hibrido", "Híbrido", countBy(jobs, isHybridJob)],
-                  ["remoto", "Remoto", countBy(jobs, isRemoteJob)],
-                ].map(([value, label, count]) => (
-                  <label key={value} className={styles.checkRow}>
-                    <input
-                      type="checkbox"
-                      checked={filters.modalidade === value}
-                      onChange={() =>
-                        setFilters((prev) => ({
-                          ...prev,
-                          modalidade: prev.modalidade === value ? "" : value,
-                        }))
-                      }
-                    />
-                    <span>{label}</span>
-                    <strong>{count}</strong>
-                  </label>
-                ))}
+                {renderFilterHeader('tipoContrato', 'Tipo de contrato')}
+                {!collapsedSections.tipoContrato &&
+                  tiposContrato.slice(0, 6).map((tipo) => (
+                    <label key={tipo} className={styles.checkRow}>
+                      <input
+                        type="checkbox"
+                        checked={filters.tipoContrato === tipo}
+                        onChange={() =>
+                          setFilters((prev) => ({
+                            ...prev,
+                            tipoContrato:
+                              prev.tipoContrato === tipo ? '' : tipo,
+                          }))
+                        }
+                      />
+                      <span>{normalizeContractType(tipo)}</span>
+                      <strong>
+                        {countBy(jobs, (job) => job.tipoContrato === tipo)}
+                      </strong>
+                    </label>
+                  ))}
               </div>
 
               <div className={styles.filterSection}>
-                <div className={styles.filterSectionHeader}>
-                  <h3>Localização</h3>
-                  <FiChevronUp size={18} />
-                </div>
-                {localizacoes.slice(0, 6).map((localizacao) => (
-                  <label key={localizacao} className={styles.checkRow}>
-                    <input
-                      type="checkbox"
-                      checked={filters.localizacao === localizacao}
-                      onChange={() =>
-                        setFilters((prev) => ({
-                          ...prev,
-                          localizacao: prev.localizacao === localizacao ? "" : localizacao,
-                        }))
-                      }
-                    />
-                    <span>{localizacao}</span>
-                    <strong>{countBy(jobs, (job) => job.localizacao === localizacao)}</strong>
-                  </label>
-                ))}
+                {renderFilterHeader('modalidade', 'Modalidade')}
+                {!collapsedSections.modalidade &&
+                  [
+                    ['presencial', 'Presencial', countBy(jobs, isOnSiteJob)],
+                    ['hibrido', 'Híbrido', countBy(jobs, isHybridJob)],
+                    ['remoto', 'Remoto', countBy(jobs, isRemoteJob)],
+                  ].map(([value, label, count]) => (
+                    <label key={value} className={styles.checkRow}>
+                      <input
+                        type="checkbox"
+                        checked={filters.modalidade === value}
+                        onChange={() =>
+                          setFilters((prev) => ({
+                            ...prev,
+                            modalidade: prev.modalidade === value ? '' : value,
+                          }))
+                        }
+                      />
+                      <span>{label}</span>
+                      <strong>{count}</strong>
+                    </label>
+                  ))}
               </div>
 
               <div className={styles.filterSection}>
-                <div className={styles.filterSectionHeader}>
-                  <h3>Experiência</h3>
-                  <FiChevronUp size={18} />
-                </div>
-                {experienceBuckets.map((bucket) => (
-                  <label key={bucket} className={styles.checkRow}>
-                    <input
-                      type="checkbox"
-                      checked={filters.experiencia === bucket}
-                      onChange={() =>
-                        setFilters((prev) => ({
-                          ...prev,
-                          experiencia: prev.experiencia === bucket ? "" : bucket,
-                        }))
-                      }
-                    />
-                    <span>{getExperienceLabel(bucket)}</span>
-                    <strong>{countBy(jobs, (job) => getExperienceBucket(job) === bucket)}</strong>
-                  </label>
-                ))}
+                {renderFilterHeader('localizacao', 'Localização')}
+                {!collapsedSections.localizacao &&
+                  localizacoes.slice(0, 6).map((localizacao) => (
+                    <label key={localizacao} className={styles.checkRow}>
+                      <input
+                        type="checkbox"
+                        checked={filters.localizacao === localizacao}
+                        onChange={() =>
+                          setFilters((prev) => ({
+                            ...prev,
+                            localizacao:
+                              prev.localizacao === localizacao
+                                ? ''
+                                : localizacao,
+                          }))
+                        }
+                      />
+                      <span>{localizacao}</span>
+                      <strong>
+                        {countBy(
+                          jobs,
+                          (job) => job.localizacao === localizacao,
+                        )}
+                      </strong>
+                    </label>
+                  ))}
+              </div>
+
+              <div className={styles.filterSection}>
+                {renderFilterHeader('experiencia', 'Experiência')}
+                {!collapsedSections.experiencia &&
+                  experienceBuckets.map((bucket) => (
+                    <label key={bucket} className={styles.checkRow}>
+                      <input
+                        type="checkbox"
+                        checked={filters.experiencia === bucket}
+                        onChange={() =>
+                          setFilters((prev) => ({
+                            ...prev,
+                            experiencia:
+                              prev.experiencia === bucket ? '' : bucket,
+                          }))
+                        }
+                      />
+                      <span>{getExperienceLabel(bucket)}</span>
+                      <strong>
+                        {countBy(
+                          jobs,
+                          (job) => getExperienceBucket(job) === bucket,
+                        )}
+                      </strong>
+                    </label>
+                  ))}
               </div>
 
               <div className={styles.filterSection}>
@@ -781,7 +1122,10 @@ export default function VagasPage({ initialJobs = [] }) {
                 />
                 <div className={styles.salaryRangeLabels}>
                   <span>0</span>
-                  <strong>{formatCompactMoney(minSalary || maxSalary)} STD</strong>
+                  <strong>
+                    {formatCompactMoney(minSalary || maxSalary)}{' '}
+                    {salaryCurrency}
+                  </strong>
                 </div>
               </div>
 
@@ -790,7 +1134,9 @@ export default function VagasPage({ initialJobs = [] }) {
                   <FiBell size={26} />
                 </span>
                 <strong>Cria um alerta</strong>
-                <p>Recebe já por email as vagas publicadas com estes filtros.</p>
+                <p>
+                  Recebe já por email as vagas publicadas com estes filtros.
+                </p>
                 <input
                   type="email"
                   className={styles.alertInput}
@@ -798,30 +1144,32 @@ export default function VagasPage({ initialJobs = [] }) {
                   value={alertEmail}
                   onChange={(event) => {
                     setAlertEmail(event.target.value);
-                    if (alertState.status !== "idle") {
-                      setAlertState({ status: "idle", message: "" });
+                    if (alertState.status !== 'idle') {
+                      setAlertState({ status: 'idle', message: '' });
                     }
                   }}
                   onKeyDown={(event) => {
-                    if (event.key === "Enter") {
+                    if (event.key === 'Enter') {
                       event.preventDefault();
                       handleActivateAlert();
                     }
                   }}
                   aria-label="Email para receber o alerta de vagas"
-                  disabled={alertState.status === "loading"}
+                  disabled={alertState.status === 'loading'}
                 />
                 <button
                   type="button"
                   onClick={handleActivateAlert}
-                  disabled={alertState.status === "loading"}
+                  disabled={alertState.status === 'loading'}
                 >
-                  {alertState.status === "loading" ? "A ativar…" : "Ativar alerta"}
+                  {alertState.status === 'loading'
+                    ? 'A ativar…'
+                    : 'Ativar alerta'}
                 </button>
                 {alertState.message ? (
                   <p
                     className={`${styles.alertFeedback} ${
-                      alertState.status === "error"
+                      alertState.status === 'error'
                         ? styles.alertFeedbackError
                         : styles.alertFeedbackSuccess
                     }`}
@@ -836,60 +1184,178 @@ export default function VagasPage({ initialJobs = [] }) {
 
             <div className={styles.resultsPanel}>
               <div className={styles.resultsHeader}>
-                <h2>
-                  {filteredJobs.length} vaga{filteredJobs.length === 1 ? "" : "s"} ·{" "}
-                  <span>filtradas para ti</span>
-                </h2>
+                <div className={styles.resultsSummary}>
+                  <h2>
+                    <span className={styles.desktopResultsLabel}>
+                      A mostrar <strong>{filteredJobs.length}</strong>{' '}
+                      {filteredJobs.length === 1 ? 'vaga' : 'vagas'}
+                    </span>
+                    <span className={styles.mobileResultsLabel}>
+                      Vagas recentes <strong>({filteredJobs.length})</strong>
+                    </span>
+                  </h2>
+                  <button
+                    type="button"
+                    className={styles.mobileFiltersButton}
+                    onClick={() => setFiltersOpen(true)}
+                    aria-expanded={filtersOpen}
+                    aria-controls="job-filters-panel"
+                  >
+                    <FiSliders size={18} />
+                    Filtros
+                  </button>
+                </div>
                 <div className={styles.resultsTools}>
-                  <select value={sortBy} onChange={(event) => setSortBy(event.target.value)}>
+                  <span>Ordenar por:</span>
+                  <select
+                    value={sortBy}
+                    onChange={(event) => setSortBy(event.target.value)}
+                    aria-label="Ordenar vagas"
+                  >
                     <option value="recentes">Mais recentes</option>
                     <option value="prazo">Prazo</option>
                     <option value="salario">Maior salário</option>
                   </select>
-                  <div className={styles.viewToggle}>
-                    <button
-                      type="button"
-                      className={viewMode === "grid" ? styles.viewActive : ""}
-                      onClick={() => setViewMode("grid")}
-                      aria-label="Ver em grelha"
-                    >
-                      <FiGrid size={22} />
-                    </button>
-                    <button
-                      type="button"
-                      className={viewMode === "list" ? styles.viewActive : ""}
-                      onClick={() => setViewMode("list")}
-                      aria-label="Ver em lista"
-                    >
-                      <FiList size={24} />
-                    </button>
-                  </div>
                 </div>
               </div>
 
               {isLoading ? (
                 <div className={styles.loadingState}>
                   <div className={styles.loadingSpinner} />
-                  <p>Atualizando resultados...</p>
+                  <p>A atualizar resultados…</p>
                 </div>
               ) : filteredJobs.length === 0 ? (
                 <div className={styles.emptyState}>
                   <h3>Nenhuma vaga combina com os filtros atuais</h3>
-                  <p>Limpe os filtros ou experimente outra combinação para ampliar os resultados.</p>
+                  <p>
+                    Limpe os filtros ou experimente outra combinação para
+                    ampliar os resultados.
+                  </p>
                   <button type="button" onClick={clearFilters}>
                     Limpar filtros
                   </button>
                 </div>
               ) : (
-                <div className={`${styles.jobsGrid} ${viewMode === "list" ? styles.jobsGridList : ""}`}>
-                  {filteredJobs.map((job, index) => (
-                    <JobCard key={job.id} job={job} index={index} viewMode={viewMode} />
-                  ))}
-                </div>
+                <>
+                  <div className={styles.jobsGrid}>
+                    {visibleJobs.map((job) => (
+                      <JobCard
+                        key={job.id}
+                        job={job}
+                        referenceNow={referenceNow}
+                      />
+                    ))}
+                  </div>
+
+                  {totalPages > 1 ? (
+                    <nav
+                      className={styles.pagination}
+                      aria-label="Paginação das vagas"
+                    >
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setCurrentPage((page) => Math.max(1, page - 1))
+                        }
+                        disabled={currentPage === 1}
+                        aria-label="Página anterior"
+                      >
+                        ‹
+                      </button>
+                      {paginationItems.map((page) => {
+                        if (typeof page !== 'number') {
+                          return (
+                            <span key={page} aria-hidden="true">
+                              …
+                            </span>
+                          );
+                        }
+
+                        return (
+                          <button
+                            key={page}
+                            type="button"
+                            className={
+                              currentPage === page ? styles.pageActive : ''
+                            }
+                            onClick={() => setCurrentPage(page)}
+                            aria-current={
+                              currentPage === page ? 'page' : undefined
+                            }
+                          >
+                            {page}
+                          </button>
+                        );
+                      })}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setCurrentPage((page) =>
+                            Math.min(totalPages, page + 1),
+                          )
+                        }
+                        disabled={currentPage === totalPages}
+                        aria-label="Página seguinte"
+                      >
+                        ›
+                      </button>
+                    </nav>
+                  ) : null}
+
+                  {mobileVisibleCount < filteredJobs.length ? (
+                    <button
+                      type="button"
+                      className={styles.mobileLoadMore}
+                      onClick={() =>
+                        setMobileVisibleCount(
+                          (count) => count + MOBILE_JOBS_BATCH,
+                        )
+                      }
+                    >
+                      Ver mais vagas
+                      <FiChevronDown aria-hidden="true" />
+                    </button>
+                  ) : null}
+                  <p className={styles.mobileResultsFoot}>
+                    A mostrar{' '}
+                    {Math.min(visibleJobs.length, filteredJobs.length)} de{' '}
+                    {filteredJobs.length} vagas
+                  </p>
+                </>
               )}
             </div>
           </section>
-        </main>
+
+          <a
+            href="#job-search"
+            className={styles.mobileSearchFab}
+            aria-label="Voltar à pesquisa de vagas"
+          >
+            <FiSearch aria-hidden="true" />
+          </a>
+
+          <nav
+            className={styles.mobileBottomNav}
+            aria-label="Navegação móvel de vagas"
+          >
+            <Link href="/">
+              <FiHome aria-hidden="true" />
+              <span>Início</span>
+            </Link>
+            <Link href="/vagas" aria-current="page">
+              <FiBriefcase aria-hidden="true" />
+              <span>Vagas</span>
+            </Link>
+            <Link href="/dashboard/candidato?tab=saved">
+              <FiBookmark aria-hidden="true" />
+              <span>Guardadas</span>
+            </Link>
+            <Link href="/profile">
+              <FiUser aria-hidden="true" />
+              <span>Perfil</span>
+            </Link>
+          </nav>
+        </div>
       </PublicPageShell>
     </>
   );
@@ -897,22 +1363,26 @@ export default function VagasPage({ initialJobs = [] }) {
 
 export async function getServerSideProps(context) {
   try {
-    const { admin } = await import("../../lib/firebaseAdmin");
+    const { admin } = await import('../../lib/firebaseAdmin');
     const { getEmpresaPlanSummary } =
-      await import("../../lib/empresaPlanFeatures");
-    const { getEffectiveJobStatus, syncExpiredJobStatus } =
-      await import("../../lib/jobExpiration");
+      await import('../../lib/empresaPlanFeatures');
+    const {
+      getEffectiveJobStatus,
+      isJobPubliclyVisible,
+      syncExpiredJobStatus,
+    } = await import('../../lib/jobExpiration');
 
     context?.res?.setHeader?.(
-      "Cache-Control",
-      "public, s-maxage=30, stale-while-revalidate=120",
+      'Cache-Control',
+      'public, s-maxage=30, stale-while-revalidate=120',
     );
 
     const serializeTimestamp = (timestamp) => {
       if (!timestamp) return null;
       if (timestamp.toDate) return timestamp.toDate().toISOString();
-      if (timestamp.toMillis) return new Date(timestamp.toMillis()).toISOString();
-      if (typeof timestamp === "string") return timestamp;
+      if (timestamp.toMillis)
+        return new Date(timestamp.toMillis()).toISOString();
+      if (typeof timestamp === 'string') return timestamp;
       if (timestamp instanceof Date) return timestamp.toISOString();
       return null;
     };
@@ -925,7 +1395,7 @@ export async function getServerSideProps(context) {
           acc[key] = serializeTimestamp(value);
         } else if (
           value &&
-          typeof value === "object" &&
+          typeof value === 'object' &&
           !Array.isArray(value) &&
           value.constructor === Object
         ) {
@@ -946,8 +1416,8 @@ export async function getServerSideProps(context) {
 
     const snapshot = await admin
       .firestore()
-      .collection("jobs")
-      .orderBy("createdAt", "desc")
+      .collection('jobs')
+      .orderBy('createdAt', 'desc')
       .get();
 
     const normalizedDocs = await Promise.all(
@@ -961,11 +1431,15 @@ export async function getServerSideProps(context) {
       }),
     );
 
+    const publicJobs = normalizedDocs.filter((job) =>
+      isJobPubliclyVisible(job),
+    );
+
     const companyIds = [
-      ...new Set(normalizedDocs.map((job) => job.companyId).filter(Boolean)),
+      ...new Set(publicJobs.map((job) => job.companyId).filter(Boolean)),
     ];
     const companyRefs = companyIds.map((companyId) =>
-      admin.firestore().collection("users").doc(companyId),
+      admin.firestore().collection('users').doc(companyId),
     );
     const companyDocs = companyRefs.length
       ? await admin.firestore().getAll(...companyRefs)
@@ -977,34 +1451,38 @@ export async function getServerSideProps(context) {
       const companyData = companyDoc.data() || {};
       const planSummary = getEmpresaPlanSummary(companyData);
       companiesById.set(companyDoc.id, {
-        name: companyData.name || companyData.fullName || "Empresa",
-        logo: planSummary.features?.logoOnJob ? companyData.logo || "" : "",
+        name: companyData.name || companyData.fullName || 'Empresa',
+        logo: planSummary.features?.logoOnJob
+          ? companyData.logoUrl || companyData.logo || ''
+          : '',
         verified: Boolean(planSummary.features?.companyVerified),
       });
     });
 
-    const jobs = normalizedDocs
+    const jobs = publicJobs
       .map((job) => {
         const company = companiesById.get(job.companyId) || {};
-        return serializeJob({
-          ...job,
-          empresaNome:
-            company.name || job.empresaNome || job.companyName || "Empresa",
-          companyName:
-            company.name || job.companyName || job.empresaNome || "Empresa",
-          empresaLogo: company.logo || job.empresaLogo || "",
-          companyVerified: company.verified || job.companyVerified || false,
-        });
+        return serializeJob(
+          projectPublicJob({
+            ...job,
+            empresaNome:
+              company.name || job.empresaNome || job.companyName || 'Empresa',
+            companyName:
+              company.name || job.companyName || job.empresaNome || 'Empresa',
+            empresaLogo: company.logo || job.empresaLogo || '',
+            companyVerified: company.verified || job.companyVerified || false,
+          }),
+        );
       })
       .sort(compareRecentJobs);
 
     return {
-      props: { initialJobs: jobs },
+      props: { initialJobs: jobs, referenceNow: Date.now() },
     };
   } catch (error) {
-    console.error("Erro ao buscar vagas:", error);
+    console.error('Erro ao buscar vagas:', error);
     return {
-      props: { initialJobs: [] },
+      props: { initialJobs: [], referenceNow: Date.now() },
     };
   }
 }

@@ -24,7 +24,7 @@ export default function VerificationBadge({ verified = false, size = 'md', varia
         height={dimensions.icon}
         viewBox="0 0 24 24"
         fill="none"
-        stroke="#3b82f6"
+        stroke="#064bb5"
         strokeWidth="2"
         title="Perfil verificado"
         style={{ display: 'inline-block' }}
@@ -39,7 +39,7 @@ export default function VerificationBadge({ verified = false, size = 'md', varia
       <span
         style={{
           fontSize: size === 'sm' ? '0.75rem' : size === 'lg' ? '1rem' : '0.875rem',
-          color: '#3b82f6',
+          color: '#064bb5',
           fontWeight: '600',
           display: 'inline-flex',
           alignItems: 'center',
@@ -60,9 +60,9 @@ export default function VerificationBadge({ verified = false, size = 'md', varia
         alignItems: 'center',
         gap: '0.4rem',
         padding: dimensions.container,
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        color: '#3b82f6',
-        border: '1px solid rgba(59, 130, 246, 0.3)',
+        backgroundColor: '#eefabf',
+        color: '#102441',
+        border: '1px solid #daff45',
         borderRadius: '9999px',
         fontSize: size === 'sm' ? '0.7rem' : size === 'lg' ? '1rem' : '0.85rem',
         fontWeight: '600',

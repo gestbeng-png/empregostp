@@ -1,0 +1,749 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "phase": "before",
+  "results": [
+    {
+      "accessibilityViolations": [],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 320,
+          "scrollHeight": 4087,
+          "scrollWidth": 320
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 42,
+            "tag": "A",
+            "text": "Voltar para vagas",
+            "width": 158
+          },
+          {
+            "height": 42,
+            "tag": "BUTTON",
+            "text": "",
+            "width": 42
+          },
+          {
+            "height": 24,
+            "tag": "A",
+            "text": "Ver todas as vagas",
+            "width": 115
+          }
+        ],
+        "smallText": [
+          {
+            "size": "12.3px",
+            "tag": "A",
+            "text": "Voltar para vagas"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "lembra"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "5000,00 Db - 8000,00 Db"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "Publicada há 5 dias"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Design"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Júnior (0-2 anos)"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Salário competitivo"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Contexto profissional estruturado"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Processo de candidatura organizado"
+          },
+          {
+            "size": "9.9px",
+            "tag": "SPAN",
+            "text": "Estado"
+          },
+          {
+            "size": "13.5px",
+            "tag": "STRONG",
+            "text": "Aberta"
+          },
+          {
+            "size": "9.9px",
+            "tag": "SPAN",
+            "text": "Regime"
+          },
+          {
+            "size": "13.5px",
+            "tag": "STRONG",
+            "text": "Presencial"
+          },
+          {
+            "size": "9.9px",
+            "tag": "SPAN",
+            "text": "Experiência"
+          },
+          {
+            "size": "13.5px",
+            "tag": "STRONG",
+            "text": "Júnior (0-2 anos)"
+          },
+          {
+            "size": "9.9px",
+            "tag": "SPAN",
+            "text": "Abertura"
+          },
+          {
+            "size": "13.5px",
+            "tag": "STRONG",
+            "text": "07/07/2026"
+          },
+          {
+            "size": "9.9px",
+            "tag": "SPAN",
+            "text": "Encerramento"
+          },
+          {
+            "size": "13.5px",
+            "tag": "STRONG",
+            "text": "22/07/2026"
+          },
+          {
+            "size": "9.9px",
+            "tag": "SPAN",
+            "text": "Escolaridade"
+          },
+          {
+            "size": "13.5px",
+            "tag": "STRONG",
+            "text": "Não exigido"
+          },
+          {
+            "size": "13.2px",
+            "tag": "BUTTON",
+            "text": "Candidatar agora"
+          },
+          {
+            "size": "13.2px",
+            "tag": "BUTTON",
+            "text": "Guardar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "Design"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "Júnior (0-2 anos)"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "nodejs"
+          },
+          {
+            "size": "10.05px",
+            "tag": "SPAN",
+            "text": "Empresa"
+          },
+          {
+            "size": "13.05px",
+            "tag": "P",
+            "text": "lembra"
+          },
+          {
+            "size": "13.05px",
+            "tag": "P",
+            "text": "Consulte a oportunidade e a informação disponível para conhecer melhor o contexto desta empresa e o "
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Telefone"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "9869673"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "Marketing"
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "· ltd"
+          },
+          {
+            "size": "12.3px",
+            "tag": "A",
+            "text": "Ver todas as vagas"
+          },
+          {
+            "size": "9.6px",
+            "tag": "SPAN",
+            "text": "Candidatura"
+          },
+          {
+            "size": "12.9px",
+            "tag": "STRONG",
+            "text": "5000,00 Db - 8000,00 Db"
+          },
+          {
+            "size": "12px",
+            "tag": "BUTTON",
+            "text": "Candidatar-se"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/vaga/rcPZ7NHNwsALtVa58xjf",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      }
+    },
+    {
+      "accessibilityViolations": [],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 768,
+          "scrollHeight": 2647,
+          "scrollWidth": 768
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 24,
+            "tag": "A",
+            "text": "Ver todas as vagas",
+            "width": 115
+          }
+        ],
+        "smallText": [
+          {
+            "size": "13.5px",
+            "tag": "A",
+            "text": "Voltar para vagas"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "lembra"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "5000,00 Db - 8000,00 Db"
+          },
+          {
+            "size": "12.3px",
+            "tag": "SPAN",
+            "text": "Publicada há 5 dias"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Design"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Júnior (0-2 anos)"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Salário competitivo"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Contexto profissional estruturado"
+          },
+          {
+            "size": "10.8px",
+            "tag": "SPAN",
+            "text": "Processo de candidatura organizado"
+          },
+          {
+            "size": "9.9px",
+            "tag": "SPAN",
+            "text": "Estado"
+          },
+          {
+            "size": "13.5px",
+            "tag": "STRONG",
+            "text": "Aberta"
+          },
+          {
+            "size": "9.9px",
+            "tag": "SPAN",
+            "text": "Regime"
+          },
+          {
+            "size": "13.5px",
+            "tag": "STRONG",
+            "text": "Presencial"
+          },
+          {
+            "size": "9.9px",
+            "tag": "SPAN",
+            "text": "Experiência"
+          },
+          {
+            "size": "13.5px",
+            "tag": "STRONG",
+            "text": "Júnior (0-2 anos)"
+          },
+          {
+            "size": "9.9px",
+            "tag": "SPAN",
+            "text": "Abertura"
+          },
+          {
+            "size": "13.5px",
+            "tag": "STRONG",
+            "text": "07/07/2026"
+          },
+          {
+            "size": "9.9px",
+            "tag": "SPAN",
+            "text": "Encerramento"
+          },
+          {
+            "size": "13.5px",
+            "tag": "STRONG",
+            "text": "22/07/2026"
+          },
+          {
+            "size": "9.9px",
+            "tag": "SPAN",
+            "text": "Escolaridade"
+          },
+          {
+            "size": "13.5px",
+            "tag": "STRONG",
+            "text": "Não exigido"
+          },
+          {
+            "size": "13.2px",
+            "tag": "BUTTON",
+            "text": "Candidatar agora"
+          },
+          {
+            "size": "13.2px",
+            "tag": "BUTTON",
+            "text": "Guardar"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "Design"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "Júnior (0-2 anos)"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "nodejs"
+          },
+          {
+            "size": "10.05px",
+            "tag": "SPAN",
+            "text": "Empresa"
+          },
+          {
+            "size": "13.05px",
+            "tag": "P",
+            "text": "lembra"
+          },
+          {
+            "size": "13.05px",
+            "tag": "P",
+            "text": "Consulte a oportunidade e a informação disponível para conhecer melhor o contexto desta empresa e o "
+          },
+          {
+            "size": "11.7px",
+            "tag": "SPAN",
+            "text": "Telefone"
+          },
+          {
+            "size": "12px",
+            "tag": "STRONG",
+            "text": "9869673"
+          },
+          {
+            "size": "13.5px",
+            "tag": "SPAN",
+            "text": "Marketing"
+          },
+          {
+            "size": "12px",
+            "tag": "SPAN",
+            "text": "· ltd"
+          },
+          {
+            "size": "12.3px",
+            "tag": "A",
+            "text": "Ver todas as vagas"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/vaga/rcPZ7NHNwsALtVa58xjf",
+      "viewport": {
+        "width": 768,
+        "height": 900
+      }
+    },
+    {
+      "accessibilityViolations": [],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1024,
+          "scrollHeight": 2770,
+          "scrollWidth": 1024
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 25,
+            "tag": "A",
+            "text": "Ver todas as vagas",
+            "width": 122
+          }
+        ],
+        "smallText": [
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "lembra"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "5000,00 Db - 8000,00 Db"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "Publicada há 5 dias"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Design"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Júnior (0-2 anos)"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Salário competitivo"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Contexto profissional estruturado"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Processo de candidatura organizado"
+          },
+          {
+            "size": "10.56px",
+            "tag": "SPAN",
+            "text": "Estado"
+          },
+          {
+            "size": "10.56px",
+            "tag": "SPAN",
+            "text": "Regime"
+          },
+          {
+            "size": "10.56px",
+            "tag": "SPAN",
+            "text": "Experiência"
+          },
+          {
+            "size": "10.56px",
+            "tag": "SPAN",
+            "text": "Abertura"
+          },
+          {
+            "size": "10.56px",
+            "tag": "SPAN",
+            "text": "Encerramento"
+          },
+          {
+            "size": "10.56px",
+            "tag": "SPAN",
+            "text": "Escolaridade"
+          },
+          {
+            "size": "10.72px",
+            "tag": "SPAN",
+            "text": "Empresa"
+          },
+          {
+            "size": "13.92px",
+            "tag": "P",
+            "text": "lembra"
+          },
+          {
+            "size": "13.92px",
+            "tag": "P",
+            "text": "Consulte a oportunidade e a informação disponível para conhecer melhor o contexto desta empresa e o "
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Telefone"
+          },
+          {
+            "size": "12.8px",
+            "tag": "STRONG",
+            "text": "9869673"
+          },
+          {
+            "size": "12.8px",
+            "tag": "SPAN",
+            "text": "· ltd"
+          },
+          {
+            "size": "13.12px",
+            "tag": "A",
+            "text": "Ver todas as vagas"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/vaga/rcPZ7NHNwsALtVa58xjf",
+      "viewport": {
+        "width": 1024,
+        "height": 900
+      }
+    },
+    {
+      "accessibilityViolations": [],
+      "errors": [],
+      "metrics": {
+        "document": {
+          "clientWidth": 1440,
+          "scrollHeight": 2044,
+          "scrollWidth": 1440
+        },
+        "duplicateIds": [],
+        "headingOneCount": 1,
+        "horizontalOverflow": 0,
+        "landmarks": {
+          "footer": 1,
+          "main": 1,
+          "nav": 1
+        },
+        "shortTargets": [
+          {
+            "height": 25,
+            "tag": "A",
+            "text": "Ver todas as vagas",
+            "width": 122
+          }
+        ],
+        "smallText": [
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "lembra"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "Contrato"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "5000,00 Db - 8000,00 Db"
+          },
+          {
+            "size": "13.12px",
+            "tag": "SPAN",
+            "text": "Publicada há 5 dias"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Design"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Júnior (0-2 anos)"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Salário competitivo"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Contexto profissional estruturado"
+          },
+          {
+            "size": "11.52px",
+            "tag": "SPAN",
+            "text": "Processo de candidatura organizado"
+          },
+          {
+            "size": "10.56px",
+            "tag": "SPAN",
+            "text": "Estado"
+          },
+          {
+            "size": "10.56px",
+            "tag": "SPAN",
+            "text": "Regime"
+          },
+          {
+            "size": "10.56px",
+            "tag": "SPAN",
+            "text": "Experiência"
+          },
+          {
+            "size": "10.56px",
+            "tag": "SPAN",
+            "text": "Abertura"
+          },
+          {
+            "size": "10.56px",
+            "tag": "SPAN",
+            "text": "Encerramento"
+          },
+          {
+            "size": "10.56px",
+            "tag": "SPAN",
+            "text": "Escolaridade"
+          },
+          {
+            "size": "10.72px",
+            "tag": "SPAN",
+            "text": "Empresa"
+          },
+          {
+            "size": "13.92px",
+            "tag": "P",
+            "text": "lembra"
+          },
+          {
+            "size": "13.92px",
+            "tag": "P",
+            "text": "Consulte a oportunidade e a informação disponível para conhecer melhor o contexto desta empresa e o "
+          },
+          {
+            "size": "12.48px",
+            "tag": "SPAN",
+            "text": "Telefone"
+          },
+          {
+            "size": "12.8px",
+            "tag": "STRONG",
+            "text": "9869673"
+          },
+          {
+            "size": "12.8px",
+            "tag": "SPAN",
+            "text": "· ltd"
+          },
+          {
+            "size": "13.12px",
+            "tag": "A",
+            "text": "Ver todas as vagas"
+          }
+        ],
+        "unlabeledFields": 0
+      },
+      "status": 200,
+      "url": "http://localhost:3000/vaga/rcPZ7NHNwsALtVa58xjf",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      }
+    }
+  ],
+  "route": "/vaga/rcPZ7NHNwsALtVa58xjf",
+  "slug": "vaga-detalhe"
+}
