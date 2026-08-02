@@ -12,7 +12,7 @@
 | 1 — Segurança crítica                        | EM CURSO | Itens 1.3, 1.4, 1.5, 1.6 e 1.7 concluídos. Falta 1.2 (`/setup/seed`) e a rotação da chave Admin, que depende do proprietário. |
 | 2 — Rotas de API                             | EM CURSO | Veredicto de auth das 71 rotas concluído em 1.7; falta a passagem funcional grupo a grupo.                              |
 | 3 — Páginas e dashboards                     | **CONCLUÍDA** | Públicas, autenticação, os três dashboards, fluxos de utilizador e design auditados com contas reais. 9 achados corrigidos. |
-| 4 — Purga de legado                          | PENDENTE | Ainda não iniciada.                                                                                                     |
+| 4 — Purga de legado                          | EM CURSO | 4.1 dependências: 3 removidas, Tailwind à espera de decisão. Falta ficheiros/exports órfãos e documentação legada.      |
 | 5 — UX, visual, performance e acessibilidade | PENDENTE | Ainda não iniciada.                                                                                                     |
 | 6 — Validação e pacote de deploy             | PENDENTE | Ainda não iniciada.                                                                                                     |
 
@@ -708,6 +708,36 @@ Testados com a conta `qa-candidato-premium`, que é quem tem direito a eles.
 | Serviços RH | Empresa submete pedido (`201`); candidato é recusado (`403`). |
 
 Observação de produto, sem gravidade: os conteúdos descarregáveis têm entre 309 e 496 bytes — são textos curtos. Funcionam, mas o valor percebido de um «modelo» descarregável com meia página é baixo. Fica como decisão de conteúdo.
+
+## Fase 4 — Purga de código legado e morto
+
+### 4.1 — Dependências
+
+| Pacote | Veredicto | Prova |
+| --- | --- | --- |
+| `readline` | **REMOVIDO** | É um módulo nativo do Node; o pacote npm homónimo é um shim obsoleto. `scripts/createAdmin.mjs` importa o built-in, não o pacote. |
+| `ts-node` | **REMOVIDO** | Declarado e nunca referenciado fora do `package.json`. Confirmado que o Jest continua a carregar `jest.config.ts` sem ele. |
+| `prettier-plugin-tailwindcss` | **REMOVIDO** | Ordena classes Tailwind; contagem por token exato em todo o JSX encontrou zero utilitárias Tailwind em uso. O prettier continua a validar. |
+| `jest-environment-jsdom` | MANTIDO | Exigido por `testEnvironment: 'jsdom'` no `jest.config.ts`; não é importado, mas tem de estar instalado. |
+| `postcss`, `tailwindcss`, `@tailwindcss/postcss` | **DECISÃO PENDENTE** | Ver abaixo. |
+
+Commit `387f42e`. Suite (336 testes) e build verdes após reinstalação limpa.
+
+`playwright` e `axe-core` são usados diretamente por `scripts/capture-ui-audit.mjs` e `e2e/ui-audit.ts` mas só chegam transitivamente via `@playwright/test` e `@axe-core/playwright`. Não está partido, mas depender de dependências transitivas é frágil — declarar explicitamente fica como melhoria de baixa prioridade.
+
+### Tailwind — precisa da tua decisão
+
+O Tailwind está configurado e **gera CSS que ninguém usa**:
+
+- Não existe uma única diretiva `@tailwind` nem `@apply` em todo o projeto.
+- O CSS compilado contém 542 ocorrências de `--tw-` e utilitárias como `.flex`, `.grid`, `.hidden`, `.items-center` — geradas pelo scan de conteúdo do Tailwind v4.
+- Uma contagem por **token exato** de `className` em todo o JSX (não por substring) encontrou **zero** utilizações dessas classes. Os nomes parecidos que existem — `stats-grid`, `grid-2`, `dash-flex-between` — são CSS próprio do projeto.
+
+Medição do impacto, com o mesmo método dos dois lados: **com o plugin 1.090.733 bytes de CSS; sem ele 1.064.734**. O plugin acrescenta ~26 KB de CSS morto e um passo de build.
+
+Não removi porque mexer no pipeline de PostCSS é risco médio e o meu varrimento cobre apenas `className` estáticos — um `className` construído por template literal poderia produzir uma utilitária que o scan não vê. **Decide se queres que remova `tailwind.config.js`, `postcss.config.mjs` e os três pacotes.**
+
+Nota de método, porque a primeira tentativa deu o resultado oposto: a medição inicial usou `tee | head -8`, e o `head` fechou o pipe cedo, gravando só 9 dos 35 ficheiros CSS. Comparei 9 contra 35 e conclui que o plugin minificava. Refeita a medição com o mesmo método dos dois lados, o resultado inverteu-se.
 
 ## Inventário de veredictos
 
