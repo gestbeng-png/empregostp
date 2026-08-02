@@ -1,3 +1,6 @@
+> **OBSOLETO — substituído por `docs/DEPLOY-GUIDE.md`.**
+> Arquivado na auditoria de release de agosto de 2026.
+
 # 🚀 Guia de Deploy Automatizado
 
 Este guia explica como fazer deploy automatizado do EmpregoSTP para a Vercel.

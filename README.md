@@ -17,6 +17,19 @@
 
 ---
 
+## 📦 Deploy
+
+O procedimento completo, passo a passo e com plano de reversão, está em
+**[`docs/DEPLOY-GUIDE.md`](docs/DEPLOY-GUIDE.md)**. A ordem dos passos importa:
+índices → código → validação → regras.
+
+O estado da auditoria de release está em
+[`docs/audits/release-audit-2026-08.md`](docs/audits/release-audit-2026-08.md).
+Documentos antigos foram arquivados em `docs/legacy/` e não refletem o estado
+atual.
+
+---
+
 ## 📋 Sobre o Projeto
 
 **EmpregosSTP** é a plataforma líder em São Tomé e Príncipe para conectar talentos e oportunidades de emprego. Desenvolvida com as mais modernas tecnologias web, oferece uma experiência intuitiva tanto para candidatos quanto para empresas.
