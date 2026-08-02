@@ -1,27 +1,71 @@
 import '../styles/globals.css';
 import '../styles/dashboard-shell.css';
+import '../styles/workbridge-theme.css';
+import dynamic from 'next/dynamic';
 import { useEffect } from 'react';
+import { useRouter } from 'next/router';
 import { AuthProvider } from '../context/AuthContext';
-import PwaInstallPrompt from '../components/PwaInstallPrompt';
-import WebPushManager from '../components/WebPushManager';
+// Ambos são interface que só aparece depois de um evento do browser (prompt de
+// instalação) ou de permissão concedida (push). Não precisam de SSR nem de
+// estar no bundle inicial de todas as páginas.
+const PwaInstallPrompt = dynamic(
+  () => import('../components/PwaInstallPrompt'),
+  { ssr: false },
+);
+const WebPushManager = dynamic(() => import('../components/WebPushManager'), {
+  ssr: false,
+});
 import Head from 'next/head';
-import { Plus_Jakarta_Sans, Space_Grotesk } from 'next/font/google';
 import DashboardRouteFrame from '../components/dashboard/DashboardRouteFrame';
 
-const appFont = Plus_Jakarta_Sans({
-  subsets: ['latin'],
-  display: 'swap',
-  fallback: ['Inter', 'system-ui', 'sans-serif']
-});
+const AUTH_ROUTES = new Set([
+  '/escolha-tipo',
+  '/login',
+  '/recuperar-senha',
+  '/redefinir-senha',
+  '/register',
+  '/verificar-email',
+]);
 
-const displayFont = Space_Grotesk({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--app-font-display',
-  fallback: ['Avenir Next', 'Segoe UI', 'sans-serif']
-});
+const LEGAL_ROUTES = new Set(['/cookies', '/politica-privacidade', '/termos']);
+
+function getWorkbridgePageKey(pathname) {
+  if (pathname === '/') return 'home';
+  if (pathname.startsWith('/dashboard')) return 'dashboard';
+  if (pathname === '/profile') return 'dashboard';
+  if (AUTH_ROUTES.has(pathname)) return 'auth';
+  if (LEGAL_ROUTES.has(pathname)) return 'legal';
+  if (pathname === '/vagas') return 'jobs';
+  if (pathname.startsWith('/vaga/')) return 'job-detail';
+  if (pathname === '/candidatos' || pathname.startsWith('/candidatos/')) {
+    return pathname === '/candidatos/[id]' ? 'candidate-detail' : 'candidates';
+  }
+  if (pathname === '/empresas') return 'companies';
+  if (pathname === '/sobre-nos') return 'about';
+  if (pathname === '/carreira') return 'career';
+  if (pathname === '/blog') return 'blog';
+  if (pathname.startsWith('/blog/')) return 'article';
+  if (pathname === '/premium' || pathname.startsWith('/premium/')) {
+    return 'pricing';
+  }
+  if (pathname === '/recursos') return 'resources';
+  if (pathname.startsWith('/recursos/guia/')) return 'article';
+  if (pathname.startsWith('/recursos/')) return 'tool';
+  return 'public';
+}
 
 function MyApp({ Component, pageProps }) {
+  const router = useRouter();
+  const pathname = router.pathname || '';
+  const pageKey = getWorkbridgePageKey(pathname);
+  const isHome = pageKey === 'home';
+  const routeKind =
+    pageKey === 'dashboard'
+      ? 'dashboard'
+      : pageKey === 'auth'
+        ? 'auth'
+        : 'public';
+
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
     if (!('serviceWorker' in navigator)) return undefined;
@@ -29,8 +73,11 @@ function MyApp({ Component, pageProps }) {
     if (process.env.NODE_ENV !== 'production') {
       const cleanupDevServiceWorker = async () => {
         try {
-          const registrations = await navigator.serviceWorker.getRegistrations();
-          await Promise.all(registrations.map((registration) => registration.unregister()));
+          const registrations =
+            await navigator.serviceWorker.getRegistrations();
+          await Promise.all(
+            registrations.map((registration) => registration.unregister()),
+          );
         } catch (error) {
           // Keep development mode resilient even if SW cleanup fails.
         }
@@ -38,7 +85,9 @@ function MyApp({ Component, pageProps }) {
         if ('caches' in window) {
           try {
             const cacheKeys = await caches.keys();
-            await Promise.all(cacheKeys.map((cacheKey) => caches.delete(cacheKey)));
+            await Promise.all(
+              cacheKeys.map((cacheKey) => caches.delete(cacheKey)),
+            );
           } catch (error) {
             // Best effort cache cleanup.
           }
@@ -63,13 +112,25 @@ function MyApp({ Component, pageProps }) {
 
   return (
     <AuthProvider>
-      <div className={`${appFont.className} ${displayFont.variable}`}>
+      <div
+        className={
+          isHome
+            ? undefined
+            : `workbridgeRoute workbridge${routeKind
+                .charAt(0)
+                .toUpperCase()}${routeKind.slice(1)}Route`
+        }
+        data-workbridge-page={isHome ? undefined : pageKey}
+      >
         <Head>
           <meta name="viewport" content="width=device-width, initial-scale=1" />
-          <meta name="theme-color" content="#ffffff" />
+          <meta name="theme-color" content="#102441" />
           <meta name="application-name" content="EmpregoSTP" />
           <meta name="apple-mobile-web-app-capable" content="yes" />
-          <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+          <meta
+            name="apple-mobile-web-app-status-bar-style"
+            content="default"
+          />
           <meta name="apple-mobile-web-app-title" content="EmpregoSTP" />
           <link rel="manifest" href="/manifest.webmanifest" />
           <link rel="apple-touch-icon" href="/assets/Emprego STP Logo 2.png" />
