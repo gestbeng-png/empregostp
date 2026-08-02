@@ -13,7 +13,7 @@
 | 2 — Rotas de API                             | EM CURSO | Veredicto de auth das 71 rotas concluído em 1.7; falta a passagem funcional grupo a grupo.                              |
 | 3 — Páginas e dashboards                     | **CONCLUÍDA** | Públicas, autenticação, os três dashboards, fluxos de utilizador e design auditados com contas reais. 9 achados corrigidos. |
 | 4 — Purga de legado                          | **QUASE** | Dependências, ficheiros órfãos, exports mortos e documentação legada concluídos. Falta a decisão sobre 9 ficheiros retidos e os índices Firestore (já declarados, por deployar). |
-| 5 — UX, visual, performance e acessibilidade | PENDENTE | Ainda não iniciada.                                                                                                     |
+| 5 — UX, visual, performance e acessibilidade | EM CURSO | 5.5 acessibilidade concluída: públicas a zero, dashboard corrigido (5 campos sem label, contraste sistémico em 38 sítios). Falta performance percebida. |
 | 6 — Validação e pacote de deploy             | PENDENTE | Ainda não iniciada.                                                                                                     |
 
 Nenhuma conta, documento, ficheiro, email, push, broadcast, configuração cloud, rule, índice ou deploy remoto foi criado, alterado ou eliminado nesta fase.
@@ -823,6 +823,38 @@ A raiz tinha **31 ficheiros `.md`/`.txt`, 325 KB**, incluindo `importantes.md` c
 | Documentação | 28 ficheiros arquivados, 325 KB fora da raiz |
 
 Cada bloco foi verificado com `npm run quality` (336 testes) e `npm run build` antes do commit seguinte. Nada com trabalho não commitado do proprietário, nem qualquer ficheiro untracked, foi removido.
+
+## Fase 5 — UX, visual, performance e acessibilidade
+
+### 5.5 — Acessibilidade (axe-core, WCAG 2.0/2.1 A e AA)
+
+Varrimento real com `axe-core` injetado no DOM hidratado, não simulado.
+
+#### Páginas públicas e de autenticação — todas a zero
+
+`/`, `/vagas`, `/login`, `/register`, `/recursos`, `/contacto`, `/empresas`, `/candidatos` e `/sobre-nos`: **zero violações** em cada uma. O trabalho de fases anteriores — labels, `alt`, landmarks, contraste, alvos de toque — segurou.
+
+#### Dashboard de candidato — duas violações reais, corrigidas
+
+| Regra | Impacto | Nós | O que era |
+| --- | --- | --- | --- |
+| `label` | **crítico** | 5 | Resumo profissional, Hard skills, Soft skills, Educação e Idiomas sem nome acessível. O título vivia no cabeçalho do cartão ou num `<span>`, não num `<label>`, pelo que um leitor de ecrã anunciava «campo de texto» sem dizer qual. Resolvido com `aria-label`, sem alterar o layout. |
+| `color-contrast` | sério | 3 + 1 | Ver abaixo. |
+
+#### O contraste era sistémico, não pontual
+
+O `#68717d` sobre o fundo do painel (`#eef4f8`) dá **4.45:1** — falha os 4.5:1 por uma margem mínima, e aparecia em **38 ocorrências em 26 ficheiros de estilo**.
+
+A causa é interessante: `#68717d` é o valor que a especificação do design system indica para `--dash-ink-muted`, mas a shell resolve-o para `#5f6874`. Os ficheiros de estilo usavam o valor documentado; a shell usa o que passa contraste. Uniformizados todos para `#5f6874` (5.1:1). As 5 ocorrências em blocos de tema escuro não foram tocadas — aí escurecer pioraria.
+
+Mais dois casos com causa própria:
+
+- O pill violeta a 3.84:1 sobre a sua tinta, agora `#4f46e5` (5.4:1).
+- O texto do cartão de força do perfil, que herdava cinzento escuro sobre um fundo **navy**, dando 3.14:1 — o bloco de tema claro sobrepunha-se a um cartão que é escuro nos dois temas. Agora `#b7c8e8` (9.2:1).
+
+Verificação posterior: zero violações em `overview`, `profile`, `saved` e `interviews`. Commit `49dafb4`.
+
+Nota de método: a minha primeira deteção de «contexto escuro» classificou mal 5 ocorrências, deixando-as por corrigir; foram apanhadas na verificação seguinte e tratadas individualmente. O `axe-core` foi servido a partir de `public/` durante o teste e removido no fim.
 
 ## Inventário de veredictos
 
