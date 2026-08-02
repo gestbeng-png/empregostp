@@ -5,14 +5,11 @@
   flex-direction: column;
   overflow: clip;
   isolation: isolate;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 58%, #eef7ff 100%);
+  background: #ffffff;
 }
 
 .backdrop {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
+  display: none;
 }
 
 .orbPrimary,

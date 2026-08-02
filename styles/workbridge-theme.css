@@ -1,0 +1,925 @@
+@font-face {
+  font-family: 'Instrument Sans';
+  src: url('/fonts/instrument-sans-400.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Instrument Sans';
+  src: url('/fonts/instrument-sans-500.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Instrument Sans';
+  src: url('/fonts/instrument-sans-600.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Instrument Sans';
+  src: url('/fonts/instrument-sans-700.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+.workbridgeRoute {
+  --workbridge-primary-dark: #102441;
+  --workbridge-paragraph: #383750;
+  --workbridge-primary: #064bb5;
+  --workbridge-primary-bright: #0a65cc;
+  --workbridge-secondary: #daff45;
+  --workbridge-secondary-light: #eefabf;
+  --workbridge-light-gray: #e4e5e8;
+  --workbridge-gray: #767f8c;
+  --workbridge-primary-light: #eef4f8;
+  --workbridge-white: #ffffff;
+
+  --app-bg: #ffffff;
+  --app-bg-soft: #ffffff;
+  --app-bg-muted: #eef4f8;
+  --app-surface-1: #ffffff;
+  --app-surface-2: #ffffff;
+  --app-surface-3: #eef4f8;
+  --app-surface-dark: #102441;
+  --app-border-subtle: #e4e5e8;
+  --app-border-strong: #cdd1d7;
+  --app-border-accent: rgba(6, 75, 181, 0.32);
+  --app-text-primary: #102441;
+  --app-text-secondary: #383750;
+  --app-text-muted: #596371;
+  --app-text-faint: #5f6874;
+  --app-brand-dark: #102441;
+  --app-brand-primary: #064bb5;
+  --app-brand-primary-hover: #0a65cc;
+  --app-brand-secondary: #69c8ff;
+  --app-brand-lime: #daff45;
+  --app-primary-light: #eef4f8;
+  --app-secondary-light: #eefabf;
+  --app-gray: #767f8c;
+  --app-light-gray: #e4e5e8;
+  --app-shadow-sm: none;
+  --app-shadow-md: none;
+  --app-shadow-lg: none;
+  --app-shadow-card: none;
+  --app-shadow-card-hover:
+    0 0 5px rgba(218, 255, 69, 0.72), 0 0 26px rgba(218, 255, 69, 0.42);
+  --app-radius-xs: 2px;
+  --app-radius-sm: 4px;
+  --app-radius-md: 4px;
+  --app-radius-lg: 6px;
+  --app-radius-xl: 8px;
+  --app-radius-2xl: 8px;
+  --app-section-space-md: clamp(3.75rem, 6vw, 5rem);
+  --app-section-space-lg: clamp(5rem, 8vw, 7.5rem);
+  --app-public-width: 1200px;
+  --app-public-width-narrow: 1120px;
+  --font-instrument: 'Instrument Sans';
+  --font-inter: 'Instrument Sans';
+  --app-font-sans: 'Instrument Sans', Arial, sans-serif;
+  --app-font-display: 'Instrument Sans', Arial, sans-serif;
+  --app-font-utility: 'Instrument Sans', Arial, sans-serif;
+
+  min-height: 100vh;
+  color: var(--workbridge-primary-dark);
+  background: var(--workbridge-white);
+  font-family: 'Instrument Sans', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.workbridgeRoute
+  :where(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    a,
+    button,
+    input,
+    select,
+    textarea,
+    label,
+    li,
+    table
+  ) {
+  font-family: 'Instrument Sans', Arial, sans-serif;
+  letter-spacing: 0;
+}
+
+.workbridgePublicRoute :where(h1, h2, h3, h4, h5),
+.workbridgeAuthRoute :where(h1, h2, h3, h4, h5) {
+  color: var(--workbridge-primary-dark);
+  font-weight: 700;
+}
+
+.workbridgePublicRoute :where(p, li),
+.workbridgeAuthRoute :where(p, li) {
+  color: var(--workbridge-paragraph);
+}
+
+.workbridgePublicRoute :where(a),
+.workbridgeAuthRoute :where(a) {
+  color: var(--workbridge-primary);
+  transition:
+    color 350ms ease,
+    background-color 350ms ease,
+    border-color 350ms ease,
+    box-shadow 350ms ease,
+    transform 350ms ease;
+}
+
+.workbridgePublicRoute :where(a:hover),
+.workbridgeAuthRoute :where(a:hover) {
+  color: var(--workbridge-primary-dark);
+}
+
+.workbridgeRoute :where(a, button, input, select, textarea):focus-visible {
+  outline: 3px solid var(--workbridge-primary);
+  outline-offset: 3px;
+}
+
+.workbridgeRoute
+  :where(
+    button:not([class*='Icon']):not([class*='icon']),
+    a[class*='Button'],
+    a[class*='button'],
+    a[class*='Action'],
+    a[class*='action']
+  ) {
+  border-radius: 4px;
+}
+
+.workbridgePublicRoute :where(input, select, textarea),
+.workbridgeAuthRoute :where(input, select, textarea) {
+  border-color: var(--workbridge-light-gray);
+  border-radius: 4px;
+  background: var(--workbridge-white);
+}
+
+.workbridgePublicRoute :where(input, select),
+.workbridgeAuthRoute :where(input, select) {
+  min-height: 48px;
+}
+
+.workbridgePublicRoute :where(textarea),
+.workbridgeAuthRoute :where(textarea) {
+  min-height: 128px;
+}
+
+.workbridgePublicRoute :where(input, select, textarea):hover,
+.workbridgeAuthRoute :where(input, select, textarea):hover {
+  border-color: #cdd1d7;
+}
+
+.workbridgePublicRoute :where(input, select, textarea):focus,
+.workbridgeAuthRoute :where(input, select, textarea):focus {
+  border-color: var(--workbridge-primary);
+  box-shadow: 0 0 0 3px rgba(6, 75, 181, 0.12);
+}
+
+.workbridgeRoute
+  :where(
+    [class*='Badge'],
+    [class*='badge'],
+    [class*='Pill'],
+    [class*='pill'],
+    [class*='Chip'],
+    [class*='chip']
+  ) {
+  border-radius: 4px;
+}
+
+.workbridgeRoute
+  :where([class*='Card'], [class*='card'], [class*='Panel'], [class*='panel']) {
+  border-radius: 8px;
+}
+
+.workbridgePublicRoute,
+.workbridgePublicRoute .workbridgePublicShell,
+.workbridgePublicRoute .workbridgePublicContent {
+  background: var(--workbridge-white);
+}
+
+.workbridgeRoute .workbridgeHeader {
+  position: sticky;
+  top: 0;
+  border-bottom-color: rgba(16, 36, 65, 0.1);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow:
+    0 1px 0 rgba(16, 36, 65, 0.02),
+    0 10px 30px rgba(16, 36, 65, 0.055);
+  backdrop-filter: blur(18px) saturate(145%);
+  -webkit-backdrop-filter: blur(18px) saturate(145%);
+}
+
+.workbridgeRoute .workbridgeHeaderInner {
+  width: min(1240px, calc(100% - 48px));
+  min-height: 80px;
+  padding-block: 10px;
+}
+
+.workbridgeRoute .workbridgeHeader :where([class*='navLinkActive']) {
+  color: var(--workbridge-primary);
+}
+
+.workbridgeRoute .workbridgeHeader :where([class*='lightLoginButton']) {
+  border: 1px solid #0a448e;
+  background: #0a448e;
+  color: var(--workbridge-white);
+  box-shadow: 0 8px 18px rgba(10, 68, 142, 0.18);
+}
+
+.workbridgeRoute .workbridgeHeader :where([class*='lightLoginButton']):hover {
+  border-color: #06376f;
+  background: #06376f;
+  color: var(--workbridge-white);
+  box-shadow: 0 11px 22px rgba(10, 68, 142, 0.24);
+}
+
+.workbridgeRoute .workbridgeHeader :where([role='menu'][class*='navDropdown']) {
+  border: 1px solid rgba(16, 36, 65, 0.12);
+  border-top: 3px solid #b8e82f;
+  border-radius: 8px;
+  box-shadow: 0 18px 42px rgba(16, 36, 65, 0.14);
+}
+
+.workbridgeRoute .workbridgeFooter {
+  border-top: 0;
+  background: #071a33;
+}
+
+.workbridgeRoute .workbridgeFooter :where(h1, h2, h3, h4, h5, h6) {
+  color: var(--workbridge-white);
+}
+
+.workbridgePublicRoute .workbridgePublicContent {
+  overflow: hidden;
+}
+
+.workbridgePublicRoute :where(section, [class*='section'], [class*='Section']) {
+  scroll-margin-top: 32px;
+}
+
+.workbridgePublicRoute
+  :where(
+    article[class*='Card'],
+    article[class*='card'],
+    a[class*='Card'],
+    a[class*='card']
+  ) {
+  border-color: var(--workbridge-light-gray);
+  box-shadow: none;
+}
+
+.workbridgePublicRoute
+  :where(
+    article[class*='Card'],
+    article[class*='card'],
+    a[class*='Card'],
+    a[class*='card']
+  ):hover {
+  border-color: rgba(218, 255, 69, 0.92);
+  box-shadow: var(--app-shadow-card-hover);
+}
+
+.workbridgePublicRoute
+  :where(
+    [class*='primaryButton'],
+    [class*='PrimaryButton'],
+    [class*='primaryAction'],
+    [class*='PrimaryAction'],
+    [class*='submitButton'],
+    [class*='SubmitButton']
+  ) {
+  border-color: var(--workbridge-primary);
+  border-radius: 4px;
+  background: var(--workbridge-primary);
+  color: var(--workbridge-white);
+  box-shadow: none;
+}
+
+.workbridgePublicRoute
+  :where(
+    [class*='primaryButton'],
+    [class*='PrimaryButton'],
+    [class*='primaryAction'],
+    [class*='PrimaryAction'],
+    [class*='submitButton'],
+    [class*='SubmitButton']
+  ):hover {
+  border-color: var(--workbridge-primary-bright);
+  background: var(--workbridge-primary-bright);
+  color: var(--workbridge-white);
+  box-shadow: none;
+}
+
+.workbridgePublicRoute
+  :where(
+    [class*='secondaryButton'],
+    [class*='SecondaryButton'],
+    [class*='secondaryAction'],
+    [class*='SecondaryAction']
+  ) {
+  border-color: var(--workbridge-primary);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--workbridge-primary);
+  box-shadow: none;
+}
+
+.workbridgePublicRoute
+  :where(
+    [class*='secondaryButton'],
+    [class*='SecondaryButton'],
+    [class*='secondaryAction'],
+    [class*='SecondaryAction']
+  ):hover {
+  background: var(--workbridge-primary-light);
+  color: var(--workbridge-primary-dark);
+}
+
+.workbridgePublicRoute :where([class*='container'], [class*='Container']) {
+  width: min(1200px, calc(100% - 48px));
+  margin-inline: auto;
+}
+
+.workbridgePublicRoute :where([class*='Grid'], [class*='grid']) {
+  align-items: stretch;
+}
+
+.workbridgePublicRoute
+  :where(
+    [class*='loading'],
+    [class*='Loading'],
+    [class*='empty'],
+    [class*='Empty'],
+    [class*='error'],
+    [class*='Error']
+  ) {
+  border-radius: 8px;
+}
+
+/* Workbridge's signature arch for public editorial heroes. */
+.workbridgePublicRoute[data-workbridge-page='about']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type,
+.workbridgePublicRoute[data-workbridge-page='candidates']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type,
+.workbridgePublicRoute[data-workbridge-page='companies']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type,
+.workbridgePublicRoute[data-workbridge-page='career']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type,
+.workbridgePublicRoute[data-workbridge-page='blog']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type,
+.workbridgePublicRoute[data-workbridge-page='resources']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type,
+.workbridgePublicRoute[data-workbridge-page='legal']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type {
+  position: relative;
+  z-index: 0;
+  min-height: 410px;
+  padding-block: 80px;
+  overflow: hidden;
+  isolation: isolate;
+  border: 0;
+  border-radius: 0;
+  background-color: var(--workbridge-white);
+  box-shadow: none;
+}
+
+.workbridgePublicRoute[data-workbridge-page='about']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type::before,
+.workbridgePublicRoute[data-workbridge-page='candidates']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type::before,
+.workbridgePublicRoute[data-workbridge-page='companies']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type::before,
+.workbridgePublicRoute[data-workbridge-page='career']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type::before,
+.workbridgePublicRoute[data-workbridge-page='blog']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type::before,
+.workbridgePublicRoute[data-workbridge-page='resources']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type::before,
+.workbridgePublicRoute[data-workbridge-page='legal']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type::before {
+  content: '';
+  display: block;
+  position: absolute;
+  z-index: -1;
+  top: 16px;
+  left: 50%;
+  width: min(860px, 80vw);
+  height: min(860px, 80vw);
+  aspect-ratio: 1;
+  border: 2px solid rgba(218, 255, 69, 0.72);
+  border-radius: 50%;
+  background: rgba(238, 250, 191, 0.6);
+  box-shadow:
+    inset 0 0 0 34px var(--workbridge-white),
+    inset 0 0 0 36px rgba(218, 255, 69, 0.55);
+  opacity: 1;
+  mask-image: none;
+  transform: translateX(-50%) !important;
+  pointer-events: none;
+}
+
+.workbridgePublicRoute:is(
+    [data-workbridge-page='about'],
+    [data-workbridge-page='candidates'],
+    [data-workbridge-page='companies'],
+    [data-workbridge-page='career'],
+    [data-workbridge-page='blog'],
+    [data-workbridge-page='resources'],
+    [data-workbridge-page='legal']
+  )
+  .workbridgePublicContent
+  > div
+  > section:first-of-type
+  :is(h1, h2, h3) {
+  color: var(--workbridge-primary-dark);
+}
+
+.workbridgePublicRoute:is(
+    [data-workbridge-page='about'],
+    [data-workbridge-page='candidates'],
+    [data-workbridge-page='companies'],
+    [data-workbridge-page='career'],
+    [data-workbridge-page='blog'],
+    [data-workbridge-page='resources'],
+    [data-workbridge-page='legal']
+  )
+  .workbridgePublicContent
+  > div
+  > section:first-of-type
+  h1 {
+  font-size: 64px;
+  line-height: 1.05;
+}
+
+.workbridgePublicRoute:is(
+    [data-workbridge-page='about'],
+    [data-workbridge-page='candidates'],
+    [data-workbridge-page='companies'],
+    [data-workbridge-page='career'],
+    [data-workbridge-page='blog'],
+    [data-workbridge-page='resources'],
+    [data-workbridge-page='legal']
+  )
+  .workbridgePublicContent
+  > div
+  > section:first-of-type
+  :is(
+    [class*='heroCopy'],
+    [class*='heroContent'],
+    [class*='heroInner'],
+    [class*='intro']
+  )
+  p {
+  color: var(--workbridge-paragraph);
+}
+
+.workbridgePublicRoute:is(
+    [data-workbridge-page='about'],
+    [data-workbridge-page='candidates'],
+    [data-workbridge-page='companies'],
+    [data-workbridge-page='career'],
+    [data-workbridge-page='blog'],
+    [data-workbridge-page='resources'],
+    [data-workbridge-page='legal']
+  )
+  .workbridgePublicContent
+  > div
+  > section:first-of-type
+  :is([class*='heroEyebrow'], [class*='eyebrow'], [class*='kicker']) {
+  border-color: rgba(6, 75, 181, 0.18);
+  background: rgba(238, 250, 191, 0.82);
+  color: var(--workbridge-primary);
+}
+
+.workbridgePublicRoute:is(
+    [data-workbridge-page='about'],
+    [data-workbridge-page='candidates'],
+    [data-workbridge-page='companies'],
+    [data-workbridge-page='career'],
+    [data-workbridge-page='blog'],
+    [data-workbridge-page='resources'],
+    [data-workbridge-page='legal']
+  )
+  .workbridgePublicContent
+  > div
+  > section:first-of-type
+  [class*='secondaryAction'] {
+  border-color: var(--workbridge-primary);
+  background: transparent;
+  color: var(--workbridge-primary);
+}
+
+.workbridgePublicRoute[data-workbridge-page='resources']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type
+  [class*='audienceButton']:not([class*='Active']) {
+  color: var(--workbridge-primary-dark);
+}
+
+.workbridgePublicRoute[data-workbridge-page='candidates']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type {
+  min-height: 560px;
+  padding-block: 36px;
+}
+
+.workbridgePublicRoute[data-workbridge-page='legal']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type
+  [class*='heroPanel']
+  :is(h1, h2, h3) {
+  color: var(--workbridge-white);
+}
+
+.workbridgePublicRoute[data-workbridge-page='legal']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type
+  [class*='heroPanel']
+  p {
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.workbridgePublicRoute[data-workbridge-page='legal']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type
+  [class*='heroPanel']
+  [class*='heroKicker'] {
+  color: var(--workbridge-primary-dark);
+}
+
+.workbridgePublicRoute[data-workbridge-page='about']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type::after,
+.workbridgePublicRoute[data-workbridge-page='candidates']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type::after,
+.workbridgePublicRoute[data-workbridge-page='companies']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type::after,
+.workbridgePublicRoute[data-workbridge-page='career']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type::after,
+.workbridgePublicRoute[data-workbridge-page='blog']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type::after,
+.workbridgePublicRoute[data-workbridge-page='resources']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type::after,
+.workbridgePublicRoute[data-workbridge-page='legal']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type::after {
+  content: '✹';
+  position: absolute;
+  z-index: -1;
+  top: 42px;
+  left: max(24px, calc(50% - 350px));
+  color: var(--workbridge-primary);
+  font-size: 42px;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.workbridgePublicRoute[data-workbridge-page='about']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type
+  > *,
+.workbridgePublicRoute[data-workbridge-page='candidates']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type
+  > *,
+.workbridgePublicRoute[data-workbridge-page='companies']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type
+  > *,
+.workbridgePublicRoute[data-workbridge-page='career']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type
+  > *,
+.workbridgePublicRoute[data-workbridge-page='blog']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type
+  > *,
+.workbridgePublicRoute[data-workbridge-page='resources']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type
+  > *,
+.workbridgePublicRoute[data-workbridge-page='legal']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type
+  > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Dark Workbridge bands for candidate detail and pricing pages. */
+.workbridgePublicRoute[data-workbridge-page='candidate-detail']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type,
+.workbridgePublicRoute[data-workbridge-page='pricing']
+  main
+  > section:first-of-type {
+  border-radius: 0;
+  background: var(--workbridge-primary-dark);
+  box-shadow: none;
+}
+
+.workbridgePublicRoute[data-workbridge-page='candidate-detail']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type
+  :where(h1, h2, h3),
+.workbridgePublicRoute[data-workbridge-page='pricing']
+  main
+  > section:first-of-type
+  :where(h1, h2, h3) {
+  color: var(--workbridge-white);
+}
+
+.workbridgePublicRoute[data-workbridge-page='candidate-detail']
+  .workbridgePublicContent
+  > div
+  > section:first-of-type
+  :where(p, span),
+.workbridgePublicRoute[data-workbridge-page='pricing']
+  main
+  > section:first-of-type
+  :where(p, span) {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+/* Auth pages use the template's blue form composition. */
+.workbridgeAuthRoute {
+  background: var(--workbridge-primary);
+}
+
+.workbridgeAuthRoute main {
+  background-color: var(--workbridge-primary);
+}
+
+.workbridgeAuthRoute
+  :where(
+    [class*='authCard'],
+    [class*='AuthCard'],
+    [class*='formCard'],
+    [class*='FormCard'],
+    [class*='card'],
+    [class*='Card']
+  ) {
+  border: 1px solid var(--workbridge-light-gray);
+  border-radius: 8px;
+  background: var(--workbridge-white);
+  box-shadow: none;
+}
+
+.workbridgeAuthRoute
+  :where(
+    [class*='primaryButton'],
+    [class*='submitButton'],
+    button[type='submit']
+  ) {
+  border-color: var(--workbridge-primary);
+  border-radius: 4px;
+  background: var(--workbridge-primary);
+  color: var(--workbridge-white);
+  box-shadow: none;
+}
+
+/* Dashboards retain their information density while sharing the same system. */
+.workbridgeDashboardRoute {
+  background: var(--workbridge-primary-light);
+}
+
+.workbridgeDashboardRoute .dashShell {
+  font-family: 'Instrument Sans', Arial, sans-serif;
+}
+
+@media (max-width: 991px) {
+  .workbridgeRoute .workbridgeHeaderInner {
+    width: calc(100% - 32px);
+  }
+
+  .workbridgePublicRoute :where([class*='container'], [class*='Container']) {
+    width: min(100% - 32px, 728px);
+  }
+
+  .workbridgePublicRoute:is(
+      [data-workbridge-page='about'],
+      [data-workbridge-page='candidates'],
+      [data-workbridge-page='companies'],
+      [data-workbridge-page='career'],
+      [data-workbridge-page='blog'],
+      [data-workbridge-page='resources'],
+      [data-workbridge-page='legal']
+    )
+    .workbridgePublicContent
+    > div
+    > section:first-of-type
+    h1 {
+    font-size: 56px;
+  }
+}
+
+@media (max-width: 767px) {
+  .workbridgeRoute {
+    font-size: 15px;
+  }
+
+  .workbridgeRoute .workbridgeHeaderInner {
+    width: calc(100% - 24px);
+    min-height: 72px;
+  }
+
+  .workbridgePublicRoute :where([class*='container'], [class*='Container']) {
+    width: calc(100% - 24px);
+  }
+
+  .workbridgePublicRoute[data-workbridge-page='about']
+    .workbridgePublicContent
+    > div
+    > section:first-of-type,
+  .workbridgePublicRoute[data-workbridge-page='candidates']
+    .workbridgePublicContent
+    > div
+    > section:first-of-type,
+  .workbridgePublicRoute[data-workbridge-page='companies']
+    .workbridgePublicContent
+    > div
+    > section:first-of-type,
+  .workbridgePublicRoute[data-workbridge-page='career']
+    .workbridgePublicContent
+    > div
+    > section:first-of-type,
+  .workbridgePublicRoute[data-workbridge-page='blog']
+    .workbridgePublicContent
+    > div
+    > section:first-of-type,
+  .workbridgePublicRoute[data-workbridge-page='resources']
+    .workbridgePublicContent
+    > div
+    > section:first-of-type,
+  .workbridgePublicRoute[data-workbridge-page='legal']
+    .workbridgePublicContent
+    > div
+    > section:first-of-type {
+    min-height: 340px;
+    padding-block: 56px;
+  }
+
+  .workbridgePublicRoute[data-workbridge-page='about']
+    .workbridgePublicContent
+    > div
+    > section:first-of-type::before,
+  .workbridgePublicRoute[data-workbridge-page='candidates']
+    .workbridgePublicContent
+    > div
+    > section:first-of-type::before,
+  .workbridgePublicRoute[data-workbridge-page='companies']
+    .workbridgePublicContent
+    > div
+    > section:first-of-type::before,
+  .workbridgePublicRoute[data-workbridge-page='career']
+    .workbridgePublicContent
+    > div
+    > section:first-of-type::before,
+  .workbridgePublicRoute[data-workbridge-page='blog']
+    .workbridgePublicContent
+    > div
+    > section:first-of-type::before,
+  .workbridgePublicRoute[data-workbridge-page='resources']
+    .workbridgePublicContent
+    > div
+    > section:first-of-type::before,
+  .workbridgePublicRoute[data-workbridge-page='legal']
+    .workbridgePublicContent
+    > div
+    > section:first-of-type::before {
+    top: 28px;
+    width: 560px;
+    height: 560px;
+  }
+
+  .workbridgePublicRoute:is(
+      [data-workbridge-page='about'],
+      [data-workbridge-page='candidates'],
+      [data-workbridge-page='companies'],
+      [data-workbridge-page='career'],
+      [data-workbridge-page='blog'],
+      [data-workbridge-page='resources'],
+      [data-workbridge-page='legal']
+    )
+    .workbridgePublicContent
+    > div
+    > section:first-of-type
+    h1 {
+    font-size: 46px;
+    line-height: 1.05;
+  }
+
+  .workbridgePublicRoute[data-workbridge-page='candidates']
+    .workbridgePublicContent
+    > div
+    > section:first-of-type {
+    min-height: 0;
+    padding-block: 24px;
+  }
+
+  .workbridgePublicRoute[data-workbridge-page='candidates']
+    .workbridgePublicContent
+    > div
+    > section:first-of-type::before {
+    top: -40px;
+    width: 760px;
+    height: 760px;
+  }
+
+  .workbridgePublicRoute[data-workbridge-page='candidates']
+    .workbridgePublicContent
+    > div
+    > section:first-of-type
+    [class*='heroGrid'] {
+    min-height: 0;
+    padding-top: 24px;
+  }
+
+  .workbridgePublicRoute[data-workbridge-page='candidates']
+    .workbridgePublicContent
+    > div
+    > section:first-of-type
+    h1 {
+    font-size: 44px;
+    line-height: 1.04;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workbridgeRoute *,
+  .workbridgeRoute *::before,
+  .workbridgeRoute *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

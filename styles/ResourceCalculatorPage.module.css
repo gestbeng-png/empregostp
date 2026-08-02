@@ -1,0 +1,599 @@
+.page {
+  --calculator-accent: var(--app-brand-primary);
+  --calculator-accent-soft: rgba(32, 87, 215, 0.08);
+  --calculator-accent-border: rgba(32, 87, 215, 0.18);
+  --calculator-motion: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  padding: clamp(1.5rem, 4vw, 3rem) 0 clamp(4rem, 7vw, 6rem);
+}
+
+.salaryPage {
+  --calculator-accent: #087a55;
+  --calculator-accent-soft: rgba(8, 122, 85, 0.08);
+  --calculator-accent-border: rgba(8, 122, 85, 0.2);
+}
+
+.taxPage {
+  --calculator-accent: #9a5b0a;
+  --calculator-accent-soft: rgba(154, 91, 10, 0.08);
+  --calculator-accent-border: rgba(154, 91, 10, 0.2);
+}
+
+.page :is(a, button, input, select):focus-visible {
+  outline: 3px solid #4f8ff7;
+  outline-offset: 3px;
+}
+
+.page :is(a, button):active {
+  transform: translateY(1px);
+}
+
+.page :is(button, input, select):disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.container {
+  width: min(1040px, calc(100% - (var(--app-page-inline) * 2)));
+  margin: 0 auto;
+}
+
+.backLink {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--app-radius-xs);
+  color: var(--app-text-secondary);
+  font-size: var(--app-font-size-sm);
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    color var(--calculator-motion),
+    background-color var(--calculator-motion),
+    transform var(--calculator-motion);
+}
+
+.backLink:hover {
+  color: var(--app-brand-primary);
+  background: rgba(32, 87, 215, 0.07);
+}
+
+.backLink svg,
+.eyebrow svg,
+.modeButton svg,
+.modeButtonActive svg,
+.note svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
+.hero {
+  max-width: 800px;
+  padding: clamp(1rem, 2vw, 1.5rem) 0 clamp(2rem, 4vw, 3rem);
+}
+
+.eyebrow {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--calculator-accent-border);
+  border-radius: 999px;
+  color: var(--calculator-accent);
+  background: var(--calculator-accent-soft);
+  font-size: var(--app-font-size-sm);
+  font-weight: 700;
+}
+
+.hero h1 {
+  margin: 1.25rem 0 0;
+  color: var(--app-text-primary);
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: 0;
+}
+
+.hero p {
+  max-width: 720px;
+  margin: 1rem 0 0;
+  color: var(--app-text-secondary);
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+.sourceBand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.25rem;
+  border: 1px solid var(--calculator-accent-border);
+  border-radius: var(--app-radius-md);
+  background: var(--calculator-accent-soft);
+}
+
+.sourceHeading {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.sourceHeading > svg,
+.sectionHeading > svg {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  margin-top: 0.15rem;
+  color: var(--calculator-accent);
+}
+
+.sourceHeading h2,
+.sectionHeading h2,
+.resultHeading h2 {
+  margin: 0;
+  color: var(--app-text-primary);
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.sourceHeading p,
+.sectionHeading p {
+  margin: 0.35rem 0 0;
+  color: var(--app-text-secondary);
+  font-size: var(--app-font-size-sm);
+  line-height: 1.6;
+}
+
+.sourceLink {
+  display: inline-flex;
+  min-height: 44px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: var(--app-radius-xs);
+  color: var(--calculator-accent);
+  font-size: var(--app-font-size-sm);
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    color var(--calculator-motion),
+    background-color var(--calculator-motion),
+    transform var(--calculator-motion);
+}
+
+.sourceLink:hover {
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.sourceLinks {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.modeSwitch {
+  display: inline-flex;
+  gap: 0.25rem;
+  margin-top: 1.5rem;
+  padding: 0.25rem;
+  border: 1px solid var(--app-border-subtle);
+  border-radius: var(--app-radius-sm);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.modeButton,
+.modeButtonActive {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border: 1px solid transparent;
+  border-radius: var(--app-radius-xs);
+  font-size: var(--app-font-size-sm);
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    color var(--calculator-motion),
+    background-color var(--calculator-motion),
+    border-color var(--calculator-motion),
+    transform var(--calculator-motion);
+}
+
+.modeButton {
+  color: var(--app-text-secondary);
+  background: transparent;
+}
+
+.modeButton:hover {
+  color: var(--app-text-primary);
+  background: var(--app-surface-2);
+}
+
+.modeButtonActive {
+  border-color: var(--calculator-accent-border);
+  color: var(--calculator-accent);
+  background: var(--calculator-accent-soft);
+}
+
+.calculatorSection {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--app-border-subtle);
+}
+
+.sectionHeading {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.field > span {
+  color: var(--app-text-secondary);
+  font-size: var(--app-font-size-sm);
+  font-weight: 700;
+}
+
+.field :is(input, select) {
+  width: 100%;
+  min-height: 48px;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--app-border-strong);
+  border-radius: var(--app-radius-xs);
+  color: var(--app-text-primary);
+  background: #ffffff;
+  font: inherit;
+  font-size: max(0.95rem, 14px);
+  transition:
+    border-color var(--calculator-motion),
+    box-shadow var(--calculator-motion);
+}
+
+.field :is(input, select):hover {
+  border-color: rgba(32, 87, 215, 0.3);
+}
+
+.field :is(input, select):focus {
+  border-color: var(--app-brand-primary);
+  box-shadow: 0 0 0 3px rgba(32, 87, 215, 0.12);
+}
+
+.resultHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 2.5rem;
+}
+
+.resultHeading > span {
+  color: var(--calculator-accent);
+  font-size: var(--app-font-size-sm);
+  font-weight: 700;
+}
+
+.results {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.taxResults {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.resultBox {
+  display: flex;
+  min-width: 0;
+  min-height: 128px;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--calculator-accent-border);
+  border-radius: var(--app-radius-sm);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: var(--app-shadow-sm);
+}
+
+.resultBox > span {
+  color: var(--app-text-secondary);
+  font-size: var(--app-font-size-sm);
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.resultBox > strong {
+  color: var(--calculator-accent);
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin: 1.25rem 0 0;
+  padding: 1rem;
+  border-radius: var(--app-radius-xs);
+  color: var(--app-text-secondary);
+  background: var(--app-surface-2);
+  font-size: var(--app-font-size-sm);
+  line-height: 1.6;
+}
+
+.note svg {
+  margin-top: 0.15rem;
+  color: var(--calculator-accent);
+}
+
+@media (max-width: 860px) {
+  .sourceBand {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .results {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .page {
+    padding-top: 1rem;
+  }
+
+  .hero {
+    padding-top: 0.5rem;
+  }
+
+  .modeSwitch,
+  .modeButton,
+  .modeButtonActive {
+    width: 100%;
+  }
+
+  .modeButton,
+  .modeButtonActive {
+    flex: 1 1 0;
+    padding-inline: 0.5rem;
+  }
+
+  .formGrid,
+  .results,
+  .taxResults {
+    grid-template-columns: 1fr;
+  }
+
+  .resultHeading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .resultBox {
+    min-height: 104px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page *,
+  .page *::before,
+  .page *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* Workbridge visual contract */
+.page,
+.salaryPage,
+.taxPage {
+  --calculator-accent: #064bb5;
+  --calculator-accent-soft: #eef4f8;
+  --calculator-accent-border: #e4e5e8;
+}
+
+.page {
+  padding: clamp(2rem, 5vw, 3.75rem) 0 clamp(4rem, 8vw, 7.5rem);
+  color: #383750;
+  background: #ffffff;
+}
+
+.page :is(a, button, input, select):focus-visible {
+  outline-color: #69c8ff;
+}
+
+.container {
+  width: min(1200px, calc(100% - (var(--app-page-inline) * 2)));
+}
+
+.backLink {
+  border-radius: 4px;
+  color: #383750;
+}
+
+.backLink:hover {
+  color: #064bb5;
+  background: #eef4f8;
+}
+
+.hero {
+  max-width: none;
+  margin-top: 0.75rem;
+  padding: clamp(2.5rem, 6vw, 5rem);
+  border-radius: 8px;
+  background: #102441;
+}
+
+.eyebrow {
+  border: 0;
+  border-radius: 4px;
+  color: #102441;
+  background: #daff45;
+}
+
+.hero h1 {
+  max-width: 840px;
+  color: #ffffff;
+  font-size: clamp(2.75rem, 6vw, 4.5rem);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.hero p {
+  color: #e4e5e8;
+  line-height: 1.6;
+}
+
+.sourceBand {
+  margin-top: 1.5rem;
+  border-color: #dce98d;
+  border-radius: 8px;
+  background: #eefabf;
+}
+
+.sourceHeading h2,
+.sectionHeading h2,
+.resultHeading h2 {
+  color: #1e2b4d;
+  font-weight: 700;
+}
+
+.sourceHeading p,
+.sectionHeading p {
+  color: #383750;
+}
+
+.sourceHeading > svg,
+.sectionHeading > svg,
+.note svg {
+  color: #064bb5;
+}
+
+.sourceLink {
+  border-radius: 4px;
+  color: #064bb5;
+}
+
+.sourceLink:hover {
+  color: #0a65cc;
+  background: #ffffff;
+}
+
+.modeSwitch {
+  border-color: #e4e5e8;
+  border-radius: 4px;
+  background: #eef4f8;
+}
+
+.modeButton,
+.modeButtonActive {
+  border-radius: 4px;
+}
+
+.modeButton {
+  color: #383750;
+}
+
+.modeButton:hover {
+  color: #102441;
+  background: #ffffff;
+}
+
+.modeButtonActive {
+  border-color: #daff45;
+  color: #102441;
+  background: #daff45;
+}
+
+.calculatorSection {
+  border-top-color: #e4e5e8;
+}
+
+.field > span {
+  color: #383750;
+}
+
+.field :is(input, select) {
+  border-color: #e4e5e8;
+  border-radius: 4px;
+  color: #1e2b4d;
+  background: #ffffff;
+}
+
+.field :is(input, select):hover {
+  border-color: #69c8ff;
+}
+
+.field :is(input, select):focus {
+  border-color: #064bb5;
+  box-shadow: 0 0 0 3px rgba(105, 200, 255, 0.28);
+}
+
+.resultHeading > span {
+  color: #064bb5;
+}
+
+.resultBox {
+  border-color: #e4e5e8;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.resultBox > span {
+  color: #5f6874;
+  font-family: var(--font-inter, Inter, sans-serif);
+}
+
+.resultBox > strong {
+  color: #064bb5;
+  font-family: var(--font-inter, Inter, sans-serif);
+}
+
+.note {
+  border: 1px solid #e4e5e8;
+  border-radius: 4px;
+  color: #383750;
+  background: #eef4f8;
+}
+
+@media (max-width: 560px) {
+  .hero {
+    padding: 2.25rem 1.25rem;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.25rem, 12vw, 3rem);
+  }
+}

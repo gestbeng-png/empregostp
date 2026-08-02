@@ -1,0 +1,881 @@
+.page {
+  --candidate-navy: #0b2147;
+  --candidate-ink: #000b25;
+  --candidate-blue: #2563eb;
+  --candidate-lime: #d9f96d;
+  --candidate-surface: #f7f9fb;
+  --candidate-surface-low: #f2f4f6;
+  --candidate-white: #ffffff;
+  --candidate-text: #191c1e;
+  --candidate-muted: #44474e;
+  --candidate-outline: #c5c6cf;
+  --candidate-badge: #dbe1ff;
+  --candidate-badge-text: #003ea8;
+
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  overflow: clip;
+  color: var(--candidate-text);
+  background: var(--candidate-white);
+  font-family: var(--app-font-sans), 'Inter', Arial, sans-serif;
+}
+
+.internationalPage {
+  --candidate-badge: #cded62;
+  --candidate-badge-text: #566a00;
+}
+
+.nationalPage {
+  --candidate-badge: #dbe1ff;
+  --candidate-badge-text: #003ea8;
+}
+
+:global(.workbridgePublicRoute[data-workbridge-page='candidates']):has(.page)
+  :global(.workbridgePublicContent) {
+  overflow: visible;
+}
+
+.page,
+.page *,
+.page *::before,
+.page *::after {
+  box-sizing: border-box;
+}
+
+.page :is(h1, h2, h3, strong) {
+  color: var(--candidate-ink);
+  font-family: var(--app-font-display), 'Hanken Grotesk', Arial, sans-serif;
+}
+
+.page :is(p, li) {
+  color: var(--candidate-muted);
+}
+
+.container {
+  width: min(1280px, calc(100% - 64px));
+  margin-inline: auto;
+}
+
+.marketSwitchBar {
+  position: sticky;
+  z-index: 70;
+  top: 0;
+  order: 1;
+  border-bottom: 1px solid var(--candidate-outline);
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(14px);
+}
+
+.hero {
+  order: 2;
+}
+
+.catalogSection {
+  order: 3;
+}
+
+.plansSection {
+  order: 4;
+}
+
+.ctaSection {
+  order: 5;
+}
+
+.marketSwitch {
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  margin-inline: auto;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.marketSwitch::-webkit-scrollbar {
+  display: none;
+}
+
+.marketSwitchLink {
+  position: relative;
+  display: inline-flex;
+  min-height: 58px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 2px;
+  color: var(--candidate-muted);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 24px;
+  white-space: nowrap;
+}
+
+.marketSwitchLink::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 4px;
+  background: transparent;
+}
+
+.page.page .marketSwitchLink:hover,
+.page.page .marketSwitchLinkActive {
+  color: var(--candidate-blue);
+}
+
+.marketSwitchLinkActive::after {
+  background: var(--candidate-blue);
+}
+
+.page.page.page .hero {
+  position: relative;
+  min-height: 0;
+  padding: 96px 0 100px;
+  overflow: hidden;
+  isolation: isolate;
+  border: 0;
+  background: var(--candidate-surface);
+}
+
+.page.page.page.page .hero::before {
+  content: none !important;
+  display: none !important;
+}
+
+.page.page.page.page .hero::after {
+  content: none !important;
+  display: none !important;
+}
+
+.heroGrid {
+  display: block;
+}
+
+.heroCopy {
+  max-width: 900px;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.heroEyebrow,
+.sectionEyebrow,
+.ctaEyebrow {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  color: var(--candidate-blue);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 16px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.heroEyebrow {
+  margin-bottom: 20px;
+  padding: 5px 13px;
+  border-radius: 999px;
+  background: var(--candidate-badge);
+  color: var(--candidate-badge-text);
+}
+
+.page.page.page.page .heroTitle {
+  max-width: 940px;
+  margin: 0 auto;
+  color: var(--candidate-navy);
+  font-size: clamp(44px, 5vw, 62px);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+}
+
+.heroTitle span {
+  color: var(--candidate-blue);
+}
+
+.internationalPage .heroTitle span {
+  color: var(--candidate-blue);
+}
+
+.heroText {
+  max-width: 720px;
+  margin: 22px auto 0;
+  font-size: 18px;
+  line-height: 28px;
+}
+
+.heroActions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 32px;
+}
+
+.primaryAction,
+.secondaryAction,
+.candidatePlanAction,
+.ctaButton {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 0 26px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease,
+    color 180ms ease;
+}
+
+.page.page .primaryAction {
+  border: 1px solid var(--candidate-navy);
+  background: var(--candidate-navy);
+  color: var(--candidate-white);
+}
+
+.internationalPage.page .primaryAction {
+  border-color: var(--candidate-lime);
+  background: var(--candidate-lime);
+  color: var(--candidate-navy);
+}
+
+.page.page .secondaryAction {
+  border: 1px solid var(--candidate-blue);
+  background: transparent;
+  color: var(--candidate-blue);
+}
+
+.primaryAction:hover,
+.secondaryAction:hover,
+.candidatePlanAction:hover,
+.ctaButton:hover {
+  transform: translateY(-2px);
+}
+
+.page.page .primaryAction:hover {
+  border-color: #163f99;
+  background: #163f99;
+  color: var(--candidate-white);
+}
+
+.internationalPage.page .primaryAction:hover {
+  border-color: #cded62;
+  background: #cded62;
+  color: var(--candidate-navy);
+}
+
+.page.page .secondaryAction:hover {
+  background: rgba(219, 225, 255, 0.42);
+  color: var(--candidate-blue);
+}
+
+.heroAssurance {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin-top: 22px;
+}
+
+.heroAssurance > span {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--candidate-badge);
+  color: var(--candidate-badge-text);
+}
+
+.heroAssurance p {
+  margin: 0;
+  color: var(--candidate-muted);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.marketVisual,
+.orbit,
+.orbitOuter,
+.orbitMiddle,
+.orbitInner,
+.visualNode,
+.visualNodeOne,
+.visualNodeTwo,
+.visualNodeThree,
+.visualNodeFour,
+.visualCenter,
+.visualLegend,
+.legendPulse {
+  display: none;
+}
+
+.catalogSection,
+.plansSection {
+  padding: 72px 0;
+}
+
+.catalogSection {
+  background: var(--candidate-surface);
+}
+
+.plansSection {
+  background: var(--candidate-white);
+}
+
+.sectionHeading,
+.plansHeading {
+  display: grid;
+  max-width: 800px;
+  gap: 12px;
+  margin: 0 auto 48px;
+  text-align: center;
+}
+
+.sectionHeading > div,
+.plansHeading > div {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+}
+
+.sectionHeadingTitle,
+.plansHeading h2 {
+  color: var(--candidate-navy);
+  font-size: clamp(30px, 3vw, 40px);
+  font-weight: 600;
+  line-height: 1.22;
+  letter-spacing: -0.02em;
+}
+
+.sectionHeadingText,
+.plansHeading > p {
+  max-width: 690px;
+  margin-inline: auto;
+  font-size: 16px;
+  line-height: 25px;
+}
+
+.servicesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.serviceCard {
+  display: flex;
+  min-height: 270px;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 26px;
+  border: 1px solid var(--candidate-outline);
+  border-radius: 12px;
+  background: var(--candidate-white);
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.serviceCard:hover {
+  border-color: var(--candidate-blue);
+  box-shadow: 0 12px 30px rgba(11, 33, 71, 0.08);
+  transform: translateY(-3px);
+}
+
+.serviceTopline {
+  display: flex;
+  align-items: center;
+}
+
+.serviceIcon {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--candidate-surface-low);
+  color: var(--candidate-blue);
+  font-size: 21px;
+}
+
+.internationalPage .serviceIcon {
+  background: rgba(205, 237, 98, 0.36);
+  color: #566a00;
+}
+
+.serviceCategory {
+  margin-top: 18px;
+  color: var(--candidate-blue);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 20px;
+  text-transform: uppercase;
+}
+
+.serviceTitle {
+  margin-top: 7px;
+  color: var(--candidate-ink);
+  font-size: 23px;
+  font-weight: 600;
+  line-height: 30px;
+}
+
+.serviceDescription {
+  margin-top: 7px;
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.serviceFooter {
+  margin-top: auto;
+  padding-top: 18px;
+}
+
+.serviceLinkButton {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 6px;
+  color: var(--candidate-blue);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.serviceLinkButton svg {
+  transition: transform 180ms ease;
+}
+
+.serviceLinkButton:hover svg {
+  transform: translateX(3px);
+}
+
+.serviceCardFeatured {
+  border-color: var(--candidate-outline);
+  background: var(--candidate-white);
+}
+
+.candidatePlansGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 32px;
+}
+
+.candidatePlanCard {
+  position: relative;
+  display: flex;
+  min-height: 500px;
+  flex-direction: column;
+  padding: 32px;
+  border: 1px solid var(--candidate-outline);
+  border-radius: 12px;
+  background: var(--candidate-surface);
+}
+
+.candidatePlanPopular {
+  border: 2px solid var(--candidate-blue);
+  background: var(--candidate-white);
+  box-shadow: 0 18px 42px rgba(11, 33, 71, 0.14);
+  transform: translateY(-14px);
+}
+
+.candidatePlanTopline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.candidatePlanName {
+  color: var(--candidate-navy);
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 28px;
+}
+
+.candidatePlanBadge {
+  position: absolute;
+  top: -13px;
+  left: 50%;
+  padding: 5px 13px;
+  border-radius: 999px;
+  background: var(--candidate-blue);
+  color: var(--candidate-white);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 15px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.candidatePlanPrice {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  margin-top: 16px;
+}
+
+.candidatePlanPrice strong {
+  color: var(--candidate-navy);
+  font-size: clamp(38px, 4.2vw, 48px);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+  white-space: nowrap;
+}
+
+.candidatePlanPrice span {
+  color: var(--candidate-muted);
+  font-size: 14px;
+}
+
+.candidatePlanSummary {
+  min-height: 48px;
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.candidatePlanFeatures {
+  display: grid;
+  gap: 15px;
+  margin: 28px 0 32px;
+  padding: 0;
+  list-style: none;
+}
+
+.candidatePlanFeatures li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--candidate-ink);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.candidatePlanFeatures svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--candidate-blue);
+}
+
+.candidatePlanAction {
+  width: 100%;
+  margin-top: auto;
+  border: 1px solid var(--candidate-blue);
+  background: transparent;
+  color: var(--candidate-blue);
+}
+
+.candidatePlanPopular .candidatePlanAction {
+  border-color: var(--candidate-navy);
+  background: var(--candidate-navy);
+  color: var(--candidate-white);
+}
+
+.candidatePlanPremium .candidatePlanAction {
+  border-color: var(--candidate-lime);
+  background: var(--candidate-lime);
+  color: var(--candidate-navy);
+}
+
+.plansNote {
+  margin-top: 28px;
+  color: var(--candidate-muted);
+  font-size: 14px;
+  text-align: center;
+}
+
+.ctaSection {
+  padding: 32px 0 64px;
+  background: var(--candidate-white);
+}
+
+.ctaPanel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 42px;
+  padding: 42px 48px;
+  border-radius: 12px;
+  background: var(--candidate-navy);
+}
+
+.ctaPanel > div {
+  max-width: 720px;
+}
+
+.ctaEyebrow {
+  color: var(--candidate-lime);
+}
+
+.ctaPanel h2 {
+  margin-top: 8px;
+  color: var(--candidate-white);
+  font-size: clamp(28px, 3vw, 40px);
+  line-height: 1.2;
+}
+
+.ctaPanel p {
+  margin-top: 10px;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 15px;
+}
+
+.page.page .ctaButton {
+  flex: 0 0 auto;
+  border: 1px solid var(--candidate-lime);
+  background: var(--candidate-lime);
+  color: var(--candidate-navy);
+}
+
+.page :is(a, button):focus-visible {
+  outline: 3px solid var(--candidate-blue);
+  outline-offset: 3px;
+}
+
+.ctaPanel :is(a, button):focus-visible {
+  outline-color: var(--candidate-lime);
+}
+
+@media (max-width: 1023px) {
+  .container {
+    width: min(100% - 48px, 1280px);
+  }
+
+  .servicesGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .candidatePlansGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .candidatePlanCard:nth-child(3) {
+    width: calc(50% - 9px);
+    justify-self: center;
+    grid-column: 1 / -1;
+  }
+
+  .candidatePlanCard {
+    padding: 26px 22px;
+  }
+
+  .candidatePlanPrice {
+    display: grid;
+    gap: 2px;
+  }
+
+  .candidatePlanPrice strong {
+    font-size: 38px;
+  }
+}
+
+@media (max-width: 767px) {
+  .container {
+    width: calc(100% - 32px);
+  }
+
+  :global(.workbridgePublicRoute[data-workbridge-page='candidates']):has(.page)
+    :global(.workbridgeHeaderInner) {
+    width: calc(100% - 24px);
+    min-height: 58px;
+    padding-block: 7px;
+  }
+
+  :global(.workbridgePublicRoute[data-workbridge-page='candidates']):has(.page)
+    :global(.workbridgeHeader [class*='brandMark']) {
+    width: 144px;
+  }
+
+  :global(.workbridgePublicRoute[data-workbridge-page='candidates']):has(.page)
+    :global(.workbridgeHeader a[aria-label='EmpregoSTP']) {
+    min-height: 44px;
+  }
+
+  :global(.workbridgePublicRoute[data-workbridge-page='candidates']):has(.page)
+    :global(.workbridgeHeader [class*='mobileToggle']) {
+    width: 44px;
+    height: 44px;
+  }
+
+  .marketSwitchBar {
+    top: 0;
+  }
+
+  .marketSwitch {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 24px;
+    padding: 0 16px;
+  }
+
+  .marketSwitchLink {
+    min-height: 52px;
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  .page.page.page .hero {
+    padding: 52px 0 58px;
+  }
+
+  .page.page.page.page .hero::before {
+    background-size: 38px 38px;
+  }
+
+  .page.page.page.page .heroTitle {
+    font-size: clamp(34px, 9vw, 44px);
+    line-height: 1.1;
+  }
+
+  .heroEyebrow {
+    margin-bottom: 14px;
+    font-size: 14px;
+  }
+
+  .heroText {
+    margin-top: 16px;
+    font-size: 15px;
+    line-height: 23px;
+  }
+
+  .heroActions {
+    display: grid;
+    gap: 10px;
+    margin-top: 24px;
+  }
+
+  .primaryAction,
+  .secondaryAction {
+    width: 100%;
+  }
+
+  .catalogSection,
+  .plansSection {
+    padding: 52px 0;
+  }
+
+  .sectionHeading,
+  .plansHeading {
+    gap: 8px;
+    margin-bottom: 28px;
+  }
+
+  .sectionHeadingTitle,
+  .plansHeading h2 {
+    font-size: 28px;
+    line-height: 35px;
+  }
+
+  .sectionHeadingText,
+  .plansHeading > p {
+    font-size: 14px;
+    line-height: 22px;
+  }
+
+  .servicesGrid,
+  .candidatePlansGrid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .candidatePlansGrid .candidatePlanCard:nth-child(3) {
+    width: 100%;
+    grid-column: auto;
+  }
+
+  .serviceCard {
+    min-height: 0;
+    padding: 22px;
+  }
+
+  .serviceCategory {
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  .serviceTitle {
+    font-size: 20px;
+    line-height: 27px;
+  }
+
+  .candidatePlanCard,
+  .candidatePlanPopular {
+    min-height: 0;
+    padding: 26px 22px;
+    transform: none;
+  }
+
+  .candidatePlanBadge {
+    top: -1px;
+    right: 18px;
+    left: auto;
+    border-radius: 0 0 7px 7px;
+    transform: none;
+  }
+
+  .candidatePlanSummary {
+    min-height: 0;
+  }
+
+  .candidatePlanFeatures {
+    margin-block: 22px;
+  }
+
+  .ctaSection {
+    padding: 20px 0 44px;
+  }
+
+  .ctaPanel {
+    display: grid;
+    gap: 24px;
+    padding: 28px 24px;
+  }
+
+  .ctaPanel h2 {
+    font-size: 26px;
+  }
+
+  .ctaButton {
+    width: 100%;
+  }
+}
+
+@media (max-width: 380px) {
+  .marketSwitch {
+    gap: 18px;
+  }
+
+  .marketSwitchLink {
+    font-size: 14px;
+  }
+
+  .page.page.page.page .heroTitle {
+    font-size: 33px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page *,
+  .page *::before,
+  .page *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

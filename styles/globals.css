@@ -1,51 +1,77 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+@config '../tailwind.config.js';
+
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  src: url('/fonts/plus-jakarta-sans-latin.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+}
+
+@theme {
+  --color-canvas: #eef4f8;
+  --color-surface: #ffffff;
+  --color-ink: #102441;
+  --color-muted: #5f6874;
+  --color-brand: #064bb5;
+  --color-success: #168a55;
+  --color-warning: #a96612;
+  --color-danger: #c23d4f;
+  --ease-premium: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-premium: 240ms;
+}
 
 :root {
   color-scheme: only light;
 
   --app-bg: #ffffff;
-  --app-bg-soft: #f8fbff;
-  --app-bg-muted: #eef7ff;
+  --app-bg-soft: #f8fafb;
+  --app-bg-muted: #eef4f8;
 
   --app-surface-1: #ffffff;
-  --app-surface-2: #f7fbff;
-  --app-surface-3: #f1f7ff;
-  --app-surface-dark: #1e2b4d;
+  --app-surface-2: #f8fafb;
+  --app-surface-3: #eef4f8;
+  --app-surface-dark: #102441;
 
-  --app-border-subtle: rgba(30, 43, 77, 0.08);
-  --app-border-strong: rgba(30, 43, 77, 0.16);
-  --app-border-accent: rgba(32, 87, 215, 0.16);
+  --app-border-subtle: #e4e5e8;
+  --app-border-strong: #cdd1d7;
+  --app-border-accent: rgba(6, 75, 181, 0.32);
 
-  --app-text-primary: #1e2b4d;
-  --app-text-secondary: #46597a;
-  --app-text-muted: #607394;
-  --app-text-faint: #7788a7;
+  --app-text-primary: #102441;
+  --app-text-secondary: #383750;
+  --app-text-muted: #5f6874;
+  --app-text-faint: #9aa1ab;
   --app-text-on-dark: rgba(255, 255, 255, 0.92);
   --app-text-on-dark-muted: rgba(236, 243, 255, 0.72);
 
-  --app-brand-dark: #1e2b4d;
-  --app-brand-primary: #2057d7;
-  --app-brand-primary-hover: #1d4ed8;
-  --app-brand-secondary: #5fb8f5;
-  --app-brand-lime: #d9ff2f;
-  --app-danger: #dc6a7c;
-  --app-success: #3dbb7a;
-  --app-warning: #d9ff2f;
+  --app-brand-dark: #102441;
+  --app-brand-primary: #064bb5;
+  --app-brand-primary-hover: #0a65cc;
+  --app-brand-secondary: #69c8ff;
+  --app-brand-lime: #daff45;
+  --app-danger: #c23d4f;
+  --app-success: #168a55;
+  --app-warning: #daff45;
+  --app-primary-light: #eef4f8;
+  --app-secondary-light: #eefabf;
+  --app-gray: #767f8c;
+  --app-light-gray: #e4e5e8;
 
-  --app-shadow-sm: 0 8px 20px rgba(15, 23, 42, 0.05);
-  --app-shadow-md: 0 14px 30px rgba(15, 23, 42, 0.07);
-  --app-shadow-lg: 0 20px 42px rgba(15, 23, 42, 0.1);
-  --app-shadow-card: 0 14px 28px rgba(15, 23, 42, 0.06);
-  --app-shadow-card-hover: 0 18px 34px rgba(15, 23, 42, 0.1);
+  --app-shadow-sm: 0 2px 8px rgba(16, 36, 65, 0.06);
+  --app-shadow-md: 0 6px 18px rgba(16, 36, 65, 0.08);
+  --app-shadow-lg: 0 12px 28px rgba(16, 36, 65, 0.1);
+  --app-shadow-card: 0 2px 10px rgba(16, 36, 65, 0.06);
+  --app-shadow-card-hover: 0 6px 18px rgba(16, 36, 65, 0.1);
 
-  --app-radius-xs: 8px;
-  --app-radius-sm: 10px;
-  --app-radius-md: 14px;
-  --app-radius-lg: 18px;
-  --app-radius-xl: 24px;
-  --app-radius-2xl: 32px;
+  --app-radius-xs: 2px;
+  --app-radius-sm: 4px;
+  --app-radius-md: 4px;
+  --app-radius-lg: 6px;
+  --app-radius-xl: 8px;
+  --app-radius-2xl: 12px;
 
   --app-space-xs: 0.25rem;
   --app-space-sm: 0.5rem;
@@ -56,18 +82,20 @@
   --app-space-3xl: 4rem;
 
   --app-section-space-md: clamp(3.5rem, 6vw, 5rem);
-  --app-section-space-lg: clamp(4.5rem, 8vw, 6.5rem);
+  --app-section-space-lg: clamp(5rem, 8.333vw, 7.5rem);
   --app-page-inline: clamp(1rem, 2vw, 2rem);
-  --app-public-width: 1240px;
+  --app-public-width: 1200px;
   --app-public-width-narrow: 1120px;
 
-  --app-font-sans:
-    "Plus Jakarta Sans", Inter, system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", sans-serif;
-  --app-font-display:
-    "Space Grotesk", "Avenir Next", "Segoe UI", system-ui, sans-serif;
-  --app-transition-fast: 160ms ease;
-  --app-transition-normal: 240ms ease;
+  --font-instrument: 'Plus Jakarta Sans';
+  --font-inter: 'Plus Jakarta Sans';
+  --app-font-sans: var(--font-instrument), Arial, sans-serif;
+  --app-font-display: var(--font-instrument), Arial, sans-serif;
+  --app-font-utility: var(--font-inter), Arial, sans-serif;
+  --app-font-size-sm: max(0.875rem, 14px);
+  --app-font-size-body: 1rem;
+  --app-transition-fast: 180ms ease;
+  --app-transition-normal: 350ms ease;
 }
 
 * {
@@ -88,16 +116,9 @@ body {
   margin: 0;
   min-height: 100vh;
   font-family: var(--app-font-sans);
-  line-height: 1.6;
+  line-height: 1.5;
   color: var(--app-text-primary);
-  background:
-    radial-gradient(circle at 8% 0%, rgba(95, 184, 245, 0.12), transparent 20%),
-    radial-gradient(
-      circle at 92% 10%,
-      rgba(217, 255, 47, 0.08),
-      transparent 16%
-    ),
-    linear-gradient(180deg, #ffffff 0%, #f8fbff 60%, #eef7ff 100%);
+  background: var(--app-bg);
 }
 
 body.modal-open {
@@ -116,8 +137,10 @@ h5,
 h6 {
   margin: 0;
   color: var(--app-text-primary);
-  line-height: 1.08;
-  letter-spacing: -0.045em;
+  font-family: var(--app-font-display);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: 0;
 }
 
 p,
@@ -150,7 +173,7 @@ button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 3px solid #2057d7;
+  outline: 3px solid #064bb5;
   outline-offset: 3px;
 }
 
@@ -160,11 +183,11 @@ textarea:focus-visible {
   left: 0.85rem;
   z-index: 9999;
   padding: 0.8rem 1rem;
-  border-radius: 14px;
-  border: 1px solid rgba(30, 43, 77, 0.08);
+  border-radius: var(--app-radius-sm);
+  border: 1px solid var(--app-border-subtle);
   background: #ffffff;
   color: var(--app-text-primary);
-  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.12);
+  box-shadow: var(--app-shadow-md);
   transform: translateY(-160%);
   transition: transform var(--app-transition-fast);
 }
@@ -213,7 +236,7 @@ ol {
 }
 
 ::selection {
-  background: rgba(95, 184, 245, 0.3);
+  background: rgba(105, 200, 255, 0.42);
   color: var(--app-text-primary);
 }
 
@@ -223,16 +246,16 @@ ol {
 }
 
 ::-webkit-scrollbar-track {
-  background: #eef7ff;
+  background: #eef4f8;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(95, 184, 245, 0.72);
+  background: rgba(118, 127, 140, 0.64);
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(32, 87, 215, 0.7);
+  background: rgba(6, 75, 181, 0.78);
 }
 
 @media (max-width: 768px) {

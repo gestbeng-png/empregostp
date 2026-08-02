@@ -1,0 +1,732 @@
+.page {
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  color: var(--text-1);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.pageHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.eyebrow {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--blue);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.pageHeader h1 {
+  margin: 0;
+  color: var(--text-1);
+  font-size: 1.9rem;
+  font-weight: 850;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.pageHeader p {
+  margin: 7px 0 0;
+  color: var(--text-3);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.accountBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text-2);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.sectionNav {
+  position: sticky;
+  top: 92px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.sectionButton {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 650;
+  text-align: left;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.sectionButton svg {
+  width: 19px;
+  height: 19px;
+  flex: 0 0 auto;
+}
+
+.sectionButton:hover {
+  border-color: var(--border);
+  background: var(--surface);
+  color: var(--text-1);
+}
+
+.sectionButtonActive {
+  border-color: rgba(32, 87, 215, 0.12);
+  background: rgba(32, 87, 215, 0.09);
+  color: var(--blue);
+  box-shadow: inset -3px 0 0 var(--blue);
+}
+
+.sectionButtonDanger {
+  color: #c23d4f;
+}
+
+.sectionButtonDanger.sectionButtonActive {
+  border-color: rgba(194, 61, 79, 0.12);
+  background: rgba(194, 61, 79, 0.08);
+  color: #b52f42;
+  box-shadow: inset -3px 0 0 #c23d4f;
+}
+
+.panels {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.panel {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+
+.panelHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  padding: 22px 26px;
+  border-bottom: 1px solid var(--border);
+}
+
+.panelIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: rgba(32, 87, 215, 0.1);
+  color: var(--blue);
+  font-size: 1.1rem;
+}
+
+.panelHeader h2 {
+  margin: 1px 0 0;
+  color: var(--text-1);
+  font-size: 1.13rem;
+  font-weight: 800;
+  line-height: 1.35;
+  letter-spacing: 0;
+}
+
+.panelHeader p {
+  margin: 4px 0 0;
+  color: var(--text-3);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.passwordForm {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  padding: 24px 26px 26px;
+}
+
+.passwordForm label,
+.selectField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.passwordForm label > span,
+.selectField > span {
+  color: var(--text-2);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.passwordForm input,
+.selectField select {
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  outline: none;
+  background: var(--surface-2);
+  color: var(--text-1);
+  font: inherit;
+  font-size: 0.9rem;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.passwordForm input:focus,
+.selectField select:focus {
+  border-color: rgba(32, 87, 215, 0.55);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px rgba(32, 87, 215, 0.1);
+}
+
+.fieldWide {
+  grid-column: 1 / -1;
+  max-width: calc(50% - 9px);
+}
+
+.twoFactorRow {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 14px;
+  padding: 15px 16px;
+  border: 1px solid rgba(32, 87, 215, 0.1);
+  border-radius: 8px;
+  background: rgba(32, 87, 215, 0.055);
+}
+
+.twoFactorRow > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.twoFactorRow strong {
+  color: var(--blue);
+  font-size: 0.85rem;
+}
+
+.twoFactorRow span {
+  color: var(--text-3);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.soonBadge {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-3) !important;
+  font-size: 0.66rem !important;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.switch {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  width: 46px;
+  height: 26px;
+  cursor: pointer;
+}
+
+.switch input {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+
+.switchTrack {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 999px;
+  background: #cbd5e1;
+  transition: background 160ms ease;
+}
+
+.switchThumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.24);
+  transition: transform 160ms ease;
+}
+
+.switchOn .switchTrack {
+  background: var(--blue);
+}
+
+.switchOn .switchThumb {
+  transform: translateX(20px);
+}
+
+.switch:focus-within .switchTrack {
+  box-shadow: 0 0 0 3px rgba(32, 87, 215, 0.16);
+}
+
+.switchDisabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.primaryButton,
+.dangerButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 17px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 750;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.primaryButton {
+  justify-self: start;
+  background: var(--blue);
+  color: #ffffff;
+  box-shadow: 0 8px 18px rgba(32, 87, 215, 0.16);
+}
+
+.primaryButton:hover {
+  background: #174bc0;
+  box-shadow: 0 10px 22px rgba(32, 87, 215, 0.22);
+}
+
+.primaryButton:disabled,
+.dangerButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.preferenceList {
+  padding: 0 26px;
+}
+
+.preferenceRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 76px;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.preferenceRow:last-child {
+  border-bottom: 0;
+}
+
+.preferenceCopy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.preferenceCopy strong {
+  color: var(--text-1);
+  font-size: 0.86rem;
+}
+
+.preferenceCopy span {
+  color: var(--text-3);
+  font-size: 0.79rem;
+  line-height: 1.45;
+}
+
+.panelActions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 18px 26px;
+  border-top: 1px solid var(--border);
+}
+
+.providerNotice,
+.dangerNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  margin: 24px 26px;
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.providerNotice {
+  border: 1px solid rgba(32, 87, 215, 0.12);
+  background: rgba(32, 87, 215, 0.055);
+  color: var(--blue);
+}
+
+.providerNotice > svg,
+.dangerNotice > svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  font-size: 1.1rem;
+}
+
+.providerNotice div,
+.dangerNotice div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.providerNotice strong,
+.dangerNotice strong {
+  color: var(--text-1);
+  font-size: 0.86rem;
+}
+
+.providerNotice span,
+.dangerNotice p {
+  margin: 0;
+  color: var(--text-3);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.selectField {
+  max-width: 430px;
+  margin: 24px 26px;
+}
+
+.feedback {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 12px 14px;
+  border: 1px solid;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.feedbackSuccess {
+  border-color: rgba(22, 163, 74, 0.2);
+  background: rgba(22, 163, 74, 0.08);
+  color: #15803d;
+}
+
+.feedbackError {
+  border-color: rgba(194, 61, 79, 0.2);
+  background: rgba(194, 61, 79, 0.08);
+  color: #b52f42;
+}
+
+.emptySearch {
+  display: flex;
+  min-height: 280px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 30px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text-3);
+}
+
+.emptySearch > svg {
+  width: 28px;
+  height: 28px;
+  color: var(--blue);
+}
+
+.emptySearch h2 {
+  margin: 12px 0 5px;
+  color: var(--text-1);
+  font-size: 1rem;
+}
+
+.emptySearch p {
+  margin: 0;
+  font-size: 0.82rem;
+}
+
+.dangerPanel .panelIcon {
+  background: rgba(194, 61, 79, 0.09);
+  color: #c23d4f;
+}
+
+.dangerNotice {
+  border: 1px solid rgba(194, 61, 79, 0.16);
+  background: rgba(194, 61, 79, 0.055);
+  color: #c23d4f;
+}
+
+.dangerButton {
+  margin: 0 26px 26px;
+  border-color: rgba(194, 61, 79, 0.34);
+  background: transparent;
+  color: #b52f42;
+}
+
+.dangerButton:hover {
+  border-color: #c23d4f;
+  background: rgba(194, 61, 79, 0.07);
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .sectionNav {
+    position: static;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(132px, 1fr));
+    overflow-x: auto;
+    padding-bottom: 5px;
+  }
+
+  .sectionButton {
+    justify-content: center;
+    white-space: nowrap;
+  }
+
+  .sectionButtonActive,
+  .sectionButtonDanger.sectionButtonActive {
+    box-shadow: inset 0 -3px 0 currentColor;
+  }
+}
+
+@media (max-width: 640px) {
+  .pageHeader {
+    align-items: flex-start;
+    flex-direction: column;
+    margin-bottom: 20px;
+  }
+
+  .pageHeader h1 {
+    font-size: 1.55rem;
+  }
+
+  .accountBadge {
+    display: none;
+  }
+
+  .panelHeader,
+  .passwordForm,
+  .panelActions {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .passwordForm {
+    grid-template-columns: 1fr;
+  }
+
+  .fieldWide {
+    grid-column: auto;
+    max-width: none;
+  }
+
+  .twoFactorRow {
+    grid-column: auto;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .twoFactorRow .soonBadge {
+    display: none;
+  }
+
+  .preferenceList {
+    padding: 0 18px;
+  }
+
+  .preferenceRow {
+    gap: 14px;
+  }
+
+  .selectField,
+  .providerNotice,
+  .dangerNotice {
+    margin-left: 18px;
+    margin-right: 18px;
+  }
+
+  .dangerButton {
+    width: calc(100% - 36px);
+    margin-left: 18px;
+    margin-right: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sectionButton,
+  .switchTrack,
+  .switchThumb,
+  .primaryButton,
+  .dangerButton {
+    transition: none;
+  }
+}
+
+/* Workbridge fidelity layer. */
+.page {
+  color: #102441;
+  font-family: var(--font-instrument, "Instrument Sans"), Arial, sans-serif;
+}
+
+.pageHeader h1,
+.panelHeader h2,
+.emptySearch h2 {
+  color: #102441;
+}
+
+.pageHeader p,
+.preferenceCopy,
+.emptySearch,
+.providerNotice {
+  color: #5f6874;
+}
+
+.eyebrow {
+  color: #064bb5;
+}
+
+.panel,
+.accountBadge,
+.emptySearch,
+.providerNotice,
+.dangerNotice {
+  border-color: #e4e5e8;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.panelIcon {
+  border-radius: 4px;
+  background: #eef4f8;
+  color: #064bb5;
+}
+
+.sectionButton,
+.primaryButton,
+.dangerButton,
+.passwordForm input,
+.selectField select {
+  border-radius: 4px;
+}
+
+.sectionButtonActive {
+  border-color: #69c8ff;
+  background: #eef4f8;
+  color: #064bb5;
+  box-shadow: inset 4px 0 0 #064bb5;
+}
+
+.primaryButton {
+  border-color: #064bb5;
+  background: #064bb5;
+  color: #ffffff;
+  box-shadow: none;
+}
+
+.primaryButton:hover {
+  background: #0a65cc;
+  transform: none;
+  box-shadow: none;
+}
+
+.passwordForm input,
+.selectField select {
+  border-color: #e4e5e8;
+  background: #ffffff;
+  color: #102441;
+}
+
+.passwordForm,
+.preferenceList,
+.twoFactorRow,
+.selectField {
+  font-family: var(--font-inter, Inter), Inter, Arial, sans-serif;
+}
+
+.soonBadge,
+.accountBadge {
+  border-radius: 999px;
+}
+
+.switchTrack {
+  background: #e4e5e8;
+}
+
+.switchOn .switchTrack {
+  background: #064bb5;
+}
+
+@media (max-width: 900px) {
+  .sectionButtonActive {
+    box-shadow: inset 0 -4px 0 #064bb5;
+  }
+}

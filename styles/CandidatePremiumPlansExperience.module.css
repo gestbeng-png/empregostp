@@ -369,8 +369,8 @@
 
 .modalClose {
   flex-shrink: 0;
-  width: 34px;
-  height: 34px;
+  width: var(--dash-control-height, 44px);
+  height: var(--dash-control-height, 44px);
   border: none;
   border-radius: 10px;
   background: rgba(21, 37, 79, 0.06);
@@ -525,4 +525,138 @@
   .modalActions {
     flex-direction: column-reverse;
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wrap *,
+  .wrap *::before,
+  .wrap *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Workbridge fidelity layer. */
+.wrap {
+  color: #102441;
+  font-family: var(--font-instrument, "Instrument Sans"), Arial, sans-serif;
+}
+
+.title,
+.planName,
+.price,
+.modalTitle,
+.summaryValue,
+.summaryPrice,
+.bankRow strong {
+  color: #102441;
+}
+
+.subtitle,
+.summary,
+.pricePeriod,
+.modalSubtitle,
+.summaryLabel,
+.bankNote,
+.bankRow span,
+.pendingTexts span {
+  color: #5f6874;
+}
+
+.pendingBanner,
+.card,
+.summaryBox,
+.bankBox,
+.modal {
+  border-color: #e4e5e8;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.pendingBanner,
+.bankBox {
+  background: #eef4f8;
+}
+
+.card:hover {
+  transform: none;
+  border-color: #69c8ff;
+  box-shadow: none;
+}
+
+.cardPopular {
+  border-color: #69c8ff;
+}
+
+.cardCurrent {
+  border-color: #daff45;
+}
+
+.popularBadge {
+  background: #daff45;
+  color: #102441;
+  box-shadow: none;
+}
+
+.pendingIcon,
+.checkIcon {
+  border-radius: 4px;
+  background: #eef4f8;
+  color: #064bb5;
+}
+
+.pendingBtn,
+.subscribeBtn,
+.btnGhost,
+.btnPrimary,
+.modalClose {
+  border-radius: 4px;
+  box-shadow: none;
+}
+
+.pendingBtn,
+.subscribeBtn,
+.btnPrimary {
+  border-color: #064bb5;
+  background: #064bb5;
+  color: #ffffff;
+}
+
+.pendingBtn:hover,
+.subscribeBtn:hover:not(:disabled),
+.btnPrimary:hover:not(:disabled) {
+  background: #0a65cc;
+  transform: none;
+  box-shadow: none;
+}
+
+.subscribeBtnPopular {
+  border-color: #daff45;
+  background: #daff45;
+  color: #102441;
+}
+
+.subscribeBtnCurrent {
+  border-color: #e4e5e8;
+  background: #eef4f8;
+  color: #5f6874;
+}
+
+.features,
+.priceRow,
+.summaryBox,
+.bankBox {
+  font-family: var(--font-inter, Inter), Inter, Arial, sans-serif;
+}
+
+.overlay {
+  background: rgba(16, 36, 65, 0.68);
+  backdrop-filter: none;
+}
+
+.modal {
+  box-shadow: 0 16px 36px rgba(16, 36, 65, 0.18);
 }

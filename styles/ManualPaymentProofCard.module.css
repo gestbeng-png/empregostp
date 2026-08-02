@@ -9,6 +9,75 @@
   box-shadow: 0 16px 34px rgba(15, 23, 42, 0.08);
 }
 
+.embedded {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.embedded .header {
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border, #e2e8f0);
+}
+
+.embedded .header h3 {
+  color: var(--text-1, #17233b);
+}
+
+.embedded .header p,
+.embedded .instructionsBox p,
+.embedded .previousProof p {
+  color: var(--text-2, #475569);
+  font-size: 14px;
+}
+
+.embedded .status,
+.embedded .metaGrid span,
+.embedded .noteField span,
+.embedded .fileField span {
+  font-size: 14px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.embedded .metaGrid div,
+.embedded .instructionsBox,
+.embedded .previousProof {
+  border-color: var(--border, #e2e8f0);
+  border-radius: 8px;
+  background: var(--surface-2, #f7fbff);
+}
+
+.embedded .fileField input,
+.embedded .noteField textarea {
+  min-height: 44px;
+  border-color: var(--border-strong, #cbd5e1);
+  border-radius: 8px;
+  color: var(--text-1, #17233b);
+}
+
+.embedded .action {
+  min-height: 44px;
+  border-radius: 8px;
+  background: var(--blue, #2057d7);
+  box-shadow: none;
+  font-size: 14px;
+  transition:
+    background 200ms cubic-bezier(0.4, 0, 0.2, 1),
+    transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.embedded .action:hover:not(:disabled) {
+  background: #1949bb;
+  transform: translateY(-1px);
+}
+
+.embedded .action:active:not(:disabled) {
+  transform: translateY(0);
+}
+
 .header {
   display: flex;
   justify-content: space-between;
@@ -149,4 +218,92 @@
   .header {
     flex-direction: column;
   }
+}
+
+/* Workbridge fidelity layer. */
+.card {
+  border-color: #e4e5e8;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: none;
+  color: #102441;
+  font-family: var(--font-instrument, "Instrument Sans"), Arial, sans-serif;
+}
+
+.embedded {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.header h3,
+.metaGrid strong,
+.instructionsBox,
+.previousProof {
+  color: #102441;
+}
+
+.header p,
+.instructionsBox p,
+.previousProof p {
+  color: #5f6874;
+}
+
+.metaGrid div,
+.instructionsBox,
+.previousProof {
+  border-color: #e4e5e8;
+  border-radius: 8px;
+  background: #eef4f8;
+}
+
+.metaGrid,
+.instructionsBox,
+.previousProof,
+.status {
+  font-family: var(--font-inter, Inter), Inter, Arial, sans-serif;
+}
+
+.fileField input,
+.noteField textarea,
+.action {
+  border-radius: 4px;
+}
+
+.fileField input,
+.noteField textarea {
+  border-color: #e4e5e8;
+  background: #ffffff;
+  color: #102441;
+}
+
+.action,
+.embedded .action {
+  background: #064bb5;
+  color: #ffffff;
+  box-shadow: none;
+}
+
+.action:hover:not(:disabled),
+.embedded .action:hover:not(:disabled) {
+  background: #0a65cc;
+  transform: none;
+}
+
+.statusPending,
+.statusSubmitted {
+  border-color: #69c8ff;
+  background: #eef4f8;
+  color: #064bb5;
+}
+
+.successBox {
+  border-color: #daff45;
+  border-radius: 8px;
+  background: #eefabf;
+  color: #102441;
+}
+
+.errorBox {
+  border-radius: 8px;
 }

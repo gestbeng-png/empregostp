@@ -1,59 +1,42 @@
 .page {
+  --app-transition-fast: 200ms cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   min-height: 100vh;
   overflow: clip;
+  color: var(--app-text-primary);
+  background: #eef4f8;
 }
 
-.backdrop {
+.page::before,
+.page::after {
+  content: '';
   position: absolute;
-  inset: 0;
   pointer-events: none;
 }
 
-.orb {
-  position: absolute;
-  border-radius: 999px;
-  filter: blur(110px);
-  opacity: 0.95;
+.page::before {
+  top: 0;
+  right: 0;
+  width: clamp(90px, 16vw, 240px);
+  height: clamp(90px, 16vw, 240px);
+  background: #daff45;
 }
 
-.orbPrimary {
-  top: -140px;
-  left: -80px;
-  width: 420px;
-  height: 420px;
-  background: rgba(47, 107, 255, 0.2);
-}
-
-.orbSecondary {
-  top: 10%;
-  right: -120px;
-  width: 360px;
-  height: 360px;
-  background: rgba(95, 184, 245, 0.15);
-}
-
-.orbTertiary {
+.page::after {
   bottom: 0;
-  left: 24%;
-  width: 320px;
-  height: 320px;
-  background: rgba(217, 255, 47, 0.12);
+  left: 0;
+  width: clamp(120px, 22vw, 340px);
+  height: clamp(80px, 13vw, 200px);
+  background: #69c8ff;
 }
 
-.gridPattern {
-  position: absolute;
-  inset: 0;
-  opacity: 0.16;
-  background-image:
-    linear-gradient(rgba(148, 163, 184, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
-  background-size: 64px 64px;
-  mask-image: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.9),
-    transparent 76%
-  );
+.page :is(a, button, input, select):focus-visible {
+  outline: 3px solid #4f8ff7;
+  outline-offset: 3px;
+}
+
+.page :is(a, button):active {
+  transform: translateY(1px);
 }
 
 .main {
@@ -70,16 +53,20 @@
   width: min(1140px, 100%);
   display: grid;
   grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
-  border: 1px solid rgba(21, 37, 79, 0.08);
-  border-radius: 34px;
+  border: 1px solid #e4e5e8;
+  border-radius: var(--app-radius-md);
   overflow: hidden;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-  box-shadow: 0 28px 70px rgba(15, 23, 42, 0.12);
+  background: #ffffff;
+  box-shadow: var(--app-shadow-md);
 }
 
 .shellMinimal {
   width: min(100%, 520px);
   display: block;
+}
+
+.shellMinimalWide {
+  width: min(100%, 760px);
 }
 
 .brandPanel {
@@ -91,55 +78,36 @@
   justify-content: space-between;
   gap: 1.75rem;
   min-height: 720px;
-  background:
-    radial-gradient(
-      circle at top right,
-      rgba(95, 184, 245, 0.18),
-      transparent 34%
-    ),
-    linear-gradient(180deg, #1e2b4d 0%, #162a55 100%);
+  background: #102441;
 }
 
 .brandPanel::before {
-  content: "";
+  content: '';
   position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(140deg, rgba(255, 255, 255, 0.04), transparent 34%),
-    radial-gradient(
-      circle at bottom left,
-      rgba(255, 255, 255, 0.04),
-      transparent 34%
-    );
+  inset: auto 0 0;
+  height: 18px;
+  background: #69c8ff;
   pointer-events: none;
 }
 
 .brandPanelBlue::after,
 .brandPanelGreen::after {
-  content: "";
+  content: '';
   position: absolute;
-  inset: auto 0 0 auto;
-  width: 78%;
-  height: 52%;
+  inset: 0 0 auto auto;
+  width: 42%;
+  height: 12px;
   pointer-events: none;
-  border-radius: 999px 0 0 0;
-  opacity: 0.92;
+  border-radius: 0;
+  opacity: 1;
 }
 
 .brandPanelBlue::after {
-  background: radial-gradient(
-    circle at bottom right,
-    rgba(47, 107, 255, 0.2),
-    transparent 60%
-  );
+  background: #69c8ff;
 }
 
 .brandPanelGreen::after {
-  background: radial-gradient(
-    circle at bottom right,
-    rgba(217, 255, 47, 0.18),
-    transparent 60%
-  );
+  background: #daff45;
 }
 
 .brandLink,
@@ -165,14 +133,13 @@
   display: inline-flex;
   align-self: flex-start;
   padding: 0.5rem 0.8rem;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.82);
-  font-size: 0.78rem;
+  border-radius: 4px;
+  border: 0;
+  background: #daff45;
+  color: #102441;
+  font-size: var(--app-font-size-sm);
   font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: 0;
 }
 
 .brandCopy {
@@ -184,7 +151,8 @@
 
 .brandTitle {
   font-size: clamp(2.1rem, 5vw, 3.6rem);
-  line-height: 0.98;
+  line-height: 1.08;
+  letter-spacing: 0;
 }
 
 .brandDescription {
@@ -204,17 +172,17 @@
   display: inline-flex;
   align-items: center;
   padding: 0.72rem 0.95rem;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--app-radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: transparent;
   color: #ffffff;
-  font-size: 0.93rem;
+  font-size: max(0.93rem, 14px);
   font-weight: 700;
 }
 
 .formPanel {
   padding: clamp(1.5rem, 4vw, 3.5rem);
-  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  background: #ffffff;
 }
 
 .formPanelCompact {
@@ -223,10 +191,10 @@
   gap: 1rem;
   justify-items: center;
   padding: clamp(1.35rem, 3vw, 2rem);
-  border: 1px solid rgba(21, 37, 79, 0.08);
-  border-radius: 30px;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.1);
+  border: 1px solid #e4e5e8;
+  border-radius: var(--app-radius-md);
+  background: #ffffff;
+  box-shadow: var(--app-shadow-md);
 }
 
 .brandLinkMinimal {
@@ -244,14 +212,19 @@
   gap: 1.5rem;
 }
 
+.formPanelInnerWide {
+  width: 100%;
+}
+
 .formHeader {
   display: grid;
   gap: 0.6rem;
 }
 
-.formHeader h2 {
+.formHeader h1 {
   font-size: clamp(1.8rem, 4vw, 2.35rem);
-  line-height: 1.02;
+  line-height: 1.15;
+  letter-spacing: 0;
 }
 
 .formHeader p {
@@ -272,7 +245,7 @@
 
 .fieldLabel {
   color: var(--app-text-secondary);
-  font-size: 0.9rem;
+  font-size: var(--app-font-size-sm);
   font-weight: 700;
 }
 
@@ -280,9 +253,9 @@
   width: 100%;
   min-height: 56px;
   padding: 0.95rem 1.05rem;
-  border-radius: 18px;
-  border: 1px solid rgba(148, 163, 184, 0.14);
-  background: rgba(95, 184, 245, 0.08);
+  border-radius: var(--app-radius-sm);
+  border: 1px solid #cdd1d7;
+  background: #ffffff;
   color: var(--app-text-primary);
   transition:
     border-color var(--app-transition-fast),
@@ -292,14 +265,58 @@
 }
 
 .input:hover {
-  border-color: rgba(148, 163, 184, 0.22);
-  background: rgba(95, 184, 245, 0.1);
+  border-color: #767f8c;
+  background: #ffffff;
 }
 
 .input:focus {
-  border-color: rgba(32, 87, 215, 0.24);
+  border-color: #064bb5;
   background: #ffffff;
-  box-shadow: 0 0 0 4px rgba(95, 184, 245, 0.16);
+  box-shadow: 0 0 0 3px rgba(105, 200, 255, 0.24);
+}
+
+.passwordRules {
+  list-style: none;
+  margin: 0.15rem 0 0;
+  padding: 0.75rem 0.9rem;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(95, 184, 245, 0.06);
+  display: grid;
+  gap: 0.4rem;
+}
+
+.passwordRule {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: var(--app-font-size-sm);
+  color: var(--app-text-secondary);
+  transition: color var(--app-transition-fast);
+}
+
+.passwordRuleIcon {
+  flex: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-size: var(--app-font-size-sm);
+  font-weight: 800;
+  color: #94a3b8;
+  background: rgba(148, 163, 184, 0.14);
+}
+
+.passwordRuleMet {
+  color: #1f7a4d;
+  font-weight: 600;
+}
+
+.passwordRuleMet .passwordRuleIcon {
+  color: #ffffff;
+  background: #22a06b;
 }
 
 .error {
@@ -307,7 +324,7 @@
   align-items: flex-start;
   gap: 0.75rem;
   padding: 0.95rem 1rem;
-  border-radius: 18px;
+  border-radius: var(--app-radius-sm);
   border: 1px solid rgba(192, 57, 77, 0.18);
   background: rgba(192, 57, 77, 0.08);
   color: #a22b3d;
@@ -316,6 +333,8 @@
 
 .errorIcon {
   flex: none;
+  width: 20px;
+  height: 20px;
   font-size: 1rem;
   line-height: 1.4;
 }
@@ -324,9 +343,15 @@
 .socialButton {
   width: 100%;
   min-height: 56px;
-  border-radius: 18px;
+  border-radius: var(--app-radius-sm);
   font-size: 1rem;
   font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
   transition:
     transform var(--app-transition-fast),
     box-shadow var(--app-transition-fast),
@@ -338,8 +363,10 @@
 .primaryButton {
   border: 0;
   color: #fff;
-  background: linear-gradient(135deg, #2057d7, #5fb8f5);
-  box-shadow: 0 16px 34px rgba(32, 87, 215, 0.22);
+  background: var(--app-brand-primary);
+  box-shadow: none;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
 }
 
 .primaryButton:hover:not(:disabled),
@@ -348,7 +375,8 @@
 }
 
 .primaryButton:hover:not(:disabled) {
-  box-shadow: 0 20px 40px rgba(32, 87, 215, 0.26);
+  background: var(--app-brand-primary-hover);
+  box-shadow: none;
 }
 
 .primaryButton:disabled,
@@ -361,22 +389,16 @@
   display: flex;
   align-items: center;
   gap: 0.9rem;
-  color: var(--app-text-faint);
-  font-size: 0.82rem;
+  color: var(--app-text-secondary);
+  font-size: var(--app-font-size-sm);
   font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: 0;
 }
 
 .dividerLine {
   flex: 1;
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(148, 163, 184, 0.22),
-    transparent
-  );
+  background: #e4e5e8;
 }
 
 .socialButton {
@@ -384,8 +406,8 @@
   align-items: center;
   justify-content: center;
   gap: 0.8rem;
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  background: rgba(95, 184, 245, 0.1);
+  border: 1px solid #cdd1d7;
+  background: #eef4f8;
   color: var(--app-text-primary);
 }
 
@@ -400,6 +422,11 @@
 }
 
 .footerLink {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  padding: 0.35rem 0.4rem;
+  border-radius: var(--app-radius-xs);
   color: var(--app-brand-primary-hover);
   font-weight: 800;
 }
@@ -413,15 +440,34 @@
   gap: 0.9rem;
 }
 
+.registerOptionGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.accountTypeField {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.accountTypeLegend {
+  margin-bottom: 0.75rem;
+  color: var(--app-text-primary);
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
 .optionCard {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 0.9rem;
   align-items: center;
-  padding: 1rem 1rem 1rem 0.95rem;
-  border-radius: 20px;
-  border: 1px solid rgba(148, 163, 184, 0.14);
-  background: rgba(95, 184, 245, 0.08);
+  min-height: 116px;
+  padding: 1rem;
+  border-radius: var(--app-radius-sm);
+  border: 1px solid #cdd1d7;
+  background: #ffffff;
   transition:
     transform var(--app-transition-fast),
     border-color var(--app-transition-fast),
@@ -435,16 +481,33 @@
   border-color: rgba(148, 163, 184, 0.24);
 }
 
+.optionIcon {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--app-radius-xs);
+  background: #eef4f8;
+  color: #064bb5;
+  font-size: 1.25rem;
+}
+
+.optionCardActiveGreen .optionIcon {
+  background: #102441;
+  color: #daff45;
+}
+
 .optionCardActiveBlue {
-  border-color: rgba(47, 107, 255, 0.42);
-  background: rgba(47, 107, 255, 0.12);
-  box-shadow: 0 16px 30px rgba(47, 107, 255, 0.14);
+  border-color: #064bb5;
+  background: #eef4f8;
+  box-shadow: inset 4px 0 0 #064bb5;
 }
 
 .optionCardActiveGreen {
-  border-color: rgba(217, 255, 47, 0.42);
-  background: rgba(217, 255, 47, 0.16);
-  box-shadow: 0 16px 30px rgba(217, 255, 47, 0.14);
+  border-color: #102441;
+  background: #eefabf;
+  box-shadow: inset 4px 0 0 #daff45;
 }
 
 .optionInput {
@@ -461,6 +524,7 @@
 .optionText {
   display: grid;
   gap: 0.18rem;
+  min-width: 0;
 }
 
 .optionTitle {
@@ -471,8 +535,55 @@
 
 .optionMeta {
   color: var(--app-text-muted);
-  font-size: 0.88rem;
+  font-size: var(--app-font-size-sm);
   line-height: 1.5;
+}
+
+.accountDetails {
+  display: grid;
+  gap: 1rem;
+  padding-top: 0.25rem;
+  border-top: 1px solid #e4e5e8;
+}
+
+.accountDetailsHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding-top: 0.85rem;
+}
+
+.accountDetailsIcon {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--app-radius-xs);
+  background: #102441;
+  color: #daff45;
+  font-size: 1.1rem;
+}
+
+.accountDetailsHeader h2 {
+  color: var(--app-text-primary);
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+.accountDetailsHeader p {
+  margin-top: 0.18rem;
+  color: var(--app-text-muted);
+  font-size: var(--app-font-size-sm);
+  line-height: 1.45;
+}
+
+.registrationFieldsGrid,
+.companyFields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
 }
 
 @media (max-width: 1024px) {
@@ -487,6 +598,11 @@
   .formPanelInner {
     width: min(100%, 520px);
   }
+
+  .formPanelInnerWide {
+    width: 100%;
+  }
+
 }
 
 @media (max-width: 640px) {
@@ -495,7 +611,7 @@
   }
 
   .shell {
-    border-radius: 26px;
+    border-radius: var(--app-radius-md);
   }
 
   .brandPanel,
@@ -509,11 +625,17 @@
 
   .brandChip {
     padding: 0.64rem 0.82rem;
-    font-size: 0.86rem;
+    font-size: var(--app-font-size-sm);
   }
 
   .shellMinimal {
     width: 100%;
+  }
+
+  .registerOptionGrid,
+  .registrationFieldsGrid,
+  .companyFields {
+    grid-template-columns: 1fr;
   }
 
   .brandLinkMinimal {
@@ -523,6 +645,109 @@
   .formPanelCompact {
     gap: 0.85rem;
     padding: 1.15rem;
-    border-radius: 24px;
+    border-radius: var(--app-radius-md);
+  }
+
+}
+
+/* --- Autenticação: verificação de email, campos de empresa e recuperação --- */
+
+.info {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.95rem 1rem;
+  border-radius: var(--app-radius-sm);
+  border: 1px solid rgba(34, 139, 87, 0.18);
+  background: rgba(34, 139, 87, 0.08);
+  color: #1f7a4d;
+  font-size: 0.95rem;
+}
+
+.companyFields {
+  padding-top: 0.25rem;
+}
+
+.labelRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.forgotLink {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  padding: 0.3rem 0.4rem;
+  border-radius: var(--app-radius-xs);
+  color: var(--app-brand-primary-hover);
+  font-size: var(--app-font-size-sm);
+  font-weight: 700;
+}
+
+.linkButton {
+  align-self: center;
+  border: 0;
+  background: none;
+  color: var(--app-brand-primary-hover);
+  min-height: 44px;
+  font-size: var(--app-font-size-sm);
+  font-weight: 800;
+  cursor: pointer;
+  padding: 0.35rem 0.25rem;
+}
+
+.linkButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.verifyScreen {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  gap: 1rem;
+}
+
+.verifyState {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+}
+
+.verifyIcon {
+  width: 48px;
+  height: 48px;
+  color: var(--app-brand-primary);
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.verifyTitle {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--app-text-primary);
+}
+
+.verifyText {
+  color: var(--app-text-muted);
+  font-size: 0.98rem;
+  line-height: 1.55;
+  max-width: 42ch;
+}
+
+.verifyScreen .primaryButton {
+  margin-top: 0.4rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page *,
+  .page *::before,
+  .page *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
 }

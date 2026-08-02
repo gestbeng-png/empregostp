@@ -1,7 +1,19 @@
 .page {
+  --career-font-sm: var(--app-font-size-sm, max(0.875rem, 14px));
+  --career-font-body: var(--app-font-size-body, max(0.92rem, 14px));
+  --career-motion: 200ms cubic-bezier(0.4, 0, 0.2, 1);
   width: min(var(--app-public-width), calc(100% - 2rem));
   margin: 0 auto;
   padding: 1.25rem 0 4.5rem;
+}
+
+.page :is(a, button):focus-visible {
+  outline: 3px solid #4f8ff7;
+  outline-offset: 3px;
+}
+
+.page :is(a, button):active {
+  transform: translateY(1px);
 }
 
 .hero,
@@ -48,8 +60,8 @@
   border-radius: 999px;
   border: 1px solid rgba(95, 184, 245, 0.24);
   background: rgba(95, 184, 245, 0.12);
-  font-size: 0.78rem;
-  letter-spacing: 0.08em;
+  font-size: var(--career-font-sm);
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -67,7 +79,7 @@
   font-size: clamp(2.4rem, 5vw, 3.8rem);
   font-weight: 900;
   line-height: 1.02;
-  letter-spacing: -0.06em;
+  letter-spacing: 0;
 }
 
 .heroSubtitle {
@@ -104,7 +116,17 @@
   display: block;
   margin-top: 0.35rem;
   color: var(--app-text-secondary);
-  font-size: 0.84rem;
+  font-size: var(--career-font-sm);
+}
+
+.metricsBand {
+  padding: 1.5rem 0 0;
+}
+
+.metricsBand .heroStats {
+  display: grid;
+  margin-top: 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .section {
@@ -124,8 +146,8 @@
 }
 
 .eyebrow {
-  font-size: 0.72rem;
-  letter-spacing: 0.14em;
+  font-size: var(--career-font-sm);
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -133,7 +155,7 @@
   margin-top: 0.25rem;
   font-size: clamp(1.45rem, 2vw, 1.9rem);
   font-weight: 900;
-  letter-spacing: -0.04em;
+  letter-spacing: 0;
 }
 
 .sectionSubtitle {
@@ -175,6 +197,19 @@
   border: 1px solid var(--app-border-subtle);
   background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
   box-shadow: var(--app-shadow-card);
+  transition:
+    border-color var(--career-motion),
+    box-shadow var(--career-motion),
+    transform var(--career-motion);
+}
+
+.serviceCard:hover,
+.courseCard:hover,
+.mentorCard:hover,
+.testimonialCard:hover {
+  transform: translateY(-2px);
+  border-color: rgba(32, 87, 215, 0.18);
+  box-shadow: 0 26px 50px rgba(15, 23, 42, 0.11);
 }
 
 .popularBadge {
@@ -187,9 +222,9 @@
   background: rgba(217, 255, 47, 0.22);
   border: 1px solid rgba(217, 255, 47, 0.36);
   color: #1e2b4d;
-  font-size: 0.68rem;
+  font-size: var(--career-font-sm);
   font-weight: 900;
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -201,8 +236,28 @@
   height: 56px;
   margin-bottom: 1rem;
   border-radius: 18px;
-  background: var(--service-icon-bg);
-  color: var(--service-icon-color);
+  background: var(--career-tone-soft);
+  color: var(--career-tone);
+}
+
+.toneBlue {
+  --career-tone: #1748bc;
+  --career-tone-soft: #eaf2ff;
+}
+
+.toneSky {
+  --career-tone: #17688f;
+  --career-tone-soft: #e7f7ff;
+}
+
+.toneNavy {
+  --career-tone: #1e2b4d;
+  --career-tone-soft: #eef0f4;
+}
+
+.toneGreen {
+  --career-tone: #157347;
+  --career-tone-soft: #eaf8f1;
 }
 
 .serviceIcon svg {
@@ -213,7 +268,7 @@
 .cardTitle {
   font-size: 1.08rem;
   font-weight: 900;
-  letter-spacing: -0.03em;
+  letter-spacing: 0;
   line-height: 1.35;
 }
 
@@ -243,7 +298,7 @@
   align-items: center;
   gap: 0.55rem;
   color: var(--app-text-secondary);
-  font-size: 0.86rem;
+  font-size: var(--career-font-sm);
 }
 
 .featureIcon {
@@ -274,7 +329,7 @@
   display: block;
   margin-top: 0.2rem;
   color: var(--app-text-muted);
-  font-size: 0.78rem;
+  font-size: var(--career-font-sm);
 }
 
 .serviceButton,
@@ -288,13 +343,29 @@
   min-height: 44px;
   padding: 0.82rem 1rem;
   border-radius: 14px;
+  font-size: var(--career-font-body);
   font-weight: 800;
+  text-decoration: none;
+  transition:
+    background-color var(--career-motion),
+    border-color var(--career-motion),
+    box-shadow var(--career-motion),
+    color var(--career-motion),
+    filter var(--career-motion),
+    transform var(--career-motion);
 }
 
 .serviceButton {
   border: 0;
-  background: var(--service-button);
+  background: var(--career-tone);
   color: #ffffff;
+}
+
+.serviceButton:hover {
+  color: #ffffff;
+  filter: brightness(1.08);
+  box-shadow: 0 12px 22px
+    color-mix(in srgb, var(--career-tone) 28%, transparent);
 }
 
 .courseBadge {
@@ -304,11 +375,12 @@
   margin-bottom: 0.9rem;
   padding: 0.3rem 0.7rem;
   border-radius: 999px;
-  background: var(--course-badge-bg);
-  color: var(--course-badge-color);
-  font-size: 0.68rem;
+  border: 1px solid color-mix(in srgb, var(--career-tone) 22%, transparent);
+  background: var(--career-tone-soft);
+  color: var(--career-tone);
+  font-size: var(--career-font-sm);
   font-weight: 900;
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -324,7 +396,7 @@
   align-items: center;
   gap: 0.35rem;
   color: var(--app-text-muted);
-  font-size: 0.78rem;
+  font-size: var(--career-font-sm);
   font-weight: 600;
 }
 
@@ -332,6 +404,12 @@
   border: 1px solid rgba(95, 184, 245, 0.22);
   background: rgba(95, 184, 245, 0.14);
   color: var(--app-brand-primary);
+}
+
+.courseButton:hover {
+  border-color: rgba(32, 87, 215, 0.28);
+  background: #e8f4ff;
+  color: #1748bc;
 }
 
 .mentorCard,
@@ -361,7 +439,7 @@
 
 .mentorCompany {
   margin-top: 0.2rem;
-  font-size: 0.84rem;
+  font-size: var(--career-font-sm);
 }
 
 .mentorStats {
@@ -386,7 +464,7 @@
   display: block;
   margin-top: 0.15rem;
   color: var(--app-text-muted);
-  font-size: 0.72rem;
+  font-size: var(--career-font-sm);
 }
 
 .mentorStatus {
@@ -397,7 +475,7 @@
   margin-top: 1rem;
   padding: 0.45rem 0.9rem;
   border-radius: 999px;
-  font-size: 0.76rem;
+  font-size: var(--career-font-sm);
   font-weight: 800;
 }
 
@@ -448,7 +526,7 @@
 .ctaTitle {
   font-size: clamp(1.8rem, 3vw, 2.4rem);
   font-weight: 900;
-  letter-spacing: -0.04em;
+  letter-spacing: 0;
 }
 
 .ctaText {
@@ -471,10 +549,22 @@
   color: #ffffff;
 }
 
+.ctaPrimary:hover {
+  color: #ffffff;
+  filter: saturate(1.08) brightness(1.03);
+  box-shadow: 0 16px 26px rgba(32, 87, 215, 0.2);
+}
+
 .ctaSecondary {
   border: 1px solid rgba(30, 43, 77, 0.12);
   background: #ffffff;
   color: var(--app-text-primary);
+}
+
+.ctaSecondary:hover {
+  border-color: rgba(32, 87, 215, 0.24);
+  background: #f4f8ff;
+  color: #1748bc;
 }
 
 @media (max-width: 1100px) {
@@ -513,9 +603,306 @@
     flex-direction: column;
   }
 
+  .metricsBand .heroStats {
+    grid-template-columns: 1fr;
+  }
+
   .heroStat,
   .ctaPrimary,
   .ctaSecondary {
     width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page *,
+  .page *::before,
+  .page *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Workbridge fidelity pass ------------------------------------------------- */
+.page {
+  width: min(1200px, calc(100% - 48px));
+  padding: 5rem 0;
+  color: #383750;
+}
+
+.page.page.page,
+.page.page.page *,
+.page.page.page *::before,
+.page.page.page *::after {
+  background-image: none;
+  box-shadow: none;
+}
+
+.hero,
+.testimonialsWrap,
+.ctaBlock {
+  border-color: #e4e5e8;
+  border-radius: 8px;
+}
+
+.hero {
+  padding: clamp(2.5rem, 5vw, 5rem);
+  background: #69c8ff;
+}
+
+.heroBadge,
+.popularBadge,
+.courseBadge,
+.mentorStatus {
+  border-radius: 4px;
+}
+
+.heroBadge {
+  border-color: rgba(16, 36, 65, 0.16);
+  background: #eef4f8;
+  color: #064bb5;
+}
+
+.heroTitle,
+.heroStat strong,
+.sectionTitle,
+.cardTitle,
+.priceBlock strong,
+.coursePrice,
+.mentorStats strong,
+.testimonialName,
+.ctaTitle {
+  color: #102441;
+}
+
+.heroTitle,
+.sectionTitle,
+.ctaTitle {
+  font-weight: 600;
+}
+
+.heroSubtitle,
+.sectionSubtitle,
+.cardText,
+.mentorRole,
+.mentorCompany,
+.testimonialRole,
+.ctaText {
+  color: #383750;
+}
+
+.heroStat {
+  border-color: rgba(16, 36, 65, 0.14);
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.heroStat span,
+.priceBlock span,
+.mentorStats span {
+  color: #5f6874;
+}
+
+.section {
+  margin-top: 0;
+  padding: 5rem 0;
+}
+
+.sectionAlt,
+.testimonialsWrap {
+  background: #eef4f8;
+}
+
+.sectionHeader {
+  margin-bottom: 55px;
+}
+
+.eyebrow {
+  color: #064bb5;
+}
+
+.sectionTitle {
+  font-size: clamp(2rem, 3.4vw, 2.875rem);
+  line-height: 1.2;
+}
+
+.serviceCard,
+.courseCard,
+.mentorCard,
+.testimonialCard {
+  border-color: #e4e5e8;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.serviceCard:hover,
+.courseCard:hover,
+.mentorCard:hover,
+.testimonialCard:hover {
+  border-color: #064bb5;
+  transform: translateY(-2px);
+}
+
+.popularBadge {
+  border-color: #daff45;
+  background: #daff45;
+  color: #102441;
+}
+
+.serviceIcon {
+  border-radius: 4px;
+}
+
+.toneBlue,
+.toneSky {
+  background: #69c8ff;
+  color: #102441;
+}
+
+.toneNavy {
+  background: #102441;
+  color: #ffffff;
+}
+
+.toneGreen {
+  background: #daff45;
+  color: #102441;
+}
+
+.featureIcon {
+  color: #064bb5;
+}
+
+.serviceButton,
+.courseButton,
+.ctaPrimary,
+.ctaSecondary {
+  border-radius: 4px;
+}
+
+.serviceButton,
+.courseButton,
+.ctaPrimary {
+  border-color: #064bb5;
+  background: #064bb5;
+  color: #ffffff;
+}
+
+.serviceButton:hover,
+.courseButton:hover,
+.ctaPrimary:hover {
+  border-color: #0a65cc;
+  background: #0a65cc;
+  color: #ffffff;
+  filter: none;
+}
+
+.courseBadge {
+  border-color: #69c8ff;
+  background: #eef4f8;
+  color: #064bb5;
+}
+
+.mentorAvatar,
+.testimonialAvatar {
+  background: #102441;
+  color: #ffffff;
+}
+
+.mentorStatusAvailable {
+  border-color: #eefabf;
+  background: #eefabf;
+  color: #102441;
+}
+
+.mentorStatusUnavailable {
+  border-color: #e4e5e8;
+  background: #e4e5e8;
+  color: #383750;
+}
+
+.testimonialsWrap {
+  padding: 5rem;
+}
+
+.ctaBlock {
+  padding: clamp(2.5rem, 5vw, 5rem);
+  background: #102441;
+}
+
+.ctaBlock .ctaTitle {
+  color: #ffffff;
+}
+
+.ctaBlock .ctaText {
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.ctaPrimary {
+  border-color: #daff45;
+  background: #daff45;
+  color: #102441;
+}
+
+.ctaPrimary:hover {
+  border-color: #eefabf;
+  background: #eefabf;
+  color: #102441;
+}
+
+.ctaSecondary {
+  border-color: rgba(255, 255, 255, 0.24);
+  background: transparent;
+  color: #ffffff;
+}
+
+.ctaSecondary:hover {
+  border-color: #69c8ff;
+  background: #1e2b4d;
+  color: #ffffff;
+}
+
+@media (min-width: 1280px) {
+  .page {
+    padding-block: 7.5rem;
+  }
+
+  .section {
+    padding-block: 7.5rem;
+  }
+
+  .testimonialsWrap {
+    padding: 7.5rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .page {
+    width: min(100% - 24px, 100%);
+    padding-block: 3.75rem;
+  }
+
+  .section {
+    padding-block: 3.75rem;
+  }
+
+  .sectionHeader {
+    margin-bottom: 2rem;
+  }
+
+  .hero,
+  .testimonialsWrap,
+  .ctaBlock,
+  .serviceCard,
+  .courseCard,
+  .mentorCard,
+  .testimonialCard {
+    border-radius: 8px;
+  }
+
+  .testimonialsWrap {
+    padding: 3.75rem 1rem;
   }
 }

@@ -18,7 +18,7 @@
     linear-gradient(180deg, #ffffff 0%, #f8fbff 42%, #eef7ff 100%);
   color: #162a55;
   font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* Sidebar Styles */
@@ -37,7 +37,7 @@
 }
 
 .sidebar::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0 0 auto;
   height: 180px;
@@ -250,7 +250,7 @@
 }
 
 .navActive::before {
-  content: "";
+  content: '';
   position: absolute;
   left: 0;
   top: 50%;
@@ -2899,496 +2899,1120 @@
   grid-column: 1 / -1;
 }
 
-
 /* ============================================================
    DARK MODE (append-only, generated)
    Scoped to .dashShell[data-theme="dark"]; light mode untouched.
    ============================================================ */
-:global(.dashShell[data-theme="dark"]) .pageLayout {
+:global(.dashShell[data-theme='dark']) .pageLayout {
   background: var(--surface-2);
   border-color: var(--border);
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .sidebar {
+:global(.dashShell[data-theme='dark']) .sidebar {
   background: var(--surface-2);
 }
 
-:global(.dashShell[data-theme="dark"]) .sidebarLogo {
+:global(.dashShell[data-theme='dark']) .sidebarLogo {
   border-color: var(--border);
 }
 
-:global(.dashShell[data-theme="dark"]) .logoText {
+:global(.dashShell[data-theme='dark']) .logoText {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .sidebarProfile {
+:global(.dashShell[data-theme='dark']) .sidebarProfile {
   background: var(--surface-2);
   border-color: var(--border);
 }
 
-:global(.dashShell[data-theme="dark"]) .profileName {
+:global(.dashShell[data-theme='dark']) .profileName {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .navButton {
+:global(.dashShell[data-theme='dark']) .navButton {
   background: var(--surface);
 }
 
-:global(.dashShell[data-theme="dark"]) .navButton:hover {
+:global(.dashShell[data-theme='dark']) .navButton:hover {
   background: var(--surface-2);
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .navActive {
+:global(.dashShell[data-theme='dark']) .navActive {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .sidebarFooter {
+:global(.dashShell[data-theme='dark']) .sidebarFooter {
   border-color: var(--border);
 }
 
-:global(.dashShell[data-theme="dark"]) .sidebarPlanCard {
+:global(.dashShell[data-theme='dark']) .sidebarPlanCard {
   background: var(--surface-2);
 }
 
-:global(.dashShell[data-theme="dark"]) .sidebarPlanCardIcon {
+:global(.dashShell[data-theme='dark']) .sidebarPlanCardIcon {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .sidebarPlanCardTitle {
+:global(.dashShell[data-theme='dark']) .sidebarPlanCardTitle {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .mainContent {
+:global(.dashShell[data-theme='dark']) .mainContent {
   background: var(--surface-2);
 }
 
-:global(.dashShell[data-theme="dark"]) .topBar {
-  background: var(--surface);
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .pageTitle {
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .searchInput {
-  background: var(--surface-2);
-  border-color: var(--border);
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .searchInput:focus {
-  background: var(--surface);
-}
-
-:global(.dashShell[data-theme="dark"]) .iconButton {
-  background: var(--surface-2);
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .iconButton:hover {
-  background: var(--surface);
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .notificationsPopover {
-  background: var(--surface-2);
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .notificationsHeader {
-  border-color: var(--border);
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .notificationItem {
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .notificationItem:hover {
-  background: var(--surface-2);
-}
-
-:global(.dashShell[data-theme="dark"]) .notificationIcon {
-  border-color: var(--border);
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .notificationTitle {
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .sectionBlock {
-  background: var(--surface-2);
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .statCard {
-  background: var(--surface-2);
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .statValue {
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .chartCard,
-:global(.dashShell[data-theme="dark"]) .tipsCard {
-  background: var(--surface-2);
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .chartTitle span,
-:global(.dashShell[data-theme="dark"]) .tipsHeader span {
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .tipItem {
-  background: var(--surface-2);
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .tipItem:hover {
-  background: var(--surface);
-}
-
-:global(.dashShell[data-theme="dark"]) .tipItem h4 {
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .messagesList {
-  background: var(--surface-2);
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .messageItem {
-  background: var(--surface-2);
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .messageItem:hover {
-  background: var(--surface);
-}
-
-:global(.dashShell[data-theme="dark"]) .messageBadge {
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .messageBody strong {
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .messageDetail {
-  background: var(--surface-2);
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .messageDetailHeader {
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .messageDetailHeader h3 {
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .messageBubble {
-  background: var(--surface-2);
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .messageBubble span,
-:global(.dashShell[data-theme="dark"]) .messageBubbleOwn span {
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .messageFooter {
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .messageTextInput {
-  background: var(--surface);
-  border-color: var(--border);
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .messageSendBtn {
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .sectionHeading {
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .sectionHeading h2 {
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .jobCard {
-  background: var(--surface-2);
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .jobCard:hover {
-  background: var(--surface-2);
-}
-
-:global(.dashShell[data-theme="dark"]) .jobTitle {
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .jobStats {
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .jobStatValue {
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .candidatesOverview {
-  background: var(--surface-2);
-}
-
-:global(.dashShell[data-theme="dark"]) .candidatesOverviewTitle {
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .candidatesSummaryCard {
+:global(.dashShell[data-theme='dark']) .topBar {
   background: var(--surface);
   border-color: var(--border);
 }
 
-:global(.dashShell[data-theme="dark"]) .candidatesSummaryCard strong {
+:global(.dashShell[data-theme='dark']) .pageTitle {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .talentCard {
+:global(.dashShell[data-theme='dark']) .searchInput {
   background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .talentCard:hover {
+:global(.dashShell[data-theme='dark']) .searchInput:focus {
   background: var(--surface);
 }
 
-:global(.dashShell[data-theme="dark"]) .talentCard h4 {
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .talentStatusMuted {
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .talentSkillMuted {
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .analyticsCard {
+:global(.dashShell[data-theme='dark']) .iconButton {
   background: var(--surface-2);
   border-color: var(--border);
 }
 
-:global(.dashShell[data-theme="dark"]) .analyticsCard:hover {
-  background: var(--surface);
-}
-
-:global(.dashShell[data-theme="dark"]) .analyticsValue {
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .analyticsChartCard {
-  background: var(--surface-2);
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .analyticsChartHeader h3 {
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .analyticsSourceName {
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .analyticsSourceValue {
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .analyticsTableCard {
-  background: var(--surface-2);
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .analyticsTableHeader h3 {
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .analyticsTableHead {
-  background: var(--surface);
-}
-
-:global(.dashShell[data-theme="dark"]) .analyticsTableRow {
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .analyticsTableRow:hover {
-  background: var(--surface-2);
-}
-
-:global(.dashShell[data-theme="dark"]) .analyticsTableTitle {
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .analyticsTableValue {
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .analyticsQuickStat {
-  background: var(--surface-2);
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .analyticsQuickValue {
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .profileSection {
-  background: var(--surface-2);
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .profileHeaderRow h2 {
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .profileSummary {
-  background: var(--surface-2);
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .profileStat {
-  background: var(--surface-2);
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .profileStat strong {
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .emptyState {
-  background: var(--surface-2);
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .emptyState h3 {
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .modalCard {
-  background: var(--surface-2);
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .modalHeader h3 {
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .modalCloseButton {
-  background: var(--surface);
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .modalField span {
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .modalField input,
-:global(.dashShell[data-theme="dark"]) .modalField select,
-:global(.dashShell[data-theme="dark"]) .modalField textarea {
-  background: var(--surface-2);
-  border-color: var(--border);
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .filterTabs {
-  background: var(--surface);
-}
-
-:global(.dashShell[data-theme="dark"]) .filterTab:hover {
+:global(.dashShell[data-theme='dark']) .iconButton:hover {
   background: var(--surface);
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .applicationCard {
+:global(.dashShell[data-theme='dark']) .notificationsPopover {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .notificationsHeader {
+  border-color: var(--border);
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .notificationItem {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .notificationItem:hover {
+  background: var(--surface-2);
+}
+
+:global(.dashShell[data-theme='dark']) .notificationIcon {
+  border-color: var(--border);
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .notificationTitle {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .sectionBlock {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .statCard {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .statValue {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .chartCard,
+:global(.dashShell[data-theme='dark']) .tipsCard {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .chartTitle span,
+:global(.dashShell[data-theme='dark']) .tipsHeader span {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .tipItem {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .tipItem:hover {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme='dark']) .tipItem h4 {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .messagesList {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .messageItem {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .messageItem:hover {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme='dark']) .messageBadge {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .messageBody strong {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .messageDetail {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .messageDetailHeader {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .messageDetailHeader h3 {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .messageBubble {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .messageBubble span,
+:global(.dashShell[data-theme='dark']) .messageBubbleOwn span {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .messageFooter {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .messageTextInput {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .messageSendBtn {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .sectionHeading {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .sectionHeading h2 {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .jobCard {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .jobCard:hover {
+  background: var(--surface-2);
+}
+
+:global(.dashShell[data-theme='dark']) .jobTitle {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .jobStats {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .jobStatValue {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .candidatesOverview {
+  background: var(--surface-2);
+}
+
+:global(.dashShell[data-theme='dark']) .candidatesOverviewTitle {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .candidatesSummaryCard {
   background: var(--surface);
   border-color: var(--border);
 }
 
-:global(.dashShell[data-theme="dark"]) .applicationCard:hover {
+:global(.dashShell[data-theme='dark']) .candidatesSummaryCard strong {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .talentCard {
+  background: var(--surface-2);
+}
+
+:global(.dashShell[data-theme='dark']) .talentCard:hover {
   background: var(--surface);
 }
 
-:global(.dashShell[data-theme="dark"]) .applicationTitle {
+:global(.dashShell[data-theme='dark']) .talentCard h4 {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .applicationBadgeNeutral {
+:global(.dashShell[data-theme='dark']) .talentStatusMuted {
   border-color: var(--border);
 }
 
-:global(.dashShell[data-theme="dark"]) .applicationInsightBox {
+:global(.dashShell[data-theme='dark']) .talentSkillMuted {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .analyticsCard {
   background: var(--surface-2);
   border-color: var(--border);
 }
 
-:global(.dashShell[data-theme="dark"]) .applicationInsightBox strong {
+:global(.dashShell[data-theme='dark']) .analyticsCard:hover {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme='dark']) .analyticsValue {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .applicationActions {
+:global(.dashShell[data-theme='dark']) .analyticsChartCard {
+  background: var(--surface-2);
   border-color: var(--border);
 }
 
-:global(.dashShell[data-theme="dark"]) .applicationBtnOutline {
+:global(.dashShell[data-theme='dark']) .analyticsChartHeader h3 {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .analyticsSourceName {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .analyticsSourceValue {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .analyticsTableCard {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .analyticsTableHeader h3 {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .analyticsTableHead {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme='dark']) .analyticsTableRow {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .analyticsTableRow:hover {
+  background: var(--surface-2);
+}
+
+:global(.dashShell[data-theme='dark']) .analyticsTableTitle {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .analyticsTableValue {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .analyticsQuickStat {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .analyticsQuickValue {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .profileSection {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .profileHeaderRow h2 {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .profileSummary {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .profileStat {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .profileStat strong {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .emptyState {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .emptyState h3 {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .modalCard {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .modalHeader h3 {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .modalCloseButton {
   background: var(--surface);
   border-color: var(--border);
 }
 
-:global(.dashShell[data-theme="dark"]) .applicationBtnOutline:hover {
-  background: var(--surface-2);
+:global(.dashShell[data-theme='dark']) .modalField span {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .applicationStatusActions {
+:global(.dashShell[data-theme='dark']) .modalField input,
+:global(.dashShell[data-theme='dark']) .modalField select,
+:global(.dashShell[data-theme='dark']) .modalField textarea {
+  background: var(--surface-2);
   border-color: var(--border);
+  color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .statusBtn {
+:global(.dashShell[data-theme='dark']) .filterTabs {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme='dark']) .filterTab:hover {
+  background: var(--surface);
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .applicationCard {
   background: var(--surface);
   border-color: var(--border);
 }
 
-:global(.dashShell[data-theme="dark"]) .statusBtn:hover:not(:disabled) {
-  background: var(--surface-2);
+:global(.dashShell[data-theme='dark']) .applicationCard:hover {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme='dark']) .applicationTitle {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .summaryCard {
+:global(.dashShell[data-theme='dark']) .applicationBadgeNeutral {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .applicationInsightBox {
   background: var(--surface-2);
   border-color: var(--border);
 }
 
-:global(.dashShell[data-theme="dark"]) .summaryCard:hover {
+:global(.dashShell[data-theme='dark']) .applicationInsightBox strong {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .applicationActions {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .applicationBtnOutline {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .applicationBtnOutline:hover {
+  background: var(--surface-2);
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .applicationStatusActions {
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .statusBtn {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .statusBtn:hover:not(:disabled) {
+  background: var(--surface-2);
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .summaryCard {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .summaryCard:hover {
   background: var(--surface-2);
 }
 
-:global(.dashShell[data-theme="dark"]) .summaryValue {
+:global(.dashShell[data-theme='dark']) .summaryValue {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .talentAvatarFallback {
+:global(.dashShell[data-theme='dark']) .talentAvatarFallback {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .sectionNoteWarning {
+:global(.dashShell[data-theme='dark']) .sectionNoteWarning {
   color: var(--text-1);
+}
+
+/* Company workspace cohesion pass: shared token geometry, calm surfaces and
+   consistent control density across every tab rendered by this page. */
+.sectionBlock,
+.chartCard,
+.tipsCard,
+.jobCard,
+.talentCard,
+.applicationCard,
+.analyticsCard,
+.analyticsChartCard,
+.analyticsTableCard,
+.analyticsQuickStat,
+.profileSection,
+.profileSummary,
+.profileStat,
+.summaryCard,
+.messagesList,
+.messageDetail,
+.modalCard,
+.emptyState {
+  border-color: var(--border, #dfe7f1);
+  border-radius: var(--dash-radius, 10px);
+  background: var(--surface, #fff);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(15, 23, 42, 0.04));
+}
+
+.sectionBlock {
+  padding: clamp(16px, 2.5vw, 22px);
+}
+
+.sectionHeading,
+.analyticsCardHeader,
+.analyticsChartHeader,
+.analyticsTableHeader,
+.profileHeaderRow,
+.messageDetailHeader,
+.modalHeader {
+  border-color: var(--border, #dfe7f1);
+}
+
+.jobCard,
+.talentCard,
+.applicationCard,
+.analyticsCard,
+.summaryCard,
+.profileStat {
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.jobCard:hover,
+.talentCard:hover,
+.applicationCard:hover,
+.analyticsCard:hover,
+.summaryCard:hover {
+  border-color: rgba(32, 87, 215, 0.24);
+  box-shadow: var(--shadow-md, 0 8px 22px rgba(15, 23, 42, 0.07));
+  transform: translateY(-1px);
+}
+
+.jobStats,
+.applicationActions,
+.applicationStatusActions,
+.messageFooter {
+  border-color: var(--border, #dfe7f1);
+}
+
+.filterTabs {
+  padding: 4px;
+  border: 1px solid var(--border, #dfe7f1);
+  border-radius: 10px;
+  background: var(--surface-2, #f7fbff);
+}
+
+.filterTab,
+.applicationBtn,
+.statusBtn,
+.talentAction,
+.actionLink,
+.messageSendBtn,
+.modalCloseButton {
+  min-height: var(--dash-control-height, 44px);
+  border-radius: var(--dash-radius-sm, 8px);
+}
+
+.messageTextInput,
+.modalField input,
+.modalField select,
+.modalField textarea,
+.searchInput {
+  min-height: 44px;
+  border-color: var(--border, #dfe7f1);
+  border-radius: var(--dash-radius, 10px);
+  background: var(--surface, #fff);
+  color: var(--text-1, #17233b);
+}
+
+.messagesLayout {
+  min-height: min(660px, calc(100vh - 190px));
+  border-radius: var(--dash-radius, 10px);
+}
+
+.messageItem,
+.messageBubble,
+.applicationInsightBox,
+.talentSkillMuted,
+.summaryCard,
+.analyticsQuickStat {
+  border-radius: var(--dash-radius-sm, 8px);
+}
+
+.talentAvatar,
+.talentAvatarFallback,
+.messageAvatarWrapper,
+.messageAvatarInitials {
+  border-radius: var(--dash-radius, 10px);
+}
+
+.notificationsPopover {
+  border-radius: var(--dash-radius, 10px);
+  box-shadow: var(--shadow-lg, 0 16px 36px rgba(15, 23, 42, 0.1));
+}
+
+.modalOverlay {
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.54);
+  backdrop-filter: blur(5px);
+}
+
+.modalCard {
+  width: min(100%, 660px);
+  max-height: min(88vh, 760px);
+  overflow-y: auto;
+}
+
+@media (max-width: 720px) {
+  .sectionBlock {
+    padding: 14px;
+  }
+
+  .messagesLayout {
+    min-height: 620px;
+  }
+
+  .analyticsTableCard {
+    overflow-x: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jobCard,
+  .talentCard,
+  .applicationCard,
+  .analyticsCard,
+  .summaryCard,
+  .profileStat {
+    transition: none;
+  }
+}
+
+/* Serviço RH: formulário e acompanhamento partilham uma grelha estável sem
+   estilos inline, mantendo o comportamento existente da API. */
+.hrFeedback {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  border: 1px solid;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.hrFeedbackSuccess {
+  border-color: rgba(22, 138, 85, 0.28);
+  background: rgba(22, 138, 85, 0.08);
+  color: #147648;
+}
+
+.hrFeedbackError {
+  border-color: rgba(194, 61, 79, 0.28);
+  background: rgba(194, 61, 79, 0.08);
+  color: #a52f42;
+}
+
+.hrGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.hrPanel {
+  min-width: 0;
+  margin: 0;
+}
+
+.hrDocumentsFieldset {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.hrDocumentsFieldset legend {
+  margin-bottom: 2px;
+  color: var(--text-1, #17233b);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.hrFieldHint {
+  color: var(--text-3, #64748b);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.hrDocumentsList {
+  display: grid;
+  gap: 8px;
+}
+
+.hrDocumentRow {
+  display: grid;
+  grid-template-columns: minmax(140px, 0.8fr) minmax(180px, 1.4fr) 44px;
+  gap: 8px;
+  align-items: center;
+}
+
+.hrRequest {
+  display: block !important;
+  min-width: 0;
+}
+
+.hrRequestHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.hrRequestDescription,
+.hrResponseText {
+  margin: 10px 0 0;
+  color: var(--text-2, #475569);
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+.hrResponseText {
+  margin-top: 6px;
+}
+
+.hrDocumentLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+  margin-top: 10px;
+}
+
+.hrDocumentLinks a {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.hrResponse {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 8px;
+  background: var(--surface-2, #f7fbff);
+}
+
+.hrLoading {
+  padding: 12px 0;
+  color: var(--text-3, #64748b);
+  font-size: 14px;
+}
+
+@media (max-width: 1040px) {
+  .hrGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .hrDocumentRow {
+    grid-template-columns: 1fr 44px;
+  }
+
+  .hrDocumentRow input:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .hrRequestHeader {
+    flex-direction: column;
+  }
+}
+
+/* Workbridge fidelity layer: flat employer workspace with exact brand tokens. */
+.pageLayout {
+  background: #eef4f8;
+  color: #102441;
+  font-family: var(--font-instrument, "Instrument Sans"), Arial, sans-serif;
+}
+
+.pageLayout::before,
+.sidebar::before {
+  display: none;
+}
+
+.sidebar {
+  border-color: #1e2b4d;
+  background: #102441;
+  box-shadow: none;
+}
+
+.sidebarLogo,
+.sidebarDivider,
+.sidebarFooter {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.logoIcon,
+.profileAvatar,
+.messageAvatarInitials,
+.talentAvatarFallback {
+  border-radius: 4px;
+  background: #064bb5;
+}
+
+.logoText,
+.sidebar .profileName,
+.sidebar .navActive,
+.sidebar .navActive .navIcon,
+.sidebar .navActive .navLabel {
+  color: #ffffff;
+}
+
+.sidebarProfile,
+.sidebarPlanCard {
+  border-color: rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  background: #1e2b4d;
+  box-shadow: none;
+}
+
+.navSection,
+.sidebar .navButton,
+.sidebar .navLabel,
+.sidebarPlanCardDesc {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.navButton {
+  border-radius: 4px;
+  background: transparent;
+}
+
+.navButton:hover,
+.navActive {
+  background: #1e2b4d;
+  color: #ffffff;
+  transform: none;
+}
+
+.navActive::before {
+  background: #daff45;
+}
+
+.navBadge,
+.planBadgeSmall {
+  background: #daff45;
+  color: #102441;
+}
+
+.upgradeButton,
+.createJobBtn {
+  border-radius: 4px;
+  background: #daff45;
+  color: #102441;
+  box-shadow: none;
+}
+
+.mainContent,
+.contentArea {
+  background: #eef4f8;
+}
+
+.topBar {
+  border-color: #e4e5e8;
+  background: #ffffff;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.pageTitle,
+.sectionHeading,
+.chartTitle,
+.jobTitle,
+.talentNameRow,
+.analyticsTitle,
+.analyticsTableTitle,
+.profileName,
+.modalHeader,
+.sidebarPlanCardTitle,
+.candidatesOverviewTitle,
+.candidatesOverviewHeader {
+  color: #102441;
+  font-family: var(--font-instrument, "Instrument Sans"), Arial, sans-serif;
+}
+
+.pageDate,
+.sectionNote,
+.analyticsSubtitle,
+.candidatesOverviewText,
+.talentSubtitle,
+.applicationMeta,
+.applicationDate,
+.hrFieldHint,
+.hrRequestDescription,
+.hrResponseText {
+  color: #5f6874;
+}
+
+.sectionBlock,
+.statCard,
+.chartCard,
+.tipsCard,
+.jobCard,
+.talentCard,
+.applicationCard,
+.analyticsCard,
+.analyticsChartCard,
+.analyticsTableCard,
+.analyticsQuickStat,
+.candidatesSummaryCard,
+.summaryCard,
+.profileSection,
+.profileStat,
+.emptyState,
+.hrPanel,
+.hrRequest,
+.notificationsPopover,
+.modalCard {
+  border-color: #e4e5e8;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.jobCard:hover,
+.talentCard:hover,
+.applicationCard:hover,
+.analyticsCard:hover,
+.summaryCard:hover,
+.profileStat:hover {
+  transform: none;
+  border-color: #69c8ff;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.statIcon,
+.statIconAccent,
+.analyticsCardIcon,
+.analyticsCardIconAccent,
+.analyticsQuickIcon,
+.emptyIcon,
+.notificationIcon {
+  border-radius: 4px;
+  background: #eef4f8;
+  color: #064bb5;
+}
+
+.candidatesOverview {
+  border: 1px solid #102441;
+  border-radius: 8px;
+  background: #102441;
+  box-shadow: none;
+}
+
+.candidatesOverview .candidatesOverviewTitle,
+.candidatesOverview .candidatesOverviewHeader {
+  color: #ffffff;
+}
+
+.candidatesOverview .candidatesOverviewText,
+.candidatesOverviewEyebrow {
+  color: #69c8ff;
+}
+
+.filterTabs {
+  border-color: #e4e5e8;
+  border-radius: 4px;
+  background: #ffffff;
+}
+
+.filterTab,
+.applicationBtn,
+.statusBtn,
+.talentAction,
+.actionLink,
+.messageSendBtn,
+.modalCloseButton,
+.createJobBtn,
+.iconButton,
+.logoutBtn {
+  border-radius: 4px;
+  box-shadow: none;
+}
+
+.filterTabActive,
+.applicationBtn:not(.applicationBtnOutline),
+.statusBtnActive,
+.messageSendBtn {
+  border-color: #064bb5;
+  background: #064bb5;
+  color: #ffffff;
+}
+
+.filterTabActive:hover,
+.applicationBtn:not(.applicationBtnOutline):hover,
+.statusBtnActive:hover,
+.messageSendBtn:hover {
+  background: #0a65cc;
+  transform: none;
+  box-shadow: none;
+}
+
+.messageTextInput,
+.modalField input,
+.modalField select,
+.modalField textarea,
+.searchInput,
+.hrDocumentRow input,
+.hrDocumentRow select,
+.hrDocumentRow textarea {
+  border-color: #e4e5e8;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #102441;
+}
+
+.messagesLayout,
+.messagesList,
+.messageDetail,
+.messageThread,
+.messageItem,
+.messageBubble,
+.applicationInsightBox,
+.interviewSummaryBox,
+.analyticsSourceProgress,
+.hrResponse {
+  border-color: #e4e5e8;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.messageBubbleOwn {
+  background: #064bb5;
+  color: #ffffff;
+}
+
+.applicationBadgePill,
+.applicationStatus,
+.applicationBadgeEarly,
+.applicationBadgeHighlight,
+.applicationBadgeNeutral,
+.applicationBadgePremium,
+.applicationBadgePriority,
+.jobBadge,
+.jobStatus,
+.talentStatus,
+.talentSkillMuted,
+.talentVerifiedSeal,
+.analyticsTableStatus,
+.planBadgeSmall {
+  border-radius: 999px;
+}
+
+.applicationBadgeHighlight,
+.applicationBadgePremium,
+.jobStatusActive,
+.talentStatusComplete,
+.talentStatusHighlight,
+.interviewStatusHighlight {
+  border-color: #daff45;
+  background: #eefabf;
+  color: #102441;
+}
+
+.analyticsTable,
+.analyticsTableHead,
+.analyticsTableRow,
+.analyticsTableValue,
+.applicationMeta,
+.jobStats,
+.profileStatsGrid,
+.summaryValue {
+  font-family: var(--font-inter, Inter), Inter, Arial, sans-serif;
+}
+
+.analyticsTableHead {
+  background: #eef4f8;
+}
+
+.modalOverlay {
+  background: rgba(16, 36, 65, 0.68);
+  backdrop-filter: none;
+}
+
+.modalCard {
+  box-shadow: 0 16px 36px rgba(16, 36, 65, 0.18);
 }

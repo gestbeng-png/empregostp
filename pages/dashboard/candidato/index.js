@@ -3144,7 +3144,10 @@ const CandidateDashboard = () => {
                           Resumo Profissional
                         </span>
                       </div>
+                      {/* O título está no cabeçalho do cartão, não num
+                          <label>, pelo que o campo ficava sem nome acessível. */}
                       <textarea
+                        aria-label="Resumo profissional"
                         className={ps.textarea}
                         value={profileForm.bio}
                         onChange={(e) =>
@@ -3330,6 +3333,7 @@ const CandidateDashboard = () => {
                             Hard skills (separadas por vírgula)
                           </span>
                           <input
+                            aria-label="Hard skills, separadas por vírgula"
                             className={ps.input}
                             value={profileForm.skills}
                             onChange={(e) =>
@@ -3351,6 +3355,7 @@ const CandidateDashboard = () => {
                             Soft skills (separadas por vírgula)
                           </span>
                           <input
+                            aria-label="Soft skills, separadas por vírgula"
                             className={ps.input}
                             value={profileForm.skillsSoft}
                             onChange={(e) =>
@@ -3429,6 +3434,7 @@ const CandidateDashboard = () => {
                         Linha por linha: Curso; Instituição; Ano
                       </p>
                       <textarea
+                        aria-label="Educação"
                         className={ps.textarea}
                         value={profileForm.education}
                         onChange={(e) =>
@@ -3449,6 +3455,7 @@ const CandidateDashboard = () => {
                       </div>
                       <p className={ps.hint}>Linha por linha: Idioma; Nível</p>
                       <textarea
+                        aria-label="Idiomas"
                         className={ps.textarea}
                         value={profileForm.languages}
                         onChange={(e) =>

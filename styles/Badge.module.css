@@ -14,21 +14,21 @@
 }
 
 .badgeOpen {
-  background: rgba(6, 182, 212, 0.12);
-  color: #67e8f9;
-  border-color: rgba(6, 182, 212, 0.25);
+  background: #eefabf;
+  color: #102441;
+  border-color: #daff45;
 }
 
 .badgeUrgent {
-  background: rgba(244, 63, 94, 0.12);
-  color: #fda4af;
-  border-color: rgba(244, 63, 94, 0.25);
+  background: #fff1f2;
+  color: #c23d4f;
+  border-color: rgba(194, 61, 79, 0.3);
 }
 
 .badgeClosed {
-  background: rgba(148, 163, 184, 0.12);
-  color: #94a3b8;
-  border-color: rgba(148, 163, 184, 0.25);
+  background: #eef4f8;
+  color: #5f6874;
+  border-color: #e4e5e8;
 }
 
 .dot {
@@ -39,15 +39,15 @@
 }
 
 .dotOpen {
-  background: #22d3ee;
+  background: #064bb5;
 }
 
 .dotUrgent {
-  background: #fb7185;
+  background: #c23d4f;
 }
 
 .dotClosed {
-  background: #94a3b8;
+  background: #767f8c;
   animation: none;
 }
 

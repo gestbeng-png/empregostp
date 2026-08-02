@@ -306,3 +306,88 @@
     font-size: 1.4rem;
   }
 }
+
+/* Workbridge fidelity layer. */
+.wrap {
+  color: #102441;
+  font-family: var(--font-instrument, "Instrument Sans"), Arial, sans-serif;
+}
+
+.hero {
+  border: 1px solid #102441;
+  border-radius: 8px;
+  background: #102441;
+  box-shadow: none;
+}
+
+.heroBadge {
+  border-color: #daff45;
+  background: #daff45;
+  color: #102441;
+}
+
+.benefit {
+  border-color: rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  background: #1e2b4d;
+}
+
+.card,
+.statusCard {
+  border-color: #e4e5e8;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.cardTitle,
+.statusBody h3 {
+  color: #102441;
+}
+
+.cardSub,
+.statusBody p,
+.privacy,
+.hint {
+  color: #5f6874;
+}
+
+.input,
+.textarea,
+.submitBtn {
+  border-radius: 4px;
+}
+
+.input,
+.textarea {
+  border-color: #e4e5e8;
+  background: #ffffff;
+  color: #102441;
+}
+
+.submitBtn {
+  background: #064bb5;
+  color: #ffffff;
+  box-shadow: none;
+}
+
+.submitBtn:hover:not(:disabled) {
+  background: #0a65cc;
+  transform: none;
+}
+
+.form,
+.statusCard {
+  font-family: var(--font-inter, Inter), Inter, Arial, sans-serif;
+}
+
+.badge,
+.heroBadge {
+  border-radius: 999px;
+}
+
+.badgeApproved,
+.badgeContacted {
+  background: #eefabf;
+  color: #102441;
+}

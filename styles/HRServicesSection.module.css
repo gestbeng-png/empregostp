@@ -167,7 +167,9 @@
   color: var(--text-1, #162a55);
   font-size: 0.92rem;
   font-family: inherit;
-  transition: border-color 0.16s ease, box-shadow 0.16s ease;
+  transition:
+    border-color 0.16s ease,
+    box-shadow 0.16s ease;
 }
 
 .input:focus,
@@ -221,7 +223,9 @@
   height: 38px;
   cursor: pointer;
   font-size: 0.85rem;
-  transition: background 0.14s ease, color 0.14s ease;
+  transition:
+    background 0.14s ease,
+    color 0.14s ease;
 }
 
 .docRemoveBtn:hover {
@@ -268,7 +272,9 @@
   color: #fff;
   background: linear-gradient(135deg, #2057d7, #4f8ef7);
   box-shadow: 0 10px 22px rgba(32, 87, 215, 0.26);
-  transition: transform 0.14s ease, opacity 0.14s ease;
+  transition:
+    transform 0.14s ease,
+    opacity 0.14s ease;
 }
 
 .submitBtn:hover:not(:disabled) {
@@ -508,4 +514,156 @@
   .docLabelInput {
     grid-column: 1 / -1;
   }
+}
+
+/* Workbridge fidelity layer. */
+.wrap {
+  color: #102441;
+  font-family: var(--font-instrument, 'Instrument Sans'), Arial, sans-serif;
+}
+
+.hero {
+  border: 1px solid #102441;
+  border-radius: 8px;
+  background: #102441;
+  box-shadow: none;
+}
+
+.heroBadge {
+  border-color: #daff45;
+  background: #daff45;
+  color: #102441;
+}
+
+.benefit {
+  border-color: rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  background: #1e2b4d;
+}
+
+.newRequestBar,
+.card,
+.requestCard,
+.emptyState {
+  border-color: #e4e5e8;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.cardTitle,
+.barTitle,
+.requestTitle,
+.responseTitle,
+.docsBlockTitle {
+  color: #102441;
+}
+
+.cardSub,
+.barSub,
+.requestDesc,
+.responseText,
+.requestDate,
+.hint,
+.docHint {
+  color: #5f6874;
+}
+
+.input,
+.textarea,
+.docLabelInput,
+.docUrlInput,
+.submitBtn,
+.cancelBtn,
+.docAddBtn,
+.docRemoveBtn {
+  border-radius: 4px;
+}
+
+.input,
+.textarea,
+.docLabelInput,
+.docUrlInput {
+  border-color: #e4e5e8;
+  background: #ffffff;
+  color: #102441;
+}
+
+.submitBtn,
+.docAddBtn {
+  border-color: #064bb5;
+  background: #064bb5;
+  color: #ffffff;
+  box-shadow: none;
+}
+
+.submitBtn:hover:not(:disabled),
+.docAddBtn:hover {
+  background: #0a65cc;
+  transform: none;
+  box-shadow: none;
+}
+
+.responseBlock {
+  border-color: #daff45;
+  border-radius: 8px;
+  background: #eefabf;
+}
+
+.form,
+.requestList,
+.requestCard,
+.responseBlock,
+.docList {
+  font-family: var(--font-inter, Inter), Inter, Arial, sans-serif;
+}
+
+.badge,
+.heroBadge,
+.docChip,
+.docChipResult {
+  border-radius: 999px;
+}
+
+.badgeCompleted,
+.docChipResult {
+  border-color: #daff45;
+  background: #eefabf;
+  color: #102441;
+}
+
+/* Shared dashboard readability and touch-target floor. */
+.wrap
+  :is(
+    .heroBadge,
+    .benefit strong,
+    .benefit span,
+    .barSub,
+    .label,
+    .input,
+    .textarea,
+    .hint,
+    .docHint,
+    .docRemoveBtn,
+    .docAddBtn,
+    .feedback,
+    .requestType,
+    .requestDesc,
+    .docsBlockTitle,
+    .responseTitle,
+    .docChip,
+    .responseText,
+    .requestDate,
+    .badge
+  ) {
+  font-size: 14px;
+}
+
+.wrap :is(button, input, select, textarea, a[href]) {
+  min-height: 44px;
+}
+
+.wrap .docRemoveBtn {
+  width: 44px;
+  height: 44px;
 }

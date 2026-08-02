@@ -1,0 +1,367 @@
+.page {
+  min-height: 100vh;
+  padding: var(--app-space-xl) 0 var(--app-section-space-md);
+  background:
+    radial-gradient(
+      circle at 82% 8%,
+      color-mix(in srgb, var(--app-brand-secondary) 18%, transparent),
+      transparent 28rem
+    ),
+    var(--app-bg-soft);
+}
+
+.container {
+  width: min(var(--app-public-width), calc(100% - 2 * var(--app-page-inline)));
+  margin-inline: auto;
+}
+
+.backLink,
+.allJobsLink {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: var(--app-space-sm);
+  font-weight: 700;
+}
+
+.hero {
+  position: relative;
+  isolation: isolate;
+  min-height: 330px;
+  margin-top: var(--app-space-md);
+  overflow: hidden;
+  border: 1px solid var(--app-border-subtle);
+  border-radius: var(--app-radius-2xl);
+  background: var(--app-surface-dark);
+}
+
+.coverImage {
+  z-index: -2;
+  object-fit: cover;
+}
+
+.coverFallback {
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  background:
+    linear-gradient(
+      118deg,
+      color-mix(in srgb, var(--app-brand-primary) 72%, transparent),
+      transparent 66%
+    ),
+    var(--app-surface-dark);
+}
+
+.hero::after {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--app-surface-dark) 96%, transparent) 0%,
+    color-mix(in srgb, var(--app-surface-dark) 76%, transparent) 56%,
+    color-mix(in srgb, var(--app-surface-dark) 34%, transparent) 100%
+  );
+  content: '';
+}
+
+.heroContent {
+  display: grid;
+  min-height: 330px;
+  align-items: end;
+  gap: var(--app-space-lg);
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  padding: var(--app-space-2xl);
+}
+
+.logo {
+  display: grid;
+  width: 112px;
+  height: 112px;
+  overflow: hidden;
+  place-items: center;
+  border: 4px solid var(--app-surface-1);
+  border-radius: var(--app-radius-xl);
+  background: var(--app-surface-1);
+  color: var(--app-brand-dark);
+  font-size: 1.75rem;
+  font-weight: 800;
+}
+
+.logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.identity {
+  min-width: 0;
+}
+
+.eyebrow,
+.sectionEyebrow {
+  display: block;
+  margin-bottom: var(--app-space-sm);
+  color: var(--app-brand-primary);
+  font-size: var(--app-font-size-sm);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hero .eyebrow {
+  color: var(--app-brand-lime);
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--app-space-md);
+  flex-wrap: wrap;
+}
+
+.titleRow h1 {
+  color: var(--app-text-on-dark);
+  font-size: clamp(2rem, 5vw, 3.5rem);
+}
+
+.verified {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  gap: var(--app-space-xs);
+  padding: var(--app-space-xs) var(--app-space-sm);
+  border-radius: var(--app-radius-sm);
+  background: var(--app-brand-lime);
+  color: var(--app-brand-dark);
+  font-size: var(--app-font-size-sm);
+  font-weight: 800;
+}
+
+.meta {
+  display: flex;
+  margin-top: var(--app-space-md);
+  gap: var(--app-space-md);
+  flex-wrap: wrap;
+}
+
+.meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--app-space-xs);
+  color: var(--app-text-on-dark-muted);
+  font-size: var(--app-font-size-sm);
+  font-weight: 600;
+}
+
+.websiteButton,
+.emptyAction,
+.ctaCard a {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: var(--app-space-sm);
+  padding: var(--app-space-sm) var(--app-space-md);
+  border-radius: var(--app-radius-md);
+  font-weight: 800;
+}
+
+.websiteButton {
+  background: var(--app-surface-1);
+  color: var(--app-brand-dark);
+}
+
+.layout {
+  display: grid;
+  align-items: start;
+  gap: var(--app-space-xl);
+  grid-template-columns: minmax(0, 1fr) 320px;
+  margin-top: var(--app-space-xl);
+}
+
+.main,
+.sidebar {
+  display: grid;
+  gap: var(--app-space-xl);
+}
+
+.about,
+.jobsSection,
+.infoCard,
+.ctaCard {
+  border: 1px solid var(--app-border-subtle);
+  border-radius: var(--app-radius-xl);
+  background: var(--app-surface-1);
+}
+
+.about,
+.jobsSection {
+  padding: clamp(var(--app-space-lg), 4vw, var(--app-space-2xl));
+}
+
+.about h2,
+.jobsSection h2,
+.infoCard h2,
+.ctaCard h2 {
+  font-size: clamp(1.45rem, 3vw, 2rem);
+}
+
+.about p {
+  max-width: 72ch;
+  margin-top: var(--app-space-md);
+  color: var(--app-text-secondary);
+  line-height: 1.75;
+}
+
+.sectionHeading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--app-space-md);
+  margin-bottom: var(--app-space-xl);
+}
+
+.jobsGrid {
+  display: grid;
+  gap: var(--app-space-md);
+}
+
+.emptyState {
+  display: grid;
+  min-height: 310px;
+  place-items: center;
+  align-content: center;
+  padding: var(--app-space-xl);
+  border: 1px dashed var(--app-border-strong);
+  border-radius: var(--app-radius-xl);
+  background: var(--app-surface-2);
+  text-align: center;
+}
+
+.emptyIcon {
+  display: grid;
+  width: 56px;
+  height: 56px;
+  margin-bottom: var(--app-space-md);
+  place-items: center;
+  border-radius: var(--app-radius-xl);
+  background: var(--app-primary-light);
+  color: var(--app-brand-primary);
+  font-size: 1.5rem;
+}
+
+.emptyState p {
+  max-width: 48ch;
+  margin: var(--app-space-sm) auto var(--app-space-md);
+}
+
+.emptyAction {
+  background: var(--app-brand-primary);
+  color: var(--app-text-on-dark);
+}
+
+.infoCard,
+.ctaCard {
+  padding: var(--app-space-lg);
+}
+
+.infoCard p {
+  margin-top: var(--app-space-md);
+}
+
+.sectors {
+  display: flex;
+  gap: var(--app-space-sm);
+  flex-wrap: wrap;
+  margin-top: var(--app-space-md);
+}
+
+.sectors span {
+  padding: var(--app-space-xs) var(--app-space-sm);
+  border: 1px solid var(--app-border-subtle);
+  border-radius: var(--app-radius-sm);
+  background: var(--app-surface-2);
+  color: var(--app-text-secondary);
+  font-size: var(--app-font-size-sm);
+  font-weight: 700;
+}
+
+.ctaCard {
+  border-color: transparent;
+  background: var(--app-surface-dark);
+}
+
+.ctaCard > span {
+  color: var(--app-brand-lime);
+  font-size: var(--app-font-size-sm);
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.ctaCard h2 {
+  margin: var(--app-space-sm) 0 var(--app-space-lg);
+  color: var(--app-text-on-dark);
+  line-height: 1.25;
+}
+
+.ctaCard a {
+  width: 100%;
+  background: var(--app-brand-lime);
+  color: var(--app-brand-dark);
+}
+
+@media (max-width: 900px) {
+  .heroContent {
+    align-items: start;
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .websiteButton {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding-top: var(--app-space-md);
+  }
+
+  .heroContent {
+    grid-template-columns: 1fr;
+    padding: var(--app-space-lg);
+  }
+
+  .logo {
+    width: 88px;
+    height: 88px;
+  }
+
+  .meta,
+  .sectionHeading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .sidebar {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page *,
+  .page *::before,
+  .page *::after {
+    scroll-behavior: auto;
+  }
+}

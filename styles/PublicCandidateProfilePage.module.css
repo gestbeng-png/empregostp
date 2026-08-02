@@ -1,17 +1,36 @@
 .page {
+  --profile-font-sm: var(--app-font-size-sm, max(0.875rem, 14px));
+  --profile-font-body: var(--app-font-size-body, max(0.92rem, 14px));
+  --profile-motion: 200ms cubic-bezier(0.4, 0, 0.2, 1);
   width: min(var(--app-public-width-narrow), calc(100% - 2rem));
   margin: 0 auto;
   padding: 1.5rem 0 4.5rem;
+}
+
+.page :is(a, button, input, select, textarea):focus-visible {
+  outline: 3px solid #4f8ff7;
+  outline-offset: 3px;
+}
+
+.page a:active {
+  transform: translateY(1px);
 }
 
 .backLink {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  min-height: 44px;
+  padding: 0 0.25rem;
   margin-bottom: 1.15rem;
   color: var(--app-brand-primary);
-  font-size: 0.9rem;
+  font-size: var(--profile-font-body);
   font-weight: 800;
+  text-decoration: none;
+  transition:
+    color var(--profile-motion),
+    background-color var(--profile-motion),
+    transform var(--profile-motion);
 }
 
 .backLink:hover {
@@ -59,7 +78,7 @@
   color: #ffffff;
   font-size: 2rem;
   font-weight: 900;
-  letter-spacing: -0.05em;
+  letter-spacing: 0;
 }
 
 .verifiedMark {
@@ -98,7 +117,11 @@
 .title {
   font-size: clamp(1.8rem, 3vw, 2.4rem);
   font-weight: 900;
-  letter-spacing: -0.05em;
+  letter-spacing: 0;
+}
+
+.titleRow > span[title='Perfil verificado'] {
+  font-size: var(--profile-font-sm) !important;
 }
 
 .highlightBadge {
@@ -110,9 +133,9 @@
   background: rgba(217, 255, 47, 0.18);
   border: 1px solid rgba(217, 255, 47, 0.36);
   color: #1e2b4d;
-  font-size: 0.72rem;
+  font-size: var(--profile-font-sm);
   font-weight: 900;
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -134,7 +157,7 @@
   gap: 0.4rem;
   margin-top: 0.75rem;
   color: var(--app-text-secondary);
-  font-size: 0.92rem;
+  font-size: var(--profile-font-body);
 }
 
 .location svg {
@@ -153,15 +176,20 @@
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  min-height: 42px;
+  min-height: 44px;
   padding: 0.7rem 1rem;
   border-radius: 14px;
   border: 1px solid var(--app-border-subtle);
   background: #ffffff;
   color: var(--app-brand-primary);
-  font-size: 0.85rem;
+  font-size: var(--profile-font-sm);
   font-weight: 700;
   box-shadow: var(--app-shadow-sm);
+  transition:
+    color var(--profile-motion),
+    border-color var(--profile-motion),
+    background-color var(--profile-motion),
+    transform var(--profile-motion);
 }
 
 .socialLink:hover {
@@ -181,7 +209,7 @@
   border: 1px solid rgba(32, 87, 215, 0.16);
   background: rgba(95, 184, 245, 0.1);
   color: var(--app-text-primary);
-  font-size: 0.92rem;
+  font-size: var(--profile-font-body);
   line-height: 1.65;
 }
 
@@ -191,6 +219,11 @@
   gap: 1.2rem;
   margin-top: 1.2rem;
   align-items: start;
+}
+
+.mainGridCompact {
+  grid-template-columns: minmax(0, 560px);
+  justify-content: center;
 }
 
 .mainColumn,
@@ -239,19 +272,19 @@
 .experienceCompany {
   margin: 0 0 0.2rem;
   color: #2057d7;
-  font-size: 0.88rem;
+  font-size: var(--profile-font-sm);
   font-weight: 700;
 }
 
 .experiencePeriod {
   margin: 0 0 0.45rem;
   color: var(--app-text-muted);
-  font-size: 0.82rem;
+  font-size: var(--profile-font-sm);
 }
 
 .experienceDescription {
   color: var(--app-text-secondary);
-  font-size: 0.88rem;
+  font-size: var(--profile-font-sm);
   line-height: 1.6;
 }
 
@@ -264,7 +297,7 @@
 
 .list li {
   color: var(--app-text-secondary);
-  font-size: 0.9rem;
+  font-size: var(--profile-font-body);
   line-height: 1.6;
 }
 
@@ -283,7 +316,7 @@
   border: 1px solid rgba(95, 184, 245, 0.2);
   background: rgba(95, 184, 245, 0.1);
   color: #2057d7;
-  font-size: 0.8rem;
+  font-size: var(--profile-font-sm);
   font-weight: 700;
 }
 
@@ -306,7 +339,7 @@
 .ctaText {
   margin-bottom: 1rem;
   color: var(--app-text-secondary);
-  font-size: 0.92rem;
+  font-size: var(--profile-font-body);
   line-height: 1.65;
 }
 
@@ -320,14 +353,20 @@
   border-radius: 16px;
   background: linear-gradient(135deg, #2057d7, #5fb8f5);
   color: #ffffff;
-  font-size: 0.92rem;
+  font-size: var(--profile-font-body);
   font-weight: 800;
   text-decoration: none;
   box-shadow: 0 14px 28px rgba(32, 87, 215, 0.18);
+  transition:
+    box-shadow var(--profile-motion),
+    filter var(--profile-motion),
+    transform var(--profile-motion);
 }
 
 .ctaButton:hover {
   color: #ffffff;
+  filter: saturate(1.08) brightness(1.03);
+  box-shadow: 0 18px 32px rgba(32, 87, 215, 0.24);
 }
 
 .ctaContact {
@@ -335,14 +374,14 @@
   display: grid;
   gap: 0.35rem;
   color: var(--app-text-primary);
-  font-size: 0.86rem;
+  font-size: var(--profile-font-sm);
   line-height: 1.5;
 }
 
 .ctaHint {
   margin-top: 0.85rem;
   color: var(--app-text-secondary);
-  font-size: 0.84rem;
+  font-size: var(--profile-font-sm);
   line-height: 1.55;
 }
 
@@ -375,5 +414,185 @@
     width: 92px;
     height: 92px;
     border-radius: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page *,
+  .page *::before,
+  .page *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Workbridge fidelity pass ------------------------------------------------- */
+.page {
+  width: min(1200px, calc(100% - 48px));
+  padding: 5rem 0;
+  color: #383750;
+}
+
+.page.page.page,
+.page.page.page *,
+.page.page.page *::before,
+.page.page.page *::after {
+  background-image: none;
+  box-shadow: none;
+}
+
+.backLink,
+.objective,
+.experienceCompany {
+  color: #064bb5;
+}
+
+.backLink:hover {
+  color: #0a65cc;
+}
+
+.heroCard {
+  padding: clamp(1.5rem, 3vw, 2.5rem);
+  border-color: rgba(16, 36, 65, 0.14);
+  border-radius: 8px;
+  background: #69c8ff;
+}
+
+.avatar,
+.avatarFallback {
+  border-color: rgba(16, 36, 65, 0.16);
+  border-radius: 8px;
+}
+
+.avatarFallback {
+  background: #102441;
+  color: #ffffff;
+}
+
+.verifiedMark {
+  border-radius: 4px;
+  background: #daff45;
+  color: #102441;
+}
+
+.title,
+.location,
+.objectiveType,
+.cardTitle,
+.experienceRole {
+  color: #102441;
+}
+
+.title {
+  font-weight: 600;
+}
+
+.highlightBadge,
+.chip,
+.chipAlt {
+  border-radius: 4px;
+}
+
+.highlightBadge {
+  border-color: #daff45;
+  background: #daff45;
+  color: #102441;
+}
+
+.socialLink {
+  border-color: rgba(16, 36, 65, 0.18);
+  border-radius: 4px;
+  background: #ffffff;
+  color: #102441;
+}
+
+.socialLink:hover {
+  border-color: #064bb5;
+  color: #064bb5;
+}
+
+.notice {
+  border-color: #eefabf;
+  border-radius: 8px;
+  background: #eefabf;
+  color: #102441;
+}
+
+.card,
+.ctaCard {
+  border-color: #e4e5e8;
+  border-radius: 8px;
+}
+
+.card {
+  background: #ffffff;
+}
+
+.text,
+.experienceDescription,
+.list li,
+.ctaText,
+.ctaHint {
+  color: #383750;
+}
+
+.experienceItem {
+  border-left-color: #69c8ff;
+}
+
+.experiencePeriod {
+  color: #5f6874;
+}
+
+.chip {
+  border-color: #69c8ff;
+  background: #eef4f8;
+  color: #064bb5;
+}
+
+.chipAlt {
+  border-color: #e4e5e8;
+  background: #ffffff;
+  color: #383750;
+}
+
+.ctaCard {
+  background: #daff45;
+}
+
+.ctaButton {
+  border-radius: 4px;
+  background: #064bb5;
+  color: #ffffff;
+}
+
+.ctaButton:hover {
+  background: #0a65cc;
+  color: #ffffff;
+  filter: none;
+}
+
+.ctaContact {
+  color: #102441;
+}
+
+@media (min-width: 1280px) {
+  .page {
+    padding-block: 7.5rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .page {
+    width: min(100% - 24px, 100%);
+    padding-block: 3.75rem;
+  }
+
+  .heroCard,
+  .card,
+  .ctaCard {
+    border-radius: 8px;
   }
 }
