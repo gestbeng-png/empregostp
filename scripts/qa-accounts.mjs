@@ -56,7 +56,7 @@ const ACCOUNTS = [
     name: '[QA] Empresa PRO',
     userType: 'empresa',
     planId: 'unlimited_empresa',
-    planName: 'Ilimitado',
+    planName: 'PRO',
     paid: true,
   },
   {
