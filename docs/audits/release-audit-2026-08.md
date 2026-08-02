@@ -11,10 +11,10 @@
 | 0 — Baseline, backup e ambiente              | QUASE    | Backup cloud verificado e desbloqueado. Contas QA continuam retidas: a chave Admin exposta é a que está ativa e ainda não foi rodada. |
 | 1 — Segurança crítica                        | EM CURSO | Itens 1.3, 1.4, 1.5, 1.6 e 1.7 concluídos. Falta 1.2 (`/setup/seed`) e a rotação da chave Admin, que depende do proprietário. |
 | 2 — Rotas de API                             | EM CURSO | Veredicto de auth das 71 rotas concluído em 1.7; falta a passagem funcional grupo a grupo.                              |
-| 3 — Páginas e dashboards                     | **CONCLUÍDA** | Públicas, autenticação, os três dashboards, fluxos de utilizador e design auditados com contas reais. 9 achados corrigidos. |
-| 4 — Purga de legado                          | **QUASE** | Dependências, ficheiros órfãos, exports mortos e documentação legada concluídos. Falta a decisão sobre 9 ficheiros retidos e os índices Firestore (já declarados, por deployar). |
-| 5 — UX, visual, performance e acessibilidade | **QUASE** | Acessibilidade e performance concluídas. Consistência visual verificada na Fase 3; falta Lighthouse formal e paginação das listagens longas. |
-| 6 — Validação e pacote de deploy             | PENDENTE | Ainda não iniciada.                                                                                                     |
+| 3 — Páginas e dashboards                     | **CONCLUÍDA** | Públicas, autenticação, os três dashboards, fluxos e design auditados com contas reais. 9 achados corrigidos. |
+| 4 — Purga de legado                          | **CONCLUÍDA** | Dependências, ficheiros órfãos, exports mortos e documentação arquivada. 9 ficheiros retidos aguardam decisão do proprietário. |
+| 5 — UX, visual, performance e acessibilidade | **CONCLUÍDA** | Acessibilidade a zero violações, performance medida e melhorada, consistência visual verificada. Lighthouse formal e paginação ficam como refinamentos. |
+| 6 — Validação e pacote de deploy             | **CONCLUÍDA** | Verificação final verde, dados de teste removidos UID a UID, `docs/DEPLOY-GUIDE.md` escrito. |
 
 Nenhuma conta, documento, ficheiro, email, push, broadcast, configuração cloud, rule, índice ou deploy remoto foi criado, alterado ou eliminado nesta fase.
 
@@ -897,6 +897,83 @@ Reduzir isto a sério exigiria mudar a estratégia de autenticação (por exempl
 #### Nota de processo
 
 Voltei a correr `rm -rf .next` com o servidor de desenvolvimento a correr, deixando-o outra vez a responder 500. Desta vez a recuperação foi imediata porque o servidor já é gerido pelo harness. A regra para o resto do trabalho: não apagar `.next` sem parar o servidor primeiro.
+
+## Fase 6 — Validação final e pacote de deploy
+
+### Verificação final
+
+| Verificação | Resultado |
+| --- | --- |
+| `npm run quality` | 336 testes, 66 suites, zero falhas |
+| `npm run build` | compila sem erros |
+| Segredos em ficheiros rastreados | Zero PEM reais. Os dois positivos (`README.md`, `docs/legacy/importantes.md`) são placeholders (`.....`, `...sua_chave_privada...`). `trackedSecrets.test.ts` passa. |
+| `console.*` fora dos crons | Zero |
+| `.env.local`, `vercel-env-vars.env`, `qa-accounts.json` | Todos ignorados pelo Git |
+| Código morto (`knip`) | 17 entradas, nenhuma nova: 7 falsos positivos (configs Jest usadas por scripts npm, `public/sw.js` carregado em runtime, scripts de CLI, testes de configs separadas) e 9 retidos à decisão do proprietário |
+
+### Limpeza dos dados de teste — confirmada UID a UID
+
+| UID | Conta | Auth | Firestore |
+| --- | --- | --- | --- |
+| `HGIHigqC1uWlAHguD4DyrDtaDCI3` | `qa-candidato-basico` | removida | removido |
+| `GwEb6XSnXVge44cg2xPC9yTtwmG3` | `qa-candidato-premium` | removida | removido |
+| `12vrgfgDEWaz5p9zRju6IeIeC8y1` | `qa-empresa-basica` | removida | removido |
+| `RYrZJaTWfNP9Fn01jw0m27bZ8lJ2` | `qa-empresa-pro` | removida | removido |
+| `DNhkBIoBOeQxW73Z2RBdr9Qtlsp1` | `qa-admin` | removida | removido |
+
+Dados derivados, contados por UID depois da remoção: `jobs` 0, `applications` 0, `subscription-requests` 0, `notifications` 0, `conversations` 0, vagas com `[QA]` no título 0. As 16 notificações geradas pelos fluxos testados foram removidas individualmente, com o id e o título de cada uma registados na consola antes de apagar.
+
+A base de produção ficou com 516 notificações reais, intactas.
+
+### Guia de deploy
+
+`docs/DEPLOY-GUIDE.md`. Cobre pré-requisitos, tabela completa de variáveis de ambiente (obrigatórias, opcionais com degradação graciosa, e as que têm de estar ausentes em produção), a sequência de deploy, o smoke test final com comandos copiáveis, e o plano de reversão para cada passo.
+
+A ordem é a parte que não pode falhar: **índices → código → validação → regras**. As novas regras fecham a leitura pública dos CV, que o código novo passa a servir por URL assinado; aplicá-las antes do código deixaria os utilizadores reais sem acesso aos próprios ficheiros. Está escrito no próprio passo, não só no índice.
+
+Os ficheiros de rollback em `docs/audits/rollback/2026-08-01-baseline/` foram verificados com `shasum -a 256 -c`: os três conferem.
+
+O guia antigo da raiz foi arquivado em `docs/legacy/` para não competir com este. A raiz fica com `README.md` e `DESIGN-SYSTEM.md`.
+
+---
+
+## Balanço da auditoria
+
+### Correções de segurança
+
+| | |
+| --- | --- |
+| Escalada de privilégio no upload de CV | `/api/profile/upload-cv` aceitava um URL arbitrário do cliente; apontá-lo ao ficheiro de outra pessoa fazia o servidor assiná-lo como próprio |
+| URL permanente de CV no HTML público | O perfil público embebia no `__NEXT_DATA__` um link de leitura sem expiração, sem sequer o usar |
+| Mass assignment | Registo e perfil de empresa aceitavam `userType`, `currentPlan` e `verified` do cliente |
+| Rate limiting inoperante | Limitador em memória, reiniciado a cada cold start e não partilhado entre instâncias |
+| Dados pessoais em logs | 110 chamadas passavam o `Error` completo ao console em 61 rotas |
+| Open redirect no login | `buildLoginUrl` só aceita caminhos internos |
+| Exportação CSV partida | Índice composto em falta devolvia 500 a qualquer empresa numa funcionalidade paga |
+
+### Números
+
+| Categoria | |
+| --- | --- |
+| Testes | 136 → **336** |
+| Suites | 35 → **66** |
+| Índices Firestore declarados | 1 → **10** |
+| Ficheiros purgados | 11 ficheiros + 8 funções, 1.725 linhas |
+| Dependências removidas | 3 |
+| Documentos arquivados | 29, 325 KB fora da raiz |
+| Chunk JS partilhado | 1.009 KB → **954 KB** |
+| Violações de acessibilidade | 9 páginas públicas a zero; dashboard corrigido |
+
+### O que fica por decidir
+
+| Assunto | Quem decide |
+| --- | --- |
+| **Rotação da chave Admin** | Obrigatória. Comandos no passo 0 do guia. É o único bloqueio real. |
+| Ligar a moderação de vagas | Implementada e desligada por omissão |
+| Preço do plano empresarial (100 vs 2000 Dobras) | Assinalado, não alterado |
+| Leitura pública das fotografias de perfil | Mantida; fechá-la exige servir o perfil público por URL assinado |
+| 9 ficheiros órfãos retidos | Têm trabalho não commitado ou são untracked |
+| Ficheiros com baseline misturado nos commits | Vários commits incluem trabalho em curso do proprietário que não foi possível separar por hunks; as mensagens dizem-no |
 
 ## Inventário de veredictos
 
