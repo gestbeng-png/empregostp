@@ -1,3 +1,9 @@
+> **OBSOLETO — não reflete o estado atual do projeto.**
+> Arquivado na auditoria de release de agosto de 2026. Mantido apenas como
+> registo histórico. As fontes de verdade são o `README.md`, o
+> `DESIGN-SYSTEM.md`, o `docs/DEPLOY-GUIDE.md` e o relatório em
+> `docs/audits/release-audit-2026-08.md`.
+
 ## 🚀 GUIA DE DEPLOYMENT - Funcionalidades Implementadas
 
 Este documento descreve como fazer deploy das novas funcionalidades para produção.

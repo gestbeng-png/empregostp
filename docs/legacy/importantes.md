@@ -1,3 +1,9 @@
+> **OBSOLETO — não reflete o estado atual do projeto.**
+> Arquivado na auditoria de release de agosto de 2026. Mantido apenas como
+> registo histórico. As fontes de verdade são o `README.md`, o
+> `DESIGN-SYSTEM.md`, o `docs/DEPLOY-GUIDE.md` e o relatório em
+> `docs/audits/release-audit-2026-08.md`.
+
 # Documentação Final — Plataforma de Emprego e Serviços (STP)
 > **Data:** 2026-01-31
 >
