@@ -12,7 +12,7 @@
 | 1 — Segurança crítica                        | EM CURSO | Itens 1.3, 1.4, 1.5, 1.6 e 1.7 concluídos. Falta 1.2 (`/setup/seed`) e a rotação da chave Admin, que depende do proprietário. |
 | 2 — Rotas de API                             | EM CURSO | Veredicto de auth das 71 rotas concluído em 1.7; falta a passagem funcional grupo a grupo.                              |
 | 3 — Páginas e dashboards                     | **CONCLUÍDA** | Públicas, autenticação, os três dashboards, fluxos de utilizador e design auditados com contas reais. 9 achados corrigidos. |
-| 4 — Purga de legado                          | EM CURSO | 4.1 dependências: 3 removidas; Tailwind investigado e mantido (está em uso via @import v4). Falta ficheiros/exports órfãos e documentação legada. |
+| 4 — Purga de legado                          | EM CURSO | 4.1 dependências e 4.2 ficheiros órfãos concluídos (11 ficheiros, 1.621 linhas). Falta exports mortos e documentação legada. |
 | 5 — UX, visual, performance e acessibilidade | PENDENTE | Ainda não iniciada.                                                                                                     |
 | 6 — Validação e pacote de deploy             | PENDENTE | Ainda não iniciada.                                                                                                     |
 
@@ -751,6 +751,41 @@ O que se mantém verdadeiro do achado original: as utilitárias que o Tailwind g
 Nesta análise concluí duas vezes o oposto da verdade antes de acertar, e a segunda conclusão chegou a ser executada com autorização. As causas foram: uma medição truncada por `tee | head`, que comparou 9 ficheiros CSS contra 35; e uma pesquisa pela sintaxe de uma versão do Tailwind que este projeto não usa. Além disso, ao correr `rm -rf .next` durante as comparações, deixei o servidor de desenvolvimento do proprietário a responder 500 — substituído por um servidor gerido em `.claude/launch.json`.
 
 Nenhuma destas falhas chegou ao repositório: o build partido foi revertido no mesmo passo e o estado final está verificado. Mas justificam a regra que passou a valer para o resto da auditoria: **nenhuma remoção avança sem que o build e a app sejam verificados depois dela**, e as configurações não versionadas são copiadas antes de qualquer alteração.
+
+### 4.2 — Ficheiros e estilos órfãos
+
+Método: `knip` produziu 35 candidatos, dos quais a maioria eram falsos positivos (configs Jest usadas por scripts npm, `public/sw.js` carregado em runtime pelo browser, testes corridos por configs separadas, skills do `.claude/`). Cruzei a lista com um índice em memória de todo o código e depois com uma verificação de **imports reais**, restrita a ficheiros de código — porque vários «candidatos» só apareciam mencionados em documentação legada da raiz, que descreve um estado antigo do projeto.
+
+#### Removido (11 ficheiros, 1.621 linhas)
+
+| Ficheiro | Prova de morte | Commit |
+| --- | --- | --- |
+| `components/Badge.js` | Zero imports em código; as 74 «referências» eram todas em `.md` legados. | `3cf9196` |
+| `components/hrServices/HRServicesSection.js` | Zero imports; única menção em `AUDITORIA-PROJETO.md`. | `3cf9196` |
+| `lib/businessRules.js` | **Alvo conhecido da auditoria.** `canUpgrade()` e `USER_TYPES` divergiam de `subscribe-plan.js` e não contemplavam `verification_candidato`. Estando morto, não havia nada a alinhar: a fonte de verdade continua a ser `subscribe-plan`. | `2f7dc9a` |
+| `lib/featuredJobs.js`, `lib/useVerification.js` | Zero imports. | `2f7dc9a` |
+| `lib/firebaseStorage.js` | As referências apontavam todas para `lib/firebaseStorageError.js`, outro ficheiro que continua em uso. | `2f7dc9a` |
+| `lib/notifications.js` | O único import aparente era de `pages/api/notifications`, uma rota com nome parecido. | `2f7dc9a` |
+| `scripts/deploy-direct-vercel.js`, `scripts/deploy-vercel.js`, `scripts/listAdmins.mjs` | Não referenciados por nenhum script do `package.json` nem por qualquer ficheiro. | `3d1157c` |
+| `test-verifications.js` | Morto **e** um risco: script manual fora do Jest que chamava a API administrativa real e imprimia dados pessoais no terminal. Assinalado na Fase 0. | `3d1157c` |
+
+Cada bloco foi verificado com `npm run quality` (336 testes) e `npm run build` antes do commit seguinte.
+
+#### Retido — precisa da tua decisão
+
+Estes estão órfãos no código, mas **não os removi**:
+
+| Ficheiro | Estado no Git | Porquê |
+| --- | --- | --- |
+| `components/VerificationStatus.js` | modificado | Tem alterações tuas não commitadas. Está órfão hoje, mas pode ser trabalho a caminho de ser ligado. |
+| `components/VerificationModal.js` | modificado | Idem; só é importado por `VerificationStatus.js`, pelo que os dois vivem ou morrem juntos. |
+| `styles/Badge.module.css` | modificado | Parceiro do `Badge.js` já removido. |
+| `styles/HRServicesSection.module.css` | modificado | Parceiro do `HRServicesSection.js` já removido. |
+| `styles/CandidatosPage.module.css`, `EmpresasPage.module.css`, `RecursosPage.module.css` | modificados | Zero referências, mas com edições tuas por commitar. |
+| `components/dashboard/DashboardPrimitives.js` | **untracked** | Não está no Git: apagá-lo é irreversível. |
+| `styles/AdminProfilePage.module.css` | **untracked** | Idem. |
+
+Regra aplicada: só removi ficheiros commitados e sem alterações, que o Git consegue restaurar. Nenhum ficheiro com trabalho teu por commitar, nem qualquer untracked, foi tocado.
 
 ## Inventário de veredictos
 
