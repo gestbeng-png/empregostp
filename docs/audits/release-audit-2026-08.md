@@ -11,7 +11,7 @@
 | 0 — Baseline, backup e ambiente              | QUASE    | Backup cloud verificado e desbloqueado. Contas QA continuam retidas: a chave Admin exposta é a que está ativa e ainda não foi rodada. |
 | 1 — Segurança crítica                        | EM CURSO | Itens 1.3, 1.4, 1.5, 1.6 e 1.7 concluídos. Falta 1.2 (`/setup/seed`) e a rotação da chave Admin, que depende do proprietário. |
 | 2 — Rotas de API                             | EM CURSO | Veredicto de auth das 71 rotas concluído em 1.7; falta a passagem funcional grupo a grupo.                              |
-| 3 — Páginas e dashboards                     | QUASE    | 3.1 corrigida; 3.2–3.6 testadas com contas reais. Falta a passagem visual do dashboard admin.                          |
+| 3 — Páginas e dashboards                     | **CONCLUÍDA** | Públicas, autenticação, os três dashboards, fluxos de utilizador e design auditados com contas reais. 9 achados corrigidos. |
 | 4 — Purga de legado                          | PENDENTE | Ainda não iniciada.                                                                                                     |
 | 5 — UX, visual, performance e acessibilidade | PENDENTE | Ainda não iniciada.                                                                                                     |
 | 6 — Validação e pacote de deploy             | PENDENTE | Ainda não iniciada.                                                                                                     |
@@ -660,6 +660,40 @@ Observação menor: a tab `overview` do candidato devolve apenas 127 caracteres 
 
 As 3 vagas `[QA]` e a candidatura de teste foram removidas no fim, com pré-visualização e verificação de que o título começava por `[QA]` antes de cada eliminação. Confirmado depois: zero vagas `[QA]` na base, zero ocorrências no feed público, e o toggle de moderação reposto em `false`. As cinco contas ficam para as fases seguintes e são removidas na Fase 6 por `scripts/qa-accounts.mjs delete`, que só apaga documentos com `isTestAccount: true` e email `qa-`.
 
+
+### 3.7 — Fluxos de utilizador e dashboard admin
+
+#### Fluxos testados com contas reais (46 verificações, todas verdes)
+
+| Fluxo | Verificações |
+| --- | --- |
+| Candidatura | Publicação de vaga; candidatura simples; vaga que exige carta rejeita sem carta e aceita com carta; vaga premium-only bloqueia o candidato Básico (`403`) e aceita o Premium; vaga inexistente devolve `404`; duplicado devolve `409`. |
+| Vagas guardadas | Guardar, listar e remover. |
+| Planos | Plano inexistente `404`; candidato não pode pedir plano de empresa `400`; pedido pago devolve instruções de pagamento; pedido duplicado bloqueado com `OPEN_SUBSCRIPTION_REQUEST`; pedido em aberto visível ao dono; **outro utilizador não envia comprovativo (`403`)**; comprovativo por URL do cliente recusado; **admin não aprova sem comprovativo (`400`)**. |
+| Serviços RH | Empresa lista e submete pedido (`201`); candidato é recusado (`403`). |
+| Entrevista | Empresa agenda com data; candidato descarrega o ICS (`text/calendar`); candidato confirma; **empresa alheia não obtém o ICS (`403`)**; **outro candidato não responde (`403`)**. |
+| Mensagens | Empresa Básica bloqueada por plano (`403`); empresa PRO abre conversa; destinatário lê; **terceiro não lê nem escreve (`403`)**; candidato responde; conversa aparece na lista; **candidato→candidato bloqueado pela política (`403`)**; mensagem vazia recusada. |
+| Perfis | Dono vê o próprio; **candidato não vê perfil de outro (`403`)**; admin vê qualquer um; empresa Básica não abre CV (`plan_required`); **atualização de perfil não escala privilégios** (tentativa de gravar `userType: admin` ignorada). |
+| Notificações | Lista própria; **não lê as de outro (`403`)**. |
+| Verificação | Submissão sem documentos recusada. |
+
+Quatro verificações falharam na primeira passagem **por erro do teste, não do código** — em todos os casos a validação de input do produto apanhou o erro: `/api/applications` é candidato-only por desenho (a empresa lê por SSR), `interview` exige `interviewDate`, a resposta à entrevista usa `action` e não `response`, e as mensagens usam `participantId` para abrir a conversa e `text` para responder. Corrigidos os testes, todos passam.
+
+Falso alarme investigado e descartado: a mensagem de gating diz «plano PRO» enquanto a minha conta de teste dizia «Ilimitado». `PRO` é o nome canónico de `unlimited_empresa` em `lib/defaultPlans.js` — a inconsistência estava nos meus dados de teste, entretanto alinhados. Não existe divergência de nomenclatura entre `Profissional` e `PRO`: são dois tiers distintos.
+
+#### Dashboard admin
+
+As 12 rotas `/api/admin/*` respondem `200` com dados reais. As 16 páginas do painel carregam, todas com `h1` único, sem erros e sem scroll horizontal a 1280px.
+
+**Achado corrigido:** a fila de testemunhos abre no filtro «Pendentes». Com 4 aprovados e 0 pendentes, o administrador aterrava num ecrã que dizia apenas «Nenhum testemunho neste filtro», sem indicação de que existiam outros nem forma de lá chegar — os contadores acima são também os botões de filtro, mas nada o dizia. O estado vazio passa a nomear o filtro e a oferecer «Ver todos os N»; com a base mesmo vazia, diz isso em vez de culpar o filtro. Commit `ca10f65`.
+
+#### Design dos dashboards
+
+Tokens `--dash-*` corretos e aplicados no `.dashShell`; sem sombras nas superfícies; raios em 4/8px; tipografia Instrument Sans conforme a especificação (a Plus Jakarta Sans serve o tema público da Home, que o design system isenta).
+
+Auditoria de contraste WCAG AA: **uma** falha em 108 elementos — o badge do plano na topbar, a 3.48:1. Corrigido para 5.6:1. Commit `6601059`.
+
+Nota de método: a primeira medição de contraste reportou seis falhas, todas falsas, por não compor a transparência dos fundos (`rgba(...,0.12)` sobre branco). Refeita com composição alfa correta e validada contra cálculo manual.
 
 ## Inventário de veredictos
 
