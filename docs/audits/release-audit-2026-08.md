@@ -11,7 +11,7 @@
 | 0 — Baseline, backup e ambiente              | QUASE    | Backup cloud verificado e desbloqueado. Contas QA continuam retidas: a chave Admin exposta é a que está ativa e ainda não foi rodada. |
 | 1 — Segurança crítica                        | EM CURSO | Itens 1.3, 1.4, 1.5, 1.6 e 1.7 concluídos. Falta 1.2 (`/setup/seed`) e a rotação da chave Admin, que depende do proprietário. |
 | 2 — Rotas de API                             | EM CURSO | Veredicto de auth das 71 rotas concluído em 1.7; falta a passagem funcional grupo a grupo.                              |
-| 3 — Páginas e dashboards                     | EM CURSO | 3.1 auditada e os 6 achados corrigidos. 3.2–3.6 retidas até às contas `qa-`.                                            |
+| 3 — Páginas e dashboards                     | QUASE    | 3.1 corrigida; 3.2–3.6 testadas com contas reais. Falta a passagem visual do dashboard admin.                          |
 | 4 — Purga de legado                          | PENDENTE | Ainda não iniciada.                                                                                                     |
 | 5 — UX, visual, performance e acessibilidade | PENDENTE | Ainda não iniciada.                                                                                                     |
 | 6 — Validação e pacote de deploy             | PENDENTE | Ainda não iniciada.                                                                                                     |
@@ -35,7 +35,7 @@ Nenhuma conta, documento, ficheiro, email, push, broadcast, configuração cloud
 | Backup cloud do Firestore                            | **CONCLUÍDO** | Export do proprietário verificado por mim: operação `SUCCESSFUL`, destino `gs://empregostp.firebasestorage.app/firestore-exports/full-20260801T161648Z`, 15 objetos / 2,24 MiB, terminado 2026-08-01T16:17:10Z. |
 | Snapshot local de rules e índices                    | OK            | Guardado em `docs/audits/rollback/2026-08-01-baseline/`, com manifesto SHA-256.                                                                             |
 | Estratégia sem emulador                              | DOCUMENTADO   | Unitários com mocks; rules por revisão + smoke QA; E2E online só após adaptação segura.                                                                     |
-| Contas `qa-`                                         | BLOQUEADO     | O backup já não bloqueia, mas a chave Admin exposta continua ativa (ver abaixo). Não crio dados reais enquanto uma credencial de acesso total estiver comprometida. |
+| Contas `qa-`                                         | **CONCLUÍDO** | Cinco contas criadas por autorização expressa do proprietário. UIDs registados; artefactos `[QA]` já removidos. |
 | `.env` e credenciais ignorados                       | PARCIAL       | `.env.local` e ficheiros conhecidos estão ignorados, mas a cobertura genérica ainda tem lacunas.                                                            |
 | Segredos no histórico recente                        | **FALHA CRÍTICA CONFIRMADA** | A chave exposta **é a chave atualmente ativa** — provado por comparação de impressão digital da chave pública. Ver secção dedicada abaixo. |
 
@@ -616,9 +616,50 @@ Nota de implementação, porque custou um build partido: `requireSession` vive e
 
 Os commits `814f87e` e `90f219b` incluem trabalho em curso do proprietário que não foi possível separar por hunks (retrabalho visual dos dashboards e do gerador de CV, reformatação de aspas no catálogo). As mensagens de commit dizem-no explicitamente, para o histórico não induzir em erro.
 
-### 3.2 a 3.6 — retido
+### 3.2 a 3.6 — testado com contas reais
 
-As tabs autenticadas dos dashboards de candidato, empresa e admin, e os fluxos ponta-a-ponta, dependem das contas `qa-`, que continuam retidas enquanto a chave Admin exposta for a chave ativa.
+Contas criadas por `scripts/qa-accounts.mjs` contra o projeto online, com prefixo `qa-`, domínio `.test` (RFC 2606, não encaminhável — o SMTP está ligado e nenhum email pode escapar) e `isTestAccount: true`. UIDs em `docs/audits/qa-accounts.json`, fora do Git por conter a password.
+
+| Conta | UID |
+| --- | --- |
+| `qa-candidato-basico` | `HGIHigqC1uWlAHguD4DyrDtaDCI3` |
+| `qa-candidato-premium` | `GwEb6XSnXVge44cg2xPC9yTtwmG3` |
+| `qa-empresa-basica` | `12vrgfgDEWaz5p9zRju6IeIeC8y1` |
+| `qa-empresa-pro` | `RYrZJaTWfNP9Fn01jw0m27bZ8lJ2` |
+| `qa-admin` | `DNhkBIoBOeQxW73Z2RBdr9Qtlsp1` |
+
+#### Matriz de autorização — 18 rotas × 5 contas + anónimo
+
+Zero anomalias. As seis rotas `/api/admin/*` devolvem `403` a candidatos e empresas e `200` só ao admin; todas as 18 devolvem `401` sem sessão. O gating por plano confirma-se com dados reais: `talent-pool` e `analytics` só respondem `200` à empresa PRO, `recommendations` só ao candidato premium, `candidate/plan-status` e `saved-jobs` só a candidatos.
+
+#### Fluxo ponta-a-ponta
+
+15 verificações passaram: criação de vaga, limite de vagas do plano Básico (2.ª vaga → `403`), publicação no feed, candidatura, duplicado bloqueado (`409`), isolamento entre empresas, alteração de estado, agendamento de entrevista, descarga do ICS, resposta do candidato, e o ciclo completo de moderação (toggle → `pending_review` → invisível ao público → aprovação → `409` na segunda → empresa não modera).
+
+Três verificações falharam por **erro do teste, não do código** — e a validação de input apanhou os três: `/api/applications` é candidato-only por desenho (a empresa lê por SSR com o Admin SDK), `interview` exige `interviewDate`, e a resposta à entrevista usa `action: confirm|request_reschedule` e não `response`.
+
+#### Achado corrigido — exportação CSV partida
+
+`/api/export/applications` devolvia `500` a qualquer empresa: a query `where(companyId) + orderBy(createdAt)` exige um índice composto inexistente e esta rota, ao contrário das outras, não tinha recurso a memória. Uma funcionalidade paga estava partida em produção e nenhum teste unitário a apanhava, porque todos usam mocks.
+
+Sondagem das dez combinações `where + orderBy` do código: **nove sem índice**, incluindo `applications(candidateId, createdAt)` que estava declarado como `ASCENDING` enquanto o código consulta `desc`. `firestore.indexes.json` passa de 1 para 10 índices. Commit `70178a7`.
+
+#### Dashboards no browser
+
+| Dashboard | Tabs verificadas | Resultado |
+| --- | --- | --- |
+| Empresa PRO | overview, jobs, applications, talent, interviews, analytics, plans, messages | Todas renderizam, `?tab=` respeitado, zero erros de consola, zero scroll horizontal. Os contadores dos separadores batiam certo com os dados criados (2 vagas, 1 candidatura, 1 entrevista). |
+| Candidato Premium | overview, profile, candidaturas, saved, interviews, notifications, plans, verification | Todas renderizam, `?tab=` respeitado, zero erros, estados vazios presentes onde esperado, gating visível na tab de planos. |
+| Admin | — | Autorização validada pela matriz (6 rotas). Passagem visual pendente. |
+
+O login com `?redirect=%2Fdashboard%2Fempresa` aterrou em `/dashboard/empresa`: a correção da intenção do achado 1 funciona ponta a ponta no browser, não só nos redirects.
+
+Observação menor: a tab `overview` do candidato devolve apenas 127 caracteres de texto — parece fina de mais face às restantes. Fica para inspeção na Fase 5.
+
+#### Limpeza
+
+As 3 vagas `[QA]` e a candidatura de teste foram removidas no fim, com pré-visualização e verificação de que o título começava por `[QA]` antes de cada eliminação. Confirmado depois: zero vagas `[QA]` na base, zero ocorrências no feed público, e o toggle de moderação reposto em `false`. As cinco contas ficam para as fases seguintes e são removidas na Fase 6 por `scripts/qa-accounts.mjs delete`, que só apaga documentos com `isTestAccount: true` e email `qa-`.
+
 
 ## Inventário de veredictos
 
