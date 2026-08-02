@@ -5,9 +5,12 @@
 
 # testing
 /coverage
+/playwright-report
+/test-results
 
 # next.js
 /.next/
+/.next-e2e/
 /out/
 
 # production
@@ -43,6 +46,8 @@ next-env.d.ts
 .firebase/
 firebase-debug.log
 firebase-debug.*.log
+firestore-debug.log
+firestore-debug.*.log
 lib/firebase-admin-credentials.json
 *service-account*.json
 *serviceaccount*.json
@@ -70,3 +75,6 @@ vercel-env-vars.env
 *.env
 .env.vercel.generated
 ADMIN-CREDENTIALS.txt
+
+# Registo das contas de teste da auditoria (contém UIDs e password de QA)
+docs/audits/qa-accounts.json

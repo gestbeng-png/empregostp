@@ -1,6 +1,23 @@
 import { admin } from '../../../lib/firebaseAdmin';
 import { canExportApplications, getEmpresaPlanSummary } from '../../../lib/empresaPlanFeatures';
-import { logServerError } from '../../../lib/serverLog';
+import { logServerError, logServerWarning } from '../../../lib/serverLog';
+
+function isMissingIndexError(error) {
+  return (
+    error?.code === 9
+    || String(error?.details || error?.message || '')
+      .toLowerCase()
+      .includes('requires an index')
+  );
+}
+
+function toMillis(value) {
+  if (!value) return 0;
+  if (typeof value.toMillis === 'function') return value.toMillis();
+  if (typeof value.toDate === 'function') return value.toDate().getTime();
+  const parsed = new Date(value).getTime();
+  return Number.isFinite(parsed) ? parsed : 0;
+}
 
 /**
  * GET /api/export/applications
@@ -65,9 +82,22 @@ export default async function handler(req, res) {
       query = query.where('status', '==', status);
     }
 
-    const snapshot = await query.orderBy('createdAt', 'desc').get();
+    // A ordenação no Firestore exige o índice composto (companyId, createdAt).
+    // Sem ele a query rebentava e a exportação — que é uma funcionalidade paga
+    // — devolvia 500. Enquanto o índice não estiver construído, ordena-se em
+    // memória: o conjunto é de uma só empresa e cabe perfeitamente.
+    let docs;
+    try {
+      docs = (await query.orderBy('createdAt', 'desc').get()).docs;
+    } catch (error) {
+      if (!isMissingIndexError(error)) throw error;
+      logServerWarning('export_applications.missing_index_fallback', error);
+      docs = (await query.get()).docs.sort(
+        (a, b) => toMillis(b.data()?.createdAt) - toMillis(a.data()?.createdAt),
+      );
+    }
 
-    const rows = snapshot.docs.map((doc) => {
+    const rows = docs.map((doc) => {
       const d = doc.data();
       const createdAt = d.createdAt?.toDate?.()?.toISOString() || '';
       return [
