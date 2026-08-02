@@ -12,7 +12,7 @@
 | 1 — Segurança crítica                        | EM CURSO | Itens 1.3, 1.4, 1.5, 1.6 e 1.7 concluídos. Falta 1.2 (`/setup/seed`) e a rotação da chave Admin, que depende do proprietário. |
 | 2 — Rotas de API                             | EM CURSO | Veredicto de auth das 71 rotas concluído em 1.7; falta a passagem funcional grupo a grupo.                              |
 | 3 — Páginas e dashboards                     | **CONCLUÍDA** | Públicas, autenticação, os três dashboards, fluxos de utilizador e design auditados com contas reais. 9 achados corrigidos. |
-| 4 — Purga de legado                          | EM CURSO | 4.1 dependências: 3 removidas, Tailwind à espera de decisão. Falta ficheiros/exports órfãos e documentação legada.      |
+| 4 — Purga de legado                          | EM CURSO | 4.1 dependências: 3 removidas; Tailwind investigado e mantido (está em uso via @import v4). Falta ficheiros/exports órfãos e documentação legada. |
 | 5 — UX, visual, performance e acessibilidade | PENDENTE | Ainda não iniciada.                                                                                                     |
 | 6 — Validação e pacote de deploy             | PENDENTE | Ainda não iniciada.                                                                                                     |
 
@@ -725,19 +725,32 @@ Commit `387f42e`. Suite (336 testes) e build verdes após reinstalação limpa.
 
 `playwright` e `axe-core` são usados diretamente por `scripts/capture-ui-audit.mjs` e `e2e/ui-audit.ts` mas só chegam transitivamente via `@playwright/test` e `@axe-core/playwright`. Não está partido, mas depender de dependências transitivas é frágil — declarar explicitamente fica como melhoria de baixa prioridade.
 
-### Tailwind — precisa da tua decisão
+### Tailwind — investigado e MANTIDO
 
-O Tailwind está configurado e **gera CSS que ninguém usa**:
+Autorizaste a remoção com base na minha análise. Ao executá-la, o build falhou e a análise revelou-se **errada**: o Tailwind está genuinamente ligado ao projeto.
 
-- Não existe uma única diretiva `@tailwind` nem `@apply` em todo o projeto.
-- O CSS compilado contém 542 ocorrências de `--tw-` e utilitárias como `.flex`, `.grid`, `.hidden`, `.items-center` — geradas pelo scan de conteúdo do Tailwind v4.
-- Uma contagem por **token exato** de `className` em todo o JSX (não por substring) encontrou **zero** utilizações dessas classes. Os nomes parecidos que existem — `stats-grid`, `grid-2`, `dash-flex-between` — são CSS próprio do projeto.
+O que me escapou: procurei as diretivas `@tailwind` e `@apply` da versão 3. Este projeto usa **Tailwind v4**, que se liga por `@import`. O `styles/globals.css` começa assim:
 
-Medição do impacto, com o mesmo método dos dois lados: **com o plugin 1.090.733 bytes de CSS; sem ele 1.064.734**. O plugin acrescenta ~26 KB de CSS morto e um passo de build.
+```css
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+@config '../tailwind.config.js';
+```
 
-Não removi porque mexer no pipeline de PostCSS é risco médio e o meu varrimento cobre apenas `className` estáticos — um `className` construído por template literal poderia produzir uma utilitária que o scan não vê. **Decide se queres que remova `tailwind.config.js`, `postcss.config.mjs` e os três pacotes.**
+Seguido de um bloco `@theme` próprio. Remover os pacotes quebra o build com `Can't resolve 'tailwindcss/theme.css'`, e removê-lo a sério obrigaria a reescrever o CSS global — muito além do «apagar dois ficheiros de configuração e três pacotes» que eu tinha descrito.
 
-Nota de método, porque a primeira tentativa deu o resultado oposto: a medição inicial usou `tee | head -8`, e o `head` fechou o pipe cedo, gravando só 9 dos 35 ficheiros CSS. Comparei 9 contra 35 e conclui que o plugin minificava. Refeita a medição com o mesmo método dos dois lados, o resultado inverteu-se.
+Estado: **tudo reposto e verificado**. Build compila, 336 testes verdes, `/vagas` renderiza com as cores, cartões e 1039 regras CSS corretas.
+
+O que se mantém verdadeiro do achado original: as utilitárias que o Tailwind gera (`.flex`, `.grid`, `.hidden`, …) não são usadas por nenhum `className` estático — uma contagem por token exato dá zero. Os ~26 KB que a camada de utilitárias acrescenta são provavelmente desperdício. Mas o bloco `@theme` e a camada `theme` alimentam variáveis que o CSS do projeto pode consumir, e isso não foi verificado.
+
+**Recomendação para a Fase 5.3**, se quiseres recuperar esses 26 KB: manter o `@import` do `theme.css` e remover apenas o de `utilities.css`, medindo o CSS e comparando páginas antes e depois. É uma otimização de payload com risco contido, não uma purga.
+
+### Nota sobre o processo
+
+Nesta análise concluí duas vezes o oposto da verdade antes de acertar, e a segunda conclusão chegou a ser executada com autorização. As causas foram: uma medição truncada por `tee | head`, que comparou 9 ficheiros CSS contra 35; e uma pesquisa pela sintaxe de uma versão do Tailwind que este projeto não usa. Além disso, ao correr `rm -rf .next` durante as comparações, deixei o servidor de desenvolvimento do proprietário a responder 500 — substituído por um servidor gerido em `.claude/launch.json`.
+
+Nenhuma destas falhas chegou ao repositório: o build partido foi revertido no mesmo passo e o estado final está verificado. Mas justificam a regra que passou a valer para o resto da auditoria: **nenhuma remoção avança sem que o build e a app sejam verificados depois dela**, e as configurações não versionadas são copiadas antes de qualquer alteração.
 
 ## Inventário de veredictos
 
