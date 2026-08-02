@@ -695,6 +695,20 @@ Auditoria de contraste WCAG AA: **uma** falha em 108 elementos — o badge do pl
 
 Nota de método: a primeira medição de contraste reportou seis falhas, todas falsas, por não compor a transparência dos fundos (`rgba(...,0.12)` sobre branco). Refeita com composição alfa correta e validada contra cálculo manual.
 
+### 3.8 — Serviços e ferramentas de recursos
+
+Testados com a conta `qa-candidato-premium`, que é quem tem direito a eles.
+
+| Ferramenta | Resultado |
+| --- | --- |
+| Gerador de CV | O gate que criei deixa passar quem tem plano. Preenchi o formulário e gerei um PDF real: blob `application/pdf` de 4.274 bytes, mensagem «PDF gerado com sucesso», zero erros. Tem 4 passos, pré-visualização e guardar rascunho. |
+| Calculadora de impostos | **Cálculo validado contra `lib/stpCompensationData.js`.** Para 10.000 Db/mês: INSS 4% = 400 Db; o IRS incide sobre o rendimento após INSS — (10000−400)×12 = 115.200/ano, escalão de 15% com 4.670 a abater = 12.610/ano = 1.050,83/mês, apresentado como 1051. Líquido 8.549 e custo patronal 10.600 (6% empregador) também batem. A base tributável usada é a correta. |
+| Calculadora salarial | Carrega com benchmarks construídos a partir das vagas reais e mostra o piso mensal em vigor (3.000 Db desde 2025-10-01). |
+| Descarga de recursos | Os 10 conteúdos do catálogo (6 modelos, 4 guias) devolvem `200` com `text/plain`. |
+| Serviços RH | Empresa submete pedido (`201`); candidato é recusado (`403`). |
+
+Observação de produto, sem gravidade: os conteúdos descarregáveis têm entre 309 e 496 bytes — são textos curtos. Funcionam, mas o valor percebido de um «modelo» descarregável com meia página é baixo. Fica como decisão de conteúdo.
+
 ## Inventário de veredictos
 
 A tabela de rotas de API está acima, na Fase 1.7. A tabela de páginas é acrescentada na Fase 3. Nenhuma rota ou página é marcada como validada com base apenas na auditoria histórica.
