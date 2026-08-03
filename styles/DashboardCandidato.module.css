@@ -4290,6 +4290,22 @@
   line-height: 1.6;
 }
 
+/* O cabeçalho de cada separador (Minhas candidaturas, Vagas guardadas,
+   Entrevistas, ...) vive na camada Workbridge, fixa no tema claro — o fundo
+   de .contentArea já é sempre #eef4f8. Mas estas duas regras têm mais
+   especificidade (classe + elemento) do que o "reset" claro dessa camada, por
+   isso continuam presas a var(--text-1/--text-3), que o alternador de tema
+   escuro (partilhado por todo o DashboardShell) troca para tons quase
+   brancos — título e legenda ficavam ilegíveis sobre o fundo claro fixo.
+   Restrito a esta folha para não afetar outras rotas. */
+:global(.dashShell[data-theme='dark']) .candidateSectionTitleRow h2 {
+  color: #102441;
+}
+
+:global(.dashShell[data-theme='dark']) .candidateSectionCopy > p {
+  color: #5f6874;
+}
+
 .candidateSectionAction {
   display: flex;
   align-items: center;
