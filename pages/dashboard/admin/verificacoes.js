@@ -417,6 +417,32 @@ export default function AdminVerificacoes() {
       </div>
 
       {selectedVerification ? (
+        <VerificationReviewModal
+          selectedVerification={selectedVerification}
+          closeModal={closeModal}
+          reviewReason={reviewReason}
+          setReviewReason={setReviewReason}
+          processAction={processAction}
+          processingKey={processingKey}
+        />
+      ) : null}
+    </>
+  );
+}
+
+function VerificationReviewModal({
+  selectedVerification,
+  closeModal,
+  reviewReason,
+  setReviewReason,
+  processAction,
+  processingKey,
+}) {
+  const approvalEligibility = selectedVerification.approvalEligibility || {
+    allowed: true,
+  };
+
+  return (
         <div className={styles.modalOverlay} onClick={closeModal}>
           <div
             className={`${styles.modalCard} ${styles.modalCardLarge}`}
@@ -471,6 +497,60 @@ export default function AdminVerificacoes() {
                     rejeitados
                   </span>
                 </div>
+              </div>
+
+              <div className={styles.modalInfoCard}>
+                <h3 className={styles.modalInfoTitle}>
+                  Pré-requisitos para aprovar
+                </h3>
+                <div className={styles.buttonGroup}>
+                  {selectedVerification.cvUrl ? (
+                    <a
+                      href={selectedVerification.cvUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={styles.proofLink}
+                    >
+                      Abrir CV do candidato
+                    </a>
+                  ) : (
+                    <span
+                      className={styles.badge}
+                      style={{
+                        '--badge-bg': 'rgba(239, 68, 68, 0.14)',
+                        '--badge-color': '#f87171',
+                        '--badge-border': '1px solid rgba(239, 68, 68, 0.2)',
+                      }}
+                    >
+                      Sem CV anexado ao perfil
+                    </span>
+                  )}
+                  <span
+                    className={styles.badge}
+                    style={{
+                      '--badge-bg': approvalEligibility.allowed
+                        ? 'rgba(16, 185, 129, 0.14)'
+                        : 'rgba(239, 68, 68, 0.14)',
+                      '--badge-color': approvalEligibility.allowed
+                        ? '#34d399'
+                        : '#f87171',
+                      '--badge-border': approvalEligibility.allowed
+                        ? '1px solid rgba(16,185,129,0.2)'
+                        : '1px solid rgba(239, 68, 68, 0.2)',
+                    }}
+                  >
+                    Plano: {selectedVerification.currentPlan || 'basic_candidato'}
+                    {approvalEligibility.allowed
+                      ? ' • pagamento confirmado'
+                      : ' • pagamento não confirmado'}
+                  </span>
+                </div>
+                {!approvalEligibility.allowed ? (
+                  <p className={styles.proofNote}>
+                    {approvalEligibility.reason} Não é possível aprovar
+                    nenhum tipo deste pedido enquanto isto não for resolvido.
+                  </p>
+                ) : null}
               </div>
 
               <div className={styles.formField}>
@@ -582,8 +662,14 @@ export default function AdminVerificacoes() {
                           <button
                             type="button"
                             disabled={
+                              !approvalEligibility.allowed ||
                               processingKey ===
-                              `${selectedVerification.id}:${item.type}:approve`
+                                `${selectedVerification.id}:${item.type}:approve`
+                            }
+                            title={
+                              approvalEligibility.allowed
+                                ? undefined
+                                : approvalEligibility.reason
                             }
                             onClick={() =>
                               processAction(
@@ -649,8 +735,6 @@ export default function AdminVerificacoes() {
             </div>
           </div>
         </div>
-      ) : null}
-    </>
   );
 }
 

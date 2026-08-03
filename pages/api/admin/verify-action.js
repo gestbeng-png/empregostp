@@ -6,6 +6,7 @@ import {
   serializeVerificationTimestamps,
   VERIFICATION_TYPE_CONFIG,
 } from '../../../lib/candidateVerification';
+import { canVerifyProfile } from '../../../lib/candidatePlanFeatures';
 import { createServerNotification } from '../../../lib/serverNotifications';
 import { logServerError } from '../../../lib/serverLog';
 
@@ -101,6 +102,32 @@ export default async function handler(req, res) {
     }
     if (!verificationType && verificationData.status !== 'pending') {
       return res.status(400).json({ error: 'Verification already reviewed' });
+    }
+
+    if (action === 'approve') {
+      const targetUserDoc = await admin.firestore().collection('users').doc(verificationData.uid).get();
+      const targetUserData = targetUserDoc.exists ? targetUserDoc.data() || {} : {};
+
+      // O CV visível ao candidato (perfil) é o que realmente importa aqui — pode
+      // não ter sido re-anexado neste pedido específico se só outro tipo (ex.
+      // certificados) foi submetido desta vez.
+      const hasCv = Boolean(String(targetUserData.cvUrl || '').trim());
+      if (!hasCv) {
+        return res.status(400).json({
+          error: 'Não é possível aprovar: o candidato ainda não anexou um currículo (CV) ao perfil.',
+          code: 'VERIFICATION_MISSING_CV',
+        });
+      }
+
+      // O plano pode ter mudado ou expirado entre a submissão e esta revisão —
+      // reconfirmar o pagamento agora em vez de confiar na checagem feita na altura do envio.
+      const paymentAccess = canVerifyProfile(targetUserData.currentPlan);
+      if (!paymentAccess.allowed) {
+        return res.status(400).json({
+          error: 'Não é possível aprovar: o plano atual do candidato já não inclui verificação de perfil (pagamento não confirmado).',
+          code: 'VERIFICATION_PLAN_NOT_ELIGIBLE',
+        });
+      }
     }
 
     const reviewedRecord = reviewVerificationRecord(verificationData, {

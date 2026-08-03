@@ -1,5 +1,6 @@
 import { admin } from '../../../lib/firebaseAdmin';
 import { serializeVerificationTimestamps } from '../../../lib/candidateVerification';
+import { canVerifyProfile } from '../../../lib/candidatePlanFeatures';
 import { logServerError } from '../../../lib/serverLog';
 
 function getDocTime(data = {}) {
@@ -58,6 +59,9 @@ export default async function handler(req, res) {
         name: 'Desconhecido',
         email: verificationData.profileSnapshot?.email || verificationData.documents?.contact?.email || 'Não informado',
       };
+      let cvUrl = '';
+      let cvName = '';
+      let currentPlan = 'basic_candidato';
 
       try {
         const userDoc = await admin.firestore().collection('users').doc(verificationData.uid).get();
@@ -67,10 +71,25 @@ export default async function handler(req, res) {
           if (!candidateInfo.email || candidateInfo.email === 'Não informado') {
             candidateInfo.email = userData.email || 'Não informado';
           }
+          cvUrl = userData.cvUrl || '';
+          cvName = userData.cvName || '';
+          currentPlan = userData.currentPlan || 'basic_candidato';
         }
       } catch (err) {
         logServerError('admin_verifications.fetching_user_info_failed', err);
       }
+
+      // O admin só deve poder aprovar depois de ver o CV atual do perfil e de
+      // confirmar que o plano do candidato ainda cobre a verificação (pagamento
+      // confirmado) — ver pages/api/admin/verify-action.js, que aplica o mesmo
+      // gate no momento da aprovação.
+      const hasCv = Boolean(String(cvUrl || '').trim());
+      const planAccess = canVerifyProfile(currentPlan);
+      const approvalEligibility = !hasCv
+        ? { allowed: false, code: 'VERIFICATION_MISSING_CV', reason: 'O candidato ainda não anexou um currículo (CV) ao perfil.' }
+        : !planAccess.allowed
+          ? { allowed: false, code: 'VERIFICATION_PLAN_NOT_ELIGIBLE', reason: 'O plano atual do candidato já não inclui verificação de perfil (pagamento não confirmado).' }
+          : { allowed: true };
 
       verifications.push({
         id: entry.doc.id,
@@ -84,6 +103,10 @@ export default async function handler(req, res) {
         requestedTypes: verificationData.requestedTypes || [],
         verificationItems: verificationData.verificationItems || {},
         profileSnapshot: verificationData.profileSnapshot || {},
+        cvUrl,
+        cvName,
+        currentPlan,
+        approvalEligibility,
       });
     }
 
