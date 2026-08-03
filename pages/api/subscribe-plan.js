@@ -157,7 +157,7 @@ async function handleSubscription(req, res) {
       ? normalizeEmpresaPlanId(currentPlanIdRaw, userData.planName, userData)
       : normalizeCandidatePlanId(currentPlanIdRaw, userData.planName, userData);
     const requestedPlanIdForRules = normalizedUserType === 'empresa' ? requestedEmpresaTierId : requestedCandidateTierId;
-    const { isPlanActive } = await import('../../lib/candidatePlanFeatures');
+    const { isPlanActive, getCandidatePlanFeatures } = await import('../../lib/candidatePlanFeatures');
     
     // Verificar se o plano atual está ativo
     // Planos básicos sempre estão ativos, planos pagos precisam verificar data de término
@@ -183,6 +183,24 @@ async function handleSubscription(req, res) {
       });
     }
     
+    // Verificação de perfil é um serviço independente do escalão de
+    // subscrição, não um concorrente na hierarquia de planos: quem já tem um
+    // plano que a inclui (hoje, o Premium) não precisa de "comprar" o plano
+    // Verificação para a ter. Sem isto, o pedido caía no bloqueio de upgrade
+    // como se verificação e o plano ativo fossem mutuamente exclusivos.
+    if (
+      normalizedUserType === 'candidato' &&
+      requestedPlanIdForRules === 'verification_candidato' &&
+      hasActivePlan &&
+      currentPlanId !== requestedPlanIdForRules &&
+      getCandidatePlanFeatures(currentPlanId).canVerifyProfile
+    ) {
+      return res.status(200).json({
+        message: 'A verificação de perfil já está incluída no seu plano atual.',
+        status: 'approved'
+      });
+    }
+
     // Verificar se é um upgrade válido
     // Candidatos:
     // - básico -> verificação/profissional/premium
