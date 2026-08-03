@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import { FiArrowLeft, FiArrowRight, FiBookOpen } from "react-icons/fi";
+import { FiArrowLeft, FiArrowRight, FiBookOpen, FiShare2 } from "react-icons/fi";
 import PublicPageShell from "../../components/PublicPageShell";
 import { admin } from "../../lib/firebaseAdmin";
 import { isContentPublished } from "../../lib/contentPublication";
@@ -78,6 +78,32 @@ function PlainTextArticle({ content }) {
 export default function BlogPost({ post }) {
   const router = useRouter();
   const [failedHeroImage, setFailedHeroImage] = useState("");
+  const [shareState, setShareState] = useState("idle");
+
+  const handleShare = async (post) => {
+    const shareData = {
+      title: post.title,
+      text: post.excerpt || post.title,
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (error) {
+        // Utilizador cancelou a partilha; não é um erro a tratar.
+      }
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(shareData.url);
+      setShareState("copied");
+      setTimeout(() => setShareState("idle"), 2000);
+    } catch (error) {
+      // Clipboard indisponível; sem fallback adicional.
+    }
+  };
 
   if (router.isFallback) {
     return (
@@ -130,29 +156,31 @@ export default function BlogPost({ post }) {
           </nav>
 
           <section className={styles.hero}>
-            {showHeroImage ? (
-              <>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={post.image}
-                  alt=""
-                  className={styles.heroImage}
-                  onError={() => setFailedHeroImage(post.image)}
-                />
-              </>
-            ) : (
-              <div className={styles.heroFallback} aria-hidden="true">
-                <Image
-                  src="/assets/Emprego STP Logo 2-wide.png"
-                  alt=""
-                  width={320}
-                  height={96}
-                  className={styles.heroFallbackLogo}
-                />
-                <FiBookOpen />
-              </div>
-            )}
-            <div className={styles.heroOverlay} />
+            <div className={styles.heroMedia}>
+              {showHeroImage ? (
+                <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={post.image}
+                    alt=""
+                    className={styles.heroImage}
+                    onError={() => setFailedHeroImage(post.image)}
+                  />
+                </>
+              ) : (
+                <div className={styles.heroFallback} aria-hidden="true">
+                  <Image
+                    src="/assets/Emprego STP Logo 2-wide.png"
+                    alt=""
+                    width={320}
+                    height={96}
+                    className={styles.heroFallbackLogo}
+                  />
+                  <FiBookOpen />
+                </div>
+              )}
+              <div className={styles.heroOverlay} />
+            </div>
             <div className={styles.heroInner}>
               <div className={styles.metaRow}>
                 <span className={styles.categoryPill}>
@@ -168,7 +196,17 @@ export default function BlogPost({ post }) {
                 </span>
               </div>
               <h1 className={styles.title}>{post.title}</h1>
-              <p className={styles.author}>Por {post.author}</p>
+              <div className={styles.authorRow}>
+                <p className={styles.author}>Por {post.author}</p>
+                <button
+                  type="button"
+                  className={styles.shareButton}
+                  onClick={() => handleShare(post)}
+                >
+                  <FiShare2 aria-hidden="true" />
+                  {shareState === "copied" ? "Link copiado!" : "Partilhar"}
+                </button>
+              </div>
             </div>
           </section>
 
