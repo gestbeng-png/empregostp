@@ -80,14 +80,6 @@
   text-transform: uppercase;
 }
 
-.heroEyebrow::before {
-  content: '';
-  width: 7px;
-  height: 7px;
-  border: 2px solid currentColor;
-  border-radius: 999px;
-}
-
 .heroEyebrowMobile,
 .heroTitleMobile {
   display: none;
@@ -1075,8 +1067,7 @@
     text-align: left;
   }
 
-  .hero::after,
-  .heroEyebrow::before {
+  .hero::after {
     display: none;
   }
 
