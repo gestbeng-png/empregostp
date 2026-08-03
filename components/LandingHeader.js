@@ -207,9 +207,9 @@ function LandingHeaderContent({ variant = 'light' }) {
         <Link href="/" className={styles.brand} aria-label="EmpregoSTP">
           <span className={styles.brandMark}>
             <Image
-              src="/assets/Emprego STP Logo.png"
+              src="/assets/Logo header.png"
               alt="EmpregoSTP"
-              width={196}
+              width={219}
               height={59}
               priority
               sizes="(max-width: 380px) 150px, (max-width: 640px) 164px, (max-width: 1240px) 170px, 184px"
