@@ -17,6 +17,7 @@ import {
   FiHeadphones,
   FiLink,
   FiLock,
+  FiMail,
   FiRss,
   FiSearch,
   FiShield,
@@ -305,6 +306,11 @@ export default function RecursosPage({
   const [searchQuery, setSearchQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [expandedFaq, setExpandedFaq] = useState(null);
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterState, setNewsletterState] = useState({
+    status: 'idle',
+    message: '',
+  });
   const templateRailRef = useRef(null);
   const hasProfessionalAccess = Boolean(professionalAccess?.allowed);
   const premiumCtaUrl = professionalAccess?.ctaUrl || '/premium/candidatos';
@@ -471,6 +477,51 @@ export default function RecursosPage({
     'ferramenta',
     'ferramentas',
   )} disponíveis.`;
+
+  const handleNewsletterSubmit = async (event) => {
+    event.preventDefault();
+    const email = newsletterEmail.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setNewsletterState({
+        status: 'error',
+        message: 'Introduza um email válido.',
+      });
+      return;
+    }
+
+    setNewsletterState({ status: 'loading', message: '' });
+
+    try {
+      const response = await fetch('/api/newsletter/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, source: 'recursos' }),
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        setNewsletterState({
+          status: 'error',
+          message:
+            data.error ||
+            'Não foi possível concluir a subscrição. Tente novamente.',
+        });
+        return;
+      }
+
+      setNewsletterState({
+        status: 'success',
+        message: data.message || 'Subscrição confirmada. Obrigado.',
+      });
+      setNewsletterEmail('');
+    } catch (error) {
+      setNewsletterState({
+        status: 'error',
+        message:
+          'Não foi possível estabelecer a ligação. Tente novamente dentro de momentos.',
+      });
+    }
+  };
 
   return (
     <>
@@ -1018,6 +1069,72 @@ export default function RecursosPage({
                           </a>
                         );
                       })}
+                    </div>
+
+                    <div
+                      className={pageStyles.newsletter}
+                      aria-labelledby="newsletter-title"
+                    >
+                      <span
+                        className={pageStyles.newsletterIcon}
+                        aria-hidden="true"
+                      >
+                        <FiMail />
+                      </span>
+                      <h2
+                        id="newsletter-title"
+                        className={pageStyles.newsletterTitle}
+                      >
+                        Receba novidades do mercado de trabalho
+                      </h2>
+                      <p className={pageStyles.newsletterText}>
+                        Inscreva-se na nossa newsletter semanal para receber
+                        as melhores dicas e vagas diretamente no seu email.
+                      </p>
+                      <form
+                        className={pageStyles.newsletterForm}
+                        onSubmit={handleNewsletterSubmit}
+                      >
+                        <input
+                          type="email"
+                          placeholder="O seu email profissional"
+                          aria-label="Email para subscrever a newsletter"
+                          className={pageStyles.newsletterInput}
+                          value={newsletterEmail}
+                          onChange={(event) => {
+                            setNewsletterEmail(event.target.value);
+                            if (newsletterState.status !== 'idle') {
+                              setNewsletterState({
+                                status: 'idle',
+                                message: '',
+                              });
+                            }
+                          }}
+                          disabled={newsletterState.status === 'loading'}
+                        />
+                        <button
+                          type="submit"
+                          className={pageStyles.newsletterButton}
+                          disabled={newsletterState.status === 'loading'}
+                        >
+                          {newsletterState.status === 'loading'
+                            ? 'A subscrever…'
+                            : 'Subscrever'}
+                        </button>
+                        {newsletterState.message ? (
+                          <p
+                            className={`${pageStyles.newsletterFeedback} ${
+                              newsletterState.status === 'error'
+                                ? pageStyles.newsletterFeedbackError
+                                : pageStyles.newsletterFeedbackSuccess
+                            }`}
+                            role="status"
+                            aria-live="polite"
+                          >
+                            {newsletterState.message}
+                          </p>
+                        ) : null}
+                      </form>
                     </div>
                   </div>
                 </div>
