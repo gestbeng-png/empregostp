@@ -2263,15 +2263,16 @@ const CandidateDashboard = () => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
 
-    if (
-      !activePlan.features?.canUploadCertificates ||
-      !planResources.certificates?.allowed
-    ) {
+    // Upload de certificados nunca é exclusivo de plano — só a quantidade é
+    // limitada. `allowed` só é falso ao atingir o limite (ou enquanto os
+    // dados do plano ainda não carregaram); nesse caso a mensagem certa é o
+    // upgradeMessage da quota, nunca uma mensagem de exclusividade.
+    if (!planResources.certificates?.allowed) {
       setProfileFeedback({
         type: 'error',
         message:
           planResources.certificates?.upgradeMessage ||
-          'Upload de certificados é exclusivo dos planos Profissional e Premium.',
+          'Não foi possível confirmar o limite de certificados. Tente novamente.',
       });
       return;
     }
@@ -3266,33 +3267,20 @@ const CandidateDashboard = () => {
                       <p className={ps.hint} style={{ marginTop: '14px' }}>
                         Anexe comprovativos em PDF
                       </p>
-                      {activePlan.features?.canUploadCertificates ? (
-                        <label className={ps.certUploadBtn}>
-                          <FiUploadCloud aria-hidden="true" /> Enviar
-                          certificados
-                          <input
-                            type="file"
-                            multiple
-                            accept=".pdf"
-                            className={ps.hiddenFile}
-                            onChange={handleCertUpload}
-                          />
-                        </label>
-                      ) : (
-                        <div className={ps.planWarn}>
-                          <p className={ps.planWarnText}>
-                            Upload de certificados é exclusivo dos planos
-                            Profissional e Premium.
-                          </p>
-                          <button
-                            type="button"
-                            className={ps.importBtn}
-                            onClick={() => openTab('plans')}
-                          >
-                            Fazer upgrade
-                          </button>
-                        </div>
-                      )}
+                      {/* Upload de certificados nunca é exclusivo de
+                          plano — só a quantidade tem limite, aplicado em
+                          handleCertUpload. */}
+                      <label className={ps.certUploadBtn}>
+                        <FiUploadCloud aria-hidden="true" /> Enviar
+                        certificados
+                        <input
+                          type="file"
+                          multiple
+                          accept=".pdf"
+                          className={ps.hiddenFile}
+                          onChange={handleCertUpload}
+                        />
+                      </label>
                       {profileForm.certificateFiles.length > 0 && (
                         <ul className={ps.certList}>
                           {profileForm.certificateFiles.map((url, i) => (
