@@ -142,6 +142,32 @@ html[data-dashboard-theme='dark'] .dashShell[data-theme='light'] {
   color-scheme: dark;
 }
 
+/* O layout Workbridge do dashboard candidato (styles/DashboardCandidato.module.css
+   e as páginas legadas em .dash-legacy-page, ex. CandidaturasPage.module.css)
+   foi construído só para o tema claro: muitos fundos usam literais fixos
+   (#eef4f8, #fff...), nunca var(). O botão de alternar tema é partilhado por
+   todo o DashboardShell, por isso ligar o tema escuro troca --dash-ink/
+   --dash-ink-muted (ainda usados via var() nalguns títulos e valores, ex.
+   .statValue/.infoValue) para tons claros, deixando texto quase branco sobre
+   esses fundos fixos e ilegível. Sem uma variante escura desenhada para este
+   role, é mais seguro fixar os tokens de volta ao claro do que reescrever
+   cada folha legada. */
+.dashShell.role-candidato[data-theme='dark'] {
+  --dash-canvas: #eef4f8;
+  --dash-canvas-soft: #f8fafb;
+  --dash-canvas-muted: #e4e5e8;
+  --dash-surface: #ffffff;
+  --dash-surface-subtle: #f8fafb;
+  --dash-surface-accent: #eef5fb;
+  --dash-border: #e4e5e8;
+  --dash-border-strong: #cdd1d7;
+  --dash-ink: #102441;
+  --dash-ink-secondary: #383750;
+  --dash-ink-muted: #5f6874;
+  --dash-ink-faint: #626b77;
+  color-scheme: light;
+}
+
 /* ─── ROLE ACCENTS ───────────────────────────────────────── */
 .dashShell.role-candidato {
   --role: #064bb5;
