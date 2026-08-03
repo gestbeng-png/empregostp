@@ -5982,6 +5982,15 @@
     width: 24px;
     height: 24px;
   }
+
+  /* No telemóvel os cartões flutuantes de vagas (ligados a .heroCanvas em
+     grid a partir dos 1040px) ficam empilhados e competem com o resto do
+     hero por espaço. .page.page.page eleva a especificidade porque esta
+     folha tem várias regras herdadas para .heroFloatingCard/.floatingCardN
+     nesta mesma faixa de largura. */
+  .page.page.page .heroFloatingCard {
+    display: none;
+  }
 }
 
 @media (max-width: 420px) {
