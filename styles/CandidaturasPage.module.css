@@ -129,21 +129,21 @@
 
 .statCard:hover {
   transform: translateY(-2px);
-  border-color: color-mix(in srgb, var(--stat-accent) 55%, transparent);
+  border-color: color-mix(in srgb, var(--stat-accent-current, var(--stat-accent)) 55%, transparent);
   box-shadow: 0 20px 38px rgba(30, 43, 77, 0.12);
 }
 
 .statCardActive {
-  border-color: color-mix(in srgb, var(--stat-accent) 65%, transparent);
+  border-color: color-mix(in srgb, var(--stat-accent-current, var(--stat-accent)) 65%, transparent);
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, var(--stat-accent) 10%, rgba(255, 255, 255, 0.98)),
+    color-mix(in srgb, var(--stat-accent-current, var(--stat-accent)) 10%, rgba(255, 255, 255, 0.98)),
     rgba(248, 251, 255, 0.98)
   );
 }
 
 .statValue {
-  color: var(--stat-accent);
+  color: var(--stat-accent-current, var(--stat-accent));
   font-size: 2rem;
   font-weight: 900;
 }
@@ -236,7 +236,7 @@
   background:
     radial-gradient(
       circle at top right,
-      color-mix(in srgb, var(--card-accent) 10%, transparent),
+      color-mix(in srgb, var(--card-accent-current, var(--card-accent)) 10%, transparent),
       transparent 28%
     ),
     linear-gradient(
@@ -253,7 +253,7 @@
 
 .applicationCard:hover {
   transform: translateY(-2px);
-  border-color: var(--card-accent-border);
+  border-color: var(--card-accent-border-current, var(--card-accent-border));
   box-shadow: 0 24px 46px rgba(30, 43, 77, 0.14);
 }
 
@@ -283,9 +283,9 @@
   align-items: center;
   padding: 0.7rem 1rem;
   border-radius: 14px;
-  border: 1px solid var(--card-accent-border);
-  background: var(--card-accent-bg);
-  color: var(--card-accent);
+  border: 1px solid var(--card-accent-border-current, var(--card-accent-border));
+  background: var(--card-accent-bg-current, var(--card-accent-bg));
+  color: var(--card-accent-current, var(--card-accent));
   font-weight: 800;
 }
 
@@ -333,9 +333,9 @@
   align-items: center;
   padding: 0.4rem 0.75rem;
   border-radius: 999px;
-  background: var(--badge-bg);
-  border: 1px solid var(--badge-border);
-  color: var(--badge-color);
+  background: var(--badge-bg-current, var(--badge-bg));
+  border: 1px solid var(--badge-border-current, var(--badge-border));
+  color: var(--badge-color-current, var(--badge-color));
   font-size: 0.78rem;
   font-weight: 800;
 }
@@ -546,7 +546,7 @@
   gap: 0.9rem;
   padding: 1rem;
   border-radius: 14px;
-  border-left: 3px solid var(--card-accent);
+  border-left: 3px solid var(--card-accent-current, var(--card-accent));
   background: rgba(95, 184, 245, 0.1);
 }
 
@@ -556,7 +556,7 @@
   margin-top: 0.42rem;
   flex: none;
   border-radius: 999px;
-  background: var(--card-accent);
+  background: var(--card-accent-current, var(--card-accent));
 }
 
 .timelineContent {
@@ -768,7 +768,7 @@
   position: absolute;
   inset: auto 0 0;
   height: 3px;
-  background: var(--stat-accent);
+  background: var(--stat-accent-current, var(--stat-accent));
   opacity: 0;
   transform: scaleX(0.5);
   transition: opacity 150ms ease, transform 150ms ease;
@@ -776,7 +776,7 @@
 
 .statCard:hover {
   transform: translateY(-1px);
-  border-color: color-mix(in srgb, var(--stat-accent) 30%, transparent);
+  border-color: color-mix(in srgb, var(--stat-accent-current, var(--stat-accent)) 30%, transparent);
   box-shadow: 0 10px 22px rgba(15, 23, 42, 0.055);
 }
 
@@ -786,8 +786,8 @@
 }
 
 .statCardActive {
-  border-color: color-mix(in srgb, var(--stat-accent) 24%, transparent);
-  background: color-mix(in srgb, var(--stat-accent) 5%, var(--surface, #fff));
+  border-color: color-mix(in srgb, var(--stat-accent-current, var(--stat-accent)) 24%, transparent);
+  background: color-mix(in srgb, var(--stat-accent-current, var(--stat-accent)) 5%, var(--surface, #fff));
 }
 
 .statValue {
@@ -817,7 +817,7 @@
   border-color: var(--border, rgba(21, 37, 79, 0.1));
   border-radius: 16px;
   background:
-    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--card-accent) 8%, transparent), transparent 28%),
+    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--card-accent-current, var(--card-accent)) 8%, transparent), transparent 28%),
     var(--surface, #fff);
   box-shadow: 0 9px 26px rgba(15, 23, 42, 0.045);
 }
@@ -998,7 +998,10 @@
 .statCard:focus-visible,
 .applicationCard a:focus-visible,
 .applicationCard button:focus-visible,
-.retryButton:focus-visible {
+.retryButton:focus-visible,
+.emptyAction:focus-visible,
+.interviewBannerLink:focus-visible,
+.textarea:focus-visible {
   outline: 3px solid rgba(32, 87, 215, 0.22);
   outline-offset: 2px;
 }
@@ -1064,15 +1067,15 @@
 
 /* Workbridge fidelity layer. */
 .page {
-  background: #eef4f8;
-  color: #102441;
+  background: var(--bg, #eef4f8);
+  color: var(--text-1, #102441);
   font-family: var(--font-instrument, "Instrument Sans"), Arial, sans-serif;
 }
 
 .hero {
-  border-color: #102441;
+  border-color: var(--navy, #102441);
   border-radius: 8px;
-  background: #102441;
+  background: var(--navy, #102441);
   box-shadow: none;
 }
 
@@ -1095,25 +1098,44 @@
   box-shadow: none;
 }
 
+.heroAction:hover {
+  background: #e5ff7a;
+  color: #102441;
+}
+
+.container > .backLink {
+  color: var(--blue, #064bb5);
+}
+
+.container > .backLink:hover {
+  color: var(--blue, #064bb5);
+  opacity: 0.82;
+}
+
+.hero .backLink:hover {
+  color: var(--sky, #69c8ff);
+  opacity: 0.82;
+}
+
 .statCard,
 .applicationCard,
 .emptyState,
 .errorState {
-  border-color: #e4e5e8;
+  border-color: var(--border, #e4e5e8);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--surface, #ffffff);
   box-shadow: none;
 }
 
 .statCardActive {
-  border-color: #69c8ff;
-  background: #eef4f8;
+  border-color: var(--sky, #69c8ff);
+  background: var(--surface-2, #eef4f8);
 }
 
 .statCard:hover,
 .applicationCard:hover {
   transform: none;
-  border-color: #69c8ff;
+  border-color: var(--sky, #69c8ff);
   box-shadow: none;
 }
 
@@ -1123,7 +1145,7 @@
 .timelineTitle,
 .emptyTitle,
 .errorState h1 {
-  color: #102441;
+  color: var(--text-1, #102441);
 }
 
 .cardCompany,
@@ -1132,8 +1154,9 @@
 .timelineDescription,
 .emptyDescription,
 .errorState p,
-.tipList {
-  color: #5f6874;
+.tipList,
+.feedbackBox {
+  color: var(--text-3, #5f6874);
 }
 
 .infoItem,
@@ -1144,9 +1167,9 @@
 .feedbackBox,
 .tipsBlock,
 .skillBlock {
-  border-color: #e4e5e8;
+  border-color: var(--border, #e4e5e8);
   border-radius: 8px;
-  background: #eef4f8;
+  background: var(--surface-2, #eef4f8);
   box-shadow: none;
 }
 
@@ -1196,11 +1219,91 @@
 .emptyAction:hover,
 .retryButton:hover {
   background: #0a65cc;
+  color: #ffffff;
 }
 
 .emptyIcon,
 .errorIcon {
   border-radius: 4px;
-  background: #eef4f8;
-  color: #064bb5;
+  background: var(--surface-2, #eef4f8);
+  color: var(--blue, #064bb5);
+}
+
+/* Resolve semantic accents against the dashboard's dark surfaces. */
+:global(.dashShell[data-theme='dark']) .statCard {
+  --stat-accent-current: var(--stat-accent-dark, var(--stat-accent));
+}
+
+:global(.dashShell[data-theme='dark']) .loadingSpinner {
+  border-color: color-mix(in srgb, var(--sky) 18%, transparent);
+  border-top-color: var(--sky);
+}
+
+:global(.dashShell[data-theme='dark']) .applicationCard {
+  --card-accent-current: var(--card-accent-dark, var(--card-accent));
+  --card-accent-bg-current: var(--card-accent-bg-dark, var(--card-accent-bg));
+  --card-accent-border-current: var(
+    --card-accent-border-dark,
+    var(--card-accent-border)
+  );
+}
+
+:global(.dashShell[data-theme='dark']) .featureBadge {
+  --badge-bg-current: var(--badge-bg-dark, var(--badge-bg));
+  --badge-border-current: var(--badge-border-dark, var(--badge-border));
+  --badge-color-current: var(--badge-color-dark, var(--badge-color));
+}
+
+:global(.dashShell[data-theme='dark']) .interviewBannerText,
+:global(.dashShell[data-theme='dark']) .timelineDate,
+:global(.dashShell[data-theme='dark']) .actionButtonNeutral {
+  color: var(--text-2);
+}
+
+:global(.dashShell[data-theme='dark']) .interviewBannerText strong,
+:global(.dashShell[data-theme='dark']) .interviewStatus,
+:global(.dashShell[data-theme='dark']) .ghostButton,
+:global(.dashShell[data-theme='dark']) .actionButtonAccent,
+:global(.dashShell[data-theme='dark']) .inlineLink {
+  color: var(--sky);
+}
+
+:global(.dashShell[data-theme='dark']) .interviewStatus,
+:global(.dashShell[data-theme='dark']) .ghostButton,
+:global(.dashShell[data-theme='dark']) .actionButtonAccent {
+  border-color: color-mix(in srgb, var(--sky) 32%, transparent);
+  background: color-mix(in srgb, var(--sky) 11%, var(--surface-2));
+}
+
+:global(.dashShell[data-theme='dark']) .interviewBannerLink {
+  border-color: color-mix(in srgb, var(--sky) 28%, var(--border));
+  background: var(--surface);
+  color: var(--sky);
+}
+
+:global(.dashShell[data-theme='dark']) .actionButtonWarning {
+  color: #fde68a;
+}
+
+:global(.dashShell[data-theme='dark']) .skillChipNegative,
+:global(.dashShell[data-theme='dark']) .skillLabelNegative,
+:global(.dashShell[data-theme='dark']) .errorText {
+  color: #fda4af;
+}
+
+:global(.dashShell[data-theme='dark']) .textarea::placeholder {
+  color: var(--text-4);
+  opacity: 1;
+}
+
+:global(.dashShell[data-theme='dark']) .backLink:focus-visible,
+:global(.dashShell[data-theme='dark']) .heroAction:focus-visible,
+:global(.dashShell[data-theme='dark']) .statCard:focus-visible,
+:global(.dashShell[data-theme='dark']) .applicationCard a:focus-visible,
+:global(.dashShell[data-theme='dark']) .applicationCard button:focus-visible,
+:global(.dashShell[data-theme='dark']) .retryButton:focus-visible,
+:global(.dashShell[data-theme='dark']) .emptyAction:focus-visible,
+:global(.dashShell[data-theme='dark']) .interviewBannerLink:focus-visible,
+:global(.dashShell[data-theme='dark']) .textarea:focus-visible {
+  outline-color: color-mix(in srgb, var(--sky) 64%, transparent);
 }

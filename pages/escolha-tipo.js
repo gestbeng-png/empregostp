@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import Link from 'next/link';
 import nookies from 'nookies';
 import Image from 'next/image';
 import { useAuth } from '../context/AuthContext';
-import AuthShell from '../components/auth/AuthShell';
 import styles from '../styles/EscolhaTipo.module.css';
 
 export default function EscolhaTipoPage() {
@@ -76,116 +76,118 @@ export default function EscolhaTipoPage() {
           name="description"
           content="Escolha entre criar uma conta como candidato ou como empregador no empregoSTP."
         />
-        <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <AuthShell
-        tone={isGoogleFlow ? 'blue' : 'green'}
-        eyebrow={isGoogleFlow && user ? 'Conta ligada' : 'Configuração inicial'}
-        panelTitle={
-          isGoogleFlow && user
-            ? 'Falta apenas definir o tipo de conta'
-            : 'Escolha como pretende utilizar a plataforma'
-        }
-        panelDescription={
-          isGoogleFlow && user
-            ? 'A sua conta Google já está ligada. Agora selecione o perfil certo para concluir a configuração.'
-            : 'Selecione o tipo de conta que corresponde à forma como vai usar a plataforma.'
-        }
-        chips={
-          isGoogleFlow
-            ? ['Google', 'Candidato', 'Empresa']
-            : ['Candidato', 'Empresa', 'Configuração']
-        }
-      >
-        <div className={styles.wrapper}>
-          {isGoogleFlow && user ? (
-            <div className={styles.notice} role="status">
-              <strong>Conta Google ligada com sucesso</strong>
-              <p>Escolha agora o tipo de conta para continuar.</p>
+      <div className={styles.page}>
+        <main className={styles.main}>
+          <section className={styles.card}>
+            <header className={styles.banner}>
+              <Link
+                href="/"
+                className={styles.bannerLink}
+                aria-label="Voltar à página inicial"
+              >
+                <Image
+                  src="/assets/Emprego STP Logo.png"
+                  alt="EmpregoSTP"
+                  width={196}
+                  height={59}
+                  priority
+                  className={styles.bannerLogo}
+                />
+              </Link>
+            </header>
+
+            <div className={styles.wrapper}>
+              {isGoogleFlow && user ? (
+                <div className={styles.notice} role="status">
+                  <strong>Conta Google ligada com sucesso.</strong>
+                  <p>Escolha agora o tipo de conta para continuar.</p>
+                </div>
+              ) : null}
+
+              <div className={styles.intro}>
+                <h2>Escolha o seu tipo de conta</h2>
+                <p>Selecione a opção certa para continuar.</p>
+              </div>
+
+              <section className={styles.grid}>
+                <article className={`${styles.panel} ${styles.candidate}`}>
+                  <div className={styles.visual}>
+                    <Image
+                      src="/assets/candidate-illustration.svg"
+                      alt="Ilustração de candidato"
+                      width={400}
+                      height={300}
+                      className={styles.visualImage}
+                    />
+                  </div>
+
+                  <div className={styles.content}>
+                    <div className={styles.copy}>
+                      <span className={styles.kicker}>Candidato</span>
+                      <h3>Candidato</h3>
+                      <p>
+                        Crie o seu perfil, envie o currículo e apresente
+                        candidaturas às oportunidades disponíveis em São Tomé
+                        e Príncipe.
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => handleTypeSelection('candidato')}
+                      className={styles.action}
+                      disabled={loading}
+                      type="button"
+                    >
+                      {loading ? 'A concluir…' : 'Continuar como Candidato'}
+                    </button>
+                  </div>
+                </article>
+
+                <article className={`${styles.panel} ${styles.employer}`}>
+                  <div className={styles.visual}>
+                    <Image
+                      src="/assets/employer-illustration.svg"
+                      alt="Ilustração de empregador"
+                      width={400}
+                      height={300}
+                      className={styles.visualImage}
+                    />
+                  </div>
+
+                  <div className={styles.content}>
+                    <div className={styles.copy}>
+                      <span className={styles.kicker}>Empregador</span>
+                      <h3>Empregador</h3>
+                      <p>
+                        Crie a conta da empresa, publique vagas e encontre
+                        profissionais adequados. Acompanhe o recrutamento num
+                        painel dedicado.
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => handleTypeSelection('empresa')}
+                      className={styles.action}
+                      disabled={loading}
+                      type="button"
+                    >
+                      {loading ? 'A concluir…' : 'Continuar como Empregador'}
+                    </button>
+                  </div>
+                </article>
+              </section>
+
+              {error ? (
+                <p className={styles.error} role="alert">
+                  {error}
+                </p>
+              ) : null}
             </div>
-          ) : null}
-
-          <div className={styles.intro}>
-            <h2>Escolha o seu tipo de conta</h2>
-            <p>Selecione a opção certa para continuar.</p>
-          </div>
-
-          <section className={styles.grid}>
-            <article className={`${styles.panel} ${styles.candidate}`}>
-              <div className={styles.visual}>
-                <Image
-                  src="/assets/candidate-illustration.svg"
-                  alt="Ilustração de candidato"
-                  width={400}
-                  height={300}
-                  className={styles.visualImage}
-                />
-              </div>
-
-              <div className={styles.content}>
-                <div className={styles.copy}>
-                  <span className={styles.kicker}>Candidato</span>
-                  <h3>Conta de candidato</h3>
-                  <p>
-                    Crie o seu perfil, envie o currículo e apresente
-                    candidaturas às oportunidades disponíveis em São Tomé e
-                    Príncipe.
-                  </p>
-                </div>
-
-                <button
-                  onClick={() => handleTypeSelection('candidato')}
-                  className={styles.action}
-                  disabled={loading}
-                  type="button"
-                >
-                  {loading ? 'A concluir…' : 'Criar conta de candidato'}
-                </button>
-              </div>
-            </article>
-
-            <article className={`${styles.panel} ${styles.employer}`}>
-              <div className={styles.visual}>
-                <Image
-                  src="/assets/employer-illustration.svg"
-                  alt="Ilustração de empregador"
-                  width={400}
-                  height={300}
-                  className={styles.visualImage}
-                />
-              </div>
-
-              <div className={styles.content}>
-                <div className={styles.copy}>
-                  <span className={styles.kicker}>Empregador</span>
-                  <h3>Conta de empresa</h3>
-                  <p>
-                    Crie a conta da empresa, publique vagas e encontre
-                    profissionais adequados. Acompanhe o recrutamento num painel
-                    dedicado.
-                  </p>
-                </div>
-
-                <button
-                  onClick={() => handleTypeSelection('empresa')}
-                  className={styles.action}
-                  disabled={loading}
-                  type="button"
-                >
-                  {loading ? 'A concluir…' : 'Criar conta de empresa'}
-                </button>
-              </div>
-            </article>
           </section>
-
-          {error ? (
-            <p className={styles.error} role="alert">
-              {error}
-            </p>
-          ) : null}
-        </div>
-      </AuthShell>
+        </main>
+      </div>
     </>
   );
 }

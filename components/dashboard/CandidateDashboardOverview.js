@@ -11,6 +11,7 @@ import {
   FiSend,
   FiVideo,
 } from 'react-icons/fi';
+import styles from '../../styles/DashboardCandidato.module.css';
 
 const STATUS_META = {
   approved: { label: 'Aprovada', tone: 'success' },
@@ -167,7 +168,7 @@ export default function CandidateDashboardOverview({
   ];
 
   return (
-    <>
+    <div className={styles.candidateDashboardOverview}>
       <section className="header-card candidate-design-hero">
         <div>
           <div className="header-eyebrow">Candidato · Dashboard</div>
@@ -198,8 +199,8 @@ export default function CandidateDashboardOverview({
                 className="stat-icon"
                 style={{
                   background: metric.accent,
-                  color: metric.iconColor || '#fff',
-                  boxShadow: `0 8px 20px ${metric.shadow}`,
+                  color: `var(--candidate-stat-icon-color, ${metric.iconColor || '#fff'})`,
+                  boxShadow: `var(--candidate-stat-icon-shadow, 0 8px 20px ${metric.shadow})`,
                 }}
               >
                 <Icon />
@@ -219,12 +220,17 @@ export default function CandidateDashboardOverview({
               key={metric.key}
               type="button"
               className="stat-card"
+              data-metric={metric.key}
               onClick={metric.onClick}
             >
               {content}
             </button>
           ) : (
-            <div key={metric.key} className="stat-card">
+            <div
+              key={metric.key}
+              className="stat-card"
+              data-metric={metric.key}
+            >
               {content}
             </div>
           );
@@ -438,6 +444,6 @@ export default function CandidateDashboardOverview({
           )}
         </div>
       </section>
-    </>
+    </div>
   );
 }

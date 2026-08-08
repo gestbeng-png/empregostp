@@ -782,7 +782,6 @@ export default function HomePage({
           name="description"
           content="A melhor plataforma de empregos em São Tomé e Príncipe. Conectando talentos às melhores oportunidades."
         />
-        <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <PublicPageShell headerVariant="light">

@@ -523,14 +523,14 @@
   /* The candidate palette is defined on .pageLayout, but the dashboard content
      is rendered inside DashboardShell (no .pageLayout ancestor), so re-declare
      the tokens here to keep var(--candidate-*) resolvable across all sections. */
-  --candidate-primary: #2057d7;
-  --candidate-primary-strong: #1e2b4d;
-  --candidate-secondary: #5fb8f5;
-  --candidate-accent: #d9ff2f;
-  --candidate-accent-strong: #8ea800;
-  --candidate-muted: #465f85;
-  --candidate-muted-strong: #334869;
-  --candidate-muted-soft: #5a6f92;
+  --candidate-primary: var(--blue, #2057d7);
+  --candidate-primary-strong: var(--text-1, #1e2b4d);
+  --candidate-secondary: var(--sky, #5fb8f5);
+  --candidate-accent: var(--lime, #d9ff2f);
+  --candidate-accent-strong: var(--lime-text, #8ea800);
+  --candidate-muted: var(--text-3, #465f85);
+  --candidate-muted-strong: var(--text-2, #334869);
+  --candidate-muted-soft: var(--text-3, #5a6f92);
   flex: 1;
   padding: 1.75rem 2rem 2.25rem;
   display: flex;
@@ -4277,7 +4277,7 @@
   border: 1px solid rgba(36, 99, 212, 0.14);
   border-radius: 999px;
   background: rgba(95, 184, 245, 0.11);
-  color: #2057d7;
+  color: var(--blue, #2057d7);
   font-size: 0.76rem;
   font-weight: 800;
 }
@@ -4288,22 +4288,6 @@
   color: var(--text-3, #64748b);
   font-size: 0.92rem;
   line-height: 1.6;
-}
-
-/* O cabeçalho de cada separador (Minhas candidaturas, Vagas guardadas,
-   Entrevistas, ...) vive na camada Workbridge, fixa no tema claro — o fundo
-   de .contentArea já é sempre #eef4f8. Mas estas duas regras têm mais
-   especificidade (classe + elemento) do que o "reset" claro dessa camada, por
-   isso continuam presas a var(--text-1/--text-3), que o alternador de tema
-   escuro (partilhado por todo o DashboardShell) troca para tons quase
-   brancos — título e legenda ficavam ilegíveis sobre o fundo claro fixo.
-   Restrito a esta folha para não afetar outras rotas. */
-:global(.dashShell[data-theme='dark']) .candidateSectionTitleRow h2 {
-  color: #102441;
-}
-
-:global(.dashShell[data-theme='dark']) .candidateSectionCopy > p {
-  color: #5f6874;
 }
 
 .candidateSectionAction {
@@ -5811,16 +5795,16 @@
 
 /* Workbridge fidelity layer: navy structure, sky data surfaces and lime accents. */
 .pageLayout {
-  --candidate-primary: #064bb5;
-  --candidate-primary-strong: #102441;
-  --candidate-secondary: #69c8ff;
-  --candidate-accent: #daff45;
-  --candidate-accent-strong: #102441;
-  --candidate-muted: #5f6874;
-  --candidate-muted-strong: #383750;
-  --candidate-muted-soft: #5f6874;
-  background: #eef4f8;
-  color: #102441;
+  --candidate-primary: var(--blue, #064bb5);
+  --candidate-primary-strong: var(--text-1, #102441);
+  --candidate-secondary: var(--sky, #69c8ff);
+  --candidate-accent: var(--lime, #daff45);
+  --candidate-accent-strong: var(--lime-text, #102441);
+  --candidate-muted: var(--text-3, #5f6874);
+  --candidate-muted-strong: var(--text-2, #383750);
+  --candidate-muted-soft: var(--text-3, #5f6874);
+  background: var(--bg, #eef4f8);
+  color: var(--text-1, #102441);
   font-family: var(--font-instrument, "Instrument Sans"), Arial, sans-serif;
 }
 
@@ -5905,12 +5889,12 @@
 
 .mainContent,
 .contentArea {
-  background: #eef4f8;
+  background: var(--bg, #eef4f8);
 }
 
 .topBar {
-  border-color: #e4e5e8;
-  background: #ffffff;
+  border-color: var(--border, #e4e5e8);
+  background: var(--header-bg, #ffffff);
   box-shadow: none;
   backdrop-filter: none;
 }
@@ -5932,7 +5916,7 @@
 .verificationComposerTitle,
 .candidateSectionCopy,
 .candidateSectionTitleRow {
-  color: #102441;
+  color: var(--text-1, #102441);
   font-family: var(--font-instrument, "Instrument Sans"), Arial, sans-serif;
 }
 
@@ -5947,7 +5931,7 @@
 .verificationOverviewText,
 .verificationTypeDescription,
 .verificationStepDescription {
-  color: #5f6874;
+  color: var(--text-3, #5f6874);
 }
 
 .statCard,
@@ -5980,9 +5964,9 @@
 .overviewCard,
 .overviewJobCard,
 .overviewHelpCard {
-  border-color: #e4e5e8;
+  border-color: var(--border, #e4e5e8);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--surface, #ffffff);
   box-shadow: none;
   backdrop-filter: none;
 }
@@ -5995,8 +5979,8 @@
 .overviewStatCard:hover,
 .overviewJobCard:hover {
   transform: none;
-  border-color: #69c8ff;
-  background: #ffffff;
+  border-color: var(--border-strong, #69c8ff);
+  background: var(--surface, #ffffff);
   box-shadow: none;
 }
 
@@ -6011,15 +5995,15 @@
 .verificationUploadIcon,
 .overviewHelpIcon {
   border-radius: 4px;
-  background: #eef4f8;
-  color: #064bb5;
+  background: var(--surface-3, #eef4f8);
+  color: var(--blue, #064bb5);
 }
 
 .statIcon_blue,
 .statIcon_amber,
 .statIcon_violet {
-  background: #eef4f8;
-  color: #064bb5;
+  background: var(--surface-3, #eef4f8);
+  color: var(--blue, #064bb5);
 }
 
 .overviewHeroGhost,
@@ -6051,9 +6035,9 @@
 .verificationStateButton,
 .candidateEmptyAction,
 .messageSendBtn {
-  border-color: #064bb5;
-  background: #064bb5;
-  color: #ffffff;
+  border-color: var(--blue, #064bb5);
+  background: var(--blue, #064bb5);
+  color: var(--dash-action-ink, #ffffff);
 }
 
 .overviewHeroPrimary:hover,
@@ -6063,7 +6047,7 @@
 .verificationStateButton:hover,
 .candidateEmptyAction:hover,
 .messageSendBtn:hover {
-  background: #0a65cc;
+  background: var(--dash-blue-hover, #0a65cc);
   transform: none;
   box-shadow: none;
 }
@@ -6077,10 +6061,10 @@
 .verificationFieldGroup input,
 .verificationFieldGroup select,
 .verificationFieldGroup textarea {
-  border-color: #e4e5e8;
+  border-color: var(--border, #e4e5e8);
   border-radius: 4px;
-  background: #ffffff;
-  color: #102441;
+  background: var(--surface, #ffffff);
+  color: var(--text-1, #102441);
 }
 
 .profileCover,
@@ -6103,12 +6087,12 @@
 .overviewProfileBar,
 .profileCompletionBar,
 .optimizationScoreMeta {
-  background: #e4e5e8;
+  background: var(--surface-3, #e4e5e8);
 }
 
 .overviewProfileBar span,
 .profileCompletionBar span {
-  background: #064bb5;
+  background: var(--blue, #064bb5);
 }
 
 .overviewPromoCard {
@@ -6131,7 +6115,7 @@
 
 .candidateLoadingHeader span,
 .candidateLoadingGrid span {
-  background: #e4e5e8;
+  background: var(--surface-3, #e4e5e8);
 }
 
 .applicationTable,
@@ -6150,15 +6134,15 @@
 .messageThread,
 .messageBubble,
 .messageItem {
-  border-color: #e4e5e8;
+  border-color: var(--border, #e4e5e8);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--surface, #ffffff);
   box-shadow: none;
 }
 
 .messageBubbleOwn {
-  background: #064bb5;
-  color: #ffffff;
+  background: var(--blue, #064bb5);
+  color: var(--dash-action-ink, #ffffff);
 }
 
 .jobBadge,
@@ -6197,15 +6181,15 @@
 /* Workbridge vacancy-card authority. Keeps dashboard actions and data while
    sharing the flat geometry of the public Body.pdf cards. */
 .savedCard {
-  border: 1px solid #e4e5e8;
+  border: 1px solid var(--border, #e4e5e8);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--surface, #ffffff);
   box-shadow: none;
 }
 
 .savedCard:hover {
   border-color: rgba(255, 255, 255, 0.5);
-  background: #ffffff;
+  background: var(--surface, #ffffff);
   box-shadow:
     0 0 5px rgba(218, 255, 69, 0.89),
     0 0 20px rgba(218, 255, 69, 0.5);
@@ -6213,10 +6197,10 @@
 }
 
 .savedCardIcon {
-  border-color: #e4e5e8;
+  border-color: var(--border, #e4e5e8);
   border-radius: 4px;
-  background: #ffffff;
-  color: #064bb5;
+  background: var(--surface, #ffffff);
+  color: var(--blue, #064bb5);
 }
 
 .savedCardState {
@@ -6229,17 +6213,48 @@
   padding: 0;
   border-radius: 0;
   background: transparent;
-  color: #5f6874;
+  color: var(--text-3, #5f6874);
 }
 
 .savedCardAction {
-  color: #064bb5;
+  color: var(--blue, #064bb5);
 }
 
 :global(.dashShell[data-theme='dark']) .savedCardMeta span {
-  color: #d9deea;
+  color: var(--text-3);
 }
 
 :global(.dashShell[data-theme='dark']) .savedCardAction {
-  color: #69c8ff;
+  color: var(--sky);
+}
+
+/* Candidate overview dark-mode repair. The overview is rendered with the
+   shared dashboard classes, so keep these overrides behind a local wrapper to
+   avoid changing the company/admin variants or the candidate light theme. */
+.candidateDashboardOverview {
+  min-width: 0;
+}
+
+:global(.dashShell[data-theme='dark']) .candidateDashboardOverview {
+  --candidate-stat-icon-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
+}
+
+:global(.dashShell[data-theme='dark'])
+  .candidateDashboardOverview
+  :global(.stat-card[data-metric='interviews']),
+:global(.dashShell[data-theme='dark'])
+  .candidateDashboardOverview
+  :global(.stat-card[data-metric='views']) {
+  --candidate-stat-icon-color: #0d1526;
+}
+
+:global(.dashShell[data-theme='dark'])
+  .candidateDashboardOverview
+  :global(.candidate-design-avatar),
+:global(.dashShell[data-theme='dark'])
+  .candidateDashboardOverview
+  :global(.candidate-design-job-icon) {
+  background: var(--dash-blue);
+  color: #0d1526;
+  box-shadow: none;
 }

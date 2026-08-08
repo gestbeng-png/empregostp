@@ -21,22 +21,11 @@ const ABOUT_SUBMENU = [
   { href: '/contacto', label: 'Contactos' },
 ];
 
-const RESOURCES_SUBMENU = [
-  { href: '/blog', label: 'Blog' },
-  { href: '/recursos', label: 'Recursos' },
-];
-
 const DEFAULT_NAV_ITEMS = [
   { href: '/vagas', label: 'Vagas' },
   { href: '/candidatos', label: 'Para candidatos' },
   { href: '/empresas', label: 'Para empresas' },
-  {
-    href: '/recursos',
-    label: 'Recursos',
-    hasCaret: true,
-    submenu: RESOURCES_SUBMENU,
-    submenuKey: 'resources',
-  },
+  { href: '/recursos', label: 'Recursos' },
   { href: '/blog', label: 'Blog' },
   { href: '/sobre-nos', label: 'Sobre nós' },
   { href: '/contacto', label: 'Contacto' },
@@ -47,13 +36,7 @@ const LIGHT_NAV_ITEMS = [
   { href: '/vagas', label: 'Vagas' },
   { href: '/candidatos', label: 'Para candidatos' },
   { href: '/empresas', label: 'Para empresas' },
-  {
-    href: '/recursos',
-    label: 'Recursos',
-    hasCaret: true,
-    submenu: RESOURCES_SUBMENU,
-    submenuKey: 'resources',
-  },
+  { href: '/recursos', label: 'Recursos' },
   { href: '/contacto', label: 'Contacto' },
 ];
 

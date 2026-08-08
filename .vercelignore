@@ -1,0 +1,7 @@
+.next-e2e
+coverage
+playwright-report
+test-results
+docs/audits/screenshots
+docs/audits/data
+.claude/skills

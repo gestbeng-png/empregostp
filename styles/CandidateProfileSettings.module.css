@@ -89,12 +89,12 @@
 }
 .feedbackSuccess {
   background: rgba(61, 187, 122, 0.12);
-  color: #2e8f5b;
+  color: var(--dash-success-text, #2e8f5b);
   border: 1px solid rgba(61, 187, 122, 0.24);
 }
 .feedbackError {
   background: rgba(220, 106, 124, 0.12);
-  color: #c0475c;
+  color: var(--dash-danger-text, #c0475c);
   border: 1px solid rgba(220, 106, 124, 0.24);
 }
 
@@ -435,7 +435,7 @@
   margin-top: 12px;
   border: none;
   background: transparent;
-  color: #c0475c;
+  color: var(--dash-danger-text, #c0475c);
   font-family: inherit;
   font-size: 0.82rem;
   font-weight: 700;
@@ -726,14 +726,14 @@
 
 /* Workbridge fidelity layer. */
 .page {
-  color: #102441;
+  color: var(--text-1, #102441);
   font-family: var(--font-instrument, "Instrument Sans"), Arial, sans-serif;
 }
 
 .title,
 .cardTitle,
 .strengthTitle {
-  color: #102441;
+  color: var(--text-1, #102441);
 }
 
 /* #5f6874 sobre o fundo do painel dava 4.45:1, mesmo abaixo dos 4.5:1
@@ -742,7 +742,7 @@
 .sub,
 .hint,
 .planWarnText {
-  color: #5f6874;
+  color: var(--text-3, #5f6874);
 }
 
 /* O cartão de força do perfil tem fundo navy mesmo no tema claro: herdar
@@ -757,7 +757,7 @@
 .certItem,
 .cvBox,
 .strengthCard {
-  border-color: #e4e5e8;
+  border-color: var(--border, #e4e5e8);
   border-radius: 8px;
   box-shadow: none;
 }
@@ -767,7 +767,7 @@
 .expItem,
 .certItem,
 .cvBox {
-  background: #ffffff;
+  background: var(--surface, #ffffff);
 }
 
 .strengthCard {
@@ -795,8 +795,10 @@
 }
 
 .avatar {
-  background: #064bb5;
-  box-shadow: 0 0 0 4px #ffffff, 0 0 0 5px #e4e5e8;
+  background: var(--blue, #064bb5);
+  box-shadow:
+    0 0 0 4px var(--surface, #ffffff),
+    0 0 0 5px var(--border, #e4e5e8);
 }
 
 .cam {
@@ -824,16 +826,16 @@
 .btnPrimary,
 .addBtn,
 .importBtn {
-  border-color: #064bb5;
-  background: #064bb5;
-  color: #ffffff;
+  border-color: var(--blue, #064bb5);
+  background: var(--blue, #064bb5);
+  color: var(--dash-action-ink, #ffffff);
   box-shadow: none;
 }
 
 .btnPrimary:hover,
 .addBtn:hover,
 .importBtn:hover {
-  background: #0a65cc;
+  background: var(--dash-blue-hover, #0a65cc);
   transform: none;
   box-shadow: none;
 }
@@ -844,9 +846,9 @@
 .idNameInput,
 .idHeadlineInput,
 .digitalForm input {
-  border-color: #e4e5e8;
-  background: #ffffff;
-  color: #102441;
+  border-color: var(--border, #e4e5e8);
+  background: var(--surface, #ffffff);
+  color: var(--text-1, #102441);
 }
 
 .formGrid,

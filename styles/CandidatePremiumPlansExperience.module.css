@@ -38,13 +38,13 @@
 .alertError {
   background: rgba(239, 68, 68, 0.08);
   border: 1px solid rgba(239, 68, 68, 0.2);
-  color: #c0455a;
+  color: var(--dash-danger-text, #c0455a);
 }
 
 .alertSuccess {
   background: rgba(16, 185, 129, 0.1);
   border: 1px solid rgba(16, 185, 129, 0.24);
-  color: #0f855f;
+  color: var(--dash-success-text, #0f855f);
 }
 
 /* Pending payment banner */
@@ -269,7 +269,7 @@
 
 .subscribeBtnCurrent {
   background: rgba(16, 185, 129, 0.12);
-  color: #0f855f;
+  color: var(--dash-success-text, #0f855f);
   border: 1px solid rgba(16, 185, 129, 0.3);
   box-shadow: none;
   cursor: default;
@@ -540,7 +540,7 @@
 
 /* Workbridge fidelity layer. */
 .wrap {
-  color: #102441;
+  color: var(--text-1, #102441);
   font-family: var(--font-instrument, "Instrument Sans"), Arial, sans-serif;
 }
 
@@ -551,7 +551,7 @@
 .summaryValue,
 .summaryPrice,
 .bankRow strong {
-  color: #102441;
+  color: var(--text-1, #102441);
 }
 
 .subtitle,
@@ -562,7 +562,7 @@
 .bankNote,
 .bankRow span,
 .pendingTexts span {
-  color: #5f6874;
+  color: var(--text-3, #5f6874);
 }
 
 .pendingBanner,
@@ -570,29 +570,33 @@
 .summaryBox,
 .bankBox,
 .modal {
-  border-color: #e4e5e8;
+  border-color: var(--border, #e4e5e8);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--surface, #ffffff);
   box-shadow: none;
 }
 
 .pendingBanner,
 .bankBox {
-  background: #eef4f8;
+  background: var(--surface-3, #eef4f8);
+}
+
+.pendingTexts strong {
+  color: var(--text-1, #102441);
 }
 
 .card:hover {
   transform: none;
-  border-color: #69c8ff;
+  border-color: var(--sky, #69c8ff);
   box-shadow: none;
 }
 
 .cardPopular {
-  border-color: #69c8ff;
+  border-color: var(--sky, #69c8ff);
 }
 
 .cardCurrent {
-  border-color: #daff45;
+  border-color: var(--lime, #daff45);
 }
 
 .popularBadge {
@@ -604,8 +608,8 @@
 .pendingIcon,
 .checkIcon {
   border-radius: 4px;
-  background: #eef4f8;
-  color: #064bb5;
+  background: var(--surface-3, #eef4f8);
+  color: var(--blue, #064bb5);
 }
 
 .pendingBtn,
@@ -620,15 +624,15 @@
 .pendingBtn,
 .subscribeBtn,
 .btnPrimary {
-  border-color: #064bb5;
-  background: #064bb5;
-  color: #ffffff;
+  border-color: var(--blue, #064bb5);
+  background: var(--blue, #064bb5);
+  color: var(--dash-action-ink, #ffffff);
 }
 
 .pendingBtn:hover,
 .subscribeBtn:hover:not(:disabled),
 .btnPrimary:hover:not(:disabled) {
-  background: #0a65cc;
+  background: var(--dash-blue-hover, #0a65cc);
   transform: none;
   box-shadow: none;
 }
@@ -640,9 +644,41 @@
 }
 
 .subscribeBtnCurrent {
-  border-color: #e4e5e8;
-  background: #eef4f8;
-  color: #5f6874;
+  border-color: var(--border, #e4e5e8);
+  background: var(--surface-3, #eef4f8);
+  color: var(--text-3, #5f6874);
+}
+
+.divider {
+  background: var(--border, #e4e5e8);
+}
+
+.summaryRow + .summaryRow {
+  border-color: var(--border, #e4e5e8);
+}
+
+.bankTitle {
+  color: var(--blue, #064bb5);
+}
+
+.feature,
+.backLink,
+.modalClose,
+.btnGhost {
+  color: var(--text-2, #383750);
+}
+
+.backLink,
+.modalClose,
+.btnGhost {
+  border-color: var(--border-strong, #cdd1d7);
+  background: var(--surface-2, #f8fafb);
+}
+
+.backLink:hover,
+.modalClose:hover,
+.btnGhost:hover {
+  background: var(--surface-3, #eef4f8);
 }
 
 .features,

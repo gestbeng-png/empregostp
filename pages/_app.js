@@ -133,6 +133,7 @@ function MyApp({ Component, pageProps }) {
           />
           <meta name="apple-mobile-web-app-title" content="EmpregoSTP" />
           <link rel="manifest" href="/manifest.webmanifest" />
+          <link rel="icon" href="/assets/favicon.png" type="image/png" />
           <link rel="apple-touch-icon" href="/assets/Emprego STP Logo 2.png" />
         </Head>
         <PwaInstallPrompt />

@@ -13,7 +13,6 @@ import {
   FiBriefcase,
   FiCalendar,
   FiCheck,
-  FiCheckCircle,
   FiClock,
   FiDollarSign,
   FiDownload,
@@ -147,6 +146,15 @@ function parseList(value) {
       .filter(Boolean);
   }
   return [];
+}
+
+function parseParagraphs(value) {
+  if (!value) return [];
+  if (Array.isArray(value)) return value.map((item) => String(item).trim()).filter(Boolean);
+  return String(value)
+    .split(/\n{2,}/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean);
 }
 
 function resolveUrl(value) {
@@ -543,12 +551,9 @@ export default function VagaDetalhe({
   }, [vaga, candidateProfileData, user, userType]);
 
   const requirementsList = parseList(vaga?.requisitos);
-  const responsibilitiesList = parseList(vaga?.responsabilidades);
+  const responsibilitiesParagraphs = parseParagraphs(vaga?.responsabilidades);
   const benefitsList = parseList(vaga?.beneficios);
-  const overviewParagraphs = String(vaga?.descricao || '')
-    .split(/\n{2,}/)
-    .map((paragraph) => paragraph.trim())
-    .filter(Boolean);
+  const overviewParagraphs = parseParagraphs(vaga?.descricao);
   const skillsTags = Array.from(
     new Set(
       [
@@ -1295,20 +1300,12 @@ export default function VagaDetalhe({
                   </div>
                 </section>
 
-                {responsibilitiesList.length > 0 && (
+                {responsibilitiesParagraphs.length > 0 && (
                   <section className={styles.sectionCard}>
                     <h2 className={styles.sectionTitle}>Responsabilidades</h2>
-                    <div className={styles.bulletList}>
-                      {responsibilitiesList.map((item, index) => (
-                        <div
-                          key={`responsibility-${index}`}
-                          className={styles.bulletItem}
-                        >
-                          <span className={styles.bulletIcon}>
-                            <FiCheckCircle size={12} />
-                          </span>
-                          <span>{item}</span>
-                        </div>
+                    <div className={styles.richText}>
+                      {responsibilitiesParagraphs.map((paragraph, index) => (
+                        <p key={`responsibility-${index}`}>{paragraph}</p>
                       ))}
                     </div>
                   </section>

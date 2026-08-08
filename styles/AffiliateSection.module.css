@@ -62,11 +62,6 @@
   border: 1px solid rgba(255, 255, 255, 0.14);
 }
 
-.benefitIcon {
-  font-size: 1.15rem;
-  line-height: 1.2;
-}
-
 .benefit strong {
   display: block;
   font-size: 0.86rem;
@@ -210,13 +205,13 @@
 
 .feedbackSuccess {
   background: rgba(61, 187, 122, 0.14);
-  color: #15803d;
+  color: var(--dash-success-text, #15803d);
   border: 1px solid rgba(61, 187, 122, 0.28);
 }
 
 .feedbackError {
   background: rgba(239, 68, 68, 0.12);
-  color: #b91c1c;
+  color: var(--dash-danger-text, #b91c1c);
   border: 1px solid rgba(239, 68, 68, 0.24);
 }
 
@@ -263,18 +258,18 @@
 
 .badgePending {
   background: rgba(245, 158, 11, 0.14);
-  color: #b45309;
+  color: var(--dash-warning-text, #b45309);
 }
 
 .badgeApproved,
 .badgeContacted {
   background: rgba(61, 187, 122, 0.14);
-  color: #15803d;
+  color: var(--dash-success-text, #15803d);
 }
 
 .badgeRejected {
   background: rgba(239, 68, 68, 0.12);
-  color: #b91c1c;
+  color: var(--dash-danger-text, #b91c1c);
 }
 
 .linkBtn {
@@ -309,7 +304,7 @@
 
 /* Workbridge fidelity layer. */
 .wrap {
-  color: #102441;
+  color: var(--text-1, #102441);
   font-family: var(--font-instrument, "Instrument Sans"), Arial, sans-serif;
 }
 
@@ -334,22 +329,22 @@
 
 .card,
 .statusCard {
-  border-color: #e4e5e8;
+  border-color: var(--border, #e4e5e8);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--surface, #ffffff);
   box-shadow: none;
 }
 
 .cardTitle,
 .statusBody h3 {
-  color: #102441;
+  color: var(--text-1, #102441);
 }
 
 .cardSub,
 .statusBody p,
 .privacy,
 .hint {
-  color: #5f6874;
+  color: var(--text-3, #5f6874);
 }
 
 .input,
@@ -360,19 +355,19 @@
 
 .input,
 .textarea {
-  border-color: #e4e5e8;
-  background: #ffffff;
-  color: #102441;
+  border-color: var(--border, #e4e5e8);
+  background: var(--surface, #ffffff);
+  color: var(--text-1, #102441);
 }
 
 .submitBtn {
-  background: #064bb5;
-  color: #ffffff;
+  background: var(--blue, #064bb5);
+  color: var(--dash-action-ink, #ffffff);
   box-shadow: none;
 }
 
 .submitBtn:hover:not(:disabled) {
-  background: #0a65cc;
+  background: var(--dash-blue-hover, #0a65cc);
   transform: none;
 }
 

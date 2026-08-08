@@ -222,11 +222,11 @@
 
 /* Workbridge fidelity layer. */
 .card {
-  border-color: #e4e5e8;
+  border-color: var(--border, #e4e5e8);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--surface, #ffffff);
   box-shadow: none;
-  color: #102441;
+  color: var(--text-1, #102441);
   font-family: var(--font-instrument, "Instrument Sans"), Arial, sans-serif;
 }
 
@@ -240,21 +240,21 @@
 .metaGrid strong,
 .instructionsBox,
 .previousProof {
-  color: #102441;
+  color: var(--text-1, #102441);
 }
 
 .header p,
 .instructionsBox p,
 .previousProof p {
-  color: #5f6874;
+  color: var(--text-3, #5f6874);
 }
 
 .metaGrid div,
 .instructionsBox,
 .previousProof {
-  border-color: #e4e5e8;
+  border-color: var(--border, #e4e5e8);
   border-radius: 8px;
-  background: #eef4f8;
+  background: var(--surface-3, #eef4f8);
 }
 
 .metaGrid,
@@ -272,29 +272,29 @@
 
 .fileField input,
 .noteField textarea {
-  border-color: #e4e5e8;
-  background: #ffffff;
-  color: #102441;
+  border-color: var(--border, #e4e5e8);
+  background: var(--surface, #ffffff);
+  color: var(--text-1, #102441);
 }
 
 .action,
 .embedded .action {
-  background: #064bb5;
-  color: #ffffff;
+  background: var(--blue, #064bb5);
+  color: var(--dash-action-ink, #ffffff);
   box-shadow: none;
 }
 
 .action:hover:not(:disabled),
 .embedded .action:hover:not(:disabled) {
-  background: #0a65cc;
+  background: var(--dash-blue-hover, #0a65cc);
   transform: none;
 }
 
 .statusPending,
 .statusSubmitted {
-  border-color: #69c8ff;
-  background: #eef4f8;
-  color: #064bb5;
+  border-color: var(--sky, #69c8ff);
+  background: var(--surface-3, #eef4f8);
+  color: var(--blue, #064bb5);
 }
 
 .successBox {
@@ -306,4 +306,5 @@
 
 .errorBox {
   border-radius: 8px;
+  color: var(--dash-danger-text, #c95d6f);
 }

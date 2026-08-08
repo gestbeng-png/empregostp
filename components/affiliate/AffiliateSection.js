@@ -48,9 +48,9 @@ const COPY = {
 };
 
 const BENEFITS = [
-  { icon: "💸", title: "Recompensas", text: "Ganhe por tarefas e indicações concluídas." },
-  { icon: "📣", title: "Divulgação", text: "Ajude a espalhar oportunidades de emprego." },
-  { icon: "🚀", title: "Rede em crescimento", text: "Faça parte da comunidade EmpregoSTP." },
+  { title: "Recompensas", text: "Ganhe por tarefas e indicações concluídas." },
+  { title: "Divulgação", text: "Ajude a espalhar oportunidades de emprego." },
+  { title: "Rede em crescimento", text: "Faça parte da comunidade EmpregoSTP." },
 ];
 
 async function getToken(user) {
@@ -168,13 +168,12 @@ export default function AffiliateSection({ role = "candidato", user, defaults = 
 
   const renderHero = () => (
     <div className={styles.hero}>
-      <span className={styles.heroBadge}>⭐ Programa de Afiliados</span>
+      <span className={styles.heroBadge}>Programa de Afiliados</span>
       <h2 className={styles.heroTitle}>Torne-se afiliado do EmpregoSTP</h2>
       <p className={styles.heroText}>{copy.heroText}</p>
       <div className={styles.benefits}>
         {BENEFITS.map((b) => (
           <div key={b.title} className={styles.benefit}>
-            <span className={styles.benefitIcon}>{b.icon}</span>
             <span>
               <strong>{b.title}</strong>
               {b.text}

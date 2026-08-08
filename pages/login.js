@@ -81,6 +81,13 @@ export default function Login() {
         setError(
           'A janela de autenticação foi bloqueada. Autorize janelas adicionais para este site.',
         );
+      } else if (
+        err.code === 'auth/unauthorized-domain' ||
+        err.code === 'auth/operation-not-allowed'
+      ) {
+        setError(
+          'O login com Google está temporariamente indisponível neste domínio. Por favor use o email e a senha, ou tente novamente mais tarde.',
+        );
       } else {
         setError(
           'Não foi possível iniciar sessão com o Google. Tente novamente.',

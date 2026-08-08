@@ -246,6 +246,7 @@ export default function CandidaturasPage() {
                       value={stats.total}
                       label="Total"
                       color="#2057d7"
+                      darkColor="#8eb4ff"
                       active={filter === "all"}
                       onClick={() => setFilterAndSyncUrl("all")}
                     />
@@ -253,6 +254,7 @@ export default function CandidaturasPage() {
                       value={stats.pending}
                       label="Pendentes"
                       color="#1e2b4d"
+                      darkColor="#b7c8e8"
                       active={filter === "pending"}
                       onClick={() => setFilterAndSyncUrl("pending")}
                     />
@@ -260,6 +262,7 @@ export default function CandidaturasPage() {
                       value={stats.interview}
                       label="Entrevistas"
                       color="#5fb8f5"
+                      darkColor="#7dceff"
                       active={filter === "interview"}
                       onClick={() => setFilterAndSyncUrl("interview")}
                     />
@@ -267,6 +270,7 @@ export default function CandidaturasPage() {
                       value={stats.approved}
                       label="Aprovadas"
                       color="#8ea800"
+                      darkColor="#d9ff2f"
                       active={filter === "approved"}
                       onClick={() => setFilterAndSyncUrl("approved")}
                     />
@@ -274,6 +278,7 @@ export default function CandidaturasPage() {
                       value={stats.rejected}
                       label="Rejeitadas"
                       color="#ef4444"
+                      darkColor="#fda4af"
                       active={filter === "rejected"}
                       onClick={() => setFilterAndSyncUrl("rejected")}
                     />
@@ -342,13 +347,16 @@ export default function CandidaturasPage() {
   );
 }
 
-function StatCard({ value, label, color, active, onClick }) {
+function StatCard({ value, label, color, darkColor, active, onClick }) {
   return (
     <button
       type="button"
       onClick={onClick}
       className={`${styles.statCard} ${active ? styles.statCardActive : ""}`}
-      style={{ "--stat-accent": color }}
+      style={{
+        "--stat-accent": color,
+        "--stat-accent-dark": darkColor,
+      }}
     >
       <span className={styles.statValue}>{value}</span>
       <span className={styles.statLabel}>{label}</span>
@@ -364,6 +372,9 @@ function ApplicationDetailCard({ application }) {
           bg: "rgba(217, 255, 47, 0.18)",
           border: "rgba(217, 255, 47, 0.28)",
           color: "#1e2b4d",
+          darkBg: "rgba(217, 255, 47, 0.12)",
+          darkBorder: "rgba(217, 255, 47, 0.32)",
+          darkColor: "#d9ff2f",
           text: "Aprovada",
         };
       case "analysis":
@@ -371,6 +382,9 @@ function ApplicationDetailCard({ application }) {
           bg: "rgba(95, 184, 245, 0.16)",
           border: "rgba(32, 87, 215, 0.24)",
           color: "#2057d7",
+          darkBg: "rgba(106, 156, 255, 0.14)",
+          darkBorder: "rgba(142, 180, 255, 0.34)",
+          darkColor: "#8eb4ff",
           text: "Em análise",
         };
       case "interview":
@@ -378,6 +392,9 @@ function ApplicationDetailCard({ application }) {
           bg: "rgba(95, 184, 245, 0.18)",
           border: "rgba(32, 87, 215, 0.24)",
           color: "#2057d7",
+          darkBg: "rgba(125, 206, 255, 0.13)",
+          darkBorder: "rgba(125, 206, 255, 0.32)",
+          darkColor: "#7dceff",
           text: "Entrevista",
         };
       case "rejected":
@@ -385,6 +402,9 @@ function ApplicationDetailCard({ application }) {
           bg: "rgba(239, 68, 68, 0.15)",
           border: "rgba(239, 68, 68, 0.3)",
           color: "#ef4444",
+          darkBg: "rgba(248, 113, 145, 0.13)",
+          darkBorder: "rgba(253, 164, 175, 0.32)",
+          darkColor: "#fda4af",
           text: "Rejeitada",
         };
       default:
@@ -392,6 +412,9 @@ function ApplicationDetailCard({ application }) {
           bg: "rgba(30, 43, 77, 0.08)",
           border: "rgba(30, 43, 77, 0.18)",
           color: "#1e2b4d",
+          darkBg: "rgba(183, 200, 232, 0.1)",
+          darkBorder: "rgba(183, 200, 232, 0.24)",
+          darkColor: "#b7c8e8",
           text: "Pendente",
         };
     }
@@ -407,6 +430,9 @@ function ApplicationDetailCard({ application }) {
           bg: "rgba(217, 255, 47, 0.16)",
           border: "rgba(217, 255, 47, 0.28)",
           color: "#1e2b4d",
+          darkBg: "rgba(217, 255, 47, 0.12)",
+          darkBorder: "rgba(217, 255, 47, 0.3)",
+          darkColor: "#d9ff2f",
         }
       : null,
     application.applicationHighlighted
@@ -416,6 +442,9 @@ function ApplicationDetailCard({ application }) {
           bg: "rgba(95, 184, 245, 0.14)",
           border: "rgba(32, 87, 215, 0.24)",
           color: "#2057d7",
+          darkBg: "rgba(106, 156, 255, 0.13)",
+          darkBorder: "rgba(142, 180, 255, 0.3)",
+          darkColor: "#8eb4ff",
         }
       : null,
     application.premiumOnlyJob
@@ -425,6 +454,9 @@ function ApplicationDetailCard({ application }) {
           bg: "rgba(30, 43, 77, 0.08)",
           border: "rgba(32, 87, 215, 0.18)",
           color: "#1e2b4d",
+          darkBg: "rgba(183, 200, 232, 0.1)",
+          darkBorder: "rgba(183, 200, 232, 0.24)",
+          darkColor: "#b7c8e8",
         }
       : null,
     application.accessedDuringEarlyWindow
@@ -434,6 +466,9 @@ function ApplicationDetailCard({ application }) {
           bg: "rgba(95, 184, 245, 0.14)",
           border: "rgba(32, 87, 215, 0.24)",
           color: "#2057d7",
+          darkBg: "rgba(125, 206, 255, 0.12)",
+          darkBorder: "rgba(125, 206, 255, 0.3)",
+          darkColor: "#7dceff",
         }
       : null,
     application.coverLetter
@@ -443,6 +478,9 @@ function ApplicationDetailCard({ application }) {
           bg: "rgba(217, 255, 47, 0.14)",
           border: "rgba(217, 255, 47, 0.24)",
           color: "#1e2b4d",
+          darkBg: "rgba(217, 255, 47, 0.11)",
+          darkBorder: "rgba(217, 255, 47, 0.28)",
+          darkColor: "#d9ff2f",
         }
       : null,
   ].filter(Boolean);
@@ -556,6 +594,9 @@ function ApplicationDetailCard({ application }) {
         "--card-accent": statusInfo.color,
         "--card-accent-bg": statusInfo.bg,
         "--card-accent-border": statusInfo.border,
+        "--card-accent-dark": statusInfo.darkColor,
+        "--card-accent-bg-dark": statusInfo.darkBg,
+        "--card-accent-border-dark": statusInfo.darkBorder,
       }}
     >
       <div className={styles.cardHeader}>
@@ -598,6 +639,9 @@ function ApplicationDetailCard({ application }) {
                 "--badge-bg": badge.bg,
                 "--badge-border": badge.border,
                 "--badge-color": badge.color,
+                "--badge-bg-dark": badge.darkBg,
+                "--badge-border-dark": badge.darkBorder,
+                "--badge-color-dark": badge.darkColor,
               }}
             >
               {badge.label}

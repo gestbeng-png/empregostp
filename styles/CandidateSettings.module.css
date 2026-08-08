@@ -119,14 +119,14 @@
 }
 
 .sectionButtonDanger {
-  color: #c23d4f;
+  color: var(--dash-danger-text, #c23d4f);
 }
 
 .sectionButtonDanger.sectionButtonActive {
   border-color: rgba(194, 61, 79, 0.12);
   background: rgba(194, 61, 79, 0.08);
-  color: #b52f42;
-  box-shadow: inset -3px 0 0 #c23d4f;
+  color: var(--dash-danger-text, #b52f42);
+  box-shadow: inset -3px 0 0 var(--danger, #c23d4f);
 }
 
 .panels {
@@ -470,13 +470,13 @@
 .feedbackSuccess {
   border-color: rgba(22, 163, 74, 0.2);
   background: rgba(22, 163, 74, 0.08);
-  color: #15803d;
+  color: var(--dash-success-text, #15803d);
 }
 
 .feedbackError {
   border-color: rgba(194, 61, 79, 0.2);
   background: rgba(194, 61, 79, 0.08);
-  color: #b52f42;
+  color: var(--dash-danger-text, #b52f42);
 }
 
 .emptySearch {
@@ -512,24 +512,24 @@
 
 .dangerPanel .panelIcon {
   background: rgba(194, 61, 79, 0.09);
-  color: #c23d4f;
+  color: var(--dash-danger-text, #c23d4f);
 }
 
 .dangerNotice {
   border: 1px solid rgba(194, 61, 79, 0.16);
   background: rgba(194, 61, 79, 0.055);
-  color: #c23d4f;
+  color: var(--dash-danger-text, #c23d4f);
 }
 
 .dangerButton {
   margin: 0 26px 26px;
   border-color: rgba(194, 61, 79, 0.34);
   background: transparent;
-  color: #b52f42;
+  color: var(--dash-danger-text, #b52f42);
 }
 
 .dangerButton:hover {
-  border-color: #c23d4f;
+  border-color: var(--danger, #c23d4f);
   background: rgba(194, 61, 79, 0.07);
 }
 
@@ -632,25 +632,25 @@
 
 /* Workbridge fidelity layer. */
 .page {
-  color: #102441;
+  color: var(--text-1, #102441);
   font-family: var(--font-instrument, "Instrument Sans"), Arial, sans-serif;
 }
 
 .pageHeader h1,
 .panelHeader h2,
 .emptySearch h2 {
-  color: #102441;
+  color: var(--text-1, #102441);
 }
 
 .pageHeader p,
 .preferenceCopy,
 .emptySearch,
 .providerNotice {
-  color: #5f6874;
+  color: var(--text-3, #5f6874);
 }
 
 .eyebrow {
-  color: #064bb5;
+  color: var(--blue, #064bb5);
 }
 
 .panel,
@@ -658,16 +658,16 @@
 .emptySearch,
 .providerNotice,
 .dangerNotice {
-  border-color: #e4e5e8;
+  border-color: var(--border, #e4e5e8);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--surface, #ffffff);
   box-shadow: none;
 }
 
 .panelIcon {
   border-radius: 4px;
-  background: #eef4f8;
-  color: #064bb5;
+  background: var(--surface-3, #eef4f8);
+  color: var(--blue, #064bb5);
 }
 
 .sectionButton,
@@ -679,30 +679,30 @@
 }
 
 .sectionButtonActive {
-  border-color: #69c8ff;
-  background: #eef4f8;
-  color: #064bb5;
-  box-shadow: inset 4px 0 0 #064bb5;
+  border-color: var(--sky, #69c8ff);
+  background: var(--surface-3, #eef4f8);
+  color: var(--blue, #064bb5);
+  box-shadow: inset 4px 0 0 var(--blue, #064bb5);
 }
 
 .primaryButton {
-  border-color: #064bb5;
-  background: #064bb5;
-  color: #ffffff;
+  border-color: var(--blue, #064bb5);
+  background: var(--blue, #064bb5);
+  color: var(--dash-action-ink, #ffffff);
   box-shadow: none;
 }
 
 .primaryButton:hover {
-  background: #0a65cc;
+  background: var(--dash-blue-hover, #0a65cc);
   transform: none;
   box-shadow: none;
 }
 
 .passwordForm input,
 .selectField select {
-  border-color: #e4e5e8;
-  background: #ffffff;
-  color: #102441;
+  border-color: var(--border, #e4e5e8);
+  background: var(--surface, #ffffff);
+  color: var(--text-1, #102441);
 }
 
 .passwordForm,
@@ -718,15 +718,15 @@
 }
 
 .switchTrack {
-  background: #e4e5e8;
+  background: var(--surface-3, #e4e5e8);
 }
 
 .switchOn .switchTrack {
-  background: #064bb5;
+  background: var(--blue, #064bb5);
 }
 
 @media (max-width: 900px) {
   .sectionButtonActive {
-    box-shadow: inset 0 -4px 0 #064bb5;
+    box-shadow: inset 0 -4px 0 var(--blue, #064bb5);
   }
 }

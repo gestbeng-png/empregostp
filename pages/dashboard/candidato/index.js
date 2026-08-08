@@ -60,7 +60,7 @@ const CandidateApplicationsChart = dynamic(
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: '#94a3b8',
+          color: 'var(--text-3, #94a3b8)',
         }}
       >
         Carregando gráfico...
@@ -76,7 +76,7 @@ const CandidatePremiumPlansExperience = dynamic(
     loading: () => (
       <div
         className={styles.planCard}
-        style={{ padding: '1rem', color: '#94a3b8' }}
+        style={{ padding: '1rem', color: 'var(--text-3, #94a3b8)' }}
       >
         Carregando planos...
       </div>
@@ -617,7 +617,7 @@ function InterviewPlaceOrLink({ interviewDetails }) {
       target="_blank"
       rel="noreferrer noopener"
       style={{
-        color: '#2057d7',
+        color: 'var(--blue, #2057d7)',
         textDecoration: 'underline',
         wordBreak: 'break-word',
       }}

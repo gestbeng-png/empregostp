@@ -1,6 +1,60 @@
+.page {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1rem, 3vw, 2.5rem);
+  background: #eef4f8;
+}
+
+.main {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.card {
+  width: min(100%, 760px);
+  display: block;
+  border: 1px solid #e4e5e8;
+  border-radius: var(--app-radius-md);
+  overflow: hidden;
+  background: #ffffff;
+  box-shadow: var(--app-shadow-md);
+}
+
+.banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1.75rem, 5vw, 2.5rem) 1.5rem;
+  background: #102441;
+}
+
+.banner::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 6px;
+  background: #69c8ff;
+}
+
+.bannerLink {
+  display: inline-flex;
+  width: min(100%, 190px);
+}
+
+.bannerLogo {
+  width: 100%;
+  height: auto;
+}
+
 .wrapper {
   display: grid;
   gap: 1.35rem;
+  padding: clamp(1.25rem, 4vw, 2.25rem);
 }
 
 .notice {
