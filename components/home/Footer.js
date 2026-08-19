@@ -22,9 +22,12 @@ const companyInfoLinks = [
   { label: 'Privacidade', href: '/politica-privacidade' },
 ];
 
-function FooterLinkGroup({ title, links }) {
+function FooterLinkGroup({ title, links, className = '' }) {
   return (
-    <nav className={styles.linkGroup} aria-label={`Links de ${title}`}>
+    <nav
+      className={`${styles.linkGroup} ${className}`}
+      aria-label={`Links de ${title}`}
+    >
       <h4 className={styles.sectionTitle}>{title}</h4>
       <ul className={styles.links}>
         {links.map((item) => (
@@ -53,49 +56,71 @@ export default function Footer() {
         </div>
 
         <div className={styles.grid}>
-          <div className={styles.brandBlock}>
-            <Link href="/" className={styles.brand}>
-              <span className={styles.brandMark}>
-                <Image
-                  src="/assets/Emprego STP Logo 2-wide.png"
-                  alt="EmpregoSTP"
-                  className={styles.brandLogo}
-                  width={619}
-                  height={169}
-                  sizes="(max-width: 640px) 220px, 250px"
-                />
-              </span>
-            </Link>
-            <p className={styles.brandStatement}>
-              Ligamos pessoas, empresas e oportunidades para fazer avançar o
-              talento de São Tomé e Príncipe.
-            </p>
+          <div
+            className={`${styles.mobileBlock} ${styles.primaryBlock}`}
+            data-footer-block="primary"
+          >
+            <div className={styles.brandBlock}>
+              <Link href="/" className={styles.brand}>
+                <span className={styles.brandMark}>
+                  <Image
+                    src="/assets/Emprego STP Logo 2-wide.png"
+                    alt="EmpregoSTP"
+                    className={styles.brandLogo}
+                    width={619}
+                    height={169}
+                    sizes="(max-width: 640px) 220px, 250px"
+                  />
+                </span>
+              </Link>
+              <p className={styles.brandStatement}>
+                Ligamos pessoas, empresas e oportunidades para fazer avançar o
+                talento de São Tomé e Príncipe.
+              </p>
+            </div>
+
+            <FooterLinkGroup
+              title="Candidatos"
+              links={candidateLinks}
+              className={styles.candidateGroup}
+            />
+            <FooterLinkGroup
+              title="Empresas"
+              links={companyLinks}
+              className={styles.companyGroup}
+            />
           </div>
 
-          <FooterLinkGroup title="Candidatos" links={candidateLinks} />
-          <FooterLinkGroup title="Empresas" links={companyLinks} />
-          <FooterLinkGroup title="Plataforma" links={companyInfoLinks} />
-
-          <nav className={styles.contactGroup} aria-label="Contactos">
-            <h4 className={styles.sectionTitle}>Contacto</h4>
-            <div className={styles.contactList}>
-              <a href="tel:+2399869673" className={styles.contactItem}>
-                <span className={styles.contactIcon}>
-                  <FiPhone aria-hidden="true" />
-                </span>
-                <span>+239 986 9673</span>
-              </a>
-              <a
-                href="mailto:suporte@empregos.st"
-                className={styles.contactItem}
-              >
-                <span className={styles.contactIcon}>
-                  <FiMail aria-hidden="true" />
-                </span>
-                <span>suporte@empregos.st</span>
-              </a>
-            </div>
-          </nav>
+          <div
+            className={`${styles.mobileBlock} ${styles.secondaryBlock}`}
+            data-footer-block="secondary"
+          >
+            <FooterLinkGroup
+              title="Plataforma"
+              links={companyInfoLinks}
+              className={styles.platformGroup}
+            />
+            <nav className={styles.contactGroup} aria-label="Contactos">
+              <h4 className={styles.sectionTitle}>Contacto</h4>
+              <div className={styles.contactList}>
+                <a href="tel:+2399869673" className={styles.contactItem}>
+                  <span className={styles.contactIcon}>
+                    <FiPhone aria-hidden="true" />
+                  </span>
+                  <span>+239 986 9673</span>
+                </a>
+                <a
+                  href="mailto:suporte@empregos.st"
+                  className={styles.contactItem}
+                >
+                  <span className={styles.contactIcon}>
+                    <FiMail aria-hidden="true" />
+                  </span>
+                  <span>suporte@empregos.st</span>
+                </a>
+              </div>
+            </nav>
+          </div>
         </div>
       </div>
 

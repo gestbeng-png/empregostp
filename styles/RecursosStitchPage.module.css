@@ -1001,10 +1001,15 @@
 
   .searchPanel {
     position: fixed;
-    top: 152px;
+    /* 56px announcement + 72px header + 68px toolbar. The previous 152px
+       value landed over the toolbar whenever the announcement was visible. */
+    top: 196px;
     right: 16px;
     left: 16px;
     width: auto;
+    max-height: calc(100dvh - 212px - env(safe-area-inset-bottom));
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .section {

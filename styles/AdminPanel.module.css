@@ -1118,6 +1118,43 @@
   }
 }
 
+.adminDocumentRow {
+  min-width: 0;
+}
+
+.adminDocumentRemove {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.userDetailActions {
+  min-width: 0;
+}
+
+@media (max-width: 520px) {
+  .adminDocumentRow {
+    grid-template-columns: minmax(0, 1fr) 44px !important;
+  }
+
+  .adminDocumentRow > input:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .adminDocumentRemove {
+    width: 44px !important;
+  }
+
+  .userDetailActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .userDetailActions > * {
+    width: 100%;
+    min-height: 44px;
+  }
+}
+
 /* ==========================================================
    Admin workspace — operational design contract
    Compact, accessible and shared by every administrative route.
@@ -1849,12 +1886,6 @@
   color: var(--admin-muted) !important;
 }
 
-:global(.dashShell[data-theme='dark']) .badge {
-  --badge-bg: var(--admin-surface-soft) !important;
-  --badge-color: var(--admin-text) !important;
-  --badge-border: 1px solid var(--admin-border) !important;
-}
-
 :global(.dashShell[data-theme='dark']) .countBadge {
   border: 1px solid var(--admin-border);
   background: var(--admin-surface-soft);
@@ -1984,6 +2015,100 @@
   color: var(--admin-text);
 }
 
+.selectControl,
+.inputControl,
+.textareaControl,
+.legacyPage
+  input:not(
+    :is([type='checkbox'], [type='radio'], [type='range'], [type='color'])
+  ),
+.legacyPage select,
+.legacyPage textarea {
+  caret-color: var(--admin-blue);
+}
+
+.legacyPage
+  input:not(
+    :is([type='checkbox'], [type='radio'], [type='range'], [type='color'])
+  ),
+.legacyPage select,
+.legacyPage textarea {
+  border-color: var(--admin-border) !important;
+  background: var(--admin-surface) !important;
+  color: var(--admin-text) !important;
+}
+
+.legacyPage input::placeholder,
+.legacyPage textarea::placeholder {
+  color: var(--text-4, var(--admin-muted)) !important;
+  opacity: 1;
+}
+
+.legacyPage select option {
+  background: var(--admin-surface);
+  color: var(--admin-text);
+}
+
+.selectControl:-webkit-autofill,
+.inputControl:-webkit-autofill,
+.textareaControl:-webkit-autofill,
+.legacyPage
+  input:not(
+    :is([type='checkbox'], [type='radio'], [type='range'], [type='color'])
+  ):-webkit-autofill,
+.legacyPage select:-webkit-autofill,
+.legacyPage textarea:-webkit-autofill {
+  -webkit-text-fill-color: var(--admin-text);
+  box-shadow: 0 0 0 1000px var(--admin-surface) inset !important;
+  transition: background-color 9999s ease-out;
+}
+
+.legacyPage
+  input:is([type='checkbox'], [type='radio'], [type='range'], [type='color']) {
+  padding: revert !important;
+  border: revert !important;
+  background: revert !important;
+  color: revert !important;
+  box-shadow: none !important;
+  accent-color: var(--admin-blue);
+}
+
+.legacyPage input:is([type='checkbox'], [type='radio']) {
+  width: 18px;
+  height: 18px;
+  min-height: 18px !important;
+}
+
+.legacyPage input[type='range'] {
+  min-height: auto !important;
+}
+
+.legacyPage table {
+  border-color: var(--admin-border) !important;
+  background: var(--admin-surface) !important;
+  color: var(--admin-text) !important;
+}
+
+.legacyPage th {
+  border-color: var(--admin-border) !important;
+  background: var(--admin-surface-soft) !important;
+  color: var(--admin-muted) !important;
+}
+
+.legacyPage td {
+  border-color: var(--admin-border) !important;
+  background: transparent !important;
+  color: var(--admin-text) !important;
+}
+
+.legacyPage tbody tr:hover td {
+  background: var(--admin-surface-soft) !important;
+}
+
+.surfaceSoft {
+  background: var(--admin-surface-soft);
+}
+
 .alertSuccess {
   border-color: color-mix(in srgb, var(--success, #168a55) 30%, transparent);
   background: color-mix(
@@ -2006,7 +2131,97 @@
 
 .buttonDanger {
   background: var(--danger, #c23d4f);
-  color: #ffffff;
+  color: var(--dash-action-ink, #ffffff);
+}
+
+/* Dark-theme integrity for the Admin's legacy routes. These pages still
+   contain inline colours from both the retired light and dark interfaces;
+   only neutral structural colours are normalized here. Status and action
+   colours keep their semantic meaning. */
+:global(.dashShell.role-admin[data-theme='dark']) .page,
+:global(.dashShell.role-admin[data-theme='dark']) .legacyPage {
+  color-scheme: dark;
+}
+
+:global(.dashShell.role-admin[data-theme='dark'])
+  .legacyPage
+  :is(section, article, form, fieldset, div):is(
+    [style*='background: white'],
+    [style*='background: #fff'],
+    [style*='background: #ffffff'],
+    [style*='background-color: white'],
+    [style*='background-color: #fff'],
+    [style*='background-color: #ffffff'],
+    [style*='background-color: rgb(255, 255, 255)']
+  ) {
+  border-color: var(--admin-border) !important;
+  background: var(--admin-surface) !important;
+  color: var(--admin-text) !important;
+}
+
+:global(.dashShell.role-admin[data-theme='dark'])
+  .legacyPage
+  :is(div, section, article, form, fieldset):is(
+    [style*='background: #f7fafc'],
+    [style*='background: #f7fbff'],
+    [style*='background-color: #f7fafc'],
+    [style*='background-color: #f7fbff'],
+    [style*='background-color: rgb(247, 250, 252)'],
+    [style*='background-color: rgb(247, 251, 255)'],
+    [style*='background: rgba(255, 255, 255, 0.05)'],
+    [style*='background: rgba(255,255,255,0.05)'],
+    [style*='background: rgba(255, 255, 255, 0.04)'],
+    [style*='background: rgba(255,255,255,0.04)']
+  ) {
+  border-color: var(--admin-border) !important;
+  background: var(--admin-surface-soft) !important;
+  color: var(--admin-text) !important;
+}
+
+:global(.dashShell.role-admin[data-theme='dark'])
+  :is(.page, .legacyPage)
+  :is(h1, h2, h3, h4, p, label, legend, dt, dd, small, td, th):is(
+    [style*='color: #1a202c'],
+    [style*='color: #2d3748'],
+    [style*='color: #162a55'],
+    [style*='color: #33415c'],
+    [style*='color: rgb(26, 32, 44)'],
+    [style*='color: rgb(45, 55, 72)'],
+    [style*='color: rgb(22, 42, 85)'],
+    [style*='color: rgb(51, 65, 92)']
+  ) {
+  color: var(--admin-text) !important;
+}
+
+:global(.dashShell.role-admin[data-theme='dark'])
+  :is(.page, .legacyPage)
+  :is(h1, h2, h3, h4, p, label, legend, dt, dd, small, td, th):is(
+    [style*='color: #4a5568'],
+    [style*='color: #46597a'],
+    [style*='color: #607394'],
+    [style*='color: #718096'],
+    [style*='color: #7b8da8'],
+    [style*='color: #94a3b8'],
+    [style*='color: rgb(74, 85, 104)'],
+    [style*='color: rgb(70, 89, 122)'],
+    [style*='color: rgb(96, 115, 148)'],
+    [style*='color: rgb(113, 128, 150)'],
+    [style*='color: rgb(123, 141, 168)'],
+    [style*='color: rgb(148, 163, 184)']
+  ) {
+  color: var(--admin-muted) !important;
+}
+
+:global(.dashShell.role-admin[data-theme='dark'])
+  .legacyPage
+  :is(th, td)[style*='border-bottom'] {
+  border-color: var(--admin-border) !important;
+}
+
+:global(.dashShell.role-admin[data-theme='dark'])
+  .legacyPage
+  :is([role='alert'], [role='status']) {
+  border-color: color-mix(in srgb, currentColor 30%, transparent) !important;
 }
 
 .jobCreateLayout {

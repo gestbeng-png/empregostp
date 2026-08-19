@@ -6,7 +6,6 @@ import {
   FiArrowRight,
   FiCalendar,
   FiClock,
-  FiExternalLink,
   FiMail,
   FiSearch,
   FiX,
@@ -107,10 +106,7 @@ export async function getServerSideProps(context) {
       'public, s-maxage=60, stale-while-revalidate=300',
     );
 
-    const [postsSnapshot, newsSnapshot] = await Promise.all([
-      fetchWithFallback('posts'),
-      fetchWithFallback('news'),
-    ]);
+    const postsSnapshot = await fetchWithFallback('posts');
 
     const posts = postsSnapshot.docs
       .map((doc) => {
@@ -140,36 +136,9 @@ export async function getServerSideProps(context) {
       .sort(sortByRecent)
       .map(({ createdAtMs, updatedAtMs, ...post }) => post);
 
-    const news = newsSnapshot.docs
-      .map((doc) => {
-        const data = doc.data() || {};
-        const createdAt = safeTimestampToISOString(data.createdAt);
-        const updatedAt = safeTimestampToISOString(data.updatedAt);
-
-        return {
-          id: doc.id,
-          title: safeText(data.title, 'Sem título'),
-          category: safeText(data.category, 'Atualização'),
-          date: safeText(
-            data.date,
-            createdAt ? new Date(createdAt).toLocaleDateString('pt-PT') : '',
-          ),
-          status: normalizeContentStatus(data.status),
-          createdAt,
-          updatedAt,
-          createdAtMs: safeTimestampToMillis(data.createdAt),
-          updatedAtMs: safeTimestampToMillis(data.updatedAt),
-        };
-      })
-      .filter((item) => isContentPublished(item.status))
-      .sort(sortByRecent)
-      .slice(0, 8)
-      .map(({ createdAtMs, updatedAtMs, ...item }) => item);
-
     return {
       props: {
         initialPosts: posts || [],
-        initialNews: news || [],
       },
     };
   } catch (error) {
@@ -177,7 +146,6 @@ export async function getServerSideProps(context) {
     return {
       props: {
         initialPosts: [],
-        initialNews: [],
       },
     };
   }
@@ -194,7 +162,7 @@ function formatDate(value) {
   });
 }
 
-export default function BlogPage({ initialPosts = [], initialNews = [] }) {
+export default function BlogPage({ initialPosts = [] }) {
   const [activeCategory, setActiveCategory] = useState('todos');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
@@ -205,7 +173,6 @@ export default function BlogPage({ initialPosts = [], initialNews = [] }) {
     message: '',
   });
   const posts = initialPosts;
-  const news = initialNews;
 
   const categories = useMemo(() => {
     const counts = new Map();
@@ -635,40 +602,6 @@ export default function BlogPage({ initialPosts = [], initialNews = [] }) {
                         </span>
                       </button>
                     ))}
-                </div>
-              </section>
-
-              <section
-                className={styles.updatesPanel}
-                aria-labelledby="quick-updates-title"
-              >
-                <h2 id="quick-updates-title" className={styles.panelTitle}>
-                  <span className={styles.updatesBolt} aria-hidden="true">
-                    ↯
-                  </span>
-                  Atualizações rápidas
-                </h2>
-                <div className={styles.newsList}>
-                  {news.length > 0 ? (
-                    news.map((item) => (
-                      <article key={item.id} className={styles.newsItem}>
-                        <div className={styles.newsHeading}>
-                          <h3 className={styles.newsTitle}>{item.title}</h3>
-                          <FiExternalLink aria-hidden="true" />
-                        </div>
-                        <div className={styles.newsMeta}>
-                          <span className={styles.newsCategory}>
-                            {item.category}
-                          </span>
-                          <span className={styles.newsDate}>{item.date}</span>
-                        </div>
-                      </article>
-                    ))
-                  ) : (
-                    <p className={styles.panelEmptyText}>
-                      Ainda não existem atualizações recentes publicadas.
-                    </p>
-                  )}
                 </div>
               </section>
             </div>

@@ -28,6 +28,7 @@ const APPLICATION_STATUS_LABELS = {
   analysis: "Em análise",
   interview: "Entrevista",
   rejected: "Rejeitada",
+  withdrawn: "Retirada",
 };
 
 function splitCsv(value) {

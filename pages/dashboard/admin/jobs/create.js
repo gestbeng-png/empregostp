@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -15,6 +15,10 @@ import { admin } from '../../../../lib/firebaseAdmin';
 import { getFirebaseStorageErrorMessage } from '../../../../lib/firebaseStorageError';
 import adminStyles from '../../../../styles/AdminPanel.module.css';
 import { redirectToLogin } from '../../../../lib/loginRedirect';
+import { useAuth } from '../../../../context/AuthContext';
+import AutoSaveStatus from '../../../../components/forms/AutoSaveStatus';
+import useAutoDraft from '../../../../hooks/useAutoDraft';
+import { createFormDraftKey } from '../../../../lib/formDraft';
 
 const EMPLOYMENT_TYPES = [
   'Tempo Integral',
@@ -63,6 +67,7 @@ const JOB_CATEGORIES = [
  */
 export default function AdminJobCreate({ companies = [] }) {
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -93,6 +98,55 @@ export default function AdminJobCreate({ companies = [] }) {
     categoria: '',
     tdrUrl: '',
     tdrFileName: '',
+  });
+
+  const draftOwnerId = user?.uid || '';
+  const jobDraftKey = useMemo(
+    () =>
+      createFormDraftKey({
+        scope: 'admin-job',
+        ownerId: draftOwnerId,
+        resourceId: 'new',
+      }),
+    [draftOwnerId],
+  );
+  const jobDraftValue = useMemo(
+    () => ({ jobData, currentStep }),
+    [currentStep, jobData],
+  );
+
+  const getDraftToken = useCallback(async () => {
+    if (!user) return '';
+    return user.getIdToken();
+  }, [user]);
+
+  const restoreJobDraft = useCallback((draft) => {
+    if (!draft || typeof draft !== 'object') return;
+
+    if (draft.jobData && typeof draft.jobData === 'object') {
+      setJobData((current) => ({ ...current, ...draft.jobData }));
+    }
+
+    const restoredStep = Number(draft.currentStep);
+    if (Number.isFinite(restoredStep)) {
+      setCurrentStep(Math.max(1, Math.min(4, Math.trunc(restoredStep))));
+    }
+  }, []);
+
+  const {
+    status: jobDraftStatus,
+    lastSavedAt: jobDraftSavedAt,
+    isOnline: jobDraftIsOnline,
+    clearDraft: clearJobDraft,
+  } = useAutoDraft({
+    storageKey: jobDraftKey,
+    scope: 'admin-job',
+    resourceId: 'new',
+    value: jobDraftValue,
+    onRestore: restoreJobDraft,
+    getToken: getDraftToken,
+    enabled: Boolean(draftOwnerId),
+    ready: router.isReady && !authLoading && Boolean(draftOwnerId),
   });
 
   const handleChange = (e) => {
@@ -280,6 +334,7 @@ export default function AdminJobCreate({ companies = [] }) {
         throw new Error(result.message || 'Erro ao criar vaga');
       }
 
+      await clearJobDraft();
       setSuccess('Vaga criada com sucesso!');
       setTimeout(() => {
         router.push('/dashboard/admin/jobs');
@@ -336,6 +391,11 @@ export default function AdminJobCreate({ companies = [] }) {
               Publique uma oportunidade em nome de uma empresa cadastrada ou
               parceira.
             </p>
+            <AutoSaveStatus
+              status={jobDraftStatus}
+              lastSavedAt={jobDraftSavedAt}
+              isOnline={jobDraftIsOnline}
+            />
           </div>
 
           <ol

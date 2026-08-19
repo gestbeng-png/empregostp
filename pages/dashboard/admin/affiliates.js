@@ -10,7 +10,7 @@ const STATUS_META = {
     label: 'Pendente',
     style: {
       '--badge-bg': 'rgba(245, 158, 11, 0.14)',
-      '--badge-color': '#b45309',
+      '--badge-color': 'var(--dash-warning-text, #b45309)',
       '--badge-border': '1px solid rgba(245, 158, 11, 0.28)',
     },
   },
@@ -18,7 +18,7 @@ const STATUS_META = {
     label: 'Aprovado',
     style: {
       '--badge-bg': 'rgba(61, 187, 122, 0.14)',
-      '--badge-color': '#15803d',
+      '--badge-color': 'var(--dash-success-text, #15803d)',
       '--badge-border': '1px solid rgba(61, 187, 122, 0.28)',
     },
   },
@@ -26,7 +26,7 @@ const STATUS_META = {
     label: 'Contactado',
     style: {
       '--badge-bg': 'rgba(32, 87, 215, 0.12)',
-      '--badge-color': '#1d4ed8',
+      '--badge-color': 'var(--dash-info-text, #1d4ed8)',
       '--badge-border': '1px solid rgba(32, 87, 215, 0.26)',
     },
   },
@@ -34,7 +34,7 @@ const STATUS_META = {
     label: 'Rejeitado',
     style: {
       '--badge-bg': 'rgba(239, 68, 68, 0.12)',
-      '--badge-color': '#b91c1c',
+      '--badge-color': 'var(--dash-danger-text, #b91c1c)',
       '--badge-border': '1px solid rgba(239, 68, 68, 0.24)',
     },
   },
@@ -43,11 +43,27 @@ const STATUS_META = {
 const ROLE_LABEL = { candidato: 'Candidato', empresa: 'Empresa' };
 
 const FILTERS = [
-  { key: 'pending', title: 'Pendentes', accent: '#f59e0b' },
-  { key: 'approved', title: 'Aprovados', accent: '#3dbb7a' },
-  { key: 'contacted', title: 'Contactados', accent: '#2057d7' },
-  { key: 'rejected', title: 'Rejeitados', accent: '#ef4444' },
-  { key: 'all', title: 'Total', accent: '#64748b' },
+  {
+    key: 'pending',
+    title: 'Pendentes',
+    accent: 'var(--dash-warning-text, #985800)',
+  },
+  {
+    key: 'approved',
+    title: 'Aprovados',
+    accent: 'var(--dash-success-text, #168a55)',
+  },
+  {
+    key: 'contacted',
+    title: 'Contactados',
+    accent: 'var(--dash-info-text, #064bb5)',
+  },
+  {
+    key: 'rejected',
+    title: 'Rejeitados',
+    accent: 'var(--dash-danger-text, #b83d55)',
+  },
+  { key: 'all', title: 'Total', accent: 'var(--admin-muted)' },
 ];
 
 export default function AdminAffiliates() {
@@ -252,7 +268,7 @@ export default function AdminAffiliates() {
                         style={{
                           margin: 0,
                           fontWeight: 800,
-                          color: '#162a55',
+                          color: 'var(--admin-text)',
                           fontSize: '1.05rem',
                         }}
                       >
@@ -261,7 +277,7 @@ export default function AdminAffiliates() {
                       <p
                         style={{
                           margin: '0.15rem 0 0',
-                          color: '#607394',
+                          color: 'var(--admin-muted)',
                           fontSize: '0.88rem',
                         }}
                       >
@@ -289,7 +305,7 @@ export default function AdminAffiliates() {
                     <a
                       href={`mailto:${item.email}`}
                       style={{
-                        color: '#2057d7',
+                        color: 'var(--admin-blue)',
                         fontSize: '0.86rem',
                         fontWeight: 600,
                       }}
@@ -299,7 +315,7 @@ export default function AdminAffiliates() {
                     <a
                       href={`tel:${item.phone}`}
                       style={{
-                        color: '#2057d7',
+                        color: 'var(--admin-blue)',
                         fontSize: '0.86rem',
                         fontWeight: 600,
                       }}
@@ -307,7 +323,12 @@ export default function AdminAffiliates() {
                       📞 {item.phone}
                     </a>
                     {item.channels ? (
-                      <span style={{ color: '#607394', fontSize: '0.86rem' }}>
+                      <span
+                        style={{
+                          color: 'var(--admin-muted)',
+                          fontSize: '0.86rem',
+                        }}
+                      >
                         🔗 {item.channels}
                       </span>
                     ) : null}
@@ -316,7 +337,7 @@ export default function AdminAffiliates() {
                   <p
                     style={{
                       margin: '0.7rem 0 0',
-                      color: '#33415c',
+                      color: 'var(--text-2, var(--admin-text))',
                       lineHeight: 1.7,
                     }}
                   >
@@ -326,7 +347,7 @@ export default function AdminAffiliates() {
                   <p
                     style={{
                       margin: '0.7rem 0 0',
-                      color: '#94a3b8',
+                      color: 'var(--admin-muted)',
                       fontSize: '0.8rem',
                     }}
                   >

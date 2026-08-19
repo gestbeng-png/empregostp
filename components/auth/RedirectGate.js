@@ -13,20 +13,22 @@ export default function RedirectGate({ title = 'A encaminhar', description }) {
         >
           <div className={styles.logoWrap}>
             <Image
-              src="/assets/Emprego STP Logo 2-wide.png"
+              src="/assets/Logo header.png"
               alt="EmpregoSTP"
-              width={619}
-              height={169}
+              width={219}
+              height={59}
               priority
+              sizes="(max-width: 380px) 150px, (max-width: 640px) 164px, (max-width: 1240px) 170px, 184px"
               className={styles.logo}
             />
           </div>
 
-          <span className={styles.kicker}>Só um instante</span>
-          <h1 className={styles.title}>{title}</h1>
-          {description ? (
-            <p className={styles.description}>{description}</p>
-          ) : null}
+          <div className={styles.copy}>
+            <h1 className={styles.title}>{title}</h1>
+            {description ? (
+              <p className={styles.description}>{description}</p>
+            ) : null}
+          </div>
 
           <div className={styles.spinner} aria-hidden="true" />
         </section>

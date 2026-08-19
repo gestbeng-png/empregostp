@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import nookies from 'nookies';
@@ -8,6 +8,10 @@ import adminStyles from '../../../../styles/AdminPanel.module.css';
 import { addDocument, setDocument } from '../../../../lib/db';
 import { getFirebaseStorageErrorMessage } from '../../../../lib/firebaseStorageError';
 import { redirectToLogin } from '../../../../lib/loginRedirect';
+import { useAuth } from '../../../../context/AuthContext';
+import AutoSaveStatus from '../../../../components/forms/AutoSaveStatus';
+import useAutoDraft from '../../../../hooks/useAutoDraft';
+import { createFormDraftKey } from '../../../../lib/formDraft';
 
 const RESOURCE_TYPES = [
   { id: 'resources_templates', label: 'Modelos & Templates' },
@@ -178,15 +182,45 @@ const serializeValue = (value) => {
 
 export default function AdminResourceEdit({ itemData, isNew, type }) {
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
   const [formData, setFormData] = useState({});
+  const [appliedResourceId, setAppliedResourceId] = useState('');
 
   const fields = SCHEMAS[type] || SCHEMAS['default'];
   const typeLabel = RESOURCE_TYPES.find((t) => t.id === type)?.label || type;
   const supportsManagedFile =
     type === 'resources_templates' || type === 'resources_guides';
+  const draftResourceId = isNew ? `${type}_new` : `${type}_${itemData?.id || ''}`;
+  const editableFieldNames = useMemo(
+    () => fields.map((field) => field.name),
+    [fields],
+  );
+  const prepareResourceDraft = useCallback(
+    (value) =>
+      Object.fromEntries(
+        editableFieldNames.map((fieldName) => [
+          fieldName,
+          value?.[fieldName] ?? '',
+        ]),
+      ),
+    [editableFieldNames],
+  );
+  const resourceDraftKey = useMemo(
+    () =>
+      createFormDraftKey({
+        scope: 'admin-resource',
+        ownerId: user?.uid || '',
+        resourceId: draftResourceId,
+      }),
+    [draftResourceId, user?.uid],
+  );
+  const getDraftToken = useCallback(() => user?.getIdToken?.(), [user]);
+  const restoreResourceDraft = useCallback((draft) => {
+    setFormData((current) => ({ ...current, ...draft }));
+  }, []);
 
   useEffect(() => {
     if (itemData) {
@@ -197,7 +231,30 @@ export default function AdminResourceEdit({ itemData, isNew, type }) {
       fields.forEach((f) => (initial[f.name] = ''));
       setFormData(initial);
     }
-  }, [itemData, fields]);
+    setAppliedResourceId(draftResourceId);
+  }, [draftResourceId, itemData, fields]);
+
+  const {
+    status: resourceDraftStatus,
+    lastSavedAt: resourceDraftSavedAt,
+    isOnline: resourceDraftIsOnline,
+    clearDraft: clearResourceDraft,
+  } = useAutoDraft({
+    storageKey: resourceDraftKey,
+    scope: 'admin-resource',
+    resourceId: draftResourceId,
+    value: formData,
+    onRestore: restoreResourceDraft,
+    getToken: getDraftToken,
+    enabled: Boolean(user?.uid),
+    ready:
+      !authLoading &&
+      Boolean(draftResourceId) &&
+      appliedResourceId === draftResourceId,
+    baseUpdatedAt: isNew ? '' : itemData?.updatedAt || '',
+    prepareLocal: prepareResourceDraft,
+    prepareRemote: prepareResourceDraft,
+  });
 
   const handleChange = (e) => {
     const { name, value, type } = e.target;
@@ -232,6 +289,7 @@ export default function AdminResourceEdit({ itemData, isNew, type }) {
           updatedAt: new Date().toISOString(),
         });
       }
+      await clearResourceDraft();
       router.push(`/dashboard/admin/resources?type=${type}`);
     } catch (error) {
       console.error('Erro ao salvar:', error);
@@ -457,6 +515,11 @@ export default function AdminResourceEdit({ itemData, isNew, type }) {
             </Link>
             <h1 style={styles.title}>{isNew ? 'Novo Item' : 'Editar Item'}</h1>
             <p style={styles.subtitle}>Coleção: {typeLabel}</p>
+            <AutoSaveStatus
+              status={resourceDraftStatus}
+              lastSavedAt={resourceDraftSavedAt}
+              isOnline={resourceDraftIsOnline}
+            />
           </div>
 
           <form onSubmit={handleSubmit} style={styles.card}>

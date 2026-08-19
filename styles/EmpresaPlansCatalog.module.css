@@ -74,7 +74,7 @@
 .alertError {
   border: 1px solid rgba(194, 61, 79, 0.24);
   background: rgba(194, 61, 79, 0.08);
-  color: #a52f42;
+  color: var(--dash-danger-text, #a52f42);
 }
 
 .pendingBanner {
@@ -688,7 +688,7 @@
 .btnPrimary {
   border-color: #064bb5;
   background: #064bb5;
-  color: #ffffff;
+  color: var(--dash-action-ink, #ffffff);
 }
 
 .pendingAction:hover,
@@ -810,7 +810,7 @@
   border-color: transparent;
   border-radius: 10px;
   background: linear-gradient(135deg, #2057d7, #5fb8f5);
-  color: #ffffff;
+  color: var(--dash-action-ink, #ffffff);
   box-shadow: 0 8px 18px rgba(32, 87, 215, 0.18);
 }
 
@@ -825,7 +825,7 @@
 .subscribeBtnPopular {
   border-color: transparent;
   background: linear-gradient(135deg, #2057d7, #5fb8f5);
-  color: #ffffff;
+  color: var(--dash-action-ink, #ffffff);
 }
 
 .btnGhost,
@@ -833,6 +833,10 @@
   border-color: var(--border, rgba(30, 43, 77, 0.08));
   border-radius: 10px;
   background: var(--surface, #ffffff);
+  color: var(--text-2, #46597a);
+}
+
+.cardCurrent .summary {
   color: var(--text-2, #46597a);
 }
 
@@ -846,4 +850,37 @@
 .overlay {
   background: rgba(13, 21, 38, 0.68);
   backdrop-filter: blur(6px);
+}
+
+:global(.dashShell.role-empresa[data-theme='dark']) .pendingAction,
+:global(.dashShell.role-empresa[data-theme='dark'])
+  .subscribeBtn:not(.subscribeBtnCurrent):not(.subscribeBtnPopular),
+:global(.dashShell.role-empresa[data-theme='dark']) .btnPrimary {
+  border-color: var(--blue, #6a9cff);
+  background: var(--blue, #6a9cff);
+  color: var(--dash-action-ink, #0d1526);
+}
+
+:global(.dashShell.role-empresa[data-theme='dark'])
+  .subscribeBtnPopular:not(.subscribeBtnCurrent) {
+  border-color: var(--lime, #d9ff2f);
+  background: var(--lime, #d9ff2f);
+  color: var(--lime-text, #0d1526);
+}
+
+:global(.dashShell.role-empresa[data-theme='dark'])
+  .subscribeBtnPopular:not(.subscribeBtnCurrent):hover:not(:disabled) {
+  border-color: var(--dash-lime-border, #c4ea24);
+  background: var(--lime, #d9ff2f);
+  color: var(--lime-text, #0d1526);
+}
+
+:global(.dashShell.role-empresa[data-theme='dark']) .pendingAction:hover,
+:global(.dashShell.role-empresa[data-theme='dark'])
+  .subscribeBtn:not(.subscribeBtnCurrent):not(.subscribeBtnPopular):hover:not(:disabled),
+:global(.dashShell.role-empresa[data-theme='dark'])
+  .btnPrimary:hover:not(:disabled) {
+  border-color: var(--dash-blue-hover, #8eb4ff);
+  background: var(--dash-blue-hover, #8eb4ff);
+  color: var(--dash-action-ink, #0d1526);
 }

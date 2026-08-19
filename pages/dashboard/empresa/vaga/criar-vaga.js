@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import Link from "next/link";
@@ -9,7 +9,11 @@ import { auth, storage } from "../../../../lib/firebase";
 import { getFirebaseStorageErrorMessage } from "../../../../lib/firebaseStorageError";
 import { normalizeSkillsAssessmentInput } from "../../../../lib/skillsAssessment";
 import { FiArrowLeft } from "react-icons/fi";
+import { useAuth } from "../../../../context/AuthContext";
 import DashboardShell from "../../../../components/dashboard/DashboardShell";
+import AutoSaveStatus from "../../../../components/forms/AutoSaveStatus";
+import useAutoDraft from "../../../../hooks/useAutoDraft";
+import { createFormDraftKey } from "../../../../lib/formDraft";
 import styles from "../../../../styles/EmpresaJobForm.module.css";
 
 const EMPLOYMENT_TYPES = [
@@ -142,6 +146,7 @@ function hydrateJobForm(job) {
 
 export default function CriarVaga() {
   const router = useRouter();
+  const { user: authUser, loading: authContextLoading } = useAuth();
   const editJobId = useMemo(() => {
     if (!router.isReady) return "";
     const value = router.query.edit;
@@ -156,11 +161,23 @@ export default function CriarVaga() {
   const [success, setSuccess] = useState("");
   const [currentStep, setCurrentStep] = useState(1);
   const [jobData, setJobData] = useState(INITIAL_JOB_DATA);
+  const [existingJobLoad, setExistingJobLoad] = useState({
+    resourceId: "",
+    settled: false,
+    updatedAt: "",
+  });
 
   useEffect(() => {
     if (!router.isReady || !editJobId) return;
 
     let isActive = true;
+    let loadedJobUpdatedAt = "";
+
+    setExistingJobLoad({
+      resourceId: editJobId,
+      settled: false,
+      updatedAt: "",
+    });
 
     const getCurrentUser = async () => {
       if (auth.currentUser) return auth.currentUser;
@@ -199,6 +216,7 @@ export default function CriarVaga() {
 
         if (!isActive) return;
         setJobData(hydrateJobForm(data.job));
+        loadedJobUpdatedAt = data.job?.updatedAt || "";
       } catch (fetchError) {
         console.error("Erro ao carregar vaga para edição:", fetchError);
         if (!isActive) return;
@@ -208,6 +226,11 @@ export default function CriarVaga() {
       } finally {
         if (isActive) {
           setIsLoadingExisting(false);
+          setExistingJobLoad({
+            resourceId: editJobId,
+            settled: true,
+            updatedAt: loadedJobUpdatedAt,
+          });
         }
       }
     };
@@ -218,6 +241,82 @@ export default function CriarVaga() {
       isActive = false;
     };
   }, [editJobId, router.isReady]);
+
+  const draftOwnerId = authUser?.uid || "";
+  const jobDraftResourceId = editJobId || "new";
+  const jobDraftKey = useMemo(
+    () =>
+      createFormDraftKey({
+        scope: "company-job",
+        ownerId: draftOwnerId,
+        resourceId: jobDraftResourceId,
+      }),
+    [draftOwnerId, jobDraftResourceId],
+  );
+  const jobDraftValue = useMemo(
+    () => ({ jobData, currentStep }),
+    [currentStep, jobData],
+  );
+  const existingJobSettled =
+    !isEditMode ||
+    (existingJobLoad.resourceId === editJobId && existingJobLoad.settled);
+  const jobDraftReady =
+    router.isReady &&
+    !authContextLoading &&
+    Boolean(draftOwnerId) &&
+    existingJobSettled;
+
+  const getDraftToken = useCallback(async () => {
+    if (!authUser) return "";
+    return authUser.getIdToken();
+  }, [authUser]);
+
+  const restoreJobDraft = useCallback((draft) => {
+    if (!draft || typeof draft !== "object") return;
+
+    if (draft.jobData && typeof draft.jobData === "object") {
+      setJobData((current) => {
+        const restoredAssessment = draft.jobData.skillsAssessment;
+
+        return {
+          ...current,
+          ...draft.jobData,
+          skillsAssessment:
+            restoredAssessment && typeof restoredAssessment === "object"
+              ? {
+                  ...current.skillsAssessment,
+                  ...restoredAssessment,
+                  questions: Array.isArray(restoredAssessment.questions)
+                    ? restoredAssessment.questions
+                    : current.skillsAssessment.questions,
+                }
+              : current.skillsAssessment,
+        };
+      });
+    }
+
+    const restoredStep = Number(draft.currentStep);
+    if (Number.isFinite(restoredStep)) {
+      setCurrentStep(Math.max(1, Math.min(4, Math.trunc(restoredStep))));
+    }
+  }, []);
+
+  const {
+    status: jobDraftStatus,
+    lastSavedAt: jobDraftSavedAt,
+    isOnline: jobDraftIsOnline,
+    clearDraft: clearJobDraft,
+  } = useAutoDraft({
+    storageKey: jobDraftKey,
+    scope: "company-job",
+    resourceId: jobDraftResourceId,
+    value: jobDraftValue,
+    onRestore: restoreJobDraft,
+    getToken: getDraftToken,
+    enabled: Boolean(draftOwnerId),
+    ready: jobDraftReady,
+    baseUpdatedAt: isEditMode ? existingJobLoad.updatedAt : "",
+  });
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -503,7 +602,7 @@ export default function CriarVaga() {
         body: JSON.stringify(vagaData),
       });
 
-      const createData = await createResponse.json();
+      const createData = await createResponse.json().catch(() => ({}));
       if (!createResponse.ok) {
         const businessMessage =
           createData.reason ||
@@ -522,6 +621,8 @@ export default function CriarVaga() {
         );
         return;
       }
+
+      await clearJobDraft();
 
       if (!isEditMode) {
         try {
@@ -614,6 +715,11 @@ export default function CriarVaga() {
                 ? "Atualize a publicação sem perder o histórico de candidaturas."
                 : "Estruture a oportunidade em quatro etapas e reveja tudo antes de publicar."}
             </p>
+            <AutoSaveStatus
+              status={jobDraftStatus}
+              lastSavedAt={jobDraftSavedAt}
+              isOnline={jobDraftIsOnline}
+            />
           </header>
 
         {/* Step Indicator */}

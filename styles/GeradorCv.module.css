@@ -909,6 +909,11 @@
   gap: 10px;
 }
 
+.autoSaveStatus {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
 .wizardNavHint {
   color: var(--cv-muted);
   font-size: max(0.82rem, 14px);
@@ -1391,6 +1396,10 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .autoSaveStatus {
+    margin-left: 0;
+  }
+
   .wizardNav > .primaryButton,
   .navStart > * {
     width: 100%;
@@ -1406,12 +1415,20 @@
   }
 
   .previewShell {
+    max-width: 100%;
     padding: 8px;
+    overflow: auto;
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
   }
 
   .previewPage {
-    min-width: 500px;
+    /* Preserve the A4 proportions but let the preview fit a 320px screen.
+       The old 500px floor forced an avoidable horizontal pan. */
+    width: 100%;
+    min-width: 0;
     min-height: 707px;
+    padding: clamp(14px, 4vw, 24px);
   }
 
   .lockCard,

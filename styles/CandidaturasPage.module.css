@@ -587,6 +587,68 @@
   border-top: 1px solid rgba(148, 163, 184, 0.12);
 }
 
+.withdrawPanel {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1rem;
+  border: 1px solid rgba(180, 35, 24, 0.22);
+  border-radius: 14px;
+  background: rgba(180, 35, 24, 0.06);
+}
+
+.withdrawPanel p {
+  margin: 0.35rem 0 0;
+  color: var(--app-text-secondary);
+  line-height: 1.55;
+}
+
+.withdrawPanel p[role="alert"] {
+  color: #b42318;
+  font-weight: 700;
+}
+
+.withdrawActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.withdrawButton,
+.confirmWithdrawButton,
+.cancelWithdrawButton {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.7rem 1rem;
+  border-radius: 14px;
+  font-weight: 800;
+}
+
+.withdrawButton {
+  border: 1px solid rgba(180, 35, 24, 0.28);
+  background: transparent;
+  color: #b42318;
+}
+
+.confirmWithdrawButton {
+  border: 1px solid #b42318;
+  background: #b42318;
+  color: #fff;
+}
+
+.cancelWithdrawButton {
+  border: 1px solid rgba(32, 87, 215, 0.2);
+  background: #fff;
+  color: #2057d7;
+}
+
+.confirmWithdrawButton:disabled,
+.cancelWithdrawButton:disabled {
+  cursor: wait;
+  opacity: 0.68;
+}
+
 .primaryLink {
   display: inline-flex;
   align-items: center;

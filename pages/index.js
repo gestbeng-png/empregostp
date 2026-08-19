@@ -286,6 +286,7 @@ export async function getServerSideProps(context) {
       companiesSnapshot,
       candidatesSnapshot,
       postsSnapshot,
+      testimonialsSnapshot,
     ] = await Promise.all([
       admin
         .firestore()
@@ -303,6 +304,11 @@ export async function getServerSideProps(context) {
         .where('userType', '==', 'candidato')
         .get(),
       fetchCollectionWithFallback('posts'),
+      admin
+        .firestore()
+        .collection('testimonials')
+        .where('status', '==', 'approved')
+        .get(),
     ]);
 
     const activeJobsData = activeJobsSnapshot.docs
@@ -533,6 +539,25 @@ export async function getServerSideProps(context) {
         );
       });
 
+    const approvedTestimonials = testimonialsSnapshot.docs
+      .map((doc) => {
+        const data = doc.data() || {};
+        const name = String(data.name || '').trim();
+        const createdAtRaw = data.approvedAt || data.createdAt || null;
+        const createdAt = createdAtRaw?.toDate?.()?.toISOString?.() || null;
+        return {
+          id: doc.id,
+          name,
+          initials: getInitials(name),
+          createdAt,
+        };
+      })
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt || 0).getTime() -
+          new Date(a.createdAt || 0).getTime(),
+      );
+
     const latestPosts = postsSnapshot.docs
       .map((doc) => {
         const data = doc.data() || {};
@@ -579,6 +604,7 @@ export async function getServerSideProps(context) {
         stats,
         spotlightCandidates: JSON.parse(JSON.stringify(spotlightCandidates)),
         latestPosts: JSON.parse(JSON.stringify(latestPosts)),
+        testimonials: JSON.parse(JSON.stringify(approvedTestimonials)),
       },
     };
   } catch (error) {
@@ -594,6 +620,7 @@ export async function getServerSideProps(context) {
         },
         spotlightCandidates: [],
         latestPosts: [],
+        testimonials: [],
       },
     };
   }
@@ -609,6 +636,7 @@ export default function HomePage({
   },
   spotlightCandidates = [],
   latestPosts = [],
+  testimonials = [],
 }) {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
@@ -730,7 +758,7 @@ export default function HomePage({
   const heroJobs = filteredJobs.slice(0, 4);
   const jobsPreview = filteredJobs.slice(0, 9);
   const verifiedCandidates = spotlightCandidates;
-  const testimonialCandidates = spotlightCandidates.slice(0, 3);
+  const testimonialAvatars = testimonials.slice(0, 3);
   const networkCandidates = spotlightCandidates.slice(0, 5);
   const newsPosts =
     latestPosts.length > 0
@@ -988,34 +1016,35 @@ export default function HomePage({
                   aria-label="Ver testemunhos na página Sobre nós"
                 >
                   <h2 className={styles.testimonialTitle}>Testemunhos</h2>
-                  <div className={styles.testimonialAvatars}>
-                    {testimonialCandidates.length ? (
-                      testimonialCandidates.map((candidate) => (
-                        <span
-                          key={candidate.id}
-                          className={styles.testimonialAvatar}
-                        >
-                          {candidate.photoUrl ? (
-                            <Image
-                              src={candidate.photoUrl}
-                              alt=""
-                              className={styles.testimonialAvatarImage}
-                              width={46}
-                              height={46}
-                              unoptimized
-                            />
-                          ) : (
-                            candidate.initials
-                          )}
-                        </span>
-                      ))
-                    ) : (
-                      <>
-                        <span className={styles.testimonialAvatar}>ES</span>
-                        <span className={styles.testimonialAvatar}>ST</span>
-                        <span className={styles.testimonialAvatar}>JP</span>
-                      </>
-                    )}
+                  <div className={styles.testimonialTopRow}>
+                    <div className={styles.testimonialAvatarStack}>
+                      {testimonialAvatars.length ? (
+                        testimonialAvatars.map((testimonial) => (
+                          <span
+                            key={testimonial.id}
+                            className={styles.testimonialAvatarPill}
+                          >
+                            {testimonial.initials}
+                          </span>
+                        ))
+                      ) : (
+                        <>
+                          <span className={styles.testimonialAvatarPill}>
+                            ES
+                          </span>
+                          <span className={styles.testimonialAvatarPill}>
+                            ST
+                          </span>
+                          <span className={styles.testimonialAvatarPill}>
+                            JP
+                          </span>
+                        </>
+                      )}
+                    </div>
+                    <span className={styles.testimonialViewAll}>
+                      Veja todos
+                      <FiArrowRight aria-hidden="true" />
+                    </span>
                   </div>
                   <p className={styles.testimonialText}>
                     Empresas e talentos estão a usar a plataforma para encontrar

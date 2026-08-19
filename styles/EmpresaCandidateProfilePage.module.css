@@ -152,7 +152,7 @@
 .actionPrimary {
   border-color: var(--blue, #2057d7);
   background: var(--blue, #2057d7);
-  color: #fff;
+  color: var(--dash-action-ink, #fff);
   box-shadow: 0 8px 18px rgba(32, 87, 215, 0.14);
 }
 
@@ -166,7 +166,7 @@
 .actionWarning {
   border-color: rgba(182, 219, 33, 0.5);
   background: rgba(217, 255, 47, 0.17);
-  color: #526516;
+  color: var(--dash-company-text, #526516);
 }
 
 .actionMuted {
@@ -223,7 +223,7 @@
   border: 1px solid rgba(182, 219, 33, 0.45);
   border-radius: 10px;
   background: rgba(217, 255, 47, 0.12);
-  color: #526516;
+  color: var(--dash-company-text, #526516);
   font-size: 0.8rem;
   font-weight: 650;
   line-height: 1.55;
@@ -304,7 +304,15 @@
   color: var(--blue, #2057d7);
   font-size: 0.8rem;
   font-weight: 750;
+  font-family: inherit;
+  text-align: left;
   text-decoration: none;
+  cursor: pointer;
+}
+
+.fileCard:disabled {
+  cursor: wait;
+  opacity: 0.7;
 }
 
 .recordCard {
@@ -375,7 +383,7 @@
 .skillGreen {
   border-color: rgba(61, 187, 122, 0.25);
   background: rgba(61, 187, 122, 0.09);
-  color: #187044;
+  color: var(--dash-success-text, #187044);
 }
 
 .languageItem {
@@ -422,19 +430,19 @@
 .statusPending {
   border-color: rgba(182, 219, 33, 0.45);
   background: rgba(217, 255, 47, 0.14);
-  color: #526516;
+  color: var(--dash-company-text, #526516);
 }
 
 .statusApproved {
   border-color: rgba(61, 187, 122, 0.25);
   background: rgba(61, 187, 122, 0.1);
-  color: #187044;
+  color: var(--dash-success-text, #187044);
 }
 
 .statusRejected {
   border-color: rgba(220, 106, 124, 0.25);
   background: rgba(220, 106, 124, 0.1);
-  color: #a7394b;
+  color: var(--dash-danger-text, #a7394b);
 }
 
 .emptyText {
@@ -488,7 +496,7 @@
 
 /* Workbridge fidelity layer. */
 .page {
-  color: #102441;
+  color: var(--text-1, #102441);
   font-family: var(--font-instrument, "Instrument Sans"), Arial, sans-serif;
 }
 
@@ -500,21 +508,21 @@
 .applicationCard,
 .lockBanner,
 .notFoundPage {
-  border-color: #e4e5e8;
+  border-color: var(--border, #e4e5e8);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--surface, #ffffff);
   box-shadow: none;
 }
 
 .hero::after {
   width: 4px;
-  background: #daff45;
+  background: var(--lime, #daff45);
 }
 
 .avatarImage,
 .avatarFallback {
   border-radius: 8px;
-  background: #064bb5;
+  background: var(--role-grad, #064bb5);
   box-shadow: none;
 }
 
@@ -523,7 +531,7 @@
 .recordTitle,
 .applicationTitle,
 .notFoundTitle {
-  color: #102441;
+  color: var(--text-1, #102441);
 }
 
 .subtitle,
@@ -533,14 +541,14 @@
 .applicationDate,
 .emptyText,
 .longText {
-  color: #5f6874;
+  color: var(--text-3, #5f6874);
 }
 
 .eyebrow,
 .backLink,
 .externalLink,
 .notFoundLink {
-  color: #064bb5;
+  color: var(--dash-info-text, #064bb5);
 }
 
 .actionButton,
@@ -549,33 +557,39 @@
 }
 
 .actionPrimary {
-  border-color: #064bb5;
-  background: #064bb5;
-  color: #ffffff;
+  border-color: var(--blue, #064bb5);
+  background: var(--blue, #064bb5);
+  color: var(--dash-action-ink, #ffffff);
   box-shadow: none;
 }
 
 .actionPrimary:hover {
-  background: #0a65cc;
+  background: var(--dash-blue-hover, #0a65cc);
+  color: var(--dash-action-ink, #ffffff);
   transform: none;
 }
 
 .actionSecondary,
 .actionAccent {
-  border-color: #69c8ff;
-  background: #eef4f8;
-  color: #064bb5;
+  border-color: var(--sky, #69c8ff);
+  background: var(--surface-3, #eef4f8);
+  color: var(--dash-info-text, #064bb5);
 }
 
 .actionWarning {
-  border-color: #daff45;
-  background: #eefabf;
-  color: #102441;
+  border-color: var(--lime, #daff45);
+  background: color-mix(
+    in srgb,
+    var(--lime, #daff45) 18%,
+    var(--surface, #ffffff)
+  );
+  color: var(--text-1, #102441);
 }
 
 .actionButton:hover,
 .fileCard:hover {
   transform: none;
+  border-color: var(--sky, #69c8ff);
   box-shadow: none;
 }
 
@@ -595,14 +609,18 @@
 
 .skillBlue,
 .skillViolet {
-  border-color: #69c8ff;
-  background: #eef4f8;
-  color: #064bb5;
+  border-color: var(--sky, #69c8ff);
+  background: var(--surface-3, #eef4f8);
+  color: var(--dash-info-text, #064bb5);
 }
 
 .skillGreen,
 .statusApproved {
-  border-color: #daff45;
-  background: #eefabf;
-  color: #102441;
+  border-color: var(--lime, #daff45);
+  background: color-mix(
+    in srgb,
+    var(--lime, #daff45) 18%,
+    var(--surface, #ffffff)
+  );
+  color: var(--text-1, #102441);
 }

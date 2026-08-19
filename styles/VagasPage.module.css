@@ -346,7 +346,7 @@
 
 .checkRow {
   display: grid;
-  min-height: 38px;
+  min-height: 44px;
   grid-template-columns: 18px minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
@@ -382,7 +382,7 @@
 
 .salaryRange {
   width: 100%;
-  height: 38px;
+  height: 44px;
   margin: 0;
   accent-color: #2463eb;
   cursor: pointer;
@@ -892,9 +892,7 @@
 .mobileResultsLabel,
 .mobilePublishedMeta,
 .mobileLoadMore,
-.mobileResultsFoot,
-.mobileSearchFab,
-.mobileBottomNav {
+.mobileResultsFoot {
   display: none;
 }
 
@@ -949,7 +947,7 @@
 }
 
 .checkRow {
-  min-height: 38px;
+  min-height: 44px;
   grid-template-columns: 20px minmax(0, 1fr) auto;
   color: #44474e;
   font-size: 15px;
@@ -1384,7 +1382,7 @@
   }
 
   .page {
-    padding-bottom: calc(112px + env(safe-area-inset-bottom));
+    padding-bottom: calc(40px + env(safe-area-inset-bottom));
     background: #f7f9fb;
   }
 
@@ -1431,7 +1429,7 @@
 
   .searchField input {
     min-height: 42px;
-    font-size: 14px;
+    font-size: 16px;
   }
 
   .searchDivider {
@@ -1469,7 +1467,7 @@
     border-radius: 999px;
     background: #ffffff;
     color: #191c1e;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 550;
   }
 
@@ -1495,13 +1493,16 @@
   .filtersPanelOpen {
     position: fixed;
     z-index: 220;
-    top: 58px;
+    top: 0;
     right: 0;
     bottom: 0;
     left: 0;
     display: none;
     max-height: none;
     overflow-y: auto;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    overscroll-behavior: contain;
     border: 0;
     border-top: 1px solid var(--jobs-border);
     border-radius: 16px 16px 0 0;
@@ -1556,13 +1557,13 @@
   }
 
   .resultsTools select {
-    min-height: 36px;
+    min-height: 44px;
     max-width: 132px;
     padding: 0 27px 0 9px;
     border: 0;
     background-color: transparent;
     color: var(--jobs-primary);
-    font-size: 12px;
+    font-size: 16px;
     font-weight: 600;
   }
 
@@ -1603,7 +1604,7 @@
     min-height: 22px;
     margin-left: auto;
     padding: 3px 10px;
-    font-size: 10px;
+    font-size: 14px;
   }
 
   .jobCardContent {
@@ -1628,8 +1629,8 @@
   }
 
   .jobPrimaryMeta > span {
-    font-size: 12px;
-    line-height: 17px;
+    font-size: 14px;
+    line-height: 20px;
   }
 
   .jobPrimaryMeta svg {
@@ -1647,10 +1648,10 @@
   }
 
   .jobTags > span {
-    min-height: 21px;
-    padding: 3px 7px;
+    min-height: 28px;
+    padding: 4px 8px;
     border-radius: 3px;
-    font-size: 10px;
+    font-size: 14px;
     font-weight: 650;
     text-transform: uppercase;
   }
@@ -1679,7 +1680,7 @@
        dois botões mais usados da listagem em telemóvel. */
     min-height: 44px;
     padding-inline: 8px;
-    font-size: 12px;
+    font-size: 14px;
   }
 
   .detailsAction {
@@ -1716,66 +1717,8 @@
     display: block;
     margin-top: 12px;
     color: #44474e;
-    font-size: 11px;
+    font-size: 14px;
     text-align: center;
-  }
-
-  .mobileSearchFab {
-    position: relative;
-    z-index: 10;
-    display: inline-flex;
-    width: 52px;
-    height: 52px;
-    margin: -2px 14px 0 auto;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid #061a3a;
-    border-radius: 50%;
-    background: var(--jobs-navy);
-    color: var(--jobs-lime);
-    box-shadow: 0 8px 20px rgba(11, 33, 71, 0.2);
-  }
-
-  .mobileSearchFab svg {
-    width: 22px;
-    height: 22px;
-  }
-
-  .mobileBottomNav {
-    position: fixed;
-    z-index: 200;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    display: grid;
-    min-height: calc(66px + env(safe-area-inset-bottom));
-    padding: 7px 12px env(safe-area-inset-bottom);
-    grid-template-columns: repeat(4, 1fr);
-    border-top: 1px solid var(--jobs-border);
-    background: rgba(255, 255, 255, 0.98);
-    backdrop-filter: blur(14px);
-  }
-
-  .mobileBottomNav a {
-    display: flex;
-    min-width: 0;
-    min-height: 50px;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 3px;
-    color: #191c1e;
-    font-size: 10px;
-    font-weight: 500;
-  }
-
-  .mobileBottomNav a[aria-current='page'] {
-    color: var(--jobs-primary);
-  }
-
-  .mobileBottomNav svg {
-    width: 20px;
-    height: 20px;
   }
 
   .loadingState,

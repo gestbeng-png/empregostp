@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Head from 'next/head';
@@ -7,12 +7,33 @@ import { admin } from '../../../../../lib/firebaseAdmin';
 import adminStyles from '../../../../../styles/AdminPanel.module.css';
 import nookies from 'nookies';
 import { redirectToLogin } from '../../../../../lib/loginRedirect';
+import { useAuth } from '../../../../../context/AuthContext';
+import AutoSaveStatus from '../../../../../components/forms/AutoSaveStatus';
+import useAutoDraft from '../../../../../hooks/useAutoDraft';
+import { createFormDraftKey } from '../../../../../lib/formDraft';
 
-export default function EditJob({ job, companyName }) {
-  const router = useRouter();
-  const { id } = router.query;
+const EDITABLE_JOB_FIELDS = [
+  'titulo',
+  'descricao',
+  'requisitos',
+  'salario',
+  'location',
+  'tipoContrato',
+  'status',
+  'prazo',
+];
 
-  const [formData, setFormData] = useState({
+function prepareAdminJobDraft(value) {
+  if (!value || typeof value !== 'object') return {};
+
+  return EDITABLE_JOB_FIELDS.reduce((draft, field) => {
+    if (typeof value[field] === 'string') draft[field] = value[field];
+    return draft;
+  }, {});
+}
+
+function buildAdminJobForm(job) {
+  return {
     titulo: job?.titulo || '',
     descricao: job?.descricao || '',
     requisitos: job?.requisitos || '',
@@ -21,11 +42,75 @@ export default function EditJob({ job, companyName }) {
     tipoContrato: job?.tipoContrato || 'CLT',
     status: job?.status || 'active',
     prazo: job?.prazo || '',
-  });
+  };
+}
+
+export default function EditJob({ job, companyName }) {
+  const router = useRouter();
+  const { id } = router.query;
+  const { user, loading: authLoading } = useAuth();
+
+  const [formData, setFormData] = useState(() => buildAdminJobForm(job));
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+
+  const draftOwnerId = user?.uid || '';
+  const jobId = job?.id || '';
+  const [appliedJobId, setAppliedJobId] = useState(jobId);
+
+  useEffect(() => {
+    if (!jobId) return;
+    setFormData(buildAdminJobForm(job));
+    setAppliedJobId(jobId);
+  }, [job, jobId]);
+
+  const jobDraftKey = useMemo(
+    () =>
+      createFormDraftKey({
+        scope: 'admin-job',
+        ownerId: draftOwnerId,
+        resourceId: jobId,
+      }),
+    [draftOwnerId, jobId],
+  );
+  const jobDraftValue = useMemo(
+    () => prepareAdminJobDraft(formData),
+    [formData],
+  );
+
+  const getDraftToken = useCallback(async () => {
+    if (!user) return '';
+    return user.getIdToken();
+  }, [user]);
+
+  const restoreJobDraft = useCallback((draft) => {
+    const restoredFields = prepareAdminJobDraft(draft);
+    if (Object.keys(restoredFields).length === 0) return;
+    setFormData((current) => ({ ...current, ...restoredFields }));
+  }, []);
+
+  const {
+    status: jobDraftStatus,
+    lastSavedAt: jobDraftSavedAt,
+    isOnline: jobDraftIsOnline,
+    clearDraft: clearJobDraft,
+  } = useAutoDraft({
+    storageKey: jobDraftKey,
+    scope: 'admin-job',
+    resourceId: jobId,
+    value: jobDraftValue,
+    onRestore: restoreJobDraft,
+    getToken: getDraftToken,
+    enabled: Boolean(draftOwnerId && jobId),
+    ready:
+      router.isReady &&
+      !authLoading &&
+      Boolean(draftOwnerId && jobId && job) &&
+      appliedJobId === jobId,
+    baseUpdatedAt: job?.updatedAt || '',
+  });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -55,6 +140,7 @@ export default function EditJob({ job, companyName }) {
         throw new Error(errorData.message || 'Erro ao atualizar vaga');
       }
 
+      await clearJobDraft();
       setSuccess(true);
       setTimeout(() => {
         router.push('/dashboard/admin/jobs');
@@ -85,9 +171,16 @@ export default function EditJob({ job, companyName }) {
             marginBottom: '1.5rem',
           }}
         >
-          <h1 style={{ margin: 0, fontSize: '2rem', color: '#1a202c' }}>
-            Editar Vaga
-          </h1>
+          <div>
+            <h1 style={{ margin: 0, fontSize: '2rem', color: '#1a202c' }}>
+              Editar Vaga
+            </h1>
+            <AutoSaveStatus
+              status={jobDraftStatus}
+              lastSavedAt={jobDraftSavedAt}
+              isOnline={jobDraftIsOnline}
+            />
+          </div>
           <Link
             href="/dashboard/admin/jobs"
             className={`${adminStyles.linkButton} ${adminStyles.buttonGhost} ${adminStyles.buttonSmall}`}

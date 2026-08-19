@@ -6664,7 +6664,10 @@ html[data-dashboard-theme='dark'] .dashShell[data-theme='light'] {
     .form-input,
     .form-select,
     .form-textarea,
-    .dash-legacy-page input,
+    .dash-legacy-page
+      input:not([type='checkbox']):not([type='radio']):not([type='range']):not(
+        [type='color']
+      ),
     .dash-legacy-page select,
     .dash-legacy-page textarea
   ) {
@@ -6742,7 +6745,8 @@ html[data-dashboard-theme='dark'] .dashShell[data-theme='light'] {
   color: var(--dash-sky);
 }
 
-.dashShell.role-candidato[data-theme='dark'] .dash-notif-view-all:focus-visible {
+.dashShell.role-candidato[data-theme='dark']
+  .dash-notif-view-all:focus-visible {
   outline-color: var(--dash-focus-color);
 }
 
@@ -6755,4 +6759,407 @@ html[data-dashboard-theme='dark'] .dashShell[data-theme='light'] {
   background: rgba(3, 8, 19, 0.76);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
+}
+
+/* Admin and company dark-theme integrity layer. Keep these role-scoped so
+   candidate styling remains independent while shared controls, floating
+   surfaces and data tables retain a clear visual hierarchy. */
+.dashShell.role-admin[data-theme='dark'],
+.dashShell.role-empresa[data-theme='dark'] {
+  --dash-border: #3d5475;
+  --dash-border-strong: #5b769c;
+  --dash-focus-color: #8bd7ff;
+  --dash-focus: 0 0 0 3px rgba(139, 215, 255, 0.32);
+  --sidebar-border: rgba(183, 200, 232, 0.24);
+  --header-bg: rgba(13, 21, 38, 0.98);
+}
+
+.dashShell.role-admin[data-theme='dark']
+  :is(
+    .dash-topbar-search-wrap,
+    .form-input,
+    .form-select,
+    .form-textarea,
+    .dash-legacy-page
+      input:not([type='checkbox']):not([type='radio']):not([type='range']):not(
+        [type='color']
+      ),
+    .dash-legacy-page select,
+    .dash-legacy-page textarea
+  ),
+.dashShell.role-empresa[data-theme='dark']
+  :is(
+    .dash-topbar-search-wrap,
+    .form-input,
+    .form-select,
+    .form-textarea,
+    .dash-legacy-page
+      input:not([type='checkbox']):not([type='radio']):not([type='range']):not(
+        [type='color']
+      ),
+    .dash-legacy-page select,
+    .dash-legacy-page textarea
+  ) {
+  border-color: var(--dash-border-strong) !important;
+}
+
+.dashShell.role-admin[data-theme='dark']
+  :is(
+    .dash-topbar-search-wrap,
+    .form-input,
+    .form-select,
+    .form-textarea,
+    .dash-legacy-page
+      input:not([type='checkbox']):not([type='radio']):not([type='range']):not(
+        [type='color']
+      ),
+    .dash-legacy-page select,
+    .dash-legacy-page textarea
+  ),
+.dashShell.role-empresa[data-theme='dark']
+  :is(
+    .dash-topbar-search-wrap,
+    .form-input,
+    .form-select,
+    .form-textarea,
+    .dash-legacy-page
+      input:not([type='checkbox']):not([type='radio']):not([type='range']):not(
+        [type='color']
+      ),
+    .dash-legacy-page select,
+    .dash-legacy-page textarea
+  ) {
+  background: var(--surface-2) !important;
+  color: var(--text-1) !important;
+}
+
+.dashShell.role-admin[data-theme='dark']
+  :is(
+    .dash-topbar-search-wrap:focus-within,
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus,
+    .dash-legacy-page
+      input:not([type='checkbox']):not([type='radio']):not([type='range']):not(
+        [type='color']
+      ):focus,
+    .dash-legacy-page select:focus,
+    .dash-legacy-page textarea:focus
+  ),
+.dashShell.role-empresa[data-theme='dark']
+  :is(
+    .dash-topbar-search-wrap:focus-within,
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus,
+    .dash-legacy-page
+      input:not([type='checkbox']):not([type='radio']):not([type='range']):not(
+        [type='color']
+      ):focus,
+    .dash-legacy-page select:focus,
+    .dash-legacy-page textarea:focus
+  ) {
+  border-color: var(--dash-focus-color) !important;
+  box-shadow: var(--dash-focus) !important;
+}
+
+.dashShell.role-admin[data-theme='dark']
+  :is(a, button, input, select, textarea):focus-visible,
+.dashShell.role-empresa[data-theme='dark']
+  :is(a, button, input, select, textarea):focus-visible {
+  outline: 3px solid var(--dash-focus-color);
+  outline-offset: 2px;
+}
+
+.dashShell.role-admin[data-theme='dark'] :is(input, select, textarea),
+.dashShell.role-empresa[data-theme='dark'] :is(input, select, textarea) {
+  caret-color: var(--dash-sky);
+  color-scheme: dark;
+}
+
+.dashShell.role-admin[data-theme='dark'] :is(input, textarea)::placeholder,
+.dashShell.role-empresa[data-theme='dark'] :is(input, textarea)::placeholder {
+  color: var(--text-4);
+  opacity: 1;
+}
+
+.dashShell.role-admin[data-theme='dark'] :is(select option, select optgroup),
+.dashShell.role-empresa[data-theme='dark'] :is(select option, select optgroup) {
+  background: var(--surface);
+  color: var(--text-1);
+}
+
+.dashShell.role-admin[data-theme='dark'] input:-webkit-autofill,
+.dashShell.role-admin[data-theme='dark'] input:-webkit-autofill:hover,
+.dashShell.role-admin[data-theme='dark'] input:-webkit-autofill:focus,
+.dashShell.role-empresa[data-theme='dark'] input:-webkit-autofill,
+.dashShell.role-empresa[data-theme='dark'] input:-webkit-autofill:hover,
+.dashShell.role-empresa[data-theme='dark'] input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--text-1) !important;
+  caret-color: var(--dash-sky);
+  -webkit-box-shadow: 0 0 0 1000px var(--surface-2) inset !important;
+  box-shadow: 0 0 0 1000px var(--surface-2) inset !important;
+}
+
+.dashShell.role-admin[data-theme='dark']
+  :is(.dash-icon-btn, .dash-theme-btn, .dash-sidebar-close):hover,
+.dashShell.role-empresa[data-theme='dark']
+  :is(.dash-icon-btn, .dash-theme-btn, .dash-sidebar-close):hover {
+  border-color: var(--dash-border-strong);
+  background: var(--surface-3);
+  color: var(--text-1);
+}
+
+.dashShell.role-admin[data-theme='dark'] .dash-icon-btn.is-active,
+.dashShell.role-empresa[data-theme='dark'] .dash-icon-btn.is-active {
+  border-color: var(--dash-blue);
+  background: var(--surface-3);
+  color: var(--dash-sky);
+}
+
+.dashShell.role-admin[data-theme='dark'] .dash-nav-badge,
+.dashShell.role-empresa[data-theme='dark'] .dash-nav-badge {
+  color: var(--dash-action-ink);
+}
+
+.dashShell.role-admin[data-theme='dark'] .dash-nav-badge.lime,
+.dashShell.role-empresa[data-theme='dark'] .dash-nav-badge.lime {
+  color: var(--dash-lime-ink);
+}
+
+.dashShell.role-admin[data-theme='dark'] .dash-status-badge.tone-success,
+.dashShell.role-empresa[data-theme='dark'] .dash-status-badge.tone-success {
+  background: rgba(74, 222, 128, 0.14);
+  color: var(--dash-success-text);
+}
+
+.dashShell.role-admin[data-theme='dark'] .dash-status-badge.tone-warning,
+.dashShell.role-empresa[data-theme='dark'] .dash-status-badge.tone-warning {
+  background: rgba(245, 158, 11, 0.16);
+  color: var(--dash-warning-text);
+}
+
+.dashShell.role-admin[data-theme='dark'] .dash-status-badge.tone-danger,
+.dashShell.role-empresa[data-theme='dark'] .dash-status-badge.tone-danger {
+  background: rgba(248, 113, 145, 0.14);
+  color: var(--dash-danger-text);
+}
+
+.dashShell.role-admin[data-theme='dark'] .dash-status-badge.tone-info,
+.dashShell.role-empresa[data-theme='dark'] .dash-status-badge.tone-info {
+  background: rgba(125, 206, 255, 0.14);
+  color: var(--dash-info-text);
+}
+
+.dashShell.role-admin[data-theme='dark']
+  :is(.table-shell, .dash-legacy-page [class*='tableShell']),
+.dashShell.role-empresa[data-theme='dark']
+  :is(.table-shell, .dash-legacy-page [class*='tableShell']) {
+  border-color: var(--dash-border-strong) !important;
+  background: var(--surface) !important;
+}
+
+.dashShell.role-admin[data-theme='dark'] :is(table, .dash-legacy-page table),
+.dashShell.role-empresa[data-theme='dark'] :is(table, .dash-legacy-page table) {
+  background: var(--surface);
+  color: var(--text-2);
+}
+
+.dashShell.role-admin[data-theme='dark'] :is(th, .dash-legacy-page th),
+.dashShell.role-empresa[data-theme='dark'] :is(th, .dash-legacy-page th) {
+  border-color: var(--border) !important;
+  background: var(--surface-2) !important;
+  color: var(--text-3) !important;
+}
+
+.dashShell.role-admin[data-theme='dark'] :is(td, .dash-legacy-page td),
+.dashShell.role-empresa[data-theme='dark'] :is(td, .dash-legacy-page td) {
+  border-color: var(--border) !important;
+  color: var(--text-2) !important;
+}
+
+.dashShell.role-admin[data-theme='dark'] tbody tr:hover td,
+.dashShell.role-empresa[data-theme='dark'] tbody tr:hover td {
+  background: var(--surface-3);
+}
+
+.dashShell.role-admin[data-theme='dark'] .dash-notif-panel,
+.dashShell.role-empresa[data-theme='dark'] .dash-notif-panel {
+  border-color: var(--dash-border-strong);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.42);
+}
+
+.dashShell.role-admin[data-theme='dark'] .dash-notif-row.unread,
+.dashShell.role-empresa[data-theme='dark'] .dash-notif-row.unread {
+  background: var(--surface-3);
+  box-shadow: inset 3px 0 0 var(--dash-sky);
+}
+
+.dashShell.role-admin[data-theme='dark'] .dash-notif-view-all:hover,
+.dashShell.role-empresa[data-theme='dark'] .dash-notif-view-all:hover {
+  background: var(--surface-3);
+  color: var(--dash-sky);
+}
+
+.dashShell.role-admin[data-theme='dark'] .dash-notif-view-all:focus-visible,
+.dashShell.role-empresa[data-theme='dark'] .dash-notif-view-all:focus-visible {
+  outline-color: var(--dash-focus-color);
+}
+
+.dashShell.role-admin[data-theme='dark'] .dash-skip-link,
+.dashShell.role-admin[data-theme='dark'] .dash-skip-link:focus,
+.dashShell.role-empresa[data-theme='dark'] .dash-skip-link,
+.dashShell.role-empresa[data-theme='dark'] .dash-skip-link:focus {
+  color: var(--dash-action-ink);
+}
+
+.dashShell.role-empresa[data-theme='dark'] .dash-topbar-profile-avatar {
+  color: var(--dash-action-ink);
+}
+
+.dashShell.role-admin[data-theme='dark'] .dash-sidebar-backdrop,
+.dashShell.role-empresa[data-theme='dark'] .dash-sidebar-backdrop {
+  background: rgba(3, 8, 19, 0.76);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* Mobile shell authority.
+   Keep this last: earlier visual layers are intentionally append-only and
+   must not reintroduce fixed viewport geometry or non-shrinking top bars. */
+.dashShell {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.dashShell .dash-sidebar {
+  height: 100vh;
+  height: 100dvh;
+  overscroll-behavior: contain;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.dashShell .dash-topbar > div:first-of-type {
+  min-width: 0;
+}
+
+.dashShell .dash-topbar-title,
+.dashShell .dash-topbar-sub {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashShell :is(.table-shell, .table-scroll) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.dashShell .table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
+}
+
+.dashShell .modal-card {
+  max-width: 100%;
+  max-height: calc(100vh - 48px);
+  max-height: calc(100dvh - 48px);
+  overscroll-behavior: contain;
+}
+
+@media (max-width: 560px) {
+  .dashShell .dash-topbar {
+    min-width: 0;
+    padding-top: calc(8px + env(safe-area-inset-top, 0px));
+  }
+
+  .dashShell .dash-topbar > div:first-of-type {
+    flex: 1 1 auto;
+  }
+
+  .dashShell .dash-topbar-sub {
+    display: none;
+  }
+
+  .dashShell .dash-topbar-title {
+    max-width: 100%;
+  }
+
+  .dashShell .dash-topbar-spacer {
+    display: none;
+  }
+
+  .dashShell .dash-topbar-profile {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .dashShell .dash-topbar-profile-chevron {
+    display: none;
+  }
+
+  .dashShell .dash-notif-panel {
+    position: fixed;
+    top: calc(64px + env(safe-area-inset-top, 0px));
+    right: 12px;
+    left: 12px;
+    width: auto;
+    max-width: none;
+    max-height: calc(100vh - 80px - env(safe-area-inset-top, 0px));
+    max-height: calc(100dvh - 80px - env(safe-area-inset-top, 0px));
+    overscroll-behavior: contain;
+  }
+
+  .dashShell .modal-overlay {
+    align-items: flex-end;
+    padding: max(12px, env(safe-area-inset-top, 0px)) 0 0;
+  }
+
+  .dashShell .modal-card {
+    width: 100%;
+    max-height: calc(100vh - 12px - env(safe-area-inset-top, 0px));
+    max-height: calc(100dvh - 12px - env(safe-area-inset-top, 0px));
+    padding: 20px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+    border-radius: 16px 16px 0 0;
+  }
+
+  .dashShell .modal-header {
+    min-width: 0;
+    flex-wrap: wrap;
+  }
+
+  .dashShell .modal-header > :first-child {
+    min-width: 0;
+  }
+
+  .dashShell .modal-title,
+  .dashShell .modal-sub {
+    overflow-wrap: anywhere;
+  }
+
+  .dashShell .modal-actions {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+
+  .dashShell .modal-actions > * {
+    width: 100%;
+  }
+}
+
+@media (max-width: 390px) {
+  .dashShell .dash-topbar {
+    gap: 6px;
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+
+  .dashShell .dash-notif-panel {
+    right: 8px;
+    left: 8px;
+  }
 }

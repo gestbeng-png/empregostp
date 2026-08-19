@@ -5,6 +5,8 @@ import { getAuth } from 'firebase/auth';
 import { useAuth } from '../../context/AuthContext';
 import PublicPageShell from '../../components/PublicPageShell';
 import UpgradeModal from '../../components/UpgradeModal';
+import AutoSaveStatus from '../../components/forms/AutoSaveStatus';
+import useAutoDraft from '../../hooks/useAutoDraft';
 import styles from '../../styles/VagaDetailPage.module.css';
 import {
   FiArrowLeft,
@@ -38,8 +40,10 @@ import {
 } from '../../lib/candidateApplicationPremium';
 import { analyzeCandidateJobFit } from '../../lib/candidateOptimizationInsights';
 import { normalizeExternalUrl } from '../../lib/externalUrl';
-import { projectPublicJob } from '../../lib/publicJob';
+import { createFormDraftKey } from '../../lib/formDraft';
+import { deduplicateRelatedJobs, projectPublicJob } from '../../lib/publicJob';
 import { getPublicSkillsAssessment } from '../../lib/skillsAssessment';
+import { shareWithClipboardFallback } from '../../lib/shareWithFallback';
 
 function formatMoneyValue(value) {
   if (!value && value !== 0) return '';
@@ -150,7 +154,8 @@ function parseList(value) {
 
 function parseParagraphs(value) {
   if (!value) return [];
-  if (Array.isArray(value)) return value.map((item) => String(item).trim()).filter(Boolean);
+  if (Array.isArray(value))
+    return value.map((item) => String(item).trim()).filter(Boolean);
   return String(value)
     .split(/\n{2,}/)
     .map((paragraph) => paragraph.trim())
@@ -285,51 +290,61 @@ function RelatedJobsPanel({ jobs, className = '', headingLevel = 'h3' }) {
     <section
       className={`${styles.sidebarCard} ${styles.relatedCard} ${className}`}
     >
-      <Heading className={styles.sidebarTitle}>Vagas semelhantes</Heading>
-      <div className={styles.relatedList}>
+      <div className={styles.relatedHeader}>
+        <Heading className={styles.sidebarTitle}>Vagas semelhantes</Heading>
+        <Link href="/vagas" className={styles.relatedAll}>
+          Ver todas
+          <FiArrowRight size={15} aria-hidden="true" />
+        </Link>
+      </div>
+      <ul className={styles.relatedList}>
         {jobs.map((job) => {
           const relatedCompanyLabel =
-            job.empresaNome || job.companyName || job.localizacao || 'Empresa';
+            job.empresaNome || job.companyName || 'Empresa';
 
           return (
-            <Link
-              key={job.id}
-              href={`/vaga/${job.id}`}
-              className={styles.relatedItem}
-            >
-              <span className={styles.relatedLogo}>
-                {job.companyLogo ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={job.companyLogo}
-                    alt=""
-                    loading="lazy"
-                    decoding="async"
-                    width="36"
-                    height="36"
-                  />
-                ) : (
-                  getCompanyInitials(relatedCompanyLabel)
-                )}
-              </span>
-              <span className={styles.relatedBody}>
-                <strong className={styles.relatedTitle}>{job.titulo}</strong>
-                <span className={styles.relatedCompany}>
-                  {relatedCompanyLabel}
+            <li key={job.id} className={styles.relatedListItem}>
+              <Link href={`/vaga/${job.id}`} className={styles.relatedItem}>
+                <span className={styles.relatedLogo} aria-hidden="true">
+                  {job.companyLogo ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={job.companyLogo}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      width="40"
+                      height="40"
+                    />
+                  ) : (
+                    getCompanyInitials(relatedCompanyLabel)
+                  )}
                 </span>
-                <small className={styles.relatedSalary}>
-                  {job.salarioResumo || 'A combinar'}
-                </small>
-              </span>
-              <FiArrowRight
-                className={styles.relatedArrow}
-                size={16}
-                aria-hidden="true"
-              />
-            </Link>
+                <span className={styles.relatedBody}>
+                  <strong className={styles.relatedTitle}>{job.titulo}</strong>
+                  <span className={styles.relatedCompany}>
+                    {relatedCompanyLabel}
+                  </span>
+                  <span className={styles.relatedMeta}>
+                    <span className={styles.relatedLocation}>
+                      <FiMapPin size={13} aria-hidden="true" />
+                      {job.localizacao || 'São Tomé e Príncipe'}
+                    </span>
+                    <small className={styles.relatedSalary}>
+                      {job.salarioResumo || 'A combinar'}
+                    </small>
+                  </span>
+                </span>
+                <FiArrowRight
+                  className={styles.relatedArrow}
+                  size={16}
+                  aria-hidden="true"
+                />
+              </Link>
+            </li>
           );
         })}
-      </div>
+      </ul>
     </section>
   );
 }
@@ -347,25 +362,88 @@ export default function VagaDetalhe({
   const [profileLoading, setProfileLoading] = useState(Boolean(user));
   const [isSaved, setIsSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [shareFeedback, setShareFeedback] = useState(null);
   const [upgradeModal, setUpgradeModal] = useState({
     open: false,
     message: '',
   });
-  const [assessmentAnswers, setAssessmentAnswers] = useState([]);
+  const [assessmentAnswers, setAssessmentAnswers] = useState(() =>
+    new Array(vaga?.skillsAssessment?.questions?.length || 0).fill(null),
+  );
   const [coverLetter, setCoverLetter] = useState('');
   const [isGeneratingCoverLetter, setIsGeneratingCoverLetter] = useState(false);
+  const jobId = vaga?.id || '';
   const assessmentQuestions = useMemo(
     () => vaga?.skillsAssessment?.questions || [],
     [vaga?.skillsAssessment?.questions],
   );
+  const [appliedJobId, setAppliedJobId] = useState(jobId);
 
   useEffect(() => {
     setAssessmentAnswers(new Array(assessmentQuestions.length).fill(null));
-  }, [assessmentQuestions.length, vaga?.id, assessmentQuestions]);
+    setCoverLetter('');
+    setAppliedJobId(jobId);
+  }, [assessmentQuestions, jobId]);
+
+  const applicationDraftReady = Boolean(
+    user?.uid && jobId && appliedJobId === jobId,
+  );
+
+  const applicationDraftValue = useMemo(
+    () => ({ assessmentAnswers, coverLetter }),
+    [assessmentAnswers, coverLetter],
+  );
+  const applicationDraftKey = createFormDraftKey({
+    scope: 'job-application',
+    ownerId: user?.uid,
+    resourceId: jobId,
+  });
+  const {
+    status: applicationDraftStatus,
+    lastSavedAt: applicationDraftLastSavedAt,
+    isOnline: applicationDraftIsOnline,
+    hasDraft: hasApplicationDraft,
+    clearDraft: clearApplicationDraft,
+  } = useAutoDraft({
+    storageKey: applicationDraftKey,
+    scope: 'job-application',
+    resourceId: jobId || 'default',
+    value: applicationDraftValue,
+    enabled: Boolean(user?.uid && jobId),
+    ready: applicationDraftReady,
+    getToken: () => user?.getIdToken?.(),
+    onRestore: (draft) => {
+      const restoredAnswers = Array.isArray(draft?.assessmentAnswers)
+        ? new Array(assessmentQuestions.length)
+            .fill(null)
+            .map((_, index) =>
+              Number.isInteger(draft.assessmentAnswers[index])
+                ? draft.assessmentAnswers[index]
+                : null,
+            )
+        : new Array(assessmentQuestions.length).fill(null);
+
+      setAssessmentAnswers(restoredAnswers);
+      setCoverLetter(
+        typeof draft?.coverLetter === 'string' ? draft.coverLetter : '',
+      );
+    },
+  });
 
   useEffect(() => {
-    setCoverLetter('');
-  }, [vaga?.id]);
+    if (
+      applicationDraftReady &&
+      applyStatus === 'success' &&
+      hasApplicationDraft
+    ) {
+      void clearApplicationDraft();
+    }
+  }, [
+    applicationDraftReady,
+    applyStatus,
+    clearApplicationDraft,
+    hasApplicationDraft,
+  ]);
 
   useEffect(() => {
     async function trackView() {
@@ -813,31 +891,27 @@ export default function VagaDetalhe({
 
   const handleShare = async () => {
     if (!shareUrl) return;
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: titulo,
-          text: shareText,
-          url: shareUrl,
-        });
-      } catch (shareError) {
-        if (shareError?.name !== 'AbortError') {
-          console.error('Erro ao compartilhar:', shareError);
-        }
-      }
-      return;
-    }
+    setShareFeedback(null);
+    const result = await shareWithClipboardFallback({
+      title: titulo,
+      text: shareText,
+      url: shareUrl,
+    });
 
-    try {
-      if (!navigator.clipboard?.writeText) {
-        throw new Error('Clipboard indisponível');
-      }
-      await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
-      alert('Link copiado! Cole onde quiser compartilhar.');
-    } catch (_) {
-      alert(
-        `Não foi possível compartilhar automaticamente. Copie o link manualmente: ${shareUrl}`,
-      );
+    if (result.status === 'shared') {
+      setShareFeedback({ type: 'success', message: 'Vaga partilhada.' });
+    } else if (result.status === 'copied') {
+      setShareFeedback({
+        type: 'success',
+        message: result.nativeFailed
+          ? 'A partilha nativa falhou, mas o link foi copiado.'
+          : 'Link copiado. Cole-o onde quiser partilhar.',
+      });
+    } else if (result.status === 'failed') {
+      setShareFeedback({
+        type: 'error',
+        message: `Não foi possível partilhar automaticamente. Copie o link: ${shareUrl}`,
+      });
     }
   };
 
@@ -1017,6 +1091,7 @@ export default function VagaDetalhe({
       });
 
       if (response.status === 409) {
+        await clearApplicationDraft();
         setApplyStatus('success');
         return;
       }
@@ -1053,6 +1128,7 @@ export default function VagaDetalhe({
         return;
       }
 
+      await clearApplicationDraft();
       setApplyStatus('success');
     } catch (err) {
       console.warn('Erro ao candidatar:', err?.message || err);
@@ -1110,170 +1186,185 @@ export default function VagaDetalhe({
             </div>
           </div>
 
-          <div className={styles.mainGrid}>
-            <div className={styles.contentColumn}>
-              <section className={styles.hero}>
-                <div className={styles.heroMain}>
-                  <span className={styles.companyMark}>
-                    {vaga.companyLogo || vaga.empresaLogo ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={vaga.companyLogo || vaga.empresaLogo}
-                        alt={companyLabel}
-                        className={styles.companyMarkLogo}
-                        loading="eager"
-                        decoding="async"
-                        width="60"
-                        height="60"
-                      />
-                    ) : (
-                      companyInitials
-                    )}
-                  </span>
+          {shareFeedback ? (
+            <p
+              className={`${styles.shareFeedback} ${
+                shareFeedback.type === 'error'
+                  ? styles.shareFeedbackError
+                  : styles.shareFeedbackSuccess
+              }`}
+              role={shareFeedback.type === 'error' ? 'alert' : 'status'}
+            >
+              {shareFeedback.message}
+            </p>
+          ) : null}
 
-                  <div className={styles.heroCopy}>
-                    <div className={styles.heroKicker}>
-                      {newListing ? (
-                        <span className={styles.newListingPill}>Nova vaga</span>
-                      ) : null}
-                      <span
-                        className={`${styles.statusPill} ${styles.contractPill}`}
-                      >
-                        {getContractTypeLabel(tipoContrato)}
-                      </span>
+          <div className={styles.mainGrid}>
+            <section className={styles.hero}>
+              <div className={styles.heroMain}>
+                <span className={styles.companyMark}>
+                  {vaga.companyLogo || vaga.empresaLogo ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={vaga.companyLogo || vaga.empresaLogo}
+                      alt={companyLabel}
+                      className={styles.companyMarkLogo}
+                      loading="eager"
+                      decoding="async"
+                      width="60"
+                      height="60"
+                    />
+                  ) : (
+                    companyInitials
+                  )}
+                </span>
+
+                <div className={styles.heroCopy}>
+                  <div className={styles.heroKicker}>
+                    {newListing ? (
+                      <span className={styles.newListingPill}>Nova vaga</span>
+                    ) : null}
+                    <span
+                      className={`${styles.statusPill} ${styles.contractPill}`}
+                    >
+                      {getContractTypeLabel(tipoContrato)}
+                    </span>
+                    {remoteLabel !== 'Não informado' && (
                       <span
                         className={`${styles.statusPill} ${styles.remotePill}`}
                       >
                         {remoteLabel}
                       </span>
-                      {destaque && (
-                        <span className={styles.featuredPill}>
-                          <FiStar size={13} />
-                          Destaque
-                        </span>
-                      )}
-                      {!isOpen && (
-                        <span className={styles.closedPill}>{statusLabel}</span>
-                      )}
-                      {premiumConfig.premiumOnly && (
-                        <span className={styles.premiumPill}>
-                          <FiShield size={13} />
-                          Premium
-                        </span>
-                      )}
-                    </div>
-
-                    <h1 className={styles.title}>{titulo}</h1>
-
-                    <div className={styles.heroMetaList}>
-                      <span className={styles.heroMetaItem}>
-                        <FiBriefcase size={16} />
-                        {vaga.companyId ? (
-                          <Link
-                            href={`/empresas/${vaga.companyId}`}
-                            className={styles.companyProfileLink}
-                          >
-                            {companyLabel}
-                          </Link>
-                        ) : (
-                          <strong>{companyLabel}</strong>
-                        )}
-                        {vaga.companyVerified ? (
-                          <span
-                            className={styles.verifiedDot}
-                            title="Empresa verificada"
-                          >
-                            <FiCheck size={10} strokeWidth={3} />
-                          </span>
-                        ) : null}
+                    )}
+                    {destaque && (
+                      <span className={styles.featuredPill}>
+                        <FiStar size={13} />
+                        Destaque
                       </span>
-                      {heroMetaItems.map(({ label, Icon }, index) => (
-                        <span
-                          key={`meta-${index}`}
-                          className={styles.heroMetaItem}
+                    )}
+                    {!isOpen && (
+                      <span className={styles.closedPill}>{statusLabel}</span>
+                    )}
+                    {premiumConfig.premiumOnly && (
+                      <span className={styles.premiumPill}>
+                        <FiShield size={13} />
+                        Premium
+                      </span>
+                    )}
+                  </div>
+
+                  <h1 className={styles.title}>{titulo}</h1>
+
+                  <div className={styles.heroMetaList}>
+                    <span className={styles.heroMetaItem}>
+                      <FiBriefcase size={16} />
+                      {vaga.companyId ? (
+                        <Link
+                          href={`/empresas/${vaga.companyId}`}
+                          className={styles.companyProfileLink}
                         >
-                          <Icon size={16} />
-                          {label}
+                          {companyLabel}
+                        </Link>
+                      ) : (
+                        <strong>{companyLabel}</strong>
+                      )}
+                      {vaga.companyVerified ? (
+                        <span
+                          className={styles.verifiedDot}
+                          title="Empresa verificada"
+                        >
+                          <FiCheck size={10} strokeWidth={3} />
+                        </span>
+                      ) : null}
+                    </span>
+                    {heroMetaItems.map(({ label, Icon }, index) => (
+                      <span
+                        key={`meta-${index}`}
+                        className={styles.heroMetaItem}
+                      >
+                        <Icon size={16} />
+                        {label}
+                      </span>
+                    ))}
+                  </div>
+
+                  {skillsTags.length > 0 && (
+                    <div className={styles.tagRow}>
+                      {skillsTags.slice(0, 5).map((tag, index) => (
+                        <span key={`tag-${index}`} className={styles.tag}>
+                          {tag}
                         </span>
                       ))}
                     </div>
-
-                    {skillsTags.length > 0 && (
-                      <div className={styles.tagRow}>
-                        {skillsTags.slice(0, 5).map((tag, index) => (
-                          <span key={`tag-${index}`} className={styles.tag}>
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className={styles.heroActions}>
-                  <button
-                    type="button"
-                    className={`${styles.headerApplyButton} ${
-                      applyDisabled
-                        ? styles.headerApplyButtonDisabled
-                        : styles.headerApplyButtonEnabled
-                    }`}
-                    onClick={handleApply}
-                    disabled={applyDisabled}
-                  >
-                    <span>{applicationButtonLabel}</span>
-                    <FiArrowRight size={17} />
-                  </button>
-
-                  {userType !== 'empresa' && (
-                    <button
-                      type="button"
-                      className={`${styles.headerSaveButton} ${
-                        isSaved ? styles.headerSaveButtonSaved : ''
-                      }`}
-                      onClick={handleToggleSave}
-                      disabled={saving}
-                    >
-                      <FiBookmark size={17} />
-                      {isSaved ? 'Vaga guardada' : 'Guardar vaga'}
-                    </button>
                   )}
                 </div>
+              </div>
 
-                {premiumConfig.hasPremiumFlow && (
-                  <div className={styles.premiumCallout}>
-                    <div className={styles.premiumCalloutTitle}>
-                      Fluxo premium de candidatura
-                    </div>
-                    <p className={styles.premiumCalloutText}>
-                      {premiumConfig.premiumOnly
-                        ? 'Esta vaga está aberta apenas para candidatos Profissional e Premium.'
-                        : 'Esta vaga usa recursos premium para elevar a qualidade da candidatura.'}
-                      {premiumConfig.isEarlyAccessActive
-                        ? ` Durante a janela antecipada, o acesso fica reservado até ${formatDateTime(premiumConfig.earlyAccessUntil)}.`
-                        : ''}
-                      {premiumConfig.requireCoverLetter
-                        ? ' A carta de apresentação personalizada faz parte do envio.'
-                        : ''}
+              <div className={styles.heroActions}>
+                <button
+                  type="button"
+                  className={`${styles.headerApplyButton} ${
+                    applyDisabled
+                      ? styles.headerApplyButtonDisabled
+                      : styles.headerApplyButtonEnabled
+                  }`}
+                  onClick={handleApply}
+                  disabled={applyDisabled}
+                >
+                  <span>{applicationButtonLabel}</span>
+                  <FiArrowRight size={17} />
+                </button>
+
+                {userType !== 'empresa' && (
+                  <button
+                    type="button"
+                    className={`${styles.headerSaveButton} ${
+                      isSaved ? styles.headerSaveButtonSaved : ''
+                    }`}
+                    onClick={handleToggleSave}
+                    disabled={saving}
+                  >
+                    <FiBookmark size={17} />
+                    {isSaved ? 'Vaga guardada' : 'Guardar vaga'}
+                  </button>
+                )}
+              </div>
+
+              {premiumConfig.hasPremiumFlow && (
+                <div className={styles.premiumCallout}>
+                  <div className={styles.premiumCalloutTitle}>
+                    Fluxo premium de candidatura
+                  </div>
+                  <p className={styles.premiumCalloutText}>
+                    {premiumConfig.premiumOnly
+                      ? 'Esta vaga está aberta apenas para candidatos Profissional e Premium.'
+                      : 'Esta vaga usa recursos premium para elevar a qualidade da candidatura.'}
+                    {premiumConfig.isEarlyAccessActive
+                      ? ` Durante a janela antecipada, o acesso fica reservado até ${formatDateTime(premiumConfig.earlyAccessUntil)}.`
+                      : ''}
+                    {premiumConfig.requireCoverLetter
+                      ? ' A carta de apresentação personalizada faz parte do envio.'
+                      : ''}
+                  </p>
+                  {user && !isBlocked && premiumApplyRestriction && (
+                    <p className={styles.premiumCalloutWarning}>
+                      {premiumApplyRestriction.reason}
                     </p>
-                    {user && !isBlocked && premiumApplyRestriction && (
-                      <p className={styles.premiumCalloutWarning}>
-                        {premiumApplyRestriction.reason}
+                  )}
+                  {user &&
+                    !isBlocked &&
+                    !premiumApplyRestriction &&
+                    candidatePremiumAccess.priorityApplied && (
+                      <p className={styles.premiumCalloutPositive}>
+                        O seu plano atual envia esta candidatura com prioridade
+                        adicional na triagem.
                       </p>
                     )}
-                    {user &&
-                      !isBlocked &&
-                      !premiumApplyRestriction &&
-                      candidatePremiumAccess.priorityApplied && (
-                        <p className={styles.premiumCalloutPositive}>
-                          O seu plano atual envia esta candidatura com
-                          prioridade adicional na triagem.
-                        </p>
-                      )}
-                  </div>
-                )}
-              </section>
+                </div>
+              )}
+            </section>
 
+            <div className={styles.contentColumn}>
               {coverImageUrl ? (
                 <div className={styles.jobCover}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -1576,6 +1667,18 @@ export default function VagaDetalhe({
                       Adicione a carta de apresentação para concluir o envio.
                     </p>
                   )}
+                  {user &&
+                  userType !== 'empresa' &&
+                  (publicAssessment ||
+                    premiumConfig.requireCoverLetter ||
+                    candidatePremiumAccess.canUseCoverLetter) ? (
+                    <AutoSaveStatus
+                      status={applicationDraftStatus}
+                      lastSavedAt={applicationDraftLastSavedAt}
+                      isOnline={applicationDraftIsOnline}
+                      className={styles.applicationDraftStatus}
+                    />
+                  ) : null}
                 </section>
 
                 {skillChecklist.length > 0 ? (
@@ -1819,18 +1922,13 @@ export default function VagaDetalhe({
                     </a>
                   </section>
                 )}
-
-                <RelatedJobsPanel
-                  jobs={relatedJobs}
-                  className={styles.relatedSidebarCard}
-                />
               </div>
             </aside>
           </div>
 
           <RelatedJobsPanel
             jobs={relatedJobs}
-            className={styles.relatedDesktopSection}
+            className={styles.relatedEndSection}
             headingLevel="h2"
           />
 
@@ -1968,7 +2066,7 @@ export async function getServerSideProps({ params }) {
       skillsAssessment: getPublicSkillsAssessment(currentJob.skillsAssessment),
     };
 
-    const relatedJobs = relatedRaw
+    const rankedRelatedJobs = relatedRaw
       .filter((job) => job.id !== id && isJobPubliclyVisible(job))
       .map((job) => {
         const company = companiesById.get(job.companyId) || {};
@@ -2030,7 +2128,8 @@ export async function getServerSideProps({ params }) {
       .sort((a, b) => {
         if (b._score !== a._score) return b._score - a._score;
         return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
-      })
+      });
+    const relatedJobs = deduplicateRelatedJobs(rankedRelatedJobs)
       .slice(0, 4)
       .map(({ _score, ...job }) => job);
 

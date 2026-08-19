@@ -2,6 +2,7 @@ import nookies from 'nookies';
 
 import { admin } from '../../lib/firebaseAdmin';
 import { buildLoginUrl } from '../../lib/loginRedirect';
+import { isUserAccountActive } from '../../lib/userStatus';
 
 const PLANS_DESTINATION = '/dashboard/candidato?tab=plans';
 
@@ -20,8 +21,16 @@ export async function getServerSideProps(context) {
   try {
     const cookies = nookies.get(context);
     if (cookies?.token) {
-      await admin.auth().verifyIdToken(cookies.token);
-      isAuthenticated = true;
+      const decodedToken = await admin.auth().verifyIdToken(cookies.token, true);
+      const userDoc = await admin
+        .firestore()
+        .collection('users')
+        .doc(decodedToken.uid)
+        .get();
+      isAuthenticated =
+        userDoc.exists &&
+        userDoc.data().userType === 'candidato' &&
+        isUserAccountActive(userDoc.data());
     }
   } catch (error) {
     isAuthenticated = false;

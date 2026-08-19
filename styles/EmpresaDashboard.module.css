@@ -2186,6 +2186,15 @@
   gap: 0.8rem;
 }
 
+.applicationListItem {
+  min-width: 0;
+}
+
+.applicationListControls,
+.applicationListActions {
+  min-width: 0;
+}
+
 /* Section Actions */
 .sectionActions {
   display: flex;
@@ -3535,11 +3544,98 @@
   }
 
   .messagesLayout {
-    min-height: 620px;
+    min-height: 0;
+  }
+
+  .messagesList {
+    min-height: 0;
+    max-height: min(260px, 34dvh);
+  }
+
+  .messageDetail {
+    min-height: min(440px, 58dvh);
+  }
+
+  .messageTextInput {
+    min-width: 0;
   }
 
   .analyticsTableCard {
     overflow-x: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .applicationListItem {
+    display: grid !important;
+    grid-template-columns: 40px minmax(0, 1fr) !important;
+    align-items: start !important;
+  }
+
+  .applicationListControls {
+    display: grid !important;
+    grid-column: 1 / -1;
+    grid-template-columns: minmax(0, 1fr) auto;
+    width: 100%;
+    gap: 10px !important;
+    padding-top: 10px;
+    border-top: 1px solid var(--border, #e4e5e8);
+  }
+
+  .applicationListActions {
+    display: grid !important;
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(5, minmax(44px, 1fr));
+    width: 100%;
+    justify-content: stretch !important;
+  }
+
+  .applicationListActions > * {
+    width: 100%;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0 !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .modalOverlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .modalCard {
+    width: 100%;
+    max-height: 100dvh;
+    padding: 18px 16px max(18px, env(safe-area-inset-bottom));
+    border-radius: 12px 12px 0 0;
+  }
+
+  .modalHeader {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .modalCloseButton {
+    min-height: 44px;
+  }
+
+  .modalGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .modalFieldFull {
+    grid-column: auto;
+  }
+
+  .modalActions {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+
+  .modalActions > * {
+    width: 100%;
+    min-height: 44px;
   }
 }
 
@@ -3567,15 +3663,23 @@
 }
 
 .hrFeedbackSuccess {
-  border-color: rgba(22, 138, 85, 0.28);
-  background: rgba(22, 138, 85, 0.08);
-  color: #147648;
+  border-color: color-mix(in srgb, var(--success, #168a55) 32%, transparent);
+  background: color-mix(
+    in srgb,
+    var(--success, #168a55) 10%,
+    var(--surface, #fff)
+  );
+  color: var(--dash-success-text, #147648);
 }
 
 .hrFeedbackError {
-  border-color: rgba(194, 61, 79, 0.28);
-  background: rgba(194, 61, 79, 0.08);
-  color: #a52f42;
+  border-color: color-mix(in srgb, var(--danger, #c23d4f) 32%, transparent);
+  background: color-mix(
+    in srgb,
+    var(--danger, #c23d4f) 10%,
+    var(--surface, #fff)
+  );
+  color: var(--dash-danger-text, #a52f42);
 }
 
 .hrGrid {
@@ -3700,9 +3804,9 @@
 
 /* Workbridge fidelity layer: flat employer workspace with exact brand tokens. */
 .pageLayout {
-  background: #eef4f8;
-  color: #102441;
-  font-family: var(--font-instrument, "Instrument Sans"), Arial, sans-serif;
+  background: var(--bg, #eef4f8);
+  color: var(--text-1, #102441);
+  font-family: var(--font-instrument, 'Instrument Sans'), Arial, sans-serif;
 }
 
 .pageLayout::before,
@@ -3711,15 +3815,15 @@
 }
 
 .sidebar {
-  border-color: #1e2b4d;
-  background: #102441;
+  border-color: var(--sidebar-border, #1e2b4d);
+  background: var(--sidebar-bg, #102441);
   box-shadow: none;
 }
 
 .sidebarLogo,
 .sidebarDivider,
 .sidebarFooter {
-  border-color: rgba(255, 255, 255, 0.14);
+  border-color: var(--sidebar-border, rgba(255, 255, 255, 0.14));
 }
 
 .logoIcon,
@@ -3727,7 +3831,7 @@
 .messageAvatarInitials,
 .talentAvatarFallback {
   border-radius: 4px;
-  background: #064bb5;
+  background: var(--role-grad, #064bb5);
 }
 
 .logoText,
@@ -3740,9 +3844,9 @@
 
 .sidebarProfile,
 .sidebarPlanCard {
-  border-color: rgba(255, 255, 255, 0.14);
+  border-color: var(--sidebar-border, rgba(255, 255, 255, 0.14));
   border-radius: 8px;
-  background: #1e2b4d;
+  background: var(--dash-field-navy, #1e2b4d);
   box-shadow: none;
 }
 
@@ -3760,37 +3864,37 @@
 
 .navButton:hover,
 .navActive {
-  background: #1e2b4d;
+  background: var(--dash-field-navy, #1e2b4d);
   color: #ffffff;
   transform: none;
 }
 
 .navActive::before {
-  background: #daff45;
+  background: var(--lime, #daff45);
 }
 
 .navBadge,
 .planBadgeSmall {
-  background: #daff45;
-  color: #102441;
+  background: var(--lime, #daff45);
+  color: var(--lime-text, #102441);
 }
 
 .upgradeButton,
 .createJobBtn {
   border-radius: 4px;
-  background: #daff45;
-  color: #102441;
+  background: var(--lime, #daff45);
+  color: var(--lime-text, #102441);
   box-shadow: none;
 }
 
 .mainContent,
 .contentArea {
-  background: #eef4f8;
+  background: var(--bg, #eef4f8);
 }
 
 .topBar {
-  border-color: #e4e5e8;
-  background: #ffffff;
+  border-color: var(--border, #e4e5e8);
+  background: var(--surface, #ffffff);
   box-shadow: none;
   backdrop-filter: none;
 }
@@ -3807,8 +3911,8 @@
 .sidebarPlanCardTitle,
 .candidatesOverviewTitle,
 .candidatesOverviewHeader {
-  color: #102441;
-  font-family: var(--font-instrument, "Instrument Sans"), Arial, sans-serif;
+  color: var(--text-1, #102441);
+  font-family: var(--font-instrument, 'Instrument Sans'), Arial, sans-serif;
 }
 
 .pageDate,
@@ -3821,7 +3925,7 @@
 .hrFieldHint,
 .hrRequestDescription,
 .hrResponseText {
-  color: #5f6874;
+  color: var(--text-3, #5f6874);
 }
 
 .sectionBlock,
@@ -3844,9 +3948,9 @@
 .hrRequest,
 .notificationsPopover,
 .modalCard {
-  border-color: #e4e5e8;
+  border-color: var(--border, #e4e5e8);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--surface, #ffffff);
   box-shadow: none;
   backdrop-filter: none;
 }
@@ -3858,8 +3962,8 @@
 .summaryCard:hover,
 .profileStat:hover {
   transform: none;
-  border-color: #69c8ff;
-  background: #ffffff;
+  border-color: var(--sky, #69c8ff);
+  background: var(--surface, #ffffff);
   box-shadow: none;
 }
 
@@ -3871,14 +3975,14 @@
 .emptyIcon,
 .notificationIcon {
   border-radius: 4px;
-  background: #eef4f8;
-  color: #064bb5;
+  background: var(--surface-3, #eef4f8);
+  color: var(--dash-info-text, #064bb5);
 }
 
 .candidatesOverview {
-  border: 1px solid #102441;
+  border: 1px solid var(--navy, #102441);
   border-radius: 8px;
-  background: #102441;
+  background: var(--navy, #102441);
   box-shadow: none;
 }
 
@@ -3889,13 +3993,13 @@
 
 .candidatesOverview .candidatesOverviewText,
 .candidatesOverviewEyebrow {
-  color: #69c8ff;
+  color: var(--sky, #69c8ff);
 }
 
 .filterTabs {
-  border-color: #e4e5e8;
+  border-color: var(--border, #e4e5e8);
   border-radius: 4px;
-  background: #ffffff;
+  background: var(--surface, #ffffff);
 }
 
 .filterTab,
@@ -3916,16 +4020,17 @@
 .applicationBtn:not(.applicationBtnOutline),
 .statusBtnActive,
 .messageSendBtn {
-  border-color: #064bb5;
-  background: #064bb5;
-  color: #ffffff;
+  border-color: var(--blue, #064bb5);
+  background: var(--blue, #064bb5);
+  color: var(--dash-action-ink, #ffffff);
 }
 
 .filterTabActive:hover,
 .applicationBtn:not(.applicationBtnOutline):hover,
 .statusBtnActive:hover,
 .messageSendBtn:hover {
-  background: #0a65cc;
+  background: var(--dash-blue-hover, #0a65cc);
+  color: var(--dash-action-ink, #ffffff);
   transform: none;
   box-shadow: none;
 }
@@ -3938,10 +4043,10 @@
 .hrDocumentRow input,
 .hrDocumentRow select,
 .hrDocumentRow textarea {
-  border-color: #e4e5e8;
+  border-color: var(--border, #e4e5e8);
   border-radius: 4px;
-  background: #ffffff;
-  color: #102441;
+  background: var(--surface, #ffffff);
+  color: var(--text-1, #102441);
 }
 
 .messagesLayout,
@@ -3954,15 +4059,15 @@
 .interviewSummaryBox,
 .analyticsSourceProgress,
 .hrResponse {
-  border-color: #e4e5e8;
+  border-color: var(--border, #e4e5e8);
   border-radius: 8px;
-  background: #ffffff;
+  background: var(--surface, #ffffff);
   box-shadow: none;
 }
 
 .messageBubbleOwn {
-  background: #064bb5;
-  color: #ffffff;
+  background: var(--blue, #064bb5);
+  color: var(--dash-action-ink, #ffffff);
 }
 
 .applicationBadgePill,
@@ -3988,9 +4093,13 @@
 .talentStatusComplete,
 .talentStatusHighlight,
 .interviewStatusHighlight {
-  border-color: #daff45;
-  background: #eefabf;
-  color: #102441;
+  border-color: var(--lime, #daff45);
+  background: color-mix(
+    in srgb,
+    var(--lime, #daff45) 18%,
+    var(--surface, #ffffff)
+  );
+  color: var(--text-1, #102441);
 }
 
 .analyticsTable,
@@ -4005,7 +4114,7 @@
 }
 
 .analyticsTableHead {
-  background: #eef4f8;
+  background: var(--surface-2, #eef4f8);
 }
 
 .modalOverlay {
@@ -4014,5 +4123,34 @@
 }
 
 .modalCard {
-  box-shadow: 0 16px 36px rgba(16, 36, 65, 0.18);
+  box-shadow: var(--shadow-lg, 0 16px 36px rgba(16, 36, 65, 0.18));
+}
+
+.dashboardThemeScope {
+  display: contents;
+}
+
+:global(.dashShell.role-empresa[data-theme='dark'])
+  .dashboardThemeScope
+  :global(.stat-icon) {
+  background: color-mix(
+    in srgb,
+    var(--accent, #6a9cff) 58%,
+    #ffffff
+  ) !important;
+  color: var(--dash-action-ink, #0d1526) !important;
+}
+
+:global(.dashShell.role-empresa[data-theme='dark']) .filterTabActive,
+:global(.dashShell.role-empresa[data-theme='dark'])
+  .applicationBtn:not(.applicationBtnOutline),
+:global(.dashShell.role-empresa[data-theme='dark']) .statusBtnActive,
+:global(.dashShell.role-empresa[data-theme='dark']) .messageSendBtn {
+  border-color: var(--blue, #6a9cff);
+  background: var(--blue, #6a9cff);
+  color: var(--dash-action-ink, #0d1526);
+}
+
+:global(.dashShell.role-empresa[data-theme='dark']) .messageBubbleOwn span {
+  color: var(--dash-action-ink, #0d1526);
 }

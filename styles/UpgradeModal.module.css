@@ -181,8 +181,16 @@
 }
 
 @media (max-width: 520px) {
+  .overlay {
+    align-items: flex-end;
+    padding: max(12px, env(safe-area-inset-top)) 0 0;
+  }
+
   .modal {
-    padding: 1.25rem;
+    width: 100%;
+    max-height: calc(100dvh - max(12px, env(safe-area-inset-top)));
+    padding: 1.25rem 1rem max(1.25rem, env(safe-area-inset-bottom));
+    border-radius: 12px 12px 0 0;
   }
 
   .header {
@@ -191,5 +199,11 @@
 
   .plans {
     grid-template-columns: 1fr;
+  }
+
+  .feature,
+  .message,
+  .price {
+    font-size: 14px;
   }
 }

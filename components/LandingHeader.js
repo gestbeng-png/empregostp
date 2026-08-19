@@ -306,7 +306,7 @@ function LandingHeaderContent({ variant = 'light' }) {
                   <Link href="/login" className={styles.ghostButton}>
                     Iniciar sessão
                   </Link>
-                  <Link href="/escolha-tipo" className={styles.primaryButton}>
+                  <Link href="/register" className={styles.primaryButton}>
                     Criar conta
                   </Link>
                 </>
@@ -503,7 +503,7 @@ function LandingHeaderContent({ variant = 'light' }) {
               <Link href="/login" className={styles.mobileGhostButton}>
                 Iniciar sessão
               </Link>
-              <Link href="/escolha-tipo" className={styles.mobilePrimaryButton}>
+              <Link href="/register" className={styles.mobilePrimaryButton}>
                 Criar conta
               </Link>
             </div>

@@ -5,19 +5,16 @@ import { useRouter } from 'next/router';
 import {
   FiArrowRight,
   FiBell,
-  FiBookmark,
   FiBriefcase,
   FiCheckCircle,
   FiChevronDown,
   FiChevronUp,
   FiClock,
   FiDollarSign,
-  FiHome,
   FiInfo,
   FiMapPin,
   FiSearch,
   FiSliders,
-  FiUser,
   FiX,
 } from 'react-icons/fi';
 import PublicPageShell from '../../components/PublicPageShell';
@@ -1325,36 +1322,6 @@ export default function VagasPage({ initialJobs = [], referenceNow = 0 }) {
               )}
             </div>
           </section>
-
-          <a
-            href="#job-search"
-            className={styles.mobileSearchFab}
-            aria-label="Voltar à pesquisa de vagas"
-          >
-            <FiSearch aria-hidden="true" />
-          </a>
-
-          <nav
-            className={styles.mobileBottomNav}
-            aria-label="Navegação móvel de vagas"
-          >
-            <Link href="/">
-              <FiHome aria-hidden="true" />
-              <span>Início</span>
-            </Link>
-            <Link href="/vagas" aria-current="page">
-              <FiBriefcase aria-hidden="true" />
-              <span>Vagas</span>
-            </Link>
-            <Link href="/dashboard/candidato?tab=saved">
-              <FiBookmark aria-hidden="true" />
-              <span>Guardadas</span>
-            </Link>
-            <Link href="/profile">
-              <FiUser aria-hidden="true" />
-              <span>Perfil</span>
-            </Link>
-          </nav>
         </div>
       </PublicPageShell>
     </>

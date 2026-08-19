@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import Head from "next/head";
@@ -148,6 +148,24 @@ export default function CandidaturasPage() {
         return application.status === filter;
       }),
     [filter, sortedApplications],
+  );
+
+  const handleApplicationWithdrawn = useCallback(
+    (applicationId, timelineEvent) => {
+      setApplications((current) =>
+        current.map((application) => {
+          if (application.id !== applicationId) return application;
+          return {
+            ...application,
+            status: "withdrawn",
+            timeline: timelineEvent
+              ? [...(application.timeline || []), timelineEvent]
+              : application.timeline,
+          };
+        }),
+      );
+    },
+    [],
   );
 
   if (loading) {
@@ -303,6 +321,7 @@ export default function CandidaturasPage() {
                       <ApplicationDetailCard
                         key={application.id || application.jobId || index}
                         application={application}
+                        onWithdrawn={handleApplicationWithdrawn}
                       />
                     ))}
                   </section>
@@ -364,7 +383,7 @@ function StatCard({ value, label, color, darkColor, active, onClick }) {
   );
 }
 
-function ApplicationDetailCard({ application }) {
+function ApplicationDetailCard({ application, onWithdrawn }) {
   const getStatusInfo = (status) => {
     switch (status) {
       case "approved":
@@ -406,6 +425,16 @@ function ApplicationDetailCard({ application }) {
           darkBorder: "rgba(253, 164, 175, 0.32)",
           darkColor: "#fda4af",
           text: "Rejeitada",
+        };
+      case "withdrawn":
+        return {
+          bg: "rgba(100, 116, 139, 0.12)",
+          border: "rgba(100, 116, 139, 0.28)",
+          color: "#52617d",
+          darkBg: "rgba(148, 163, 184, 0.12)",
+          darkBorder: "rgba(148, 163, 184, 0.28)",
+          darkColor: "#cbd5e1",
+          text: "Retirada",
         };
       default:
         return {
@@ -488,6 +517,9 @@ function ApplicationDetailCard({ application }) {
   const [interviewError, setInterviewError] = useState("");
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
   const [rescheduleReason, setRescheduleReason] = useState("");
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const [withdrawLoading, setWithdrawLoading] = useState(false);
+  const [withdrawError, setWithdrawError] = useState("");
   const [localInterview, setLocalInterview] = useState(
     application.interviewDetails || null,
   );
@@ -501,6 +533,44 @@ function ApplicationDetailCard({ application }) {
   ).toLowerCase();
   const hasInterview = Boolean(localInterview?.scheduledAt);
   const interviewStatusLabel = getInterviewStatusLabelPt(interviewStatus);
+  const canWithdraw = ["pending", "analysis"].includes(
+    String(application.status || "pending").toLowerCase(),
+  );
+
+  const handleWithdraw = async () => {
+    if (!application.id || !canWithdraw || withdrawLoading) return;
+    setWithdrawError("");
+    setWithdrawLoading(true);
+
+    try {
+      const { getAuth } = await import("firebase/auth");
+      const token = await getAuth().currentUser?.getIdToken();
+      if (!token) throw new Error("Não autenticado");
+
+      const response = await fetch(
+        `/api/applications/${encodeURIComponent(application.id)}/withdraw`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(
+          data.error || "Não foi possível retirar a candidatura.",
+        );
+      }
+
+      setWithdrawOpen(false);
+      onWithdrawn?.(application.id, data.timelineEvent || null);
+    } catch (error) {
+      setWithdrawError(
+        error?.message || "Não foi possível retirar a candidatura.",
+      );
+    } finally {
+      setWithdrawLoading(false);
+    }
+  };
 
   const handleConfirmInterview = async () => {
     if (!application.id || !hasInterview || interviewActionLoading) return;
@@ -915,6 +985,49 @@ function ApplicationDetailCard({ application }) {
         </section>
       ) : null}
 
+      {withdrawOpen && canWithdraw ? (
+        <section
+          className={styles.withdrawPanel}
+          role="group"
+          aria-labelledby={`withdraw-title-${application.id}`}
+        >
+          <div>
+            <h4
+              id={`withdraw-title-${application.id}`}
+              className={styles.sectionTitlePlain}
+            >
+              Retirar esta candidatura?
+            </h4>
+            <p>
+              A empresa deixará de considerar o seu perfil para esta vaga.
+              Esta ação não repõe o limite mensal de candidaturas.
+            </p>
+          </div>
+          {withdrawError ? <p role="alert">{withdrawError}</p> : null}
+          <div className={styles.withdrawActions}>
+            <button
+              type="button"
+              className={styles.confirmWithdrawButton}
+              onClick={handleWithdraw}
+              disabled={withdrawLoading}
+            >
+              {withdrawLoading ? "A retirar…" : "Confirmar retirada"}
+            </button>
+            <button
+              type="button"
+              className={styles.cancelWithdrawButton}
+              onClick={() => {
+                setWithdrawOpen(false);
+                setWithdrawError("");
+              }}
+              disabled={withdrawLoading}
+            >
+              Manter candidatura
+            </button>
+          </div>
+        </section>
+      ) : null}
+
       <div className={styles.footerActions}>
         {application.jobId ? (
           <Link
@@ -923,6 +1036,19 @@ function ApplicationDetailCard({ application }) {
           >
             Ver Vaga
           </Link>
+        ) : null}
+        {canWithdraw ? (
+          <button
+            type="button"
+            className={styles.withdrawButton}
+            aria-expanded={withdrawOpen}
+            onClick={() => {
+              setWithdrawOpen((open) => !open);
+              setWithdrawError("");
+            }}
+          >
+            Retirar candidatura
+          </button>
         ) : null}
       </div>
     </article>

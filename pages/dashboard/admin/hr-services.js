@@ -10,7 +10,7 @@ const STATUS_META = {
     label: 'Em análise',
     style: {
       '--badge-bg': 'rgba(245, 158, 11, 0.14)',
-      '--badge-color': '#b45309',
+      '--badge-color': 'var(--dash-warning-text, #b45309)',
       '--badge-border': '1px solid rgba(245, 158, 11, 0.28)',
     },
   },
@@ -18,7 +18,7 @@ const STATUS_META = {
     label: 'Aprovado · em andamento',
     style: {
       '--badge-bg': 'rgba(32, 87, 215, 0.12)',
-      '--badge-color': '#1d4ed8',
+      '--badge-color': 'var(--dash-info-text, #1d4ed8)',
       '--badge-border': '1px solid rgba(32, 87, 215, 0.26)',
     },
   },
@@ -26,7 +26,7 @@ const STATUS_META = {
     label: 'Concluído',
     style: {
       '--badge-bg': 'rgba(61, 187, 122, 0.14)',
-      '--badge-color': '#15803d',
+      '--badge-color': 'var(--dash-success-text, #15803d)',
       '--badge-border': '1px solid rgba(61, 187, 122, 0.28)',
     },
   },
@@ -34,18 +34,34 @@ const STATUS_META = {
     label: 'Rejeitado',
     style: {
       '--badge-bg': 'rgba(239, 68, 68, 0.12)',
-      '--badge-color': '#b91c1c',
+      '--badge-color': 'var(--dash-danger-text, #b91c1c)',
       '--badge-border': '1px solid rgba(239, 68, 68, 0.24)',
     },
   },
 };
 
 const FILTERS = [
-  { key: 'pending', title: 'Em análise', accent: '#f59e0b' },
-  { key: 'approved', title: 'Em andamento', accent: '#2057d7' },
-  { key: 'completed', title: 'Concluídos', accent: '#3dbb7a' },
-  { key: 'rejected', title: 'Rejeitados', accent: '#ef4444' },
-  { key: 'all', title: 'Total', accent: '#64748b' },
+  {
+    key: 'pending',
+    title: 'Em análise',
+    accent: 'var(--dash-warning-text, #985800)',
+  },
+  {
+    key: 'approved',
+    title: 'Em andamento',
+    accent: 'var(--dash-info-text, #064bb5)',
+  },
+  {
+    key: 'completed',
+    title: 'Concluídos',
+    accent: 'var(--dash-success-text, #168a55)',
+  },
+  {
+    key: 'rejected',
+    title: 'Rejeitados',
+    accent: 'var(--dash-danger-text, #b83d55)',
+  },
+  { key: 'all', title: 'Total', accent: 'var(--admin-muted)' },
 ];
 
 const emptyDoc = () => ({ label: '', url: '' });
@@ -337,7 +353,7 @@ export default function AdminHRServices() {
                       <p
                         style={{
                           margin: 0,
-                          color: '#2057d7',
+                          color: 'var(--admin-blue)',
                           fontWeight: 800,
                           fontSize: '0.72rem',
                           letterSpacing: '0.4px',
@@ -350,7 +366,7 @@ export default function AdminHRServices() {
                         style={{
                           margin: '0.2rem 0 0',
                           fontWeight: 800,
-                          color: '#162a55',
+                          color: 'var(--admin-text)',
                           fontSize: '1.05rem',
                         }}
                       >
@@ -359,7 +375,7 @@ export default function AdminHRServices() {
                       <p
                         style={{
                           margin: '0.15rem 0 0',
-                          color: '#607394',
+                          color: 'var(--admin-muted)',
                           fontSize: '0.85rem',
                         }}
                       >
@@ -378,7 +394,7 @@ export default function AdminHRServices() {
                   <p
                     style={{
                       margin: '0.9rem 0 0',
-                      color: '#33415c',
+                      color: 'var(--text-2, var(--admin-text))',
                       lineHeight: 1.7,
                       whiteSpace: 'pre-line',
                     }}
@@ -391,7 +407,7 @@ export default function AdminHRServices() {
                       <p
                         style={{
                           margin: '0 0 0.4rem',
-                          color: '#94a3b8',
+                          color: 'var(--admin-muted)',
                           fontSize: '0.74rem',
                           fontWeight: 800,
                           textTransform: 'uppercase',
@@ -413,7 +429,7 @@ export default function AdminHRServices() {
                             target="_blank"
                             rel="noopener noreferrer"
                             style={{
-                              color: '#2057d7',
+                              color: 'var(--admin-blue)',
                               fontSize: '0.84rem',
                               fontWeight: 600,
                               textDecoration: 'none',
@@ -443,7 +459,7 @@ export default function AdminHRServices() {
                       <p
                         style={{
                           margin: '0 0 0.4rem',
-                          color: '#94a3b8',
+                          color: 'var(--admin-muted)',
                           fontSize: '0.74rem',
                           fontWeight: 800,
                           textTransform: 'uppercase',
@@ -454,7 +470,7 @@ export default function AdminHRServices() {
                       <p
                         style={{
                           margin: 0,
-                          color: '#33415c',
+                          color: 'var(--text-2, var(--admin-text))',
                           lineHeight: 1.6,
                           whiteSpace: 'pre-line',
                         }}
@@ -477,7 +493,7 @@ export default function AdminHRServices() {
                               target="_blank"
                               rel="noopener noreferrer"
                               style={{
-                                color: '#15803d',
+                                color: 'var(--dash-success-text, #15803d)',
                                 fontSize: '0.84rem',
                                 fontWeight: 600,
                                 textDecoration: 'none',
@@ -498,7 +514,7 @@ export default function AdminHRServices() {
                   <p
                     style={{
                       margin: '0.9rem 0 0',
-                      color: '#94a3b8',
+                      color: 'var(--admin-muted)',
                       fontSize: '0.8rem',
                     }}
                   >
@@ -528,7 +544,7 @@ export default function AdminHRServices() {
                         style={{
                           '--button-bg': 'rgba(32, 87, 215, 0.14)',
                           '--button-border': 'rgba(32, 87, 215, 0.3)',
-                          '--button-color': '#1d4ed8',
+                          '--button-color': 'var(--dash-info-text, #1d4ed8)',
                         }}
                       >
                         Finalizar & responder
@@ -615,7 +631,7 @@ export default function AdminHRServices() {
                 style={{
                   fontWeight: 700,
                   fontSize: '0.85rem',
-                  color: '#46597a',
+                  color: 'var(--admin-muted)',
                 }}
               >
                 Resposta à empresa
@@ -633,8 +649,9 @@ export default function AdminHRServices() {
                   width: '100%',
                   padding: '0.7rem 0.85rem',
                   borderRadius: 12,
-                  border: '1px solid rgba(30, 43, 77, 0.14)',
-                  background: '#f7fbff',
+                  border: '1px solid var(--admin-border)',
+                  background: 'var(--admin-surface-soft)',
+                  color: 'var(--admin-text)',
                   fontFamily: 'inherit',
                   fontSize: '0.92rem',
                   resize: 'vertical',
@@ -642,7 +659,11 @@ export default function AdminHRServices() {
               />
               <p
                 id="hr-admin-response-count"
-                style={{ margin: 0, color: '#607394', fontSize: '0.78rem' }}
+                style={{
+                  margin: 0,
+                  color: 'var(--admin-muted)',
+                  fontSize: '0.78rem',
+                }}
               >
                 Mínimo {MIN_RESPONSE_LENGTH} caracteres ·{' '}
                 {response.trim().length}/{MAX_RESPONSE_LENGTH}
@@ -655,7 +676,7 @@ export default function AdminHRServices() {
                 style={{
                   fontWeight: 700,
                   fontSize: '0.85rem',
-                  color: '#46597a',
+                  color: 'var(--admin-muted)',
                 }}
               >
                 Documentos de resultado (links)
@@ -666,6 +687,7 @@ export default function AdminHRServices() {
                 {resultDocs.map((doc, index) => (
                   <div
                     key={index}
+                    className={styles.adminDocumentRow}
                     style={{
                       display: 'grid',
                       gridTemplateColumns: '0.7fr 1.3fr auto',
@@ -681,8 +703,9 @@ export default function AdminHRServices() {
                       style={{
                         padding: '0.55rem 0.7rem',
                         borderRadius: 10,
-                        border: '1px solid rgba(30,43,77,0.14)',
-                        background: '#f7fbff',
+                        border: '1px solid var(--admin-border)',
+                        background: 'var(--admin-surface-soft)',
+                        color: 'var(--admin-text)',
                         fontFamily: 'inherit',
                         fontSize: '0.88rem',
                         minWidth: 0,
@@ -697,8 +720,9 @@ export default function AdminHRServices() {
                       style={{
                         padding: '0.55rem 0.7rem',
                         borderRadius: 10,
-                        border: '1px solid rgba(30,43,77,0.14)',
-                        background: '#f7fbff',
+                        border: '1px solid var(--admin-border)',
+                        background: 'var(--admin-surface-soft)',
+                        color: 'var(--admin-text)',
                         fontFamily: 'inherit',
                         fontSize: '0.88rem',
                         minWidth: 0,
@@ -706,14 +730,15 @@ export default function AdminHRServices() {
                     />
                     <button
                       type="button"
+                      className={styles.adminDocumentRemove}
                       onClick={() => removeDocRow(index)}
                       style={{
                         width: 36,
                         borderRadius: 10,
-                        border: '1px solid rgba(30,43,77,0.14)',
-                        background: '#f7fbff',
+                        border: '1px solid var(--admin-border)',
+                        background: 'var(--admin-surface-soft)',
                         cursor: 'pointer',
-                        color: '#607394',
+                        color: 'var(--admin-muted)',
                       }}
                       aria-label="Remover documento"
                     >
@@ -734,7 +759,7 @@ export default function AdminHRServices() {
                     padding: '0.45rem 0.8rem',
                     fontSize: '0.82rem',
                     fontWeight: 700,
-                    color: '#2057d7',
+                    color: 'var(--admin-blue)',
                     cursor: 'pointer',
                   }}
                 >

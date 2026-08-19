@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Image from 'next/image';
@@ -29,9 +29,20 @@ import {
   FiX,
 } from 'react-icons/fi';
 import DashboardShell from '../../../components/dashboard/DashboardShell';
+import AutoSaveStatus from '../../../components/forms/AutoSaveStatus';
+import useAutoDraft from '../../../hooks/useAutoDraft';
 import { COMPANY_SIZES, INDUSTRY_SECTORS } from '../../../lib/companyOptions';
+import { createFormDraftKey } from '../../../lib/formDraft';
 import styles from '../../../styles/EmpresaProfilePage.module.css';
 import { buildLoginUrl } from '../../../lib/loginRedirect';
+
+function prepareCompanyProfileDraft(value) {
+  if (!value || typeof value !== 'object') return {};
+
+  const draft = { ...value };
+  delete draft.email;
+  return draft;
+}
 
 export default function CompanyProfilePage() {
   const { user, loading: authLoading } = useAuth();
@@ -42,6 +53,7 @@ export default function CompanyProfilePage() {
   const [uploadingCover, setUploadingCover] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [profileUpdatedAt, setProfileUpdatedAt] = useState('');
 
   const [form, setForm] = useState({
     name: '',
@@ -60,6 +72,26 @@ export default function CompanyProfilePage() {
   });
 
   const uploading = uploadingLogo || uploadingCover;
+  const draftOwnerId = user?.uid || '';
+  const profileDraftKey = useMemo(
+    () =>
+      createFormDraftKey({
+        scope: 'company-profile',
+        ownerId: draftOwnerId,
+        resourceId: 'default',
+      }),
+    [draftOwnerId],
+  );
+
+  const getDraftToken = useCallback(async () => {
+    if (!user) return '';
+    return user.getIdToken();
+  }, [user]);
+
+  const restoreProfileDraft = useCallback((draft) => {
+    const restoredFields = prepareCompanyProfileDraft(draft);
+    setForm((current) => ({ ...current, ...restoredFields }));
+  }, []);
 
   useEffect(() => {
     if (authLoading) return;
@@ -83,6 +115,7 @@ export default function CompanyProfilePage() {
 
         const result = await response.json();
         const data = result.profile || {};
+        setProfileUpdatedAt(data.updatedAt || '');
         setForm({
           name: data.name || data.fullName || '',
           email: data.email || user.email || '',
@@ -107,6 +140,25 @@ export default function CompanyProfilePage() {
 
     fetchProfile();
   }, [user, authLoading, router]);
+
+  const {
+    status: profileDraftStatus,
+    lastSavedAt: profileDraftSavedAt,
+    isOnline: profileDraftIsOnline,
+    clearDraft: clearProfileDraft,
+  } = useAutoDraft({
+    storageKey: profileDraftKey,
+    scope: 'company-profile',
+    resourceId: 'default',
+    value: form,
+    onRestore: restoreProfileDraft,
+    getToken: getDraftToken,
+    enabled: Boolean(draftOwnerId),
+    ready: !loading,
+    baseUpdatedAt: profileUpdatedAt,
+    prepareLocal: prepareCompanyProfileDraft,
+    prepareRemote: prepareCompanyProfileDraft,
+  });
 
   async function handleSave(e) {
     e?.preventDefault();
@@ -158,11 +210,13 @@ export default function CompanyProfilePage() {
         body: JSON.stringify(dataToUpdate),
       });
 
-      const result = await response.json();
+      const result = await response.json().catch(() => ({}));
       if (!response.ok) {
         throw new Error(result.message || 'Erro ao salvar perfil');
       }
 
+      await clearProfileDraft();
+      setProfileUpdatedAt(dataToUpdate.updatedAt);
       setSuccess('Perfil atualizado com sucesso.');
     } catch (e) {
       let errorMessage = 'Erro ao salvar perfil. ';
@@ -304,6 +358,11 @@ export default function CompanyProfilePage() {
                 Gira a presença da sua empresa no portal. Estas informações
                 serão apresentadas aos candidatos.
               </p>
+              <AutoSaveStatus
+                status={profileDraftStatus}
+                lastSavedAt={profileDraftSavedAt}
+                isOnline={profileDraftIsOnline}
+              />
             </div>
 
             {user?.uid ? (

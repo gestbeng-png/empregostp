@@ -715,7 +715,9 @@
   }
 
   .marketSwitchBar {
-    top: 0;
+    /* The public header is sticky too; keep the market switch visible below
+       it instead of letting the two layers occupy the same top edge. */
+    top: 58px;
   }
 
   .marketSwitch {

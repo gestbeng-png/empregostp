@@ -519,12 +519,21 @@ const TopBar = ({
   );
 };
 
-const StatisticCard = ({ label, value, trend, icon, color = '#2057d7' }) => (
+const StatisticCard = ({
+  label,
+  value,
+  trend,
+  icon,
+  color = 'var(--dash-info-text, #2057d7)',
+}) => (
   <div className={styles.statCard}>
     <div className={styles.statHeader}>
       <div
         className={`${styles.statIcon} ${styles.statIconAccent}`}
-        style={{ '--accent-bg': `${color}15`, '--accent-color': color }}
+        style={{
+          '--accent-bg': `color-mix(in srgb, ${color} 10%, transparent)`,
+          '--accent-color': color,
+        }}
       >
         {icon || icons.badge}
       </div>
@@ -624,28 +633,33 @@ const ApplicationCard = ({
   const statusColors = {
     pending: {
       bg: 'rgba(217, 255, 47, 0.2)',
-      text: '#1e2b4d',
+      text: 'var(--text-1, #1e2b4d)',
       border: 'rgba(217, 255, 47, 0.35)',
     },
     analysis: {
       bg: 'rgba(32, 87, 215, 0.15)',
-      text: '#2057d7',
+      text: 'var(--dash-info-text, #2057d7)',
       border: 'rgba(32, 87, 215, 0.3)',
     },
     interview: {
       bg: 'rgba(95, 184, 245, 0.18)',
-      text: '#1e2b4d',
+      text: 'var(--text-1, #1e2b4d)',
       border: 'rgba(95, 184, 245, 0.3)',
     },
     approved: {
       bg: 'rgba(217, 255, 47, 0.2)',
-      text: '#1e2b4d',
+      text: 'var(--text-1, #1e2b4d)',
       border: 'rgba(217, 255, 47, 0.35)',
     },
     rejected: {
       bg: 'rgba(239, 68, 68, 0.15)',
-      text: '#f87171',
+      text: 'var(--dash-danger-text, #f87171)',
       border: 'rgba(239, 68, 68, 0.3)',
+    },
+    withdrawn: {
+      bg: 'rgba(100, 116, 139, 0.14)',
+      text: 'var(--text-3, #64748b)',
+      border: 'rgba(100, 116, 139, 0.3)',
     },
   };
 
@@ -655,6 +669,7 @@ const ApplicationCard = ({
     interview: 'Entrevista',
     approved: 'Aprovado',
     rejected: 'Rejeitado',
+    withdrawn: 'Retirada',
   };
 
   const status = application.status || 'pending';
@@ -833,9 +848,15 @@ const ApplicationCard = ({
       )}
 
       {/* Status Action Buttons */}
-      <div className={styles.applicationStatusActions}>
-        <span className={styles.statusActionsLabel}>Alterar status:</span>
-        <div className={styles.statusButtonsGroup}>
+      {status === 'withdrawn' ? (
+        <div className={styles.applicationInsightBox} role="status">
+          <strong>Processo encerrado</strong>
+          <p>O candidato retirou esta candidatura. O estado já não pode ser alterado.</p>
+        </div>
+      ) : (
+        <div className={styles.applicationStatusActions}>
+          <span className={styles.statusActionsLabel}>Alterar status:</span>
+          <div className={styles.statusButtonsGroup}>
           <button
             type="button"
             className={`${styles.statusBtn} ${styles.statusBtnAnalysis} ${status === 'analysis' ? styles.statusBtnActive : ''}`}
@@ -876,8 +897,9 @@ const ApplicationCard = ({
             {icons.x}
             <span>Rejeitar</span>
           </button>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className={styles.applicationActions}>
         <Link
@@ -993,7 +1015,10 @@ const AnalyticsCard = ({ title, value, subtitle, color, icon, change }) => (
     <div className={styles.analyticsCardHeader}>
       <div
         className={`${styles.analyticsCardIcon} ${styles.analyticsCardIconAccent}`}
-        style={{ '--accent-bg': `${color}15`, '--accent-color': color }}
+        style={{
+          '--accent-bg': `color-mix(in srgb, ${color} 10%, transparent)`,
+          '--accent-color': color,
+        }}
       >
         {icon}
       </div>
@@ -1929,14 +1954,14 @@ export default function EmpresaDashboard({
         value: activeJobs.length,
         trend: `+${jobs.length} total`,
         icon: icons.briefcase,
-        color: '#2057d7',
+        color: 'var(--dash-info-text, #2057d7)',
       },
       {
         label: 'Candidaturas',
         value: totalApplications,
         trend: `${stats?.pendingApplications || 0} novas`,
         icon: icons.inbox,
-        color: '#5fb8f5',
+        color: 'var(--sky, #5fb8f5)',
       },
       {
         label: 'Vagas Destacadas',
@@ -1947,7 +1972,7 @@ export default function EmpresaDashboard({
             ? 'Plano com destaques ilimitados'
             : `${highlightedJobsCount}/${companyPlanFeatures.maxHighlightedJobs || 0} utilizadas`,
         icon: icons.crown,
-        color: '#5fb8f5',
+        color: 'var(--sky, #5fb8f5)',
       },
       {
         label: 'Taxa Conversão',
@@ -1965,7 +1990,7 @@ export default function EmpresaDashboard({
         }%`,
         trend: 'Apps/Views',
         icon: icons.trending,
-        color: '#2057d7',
+        color: 'var(--dash-info-text, #2057d7)',
       },
     ],
     [
@@ -2336,6 +2361,8 @@ export default function EmpresaDashboard({
               return { label: 'Entrevista', cls: 'badge-pending' };
             case 'rejected':
               return { label: 'Rejeitado', cls: 'badge-closed' };
+            case 'withdrawn':
+              return { label: 'Retirada', cls: 'badge-closed' };
             default:
               return { label: 'Pendente', cls: 'badge-active' };
           }
@@ -2818,10 +2845,12 @@ export default function EmpresaDashboard({
                                     marginTop: 4,
                                     fontSize: '0.72rem',
                                     fontWeight: 800,
-                                    color: '#7a9000',
+                                    color: 'var(--dash-company-text, #7a9000)',
                                   }}
                                 >
-                                  <FiStar style={{ color: '#bae619' }} />{' '}
+                                  <FiStar
+                                    style={{ color: 'var(--lime, #bae619)' }}
+                                  />{' '}
                                   Destaque
                                 </div>
                               )}
@@ -3235,7 +3264,10 @@ export default function EmpresaDashboard({
                   const appStatus = application.status || 'pending';
                   const isUpdating = updatingApplicationId === application.id;
                   return (
-                    <div key={application.id} className="list-item">
+                    <div
+                      key={application.id}
+                      className={`list-item ${styles.applicationListItem}`}
+                    >
                       <div className="list-item-icon">
                         {initialsOf(application.candidateName)}
                       </div>
@@ -3248,6 +3280,7 @@ export default function EmpresaDashboard({
                         </div>
                       </div>
                       <div
+                        className={styles.applicationListControls}
                         style={{
                           display: 'flex',
                           alignItems: 'center',
@@ -3259,7 +3292,10 @@ export default function EmpresaDashboard({
                             style={{
                               fontWeight: 800,
                               fontSize: '0.84rem',
-                              color: score >= 90 ? '#3dbb7a' : '#2057d7',
+                              color:
+                                score >= 90
+                                  ? 'var(--dash-success-text, #3dbb7a)'
+                                  : 'var(--dash-info-text, #2057d7)',
                             }}
                           >
                             {score}% match
@@ -3269,6 +3305,7 @@ export default function EmpresaDashboard({
                           {meta.label}
                         </span>
                         <div
+                          className={styles.applicationListActions}
                           style={{
                             display: 'inline-flex',
                             gap: 6,
@@ -3284,6 +3321,8 @@ export default function EmpresaDashboard({
                           >
                             <FiEye />
                           </Link>
+                          {appStatus !== 'withdrawn' ? (
+                            <>
                           <button
                             type="button"
                             className="btn btn-lime btn-sm"
@@ -3359,6 +3398,8 @@ export default function EmpresaDashboard({
                               <FiLock />
                             </button>
                           )}
+                            </>
+                          ) : null}
                         </div>
                       </div>
                     </div>
@@ -3788,25 +3829,25 @@ export default function EmpresaDashboard({
             value: applicationsData.filter(
               (app) => !app.status || app.status === 'pending',
             ).length,
-            color: '#2057d7',
+            color: 'var(--dash-info-text, #2057d7)',
           },
           {
             name: 'Em análise',
             value: applicationsData.filter((app) => app.status === 'analysis')
               .length,
-            color: '#5fb8f5',
+            color: 'var(--sky, #5fb8f5)',
           },
           {
             name: 'Entrevista',
             value: applicationsData.filter((app) => app.status === 'interview')
               .length,
-            color: '#d9ff2f',
+            color: 'var(--lime, #d9ff2f)',
           },
           {
             name: 'Aprovadas',
             value: applicationsData.filter((app) => app.status === 'approved')
               .length,
-            color: '#3dbb7a',
+            color: 'var(--success, #3dbb7a)',
           },
         ];
         const totalBucketValues =
@@ -4627,7 +4668,7 @@ export default function EmpresaDashboard({
           avatarUrl: profile?.logoUrl || profile?.photoUrl || undefined,
         }}
       >
-        {renderContent()}
+        <div className={styles.dashboardThemeScope}>{renderContent()}</div>
       </DashboardShell>
       {interviewModal.open && (
         <div className={styles.modalOverlay} onClick={closeInterviewScheduler}>
@@ -4647,6 +4688,7 @@ export default function EmpresaDashboard({
                 type="button"
                 className={styles.modalCloseButton}
                 onClick={closeInterviewScheduler}
+                aria-label="Fechar janela de agendamento"
               >
                 Fechar
               </button>

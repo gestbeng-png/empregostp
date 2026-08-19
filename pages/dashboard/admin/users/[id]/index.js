@@ -408,7 +408,10 @@ export default function AdminUserDetail({ user, profile, applications }) {
                 </select>
               </div>
 
-              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+              <div
+                className={styles.userDetailActions}
+                style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}
+              >
                 <button
                   disabled={loading}
                   onClick={handleSave}

@@ -1,10 +1,14 @@
 import Head from 'next/head';
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import nookies from 'nookies';
 import { admin } from '../../../../lib/firebaseAdmin';
 import { serializeForProps } from '../../../../lib/firestoreNormalize';
+import { useAuth } from '../../../../context/AuthContext';
+import AutoSaveStatus from '../../../../components/forms/AutoSaveStatus';
+import useAutoDraft from '../../../../hooks/useAutoDraft';
+import { createFormDraftKey } from '../../../../lib/formDraft';
 import adminStyles from '../../../../styles/AdminPanel.module.css';
 import { addDocument, setDocument } from '../../../../lib/db';
 import {
@@ -14,9 +18,37 @@ import {
 } from '../../../../lib/contentPublication';
 import { redirectToLogin } from '../../../../lib/loginRedirect';
 
+const NEWS_DRAFT_FIELDS = [
+  'title',
+  'category',
+  'date',
+  'status',
+  'content',
+  'publishedAt',
+];
+
+function prepareNewsDraft(value) {
+  if (!value || typeof value !== 'object') return {};
+
+  return NEWS_DRAFT_FIELDS.reduce((draft, field) => {
+    if (Object.prototype.hasOwnProperty.call(value, field)) {
+      draft[field] = value[field];
+    }
+    return draft;
+  }, {});
+}
+
 export default function AdminNewsEdit({ newsData, isNew }) {
   const router = useRouter();
+  const { user } = useAuth();
+  const draftOwnerId = user?.uid || '';
+  const draftResourceId = isNew
+    ? 'new'
+    : newsData?.id || String(router.query.id || '');
   const [loading, setLoading] = useState(false);
+  const [appliedResourceId, setAppliedResourceId] = useState(
+    isNew ? draftResourceId : '',
+  );
   const [formData, setFormData] = useState({
     title: '',
     category: 'NOVIDADE',
@@ -27,8 +59,53 @@ export default function AdminNewsEdit({ newsData, isNew }) {
   useEffect(() => {
     if (newsData) {
       setFormData(newsData);
+      setAppliedResourceId(draftResourceId);
+    } else if (isNew) {
+      setAppliedResourceId(draftResourceId);
     }
-  }, [newsData]);
+  }, [draftResourceId, isNew, newsData]);
+  const newsDraftKey = useMemo(
+    () =>
+      createFormDraftKey({
+        scope: 'admin-news',
+        ownerId: draftOwnerId,
+        resourceId: draftResourceId,
+      }),
+    [draftOwnerId, draftResourceId],
+  );
+
+  const getDraftToken = useCallback(async () => {
+    if (!user) return '';
+    return user.getIdToken();
+  }, [user]);
+
+  const restoreNewsDraft = useCallback((draft) => {
+    const restoredFields = prepareNewsDraft(draft);
+    setFormData((current) => ({ ...current, ...restoredFields }));
+  }, []);
+
+  const {
+    status: newsDraftStatus,
+    lastSavedAt: newsDraftSavedAt,
+    isOnline: newsDraftIsOnline,
+    clearDraft: clearNewsDraft,
+  } = useAutoDraft({
+    storageKey: newsDraftKey,
+    scope: 'admin-news',
+    resourceId: draftResourceId,
+    value: formData,
+    onRestore: restoreNewsDraft,
+    getToken: getDraftToken,
+    enabled: Boolean(draftOwnerId && draftResourceId),
+    ready: Boolean(
+      draftResourceId && appliedResourceId === draftResourceId,
+    ),
+    baseUpdatedAt: isNew
+      ? ''
+      : newsData?.updatedAt || newsData?.createdAt || '',
+    prepareLocal: prepareNewsDraft,
+    prepareRemote: prepareNewsDraft,
+  });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -67,6 +144,8 @@ export default function AdminNewsEdit({ newsData, isNew }) {
           updatedAt: new Date().toISOString(),
         });
       }
+
+      await clearNewsDraft();
 
       // Envio automático da newsletter quando a notícia é publicada.
       // O servidor só envia uma vez por notícia (guarda um marcador).
@@ -199,6 +278,11 @@ export default function AdminNewsEdit({ newsData, isNew }) {
             <h1 style={styles.title}>
               {isNew ? 'Nova Notícia' : 'Editar Notícia'}
             </h1>
+            <AutoSaveStatus
+              status={newsDraftStatus}
+              lastSavedAt={newsDraftSavedAt}
+              isOnline={newsDraftIsOnline}
+            />
           </div>
 
           <form onSubmit={handleSubmit} style={styles.card}>

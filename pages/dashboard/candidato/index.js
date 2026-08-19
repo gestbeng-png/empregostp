@@ -44,8 +44,11 @@ import {
 import DashboardShell from '../../../components/dashboard/DashboardShell';
 import CandidateDashboardOverview from '../../../components/dashboard/CandidateDashboardOverview';
 import AffiliateSection from '../../../components/affiliate/AffiliateSection';
+import AutoSaveStatus from '../../../components/forms/AutoSaveStatus';
+import useAutoDraft from '../../../hooks/useAutoDraft';
 import styles from '../../../styles/DashboardCandidato.module.css';
 import ps from '../../../styles/CandidateProfileSettings.module.css';
+import { createFormDraftKey } from '../../../lib/formDraft';
 import { buildLoginUrl } from '../../../lib/loginRedirect';
 import { requireSession } from '../../../lib/serverSession';
 
@@ -457,6 +460,49 @@ const buildProfileForm = (profileData, userState) => {
   };
 };
 
+const normalizeDraftText = (value) =>
+  typeof value === 'string' ? value : '';
+
+const prepareCandidateProfileDraft = (value = {}) => {
+  const experiences = Array.isArray(value.experiences)
+    ? value.experiences.map((experience) => ({
+        company: normalizeDraftText(experience?.company),
+        role: normalizeDraftText(experience?.role),
+        period: normalizeDraftText(experience?.period),
+        description: normalizeDraftText(experience?.description),
+      }))
+    : [];
+
+  return {
+    name: normalizeDraftText(value.name),
+    headline: normalizeDraftText(value.headline),
+    bio: normalizeDraftText(value.bio),
+    location: normalizeDraftText(value.location),
+    phone: normalizeDraftText(value.phone),
+    skills: normalizeDraftText(value.skills),
+    experiences: experiences.length ? experiences : [{ ...emptyExperience }],
+    birthDate: normalizeDraftText(value.birthDate),
+    nationality: normalizeDraftText(value.nationality),
+    gender: normalizeDraftText(value.gender),
+    maritalStatus: normalizeDraftText(value.maritalStatus),
+    linkedin: normalizeDraftText(value.linkedin),
+    website: normalizeDraftText(value.website),
+    objectiveArea: normalizeDraftText(value.objectiveArea),
+    objectiveType: normalizeDraftText(value.objectiveType),
+    objectiveAspiration: normalizeDraftText(value.objectiveAspiration),
+    skillsSoft: normalizeDraftText(value.skillsSoft),
+    digitalSkills: Array.isArray(value.digitalSkills)
+      ? value.digitalSkills.filter((skill) => typeof skill === 'string')
+      : [],
+    education: normalizeDraftText(value.education),
+    languages: normalizeDraftText(value.languages),
+    certifications: normalizeDraftText(value.certifications),
+    certificateFiles: Array.isArray(value.certificateFiles)
+      ? value.certificateFiles.filter((url) => typeof url === 'string')
+      : [],
+  };
+};
+
 const SUBLABEL_TONE_STYLES = {
   positive: { background: 'rgba(34,197,94,0.14)', color: '#16a34a' },
   neutral: { background: 'rgba(95,184,245,0.12)', color: '#2057d7' },
@@ -740,6 +786,7 @@ const CandidateDashboard = () => {
   const [messageInput, setMessageInput] = useState('');
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [messageSendError, setMessageSendError] = useState('');
   const messagesEndRef = useRef(null);
   const [cvState, setCvState] = useState({
     url: '',
@@ -763,6 +810,77 @@ const CandidateDashboard = () => {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [settingsSearchQuery, setSettingsSearchQuery] = useState('');
   const [dashboardSearchQuery, setDashboardSearchQuery] = useState('');
+  const profileDraftRestoredOwnerRef = useRef('');
+  const profileDraftInteractionOwnerRef = useRef('');
+  const profileDraftClearAfterRenderRef = useRef(false);
+
+  const profileDraftStorageKey = useMemo(
+    () =>
+      createFormDraftKey({
+        scope: 'candidate-profile',
+        ownerId: user?.uid || '',
+        resourceId: 'default',
+      }),
+    [user?.uid],
+  );
+
+  const markProfileEditing = useCallback(() => {
+    const ownerId = user?.uid || '';
+    if (ownerId) profileDraftInteractionOwnerRef.current = ownerId;
+    setEditingProfile(true);
+  }, [user?.uid]);
+
+  const getProfileDraftToken = useCallback(
+    async () => user?.getIdToken?.() || '',
+    [user],
+  );
+
+  const handleRestoreProfileDraft = useCallback(
+    (draft) => {
+      const ownerId = user?.uid || '';
+      if (
+        !ownerId ||
+        profileDraftInteractionOwnerRef.current === ownerId
+      ) {
+        return;
+      }
+
+      profileDraftRestoredOwnerRef.current = ownerId;
+      const restoredDraft = prepareCandidateProfileDraft(draft);
+      setProfileForm((currentForm) => ({
+        ...currentForm,
+        ...restoredDraft,
+      }));
+      setEditingProfile(true);
+      setActiveTab('profile');
+    },
+    [user?.uid],
+  );
+
+  const {
+    status: profileDraftStatus,
+    lastSavedAt: profileDraftLastSavedAt,
+    isOnline: profileDraftIsOnline,
+    hasDraft: hasProfileDraft,
+    clearDraft: clearProfileDraft,
+  } = useAutoDraft({
+    storageKey: profileDraftStorageKey,
+    scope: 'candidate-profile',
+    resourceId: 'default',
+    value: profileForm,
+    onRestore: handleRestoreProfileDraft,
+    getToken: getProfileDraftToken,
+    ready: Boolean(!loading && user?.uid),
+    baseUpdatedAt: profile?.updatedAt || '',
+    prepareLocal: prepareCandidateProfileDraft,
+    prepareRemote: prepareCandidateProfileDraft,
+  });
+
+  useEffect(() => {
+    if (!profileDraftClearAfterRenderRef.current) return;
+    profileDraftClearAfterRenderRef.current = false;
+    void clearProfileDraft();
+  }, [clearProfileDraft, profileForm]);
 
   const openTab = useCallback(
     (tab) => {
@@ -1062,6 +1180,9 @@ const CandidateDashboard = () => {
 
         const profileData = profileJson.profile?.data || {};
         setProfile(profileData);
+        if (profileDraftInteractionOwnerRef.current !== uid) {
+          setProfileForm(buildProfileForm(profileData, user));
+        }
         setApplications(profileJson.applications || []);
 
         const headlineFallback =
@@ -1195,7 +1316,12 @@ const CandidateDashboard = () => {
   };
 
   useEffect(() => {
-    if (!editingProfile) {
+    const ownerId = user?.uid || '';
+    if (
+      !editingProfile &&
+      profileDraftInteractionOwnerRef.current !== ownerId &&
+      profileDraftRestoredOwnerRef.current !== ownerId
+    ) {
       setProfileForm(buildProfileForm(profile, user));
     }
   }, [profile, user, editingProfile]);
@@ -1259,6 +1385,7 @@ const CandidateDashboard = () => {
   // Fetch messages when a conversation is selected
   useEffect(() => {
     if (activeTab !== 'messages') return undefined;
+    setMessageSendError('');
     if (!selectedConversation) {
       setMessages([]);
       return;
@@ -1302,13 +1429,20 @@ const CandidateDashboard = () => {
   const handleSendMessage = async () => {
     if (!messageInput.trim() || !selectedConversation || sendingMessage) return;
     const text = messageInput.trim();
+    setMessageSendError('');
     setMessageInput('');
     setSendingMessage(true);
     try {
       const { getAuth } = await import('firebase/auth');
       const auth = getAuth();
       const currentUser = auth.currentUser;
-      if (!currentUser) return;
+      if (!currentUser) {
+        setMessageInput(text);
+        setMessageSendError(
+          'A sessão terminou. Inicie sessão novamente para enviar a mensagem.',
+        );
+        return;
+      }
       const token = await currentUser.getIdToken();
       const res = await fetch(`/api/messages/${selectedConversation}`, {
         method: 'POST',
@@ -1340,11 +1474,19 @@ const CandidateDashboard = () => {
           ),
         );
       } else {
+        const data = await res.json().catch(() => ({}));
         setMessageInput(text);
+        setMessageSendError(
+          (typeof data.error === 'string' && data.error.trim()) ||
+            'Não foi possível enviar a mensagem. O texto foi mantido para tentar novamente.',
+        );
       }
     } catch (err) {
       console.error('Erro ao enviar mensagem:', err);
       setMessageInput(text);
+      setMessageSendError(
+        'Não foi possível enviar a mensagem. Verifique a ligação e tente novamente.',
+      );
     } finally {
       setSendingMessage(false);
     }
@@ -1527,6 +1669,12 @@ const CandidateDashboard = () => {
 
   const stats = useMemo(() => {
     const now = new Date();
+    const activeApplications = applications.filter(
+      (application) =>
+        !['rejected', 'withdrawn'].includes(
+          String(application?.status || '').toLowerCase(),
+        ),
+    ).length;
     const appliedThisMonth = applications.filter((app) => {
       const raw = app.appliedAt || app.appliedDate || app.createdAt;
       if (!raw) return false;
@@ -1552,7 +1700,7 @@ const CandidateDashboard = () => {
     return [
       {
         label: 'Candidaturas activas',
-        value: applications.length,
+        value: activeApplications,
         icon: icons.applications,
         color: '#2057d7',
         sublabel:
@@ -2190,6 +2338,7 @@ const CandidateDashboard = () => {
   };
 
   const handleProfileFieldChange = (field, value) => {
+    markProfileEditing();
     setProfileForm((prev) => ({
       ...prev,
       [field]: value,
@@ -2197,6 +2346,7 @@ const CandidateDashboard = () => {
   };
 
   const handleExperienceChange = (index, field, value) => {
+    markProfileEditing();
     setProfileForm((prev) => {
       const nextExperiences = [...prev.experiences];
       nextExperiences[index] = {
@@ -2208,6 +2358,7 @@ const CandidateDashboard = () => {
   };
 
   const handleAddExperience = () => {
+    markProfileEditing();
     setProfileForm((prev) => ({
       ...prev,
       experiences: [...prev.experiences, { ...emptyExperience }],
@@ -2215,6 +2366,7 @@ const CandidateDashboard = () => {
   };
 
   const handleRemoveExperience = (index) => {
+    markProfileEditing();
     setProfileForm((prev) => {
       const nextExperiences = [...prev.experiences];
       nextExperiences.splice(index, 1);
@@ -2228,6 +2380,9 @@ const CandidateDashboard = () => {
   };
 
   const handleCancelEdit = () => {
+    const ownerId = user?.uid || '';
+    if (ownerId) profileDraftInteractionOwnerRef.current = ownerId;
+    profileDraftClearAfterRenderRef.current = true;
     setProfileForm(buildProfileForm(profile, user));
     setEditingProfile(false);
     setProfileFeedback(null);
@@ -2236,7 +2391,7 @@ const CandidateDashboard = () => {
   const handleStartEditing = () => {
     setProfileForm(buildProfileForm(profile, user));
     setProfileFeedback(null);
-    setEditingProfile(true);
+    markProfileEditing();
   };
 
   // Helper functions for extended profile
@@ -2244,6 +2399,7 @@ const CandidateDashboard = () => {
     e.preventDefault();
     const val = e.target.elements.skill.value.trim();
     if (val && !profileForm.digitalSkills.includes(val)) {
+      markProfileEditing();
       setProfileForm((prev) => ({
         ...prev,
         digitalSkills: [...prev.digitalSkills, val],
@@ -2253,6 +2409,7 @@ const CandidateDashboard = () => {
   };
 
   const removeDigitalSkill = (skill) => {
+    markProfileEditing();
     setProfileForm((prev) => ({
       ...prev,
       digitalSkills: prev.digitalSkills.filter((s) => s !== skill),
@@ -2311,6 +2468,7 @@ const CandidateDashboard = () => {
         uploadedUrls.push(url);
       }
 
+      markProfileEditing();
       setProfileForm((prev) => ({
         ...prev,
         certificateFiles: [...prev.certificateFiles, ...uploadedUrls],
@@ -2334,6 +2492,7 @@ const CandidateDashboard = () => {
   };
 
   const removeCertificate = (index) => {
+    markProfileEditing();
     setProfileForm((prev) => ({
       ...prev,
       certificateFiles: prev.certificateFiles.filter((_, i) => i !== index),
@@ -2418,6 +2577,7 @@ const CandidateDashboard = () => {
             : user?.skills,
       };
 
+      profileDraftClearAfterRenderRef.current = true;
       setProfile(data.profile);
       setProfileForm(buildProfileForm(data.profile, updatedUser));
       await refreshPlanStatus();
@@ -2449,6 +2609,7 @@ const CandidateDashboard = () => {
       return;
     }
 
+    markProfileEditing();
     setProfileForm((prev) => ({
       ...prev,
       linkedin: hints.normalizedUrl,
@@ -2467,7 +2628,7 @@ const CandidateDashboard = () => {
       return <CandidateLoadingState />;
     }
 
-    if (dashboardError) {
+    if (dashboardError && !hasProfileDraft) {
       return (
         <div className={styles.contentArea}>
           <CandidateEmptyState
@@ -2828,6 +2989,11 @@ const CandidateDashboard = () => {
                     </p>
                   </div>
                   <div className={ps.headActions}>
+                    <AutoSaveStatus
+                      status={profileDraftStatus}
+                      lastSavedAt={profileDraftLastSavedAt}
+                      isOnline={profileDraftIsOnline}
+                    />
                     <button
                       type="button"
                       className={`${ps.actionBtn} ${ps.btnGhost}`}
@@ -4010,11 +4176,23 @@ const CandidateDashboard = () => {
                       )}
                       <div ref={messagesEndRef} />
                     </div>
+                    {messageSendError ? (
+                      <p
+                        id="candidate-message-send-error"
+                        className={styles.messageSendError}
+                        role="alert"
+                      >
+                        {messageSendError}
+                      </p>
+                    ) : null}
                     <div className={styles.messageFooter}>
                       <input
                         type="text"
                         value={messageInput}
-                        onChange={(e) => setMessageInput(e.target.value)}
+                        onChange={(e) => {
+                          setMessageInput(e.target.value);
+                          if (messageSendError) setMessageSendError('');
+                        }}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault();
@@ -4022,6 +4200,12 @@ const CandidateDashboard = () => {
                           }
                         }}
                         placeholder="Escreva uma mensagem..."
+                        aria-label="Mensagem para a empresa"
+                        aria-describedby={
+                          messageSendError
+                            ? 'candidate-message-send-error'
+                            : undefined
+                        }
                         className={styles.messageTextInput}
                         disabled={sendingMessage}
                         maxLength={2000}
@@ -4031,6 +4215,11 @@ const CandidateDashboard = () => {
                         className={styles.messageSendBtn}
                         onClick={handleSendMessage}
                         disabled={sendingMessage || !messageInput.trim()}
+                        aria-label={
+                          sendingMessage
+                            ? 'A enviar mensagem'
+                            : 'Enviar mensagem'
+                        }
                       >
                         {sendingMessage ? (
                           '…'

@@ -105,6 +105,8 @@
 html {
   color-scheme: only light;
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -260,7 +262,29 @@ ol {
 
 @media (max-width: 768px) {
   html {
-    font-size: 15px;
+    /* Keep the root at 16px. Shrinking it made every `1rem` form control
+       trigger Safari's focus zoom and reduced utility copy across the app. */
+    font-size: 16px;
+  }
+
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):not(
+      [type='color']
+    ),
+  select,
+  textarea {
+    /* iOS zooms the viewport when a focused control renders below 16px. */
+    font-size: 16px !important;
+  }
+
+  input,
+  select,
+  textarea,
+  button {
+    max-width: 100%;
+  }
+
+  body {
+    overflow-wrap: break-word;
   }
 }
 

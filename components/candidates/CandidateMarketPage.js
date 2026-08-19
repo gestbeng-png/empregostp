@@ -120,15 +120,11 @@ const NATIONAL_OFFERS = [
 const INTERNATIONAL_OFFERS = [
   {
     id: 'expatriados',
-    category: 'Mobilidade',
-    title: 'Preparação para trabalhar no exterior',
+    category: 'Chegada a STP',
+    title: 'Preparação para trabalhar em São Tomé e Príncipe',
     description:
-      'Organize a sua estratégia profissional para procurar oportunidades fora de São Tomé e Príncipe.',
-    highlights: [
-      'Orientação internacional',
-      'Plano de preparação',
-      'Mais confiança',
-    ],
+      'Planeie a sua procura de emprego e os passos essenciais para iniciar uma carreira em São Tomé e Príncipe.',
+    highlights: ['Orientação para STP', 'Plano de chegada', 'Mais confiança'],
     plans: ['Profissional', 'Premium'],
     href: '/recursos',
     cta: 'Preparar percurso',
@@ -140,9 +136,9 @@ const INTERNATIONAL_OFFERS = [
   {
     id: 'assistencia-residencia',
     category: 'Documentação',
-    title: 'Residência, visto e documentos essenciais',
+    title: 'Visto, residência e documentos para STP',
     description:
-      'Compreenda os documentos e próximos passos habituais para processos de trabalho e residência.',
+      'Conheça os documentos e as etapas habituais para trabalhar e residir em São Tomé e Príncipe.',
     highlights: [
       'Documentos organizados',
       'Orientação prática',
@@ -159,14 +155,10 @@ const INTERNATIONAL_OFFERS = [
   {
     id: 'creches-e-familia',
     category: 'Integração',
-    title: 'Planeamento familiar e integração',
+    title: 'Integração e planeamento da mudança',
     description:
-      'Prepare aspetos familiares e de adaptação que influenciam uma mudança profissional internacional.',
-    highlights: [
-      'Suporte familiar',
-      'Mais estabilidade',
-      'Planeamento consciente',
-    ],
+      'Prepare a sua chegada, a adaptação ao país e os aspetos familiares ligados à mudança para STP.',
+    highlights: ['Adaptação local', 'Apoio à chegada', 'Mudança planeada'],
     plans: ['Premium'],
     href: '/recursos',
     cta: 'Planear mudança',
@@ -178,10 +170,10 @@ const INTERNATIONAL_OFFERS = [
   {
     id: 'perfil-multilingue',
     category: 'Posicionamento',
-    title: 'Perfil multilingue para mercados externos',
+    title: 'Perfil profissional para empregadores em STP',
     description:
-      'Adapte o seu perfil e os seus documentos ao tom esperado por recrutadores internacionais.',
-    highlights: ['Perfil adaptado', 'Comunicação global', 'Mais alcance'],
+      'Apresente a sua experiência internacional com um perfil e documentos adaptados ao mercado de trabalho são-tomense.',
+    highlights: ['Perfil adaptado', 'Contexto local', 'Mais relevância'],
     plans: ['Profissional', 'Premium'],
     href: '/recursos/gerador-cv',
     cta: 'Adaptar perfil',
@@ -193,13 +185,13 @@ const INTERNATIONAL_OFFERS = [
   {
     id: 'recrutamento-internacional',
     category: 'Oportunidades',
-    title: 'Recrutamento e candidaturas internacionais',
+    title: 'Vagas e candidaturas em São Tomé e Príncipe',
     description:
-      'Explore oportunidades externas com uma candidatura mais clara, relevante e preparada.',
+      'Explore oportunidades em STP e apresente candidaturas claras, relevantes e bem preparadas.',
     highlights: [
-      'Mercados externos',
+      'Empregadores em STP',
       'Candidaturas preparadas',
-      'Maior alcance',
+      'Oportunidades locais',
     ],
     plans: ['Profissional', 'Premium'],
     href: '/vagas',
@@ -241,30 +233,31 @@ const MARKET_CONFIGS = {
   },
   international: {
     pageClass: 'internationalPage',
-    eyebrow: 'Carreira internacional',
-    titleLead: 'Prepare a sua carreira para trabalhar',
-    titleAccent: 'no exterior.',
+    eyebrow: 'Talento internacional para STP',
+    titleLead: 'Encontre o seu próximo emprego em',
+    titleAccent: 'São Tomé e Príncipe.',
     titleTail: '',
     subtitle:
-      'Organize o seu perfil, documentos e próximos passos para procurar oportunidades internacionais com mais clareza e segurança.',
-    primaryHref: '/recursos/gerador-cv',
-    primaryLabel: 'Criar currículo',
+      'Se é um profissional de outro país e deseja trabalhar em São Tomé e Príncipe, prepare o seu perfil, documentos e candidaturas para o mercado local.',
+    primaryHref: '/vagas',
+    primaryLabel: 'Ver vagas em STP',
     secondaryHref: '#planos',
     secondaryLabel: 'Comparar planos',
-    assurance: 'Escolha o nível de apoio certo para o seu percurso',
-    catalogEyebrow: 'Escolha o seu próximo passo',
-    catalogTitle: 'O que precisa para avançar?',
+    assurance:
+      'Apoio para candidatos internacionais que querem trabalhar em STP',
+    catalogEyebrow: 'Prepare a sua candidatura para STP',
+    catalogTitle: 'O que precisa para trabalhar no país?',
     catalogText:
-      'Organize o que apresenta, os documentos que precisa e a estratégia que leva consigo para novos mercados.',
-    visualLabel: 'Alcance internacional',
-    visualCode: 'GLOBAL',
+      'Organize o seu perfil, a documentação e a mudança para chegar ao mercado são-tomense com mais segurança.',
+    visualLabel: 'Destino profissional',
+    visualCode: 'STP',
     offers: INTERNATIONAL_OFFERS,
-    ctaEyebrow: 'Leve o seu talento mais longe',
-    ctaTitle: 'Prepare hoje a carreira que quer construir lá fora.',
+    ctaEyebrow: 'O seu próximo passo em STP',
+    ctaTitle: 'Comece a construir a sua carreira em São Tomé e Príncipe.',
     ctaText:
-      'Comece pelo seu perfil e avance com uma apresentação profissional adaptada a mercados internacionais.',
-    ctaHref: '/recursos/gerador-cv',
-    ctaLabel: 'Preparar perfil global',
+      'Crie o seu perfil e apresente a sua experiência a empregadores do mercado são-tomense.',
+    ctaHref: '/register?type=candidate',
+    ctaLabel: 'Criar perfil para STP',
   },
 };
 
@@ -388,7 +381,7 @@ export default function CandidateMarketPage({ market = 'national' }) {
                 className={`${styles.marketSwitchLink} ${!isNational ? styles.marketSwitchLinkActive : ''}`}
                 aria-current={!isNational ? 'page' : undefined}
               >
-                Carreira Internacional
+                Talento Internacional
               </Link>
             </nav>
           </div>

@@ -3,7 +3,8 @@
   position: fixed;
   left: 1rem;
   right: 1rem;
-  z-index: 1250;
+  /* Keep global prompts under modal overlays and above regular sticky bars. */
+  z-index: 900;
   width: min(460px, calc(100vw - 2rem));
   margin-left: auto;
   display: grid;
@@ -88,7 +89,19 @@
 
 @media (max-width: 640px) {
   .prompt {
-    bottom: 6.8rem;
+    right: 0.75rem;
+    bottom: max(6.8rem, calc(5.9rem + env(safe-area-inset-bottom)));
+    left: 0.75rem;
+    width: auto;
+    max-height: calc(100dvh - 8rem);
+    overflow-y: auto;
+  }
+
+  .toast {
+    right: 0.75rem;
+    bottom: max(0.75rem, env(safe-area-inset-bottom));
+    left: 0.75rem;
+    width: auto;
   }
 
   .promptActions {

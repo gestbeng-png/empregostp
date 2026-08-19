@@ -1909,6 +1909,15 @@
   flex-shrink: 0;
 }
 
+.messageSendError {
+  margin: 0;
+  padding: 0.65rem 1rem 0;
+  color: #b42318;
+  font-size: 0.84rem;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
 .messageTextInput {
   flex: 1;
   background: rgba(255, 255, 255, 0.05);

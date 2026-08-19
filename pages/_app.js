@@ -19,7 +19,6 @@ import Head from 'next/head';
 import DashboardRouteFrame from '../components/dashboard/DashboardRouteFrame';
 
 const AUTH_ROUTES = new Set([
-  '/escolha-tipo',
   '/login',
   '/recuperar-senha',
   '/redefinir-senha',

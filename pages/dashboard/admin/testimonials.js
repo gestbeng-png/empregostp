@@ -10,7 +10,7 @@ const STATUS_META = {
     label: 'Pendente',
     style: {
       '--badge-bg': 'rgba(245, 158, 11, 0.14)',
-      '--badge-color': '#b45309',
+      '--badge-color': 'var(--dash-warning-text, #b45309)',
       '--badge-border': '1px solid rgba(245, 158, 11, 0.28)',
     },
   },
@@ -18,7 +18,7 @@ const STATUS_META = {
     label: 'Aprovado',
     style: {
       '--badge-bg': 'rgba(61, 187, 122, 0.14)',
-      '--badge-color': '#15803d',
+      '--badge-color': 'var(--dash-success-text, #15803d)',
       '--badge-border': '1px solid rgba(61, 187, 122, 0.28)',
     },
   },
@@ -26,17 +26,29 @@ const STATUS_META = {
     label: 'Rejeitado',
     style: {
       '--badge-bg': 'rgba(239, 68, 68, 0.12)',
-      '--badge-color': '#b91c1c',
+      '--badge-color': 'var(--dash-danger-text, #b91c1c)',
       '--badge-border': '1px solid rgba(239, 68, 68, 0.24)',
     },
   },
 };
 
 const FILTERS = [
-  { key: 'pending', title: 'Pendentes', accent: '#f59e0b' },
-  { key: 'approved', title: 'Aprovados', accent: '#3dbb7a' },
-  { key: 'rejected', title: 'Rejeitados', accent: '#ef4444' },
-  { key: 'all', title: 'Total', accent: '#2057d7' },
+  {
+    key: 'pending',
+    title: 'Pendentes',
+    accent: 'var(--dash-warning-text, #985800)',
+  },
+  {
+    key: 'approved',
+    title: 'Aprovados',
+    accent: 'var(--dash-success-text, #168a55)',
+  },
+  {
+    key: 'rejected',
+    title: 'Rejeitados',
+    accent: 'var(--dash-danger-text, #b83d55)',
+  },
+  { key: 'all', title: 'Total', accent: 'var(--dash-info-text, #064bb5)' },
 ];
 
 const FILTER_LABEL = {
@@ -259,7 +271,7 @@ export default function AdminTestimonials() {
                         style={{
                           margin: 0,
                           fontWeight: 800,
-                          color: '#162a55',
+                          color: 'var(--admin-text)',
                           fontSize: '1.05rem',
                         }}
                       >
@@ -269,7 +281,7 @@ export default function AdminTestimonials() {
                         <p
                           style={{
                             margin: '0.15rem 0 0',
-                            color: '#607394',
+                            color: 'var(--admin-muted)',
                             fontSize: '0.88rem',
                           }}
                         >
@@ -294,7 +306,7 @@ export default function AdminTestimonials() {
                       }}
                     >
                       {'★'.repeat(item.rating)}
-                      <span style={{ color: '#d4dbe8' }}>
+                      <span style={{ color: 'var(--text-4, #d4dbe8)' }}>
                         {'★'.repeat(5 - item.rating)}
                       </span>
                     </p>
@@ -303,7 +315,7 @@ export default function AdminTestimonials() {
                   <p
                     style={{
                       margin: '0.7rem 0 0',
-                      color: '#33415c',
+                      color: 'var(--text-2, var(--admin-text))',
                       lineHeight: 1.7,
                     }}
                   >
@@ -313,7 +325,7 @@ export default function AdminTestimonials() {
                   <p
                     style={{
                       margin: '0.7rem 0 0',
-                      color: '#94a3b8',
+                      color: 'var(--admin-muted)',
                       fontSize: '0.8rem',
                     }}
                   >

@@ -1,10 +1,14 @@
 import Head from 'next/head';
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import nookies from 'nookies';
 import { admin } from '../../../../lib/firebaseAdmin';
 import { serializeForProps } from '../../../../lib/firestoreNormalize';
+import { useAuth } from '../../../../context/AuthContext';
+import AutoSaveStatus from '../../../../components/forms/AutoSaveStatus';
+import useAutoDraft from '../../../../hooks/useAutoDraft';
+import { createFormDraftKey } from '../../../../lib/formDraft';
 import adminStyles from '../../../../styles/AdminPanel.module.css';
 import { addDocument, setDocument } from '../../../../lib/db';
 import {
@@ -14,9 +18,42 @@ import {
 } from '../../../../lib/contentPublication';
 import { redirectToLogin } from '../../../../lib/loginRedirect';
 
+const BLOG_DRAFT_FIELDS = [
+  'title',
+  'excerpt',
+  'content',
+  'category',
+  'author',
+  'image',
+  'readTime',
+  'color',
+  'featured',
+  'status',
+  'publishedAt',
+];
+
+function prepareBlogDraft(value) {
+  if (!value || typeof value !== 'object') return {};
+
+  return BLOG_DRAFT_FIELDS.reduce((draft, field) => {
+    if (Object.prototype.hasOwnProperty.call(value, field)) {
+      draft[field] = value[field];
+    }
+    return draft;
+  }, {});
+}
+
 export default function AdminBlogEdit({ postData, isNew }) {
   const router = useRouter();
+  const { user } = useAuth();
+  const draftOwnerId = user?.uid || '';
+  const draftResourceId = isNew
+    ? 'new'
+    : postData?.id || String(router.query.id || '');
   const [loading, setLoading] = useState(false);
+  const [appliedResourceId, setAppliedResourceId] = useState(
+    isNew ? draftResourceId : '',
+  );
   const [formData, setFormData] = useState({
     title: '',
     excerpt: '',
@@ -33,8 +70,53 @@ export default function AdminBlogEdit({ postData, isNew }) {
   useEffect(() => {
     if (postData) {
       setFormData(postData);
+      setAppliedResourceId(draftResourceId);
+    } else if (isNew) {
+      setAppliedResourceId(draftResourceId);
     }
-  }, [postData]);
+  }, [draftResourceId, isNew, postData]);
+  const blogDraftKey = useMemo(
+    () =>
+      createFormDraftKey({
+        scope: 'admin-blog',
+        ownerId: draftOwnerId,
+        resourceId: draftResourceId,
+      }),
+    [draftOwnerId, draftResourceId],
+  );
+
+  const getDraftToken = useCallback(async () => {
+    if (!user) return '';
+    return user.getIdToken();
+  }, [user]);
+
+  const restoreBlogDraft = useCallback((draft) => {
+    const restoredFields = prepareBlogDraft(draft);
+    setFormData((current) => ({ ...current, ...restoredFields }));
+  }, []);
+
+  const {
+    status: blogDraftStatus,
+    lastSavedAt: blogDraftSavedAt,
+    isOnline: blogDraftIsOnline,
+    clearDraft: clearBlogDraft,
+  } = useAutoDraft({
+    storageKey: blogDraftKey,
+    scope: 'admin-blog',
+    resourceId: draftResourceId,
+    value: formData,
+    onRestore: restoreBlogDraft,
+    getToken: getDraftToken,
+    enabled: Boolean(draftOwnerId && draftResourceId),
+    ready: Boolean(
+      draftResourceId && appliedResourceId === draftResourceId,
+    ),
+    baseUpdatedAt: isNew
+      ? ''
+      : postData?.updatedAt || postData?.createdAt || '',
+    prepareLocal: prepareBlogDraft,
+    prepareRemote: prepareBlogDraft,
+  });
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -74,6 +156,8 @@ export default function AdminBlogEdit({ postData, isNew }) {
           updatedAt: new Date().toISOString(),
         });
       }
+
+      await clearBlogDraft();
 
       // Se o artigo está publicado, envia automaticamente a newsletter aos
       // subscritores. O servidor só envia uma vez por artigo (guarda um
@@ -224,6 +308,11 @@ export default function AdminBlogEdit({ postData, isNew }) {
             <h1 style={styles.title}>
               {isNew ? 'Novo Artigo' : 'Editar Artigo'}
             </h1>
+            <AutoSaveStatus
+              status={blogDraftStatus}
+              lastSavedAt={blogDraftSavedAt}
+              isOnline={blogDraftIsOnline}
+            />
           </div>
 
           <form onSubmit={handleSubmit} style={styles.card}>

@@ -69,28 +69,28 @@ export default function AdminUsers({ users = [] }) {
             title="Total"
             value={stats.total}
             active={filterType === 'all'}
-            accent="#2057d7"
+            accent="var(--dash-info-text, #064bb5)"
             onClick={() => setFilterType('all')}
           />
           <StatCard
             title="Candidatos"
             value={stats.candidatos}
             active={filterType === 'candidato'}
-            accent="#5fb8f5"
+            accent="var(--sky, #5fb8f5)"
             onClick={() => setFilterType('candidato')}
           />
           <StatCard
             title="Empresas"
             value={stats.empresas}
             active={filterType === 'empresa'}
-            accent="#d9ff2f"
+            accent="var(--dash-company-text, #5c6d00)"
             onClick={() => setFilterType('empresa')}
           />
           <StatCard
             title="Admins"
             value={stats.admins}
             active={filterType === 'admin'}
-            accent="#1e2b4d"
+            accent="var(--admin-text)"
             onClick={() => setFilterType('admin')}
           />
         </section>
@@ -202,7 +202,7 @@ export default function AdminUsers({ users = [] }) {
                             style={{
                               '--button-bg': 'rgba(95, 184, 245, 0.14)',
                               '--button-border': 'rgba(95, 184, 245, 0.28)',
-                              '--button-color': '#2057d7',
+                              '--button-color': 'var(--admin-blue)',
                             }}
                           >
                             Editar
@@ -244,7 +244,7 @@ function UserTypeBadge({ type }) {
       label: 'Candidato',
       style: {
         '--badge-bg': 'rgba(95, 184, 245, 0.14)',
-        '--badge-color': '#2057d7',
+        '--badge-color': 'var(--admin-blue)',
         '--badge-border': '1px solid rgba(95, 184, 245, 0.24)',
       },
     },
@@ -252,7 +252,7 @@ function UserTypeBadge({ type }) {
       label: 'Empresa',
       style: {
         '--badge-bg': 'rgba(217, 255, 47, 0.22)',
-        '--badge-color': '#1e2b4d',
+        '--badge-color': 'var(--dash-company-text, #5c6d00)',
         '--badge-border': '1px solid rgba(217, 255, 47, 0.3)',
       },
     },
@@ -260,7 +260,7 @@ function UserTypeBadge({ type }) {
       label: 'Admin',
       style: {
         '--badge-bg': 'rgba(30, 43, 77, 0.12)',
-        '--badge-color': '#1e2b4d',
+        '--badge-color': 'var(--admin-text)',
         '--badge-border': '1px solid rgba(30, 43, 77, 0.16)',
       },
     },
@@ -270,7 +270,7 @@ function UserTypeBadge({ type }) {
     label: 'Desconhecido',
     style: {
       '--badge-bg': 'rgba(123, 141, 168, 0.12)',
-      '--badge-color': '#607394',
+      '--badge-color': 'var(--admin-muted)',
       '--badge-border': '1px solid rgba(123, 141, 168, 0.18)',
     },
   };

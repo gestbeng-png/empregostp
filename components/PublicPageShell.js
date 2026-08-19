@@ -1,3 +1,4 @@
+import AnnouncementBar from './AnnouncementBar';
 import LandingHeader from './LandingHeader';
 import Footer from './home/Footer';
 import styles from '../styles/PublicPageShell.module.css';
@@ -18,6 +19,7 @@ export default function PublicPageShell({
         <span className={styles.orbTertiary} />
         <span className={styles.gridPattern} />
       </div>
+      <AnnouncementBar />
       <LandingHeader variant={headerVariant} />
       <main
         id="main-content"

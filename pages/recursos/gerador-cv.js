@@ -1,14 +1,23 @@
 import Head from 'next/head';
 import Link from 'next/link';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import AutoSaveStatus from '../../components/forms/AutoSaveStatus';
 import PublicPageShell from '../../components/PublicPageShell';
 import { useAuth } from '../../context/AuthContext';
+import useAutoDraft from '../../hooks/useAutoDraft';
 import {
   canUseCvGenerator,
   getPlanSummary,
 } from '../../lib/candidatePlanFeatures';
 import { resolveProfessionalResourceAccess } from '../../lib/resourcePremiumAccess';
 import { slugifyFilename } from '../../lib/resourcesCatalog';
+import { readLocalDraft, writeLocalDraft } from '../../lib/formDraft';
+import {
+  CV_LOCAL_PHOTO_MAX_DATA_URL_LENGTH,
+  encodeCanvasAsStorableCvPhoto,
+  isStorableLocalCvPhoto,
+  mergeCvDraftWithLocalPhoto,
+} from '../../lib/cvDraftPhoto';
 import {
   FiUser,
   FiBriefcase,
@@ -136,6 +145,81 @@ const initialForm = {
   additionalInfo: '',
 };
 
+const isDraftObject = (value) =>
+  Boolean(value && typeof value === 'object' && !Array.isArray(value));
+
+const normalizeDraftStep = (value) => {
+  const numericStep = Number(value);
+  if (!Number.isInteger(numericStep)) return 0;
+  return Math.max(0, Math.min(numericStep, STEPS.length - 1));
+};
+
+const normalizeCvDraft = (draft) => {
+  if (!isDraftObject(draft)) return null;
+
+  return {
+    form: isDraftObject(draft.form) ? draft.form : {},
+    experiences: Array.isArray(draft.experiences) ? draft.experiences : [],
+    educationEntries: Array.isArray(draft.educationEntries)
+      ? draft.educationEntries
+      : [],
+    languageEntries: Array.isArray(draft.languageEntries)
+      ? draft.languageEntries
+      : [],
+    projectEntries: Array.isArray(draft.projectEntries)
+      ? draft.projectEntries
+      : [],
+    certificationEntries: Array.isArray(draft.certificationEntries)
+      ? draft.certificationEntries
+      : [],
+    currentStep: normalizeDraftStep(draft.currentStep),
+  };
+};
+
+const migrateLegacyCvDraft = (legacyDraft) => {
+  if (
+    !isDraftObject(legacyDraft) ||
+    legacyDraft.version !== CV_DRAFT_VERSION ||
+    !isDraftObject(legacyDraft.form)
+  ) {
+    return null;
+  }
+
+  const migratedDraft = normalizeCvDraft(legacyDraft);
+  const migratedForm = { ...migratedDraft.form };
+
+  // O formato manual v1 guardava uma string vazia quando a fotografia local
+  // era um data URL. Omiti-la mantém a fotografia já existente no perfil.
+  if (
+    !migratedForm.photo ||
+    String(migratedForm.photo).startsWith('data:')
+  ) {
+    delete migratedForm.photo;
+  }
+
+  return {
+    ...migratedDraft,
+    form: migratedForm,
+  };
+};
+
+const prepareCvDraftForPersistence = (draft) => {
+  const preparedDraft = normalizeCvDraft(draft);
+  if (!preparedDraft) return draft;
+
+  const preparedForm = { ...preparedDraft.form };
+  if (String(preparedForm.photo || '').startsWith('data:')) {
+    delete preparedForm.photo;
+  }
+
+  return {
+    ...preparedDraft,
+    form: preparedForm,
+  };
+};
+
+const prepareCvLocalDraft = (draft) => normalizeCvDraft(draft) || draft;
+
 const nonEmpty = (...values) =>
   values.map((value) => String(value || '').trim()).filter(Boolean);
 
@@ -234,32 +318,42 @@ const loadImageElement = (source) =>
     image.src = source;
   });
 
-const normalizePhotoForPdf = async (source) => {
+export const normalizePhotoForPdf = async (source) => {
   if (!source) return '';
   const rawDataUrl = await imageUrlToDataUrl(source);
   if (!rawDataUrl) return '';
 
   const image = await loadImageElement(rawDataUrl);
   const canvas = document.createElement('canvas');
-  canvas.width = 640;
-  canvas.height = 640;
-  const context = canvas.getContext('2d');
-  if (!context) return rawDataUrl;
 
-  context.fillStyle = '#ffffff';
-  context.fillRect(0, 0, canvas.width, canvas.height);
+  // Fotografias aceites podem ter até 3 MB. Reamostramos e reduzimos a
+  // qualidade de forma progressiva para garantir que o data URL final cabe no
+  // rascunho local. A imagem nunca segue no payload remoto.
+  for (const dimension of [640, 512, 384, 320]) {
+    canvas.width = dimension;
+    canvas.height = dimension;
+    const context = canvas.getContext('2d');
+    if (!context) break;
 
-  const scale = Math.max(
-    canvas.width / image.width,
-    canvas.height / image.height,
-  );
-  const width = image.width * scale;
-  const height = image.height * scale;
-  const x = (canvas.width - width) / 2;
-  const y = (canvas.height - height) / 2;
-  context.drawImage(image, x, y, width, height);
+    context.fillStyle = '#ffffff';
+    context.fillRect(0, 0, canvas.width, canvas.height);
 
-  return canvas.toDataURL('image/jpeg', 0.92);
+    const scale = Math.max(
+      canvas.width / image.width,
+      canvas.height / image.height,
+    );
+    const width = image.width * scale;
+    const height = image.height * scale;
+    const x = (canvas.width - width) / 2;
+    const y = (canvas.height - height) / 2;
+    context.drawImage(image, x, y, width, height);
+
+    const encoded = encodeCanvasAsStorableCvPhoto(canvas);
+    if (encoded) return encoded;
+  }
+
+  if (isStorableLocalCvPhoto(rawDataUrl)) return rawDataUrl;
+  throw new Error('Não foi possível otimizar a fotografia para o rascunho.');
 };
 
 const normalizeExternalUrl = (value) => {
@@ -495,7 +589,113 @@ export default function GeradorCvPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [previewOpenMobile, setPreviewOpenMobile] = useState(false);
   const wizardRef = useRef(null);
-  const restoredDraftUserRef = useRef('');
+  const preservedLocalPhotoRef = useRef('');
+
+  const draftValue = useMemo(
+    () => ({
+      form,
+      experiences,
+      educationEntries,
+      languageEntries,
+      projectEntries,
+      certificationEntries,
+      currentStep,
+    }),
+    [
+      form,
+      experiences,
+      educationEntries,
+      languageEntries,
+      projectEntries,
+      certificationEntries,
+      currentStep,
+    ],
+  );
+
+  const restoreDraft = useCallback((draft, metadata = {}) => {
+    const restoredDraft = normalizeCvDraft(draft);
+    if (!restoredDraft) return;
+
+    const mergedDraft = mergeCvDraftWithLocalPhoto(
+      restoredDraft,
+      preservedLocalPhotoRef.current,
+    );
+    const restoredPhoto = mergedDraft.form.photo;
+    if (isStorableLocalCvPhoto(restoredPhoto)) {
+      preservedLocalPhotoRef.current = restoredPhoto;
+    } else if (Object.prototype.hasOwnProperty.call(mergedDraft.form, 'photo')) {
+      preservedLocalPhotoRef.current = '';
+    }
+
+    if (
+      metadata.source === 'remote' &&
+      mergedDraft !== restoredDraft &&
+      typeof window !== 'undefined' &&
+      user?.uid
+    ) {
+      const savedAtMs = Date.parse(String(metadata.savedAt || ''));
+      try {
+        // O rascunho remoto não contém data URLs por desenho. Voltamos a
+        // associar apenas a fotografia privada deste dispositivo antes que o
+        // espelho remoto substitua a cópia local.
+        writeLocalDraft(
+          window.localStorage,
+          getCvDraftKey(user.uid),
+          mergedDraft,
+          {
+            version: CV_DRAFT_VERSION,
+            allowDataUrls: true,
+            maxDataUrlLength: CV_LOCAL_PHOTO_MAX_DATA_URL_LENGTH,
+            ...(Number.isFinite(savedAtMs) ? { now: savedAtMs } : {}),
+          },
+        );
+      } catch {
+        // A restauração em memória continua mesmo sem localStorage disponível.
+      }
+    }
+
+    setForm((previous) => {
+      const restoredForm = { ...mergedDraft.form };
+      const hasStoredPhoto = Object.prototype.hasOwnProperty.call(
+        restoredForm,
+        'photo',
+      );
+
+      return {
+        ...previous,
+        ...restoredForm,
+        photo: hasStoredPhoto ? restoredForm.photo : previous.photo,
+      };
+    });
+    setExperiences(mergedDraft.experiences);
+    setEducationEntries(mergedDraft.educationEntries);
+    setLanguageEntries(mergedDraft.languageEntries);
+    setProjectEntries(mergedDraft.projectEntries);
+    setCertificationEntries(mergedDraft.certificationEntries);
+    setCurrentStep(mergedDraft.currentStep);
+  }, [user?.uid]);
+
+  const getDraftToken = useCallback(() => user?.getIdToken(), [user]);
+  const {
+    status: autoSaveStatus,
+    lastSavedAt: autoSaveLastSavedAt,
+    isOnline: autoSaveIsOnline,
+    saveNow,
+  } = useAutoDraft({
+    storageKey: user?.uid ? getCvDraftKey(user.uid) : '',
+    scope: 'cv-generator',
+    resourceId: 'default',
+    value: draftValue,
+    onRestore: restoreDraft,
+    getToken: getDraftToken,
+    enabled: Boolean(user?.uid),
+    ready: gate.status === 'ready' || gate.status === 'offline',
+    migrate: migrateLegacyCvDraft,
+    prepareLocal: prepareCvLocalDraft,
+    prepareRemote: prepareCvDraftForPersistence,
+    allowLocalDataUrls: true,
+    maxLocalDataUrlLength: CV_LOCAL_PHOTO_MAX_DATA_URL_LENGTH,
+  });
 
   useEffect(() => {
     const hydrateProfile = async () => {
@@ -619,8 +819,23 @@ export default function GeradorCvPage() {
         });
       } catch (error) {
         console.error('Erro ao carregar dados do gerador de CV:', error);
-        setProfileError(error.message || 'Erro ao carregar o gerador de CV.');
-        setGate({ status: 'error', message: '', planName: '' });
+        const localDraft = readLocalDraft(
+          typeof window === 'undefined' ? null : window.localStorage,
+          user?.uid ? getCvDraftKey(user.uid) : '',
+          { migrate: migrateLegacyCvDraft },
+        );
+
+        if (localDraft?.data) {
+          setProfileError('');
+          setGate({
+            status: 'offline',
+            message: 'A trabalhar com o rascunho guardado neste dispositivo.',
+            planName: 'Offline',
+          });
+        } else {
+          setProfileError(error.message || 'Erro ao carregar o gerador de CV.');
+          setGate({ status: 'error', message: '', planName: '' });
+        }
       } finally {
         setProfileLoading(false);
       }
@@ -628,56 +843,6 @@ export default function GeradorCvPage() {
 
     hydrateProfile();
   }, [authLoading, user]);
-
-  useEffect(() => {
-    if (gate.status !== 'ready' || !user?.uid) return;
-    if (restoredDraftUserRef.current === user.uid) return;
-    restoredDraftUserRef.current = user.uid;
-
-    try {
-      const rawDraft = window.localStorage.getItem(getCvDraftKey(user.uid));
-      if (!rawDraft) return;
-
-      const draft = JSON.parse(rawDraft);
-      if (draft?.version !== CV_DRAFT_VERSION) return;
-
-      if (draft.form && typeof draft.form === 'object') {
-        setForm((previous) => ({
-          ...previous,
-          ...draft.form,
-          photo: draft.form.photo || previous.photo,
-        }));
-      }
-      if (Array.isArray(draft.experiences) && draft.experiences.length) {
-        setExperiences(draft.experiences);
-      }
-      if (
-        Array.isArray(draft.educationEntries) &&
-        draft.educationEntries.length
-      ) {
-        setEducationEntries(draft.educationEntries);
-      }
-      if (
-        Array.isArray(draft.languageEntries) &&
-        draft.languageEntries.length
-      ) {
-        setLanguageEntries(draft.languageEntries);
-      }
-      if (Array.isArray(draft.projectEntries) && draft.projectEntries.length) {
-        setProjectEntries(draft.projectEntries);
-      }
-      if (
-        Array.isArray(draft.certificationEntries) &&
-        draft.certificationEntries.length
-      ) {
-        setCertificationEntries(draft.certificationEntries);
-      }
-
-      setStatusMessage('O seu rascunho guardado foi recuperado.');
-    } catch (error) {
-      console.warn('Não foi possível recuperar o rascunho do CV:', error);
-    }
-  }, [gate.status, user]);
 
   const cvDocument = useMemo(
     () =>
@@ -776,7 +941,9 @@ export default function GeradorCvPage() {
 
     try {
       const dataUrl = await fileToDataUrl(file);
-      setForm((prev) => ({ ...prev, photo: dataUrl }));
+      const optimizedPhoto = await normalizePhotoForPdf(dataUrl);
+      preservedLocalPhotoRef.current = optimizedPhoto;
+      setForm((prev) => ({ ...prev, photo: optimizedPhoto }));
       setPhotoError('');
     } catch (error) {
       setPhotoError('Não foi possível processar a imagem.');
@@ -784,41 +951,13 @@ export default function GeradorCvPage() {
   };
 
   const removePhoto = () => {
+    preservedLocalPhotoRef.current = '';
     setForm((prev) => ({ ...prev, photo: '' }));
     setPhotoError('');
   };
 
-  const saveDraft = () => {
-    if (gate.status !== 'ready' || !user?.uid) return;
-
-    try {
-      const storablePhoto = String(form.photo || '').startsWith('data:')
-        ? ''
-        : form.photo;
-      window.localStorage.setItem(
-        getCvDraftKey(user.uid),
-        JSON.stringify({
-          version: CV_DRAFT_VERSION,
-          savedAt: new Date().toISOString(),
-          form: { ...form, photo: storablePhoto },
-          experiences,
-          educationEntries,
-          languageEntries,
-          projectEntries,
-          certificationEntries,
-        }),
-      );
-      setStatusMessage('Rascunho guardado neste dispositivo.');
-    } catch (error) {
-      console.error('Erro ao guardar o rascunho do CV:', error);
-      setStatusMessage(
-        'Não foi possível guardar o rascunho neste dispositivo.',
-      );
-    }
-  };
-
   const exportPdf = async () => {
-    if (gate.status !== 'ready') return;
+    if (gate.status !== 'ready' && gate.status !== 'offline') return;
     if (!String(form.fullName || '').trim()) {
       setStatusMessage(
         'Preencha pelo menos o nome completo antes de exportar o PDF.',
@@ -1378,7 +1517,7 @@ export default function GeradorCvPage() {
   const ActiveStepIcon = activeStep.icon;
 
   const title =
-    gate.status === 'ready'
+    gate.status === 'ready' || gate.status === 'offline'
       ? 'Gerador de CV Profissional | Recursos EmpregoSTP'
       : 'Gerador de CV Premium | Recursos EmpregoSTP';
 
@@ -1411,8 +1550,10 @@ export default function GeradorCvPage() {
               </div>
               <aside className={styles.heroAside}>
                 <h2 className={styles.heroAsideTitle}>
-                  {gate.status === 'ready'
-                    ? `Plano ${gate.planName}`
+                  {gate.status === 'ready' || gate.status === 'offline'
+                    ? gate.status === 'offline'
+                      ? 'Modo offline'
+                      : `Plano ${gate.planName}`
                     : 'Currículo completo'}
                 </h2>
                 <ul className={styles.featureList}>
@@ -1490,7 +1631,9 @@ export default function GeradorCvPage() {
               </div>
             ) : null}
 
-            {!authLoading && !profileLoading && gate.status === 'ready' ? (
+            {!authLoading &&
+            !profileLoading &&
+            (gate.status === 'ready' || gate.status === 'offline') ? (
               <div className={styles.wizard} ref={wizardRef}>
                 <section className={styles.stepperCard}>
                   <div className={styles.stepperHead}>
@@ -1505,7 +1648,9 @@ export default function GeradorCvPage() {
                     </div>
                     <div className={styles.stepperMeta}>
                       <span className={styles.badge}>
-                        Plano {gate.planName}
+                        {gate.status === 'offline'
+                          ? 'Rascunho offline'
+                          : `Plano ${gate.planName}`}
                       </span>
                       <span className={styles.stepperCount}>
                         Passo {currentStep + 1} de {STEPS.length}
@@ -2497,11 +2642,17 @@ export default function GeradorCvPage() {
                         <button
                           type="button"
                           className={styles.draftButton}
-                          onClick={saveDraft}
+                          onClick={saveNow}
                         >
-                          <FiSave aria-hidden="true" /> Guardar rascunho
+                          <FiSave aria-hidden="true" /> Guardar agora
                         </button>
                       </div>
+                      <AutoSaveStatus
+                        status={autoSaveStatus}
+                        lastSavedAt={autoSaveLastSavedAt}
+                        isOnline={autoSaveIsOnline}
+                        className={styles.autoSaveStatus}
+                      />
                       {currentStep < STEPS.length - 1 ? (
                         <button
                           type="button"

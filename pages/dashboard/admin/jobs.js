@@ -118,28 +118,28 @@ export default function AdminJobs({ jobs = [] }) {
             title="Total"
             value={stats.total}
             active={filterStatus === 'all'}
-            accent="#2057d7"
+            accent="var(--dash-info-text, #064bb5)"
             onClick={() => setFilterStatus('all')}
           />
           <StatCard
             title="Ativas"
             value={stats.active}
             active={filterStatus === 'active'}
-            accent="#d9ff2f"
+            accent="var(--dash-company-text, #5c6d00)"
             onClick={() => setFilterStatus('active')}
           />
           <StatCard
             title="Fechadas"
             value={stats.closed}
             active={filterStatus === 'closed'}
-            accent="#ef4444"
+            accent="var(--dash-danger-text, #b83d55)"
             onClick={() => setFilterStatus('closed')}
           />
           <StatCard
             title="Desativadas"
             value={stats.disabled}
             active={filterStatus === 'disabled'}
-            accent="#607394"
+            accent="var(--admin-muted)"
             onClick={() => setFilterStatus('disabled')}
           />
         </section>
@@ -291,7 +291,7 @@ export default function AdminJobs({ jobs = [] }) {
                             style={{
                               '--button-bg': 'rgba(95, 184, 245, 0.14)',
                               '--button-border': 'rgba(95, 184, 245, 0.28)',
-                              '--button-color': '#2057d7',
+                              '--button-color': 'var(--admin-blue)',
                             }}
                           >
                             Editar
@@ -333,7 +333,7 @@ function StatusBadge({ status }) {
       label: 'Ativa',
       style: {
         '--badge-bg': 'rgba(217, 255, 47, 0.22)',
-        '--badge-color': '#1e2b4d',
+        '--badge-color': 'var(--dash-company-text, #5c6d00)',
         '--badge-border': '1px solid rgba(217, 255, 47, 0.3)',
       },
     },
@@ -341,7 +341,7 @@ function StatusBadge({ status }) {
       label: 'Fechada',
       style: {
         '--badge-bg': 'rgba(239, 68, 68, 0.12)',
-        '--badge-color': '#c62828',
+        '--badge-color': 'var(--dash-danger-text, #c62828)',
         '--badge-border': '1px solid rgba(239, 68, 68, 0.22)',
       },
     },
@@ -349,7 +349,7 @@ function StatusBadge({ status }) {
       label: 'Desativada',
       style: {
         '--badge-bg': 'rgba(123, 141, 168, 0.12)',
-        '--badge-color': '#607394',
+        '--badge-color': 'var(--admin-muted)',
         '--badge-border': '1px solid rgba(123, 141, 168, 0.18)',
       },
     },
@@ -359,7 +359,7 @@ function StatusBadge({ status }) {
     label: 'Desconhecido',
     style: {
       '--badge-bg': 'rgba(123, 141, 168, 0.12)',
-      '--badge-color': '#607394',
+      '--badge-color': 'var(--admin-muted)',
       '--badge-border': '1px solid rgba(123, 141, 168, 0.18)',
     },
   };

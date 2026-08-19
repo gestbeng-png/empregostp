@@ -913,6 +913,32 @@
   }
 }
 
+@media (max-width: 480px) {
+  .workbridgePublicRoute:is(
+      [data-workbridge-page='about'],
+      [data-workbridge-page='candidates'],
+      [data-workbridge-page='companies'],
+      [data-workbridge-page='career'],
+      [data-workbridge-page='blog'],
+      [data-workbridge-page='resources'],
+      [data-workbridge-page='legal']
+    )
+    .workbridgePublicContent
+    > div
+    > section:first-of-type
+    h1 {
+    font-size: clamp(2rem, 10.5vw, 2.625rem);
+    line-height: 1.08;
+    overflow-wrap: anywhere;
+  }
+
+  .workbridgePublicRoute
+    .workbridgePublicContent
+    :where(button, a[class*='Button'], a[class*='button']) {
+    min-height: 44px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .workbridgeRoute *,
   .workbridgeRoute *::before,

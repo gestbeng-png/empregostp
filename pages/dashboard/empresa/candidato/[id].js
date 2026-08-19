@@ -5,7 +5,10 @@ import Head from 'next/head';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
-import { openCandidateCv } from '../../../../lib/candidateCvClient';
+import {
+  openCandidateCertificate,
+  openCandidateCv,
+} from '../../../../lib/candidateCvClient';
 import { getEmpresaPlanSummary } from '../../../../lib/empresaPlanFeatures';
 import {
   canViewerAccessCandidate,
@@ -15,6 +18,7 @@ import { collectCompanyApplicationHistory } from '../../../../lib/applicationOwn
 import { normalizeExternalUrl } from '../../../../lib/externalUrl';
 import styles from '../../../../styles/EmpresaCandidateProfilePage.module.css';
 import { redirectToLogin } from '../../../../lib/loginRedirect';
+import { isUserAccountActive } from '../../../../lib/userStatus';
 
 const APPLICATION_HISTORY_LIMIT = 20;
 const APPLICATION_HISTORY_PAGE_SIZE = 100;
@@ -124,6 +128,8 @@ export default function PerfilCandidato({
   const router = useRouter();
   const [cvOpening, setCvOpening] = useState(false);
   const [cvError, setCvError] = useState('');
+  const [certificateOpeningIndex, setCertificateOpeningIndex] = useState(null);
+  const [certificateError, setCertificateError] = useState('');
 
   const handleOpenCv = async () => {
     setCvError('');
@@ -133,6 +139,19 @@ export default function PerfilCandidato({
       setCvError(result.error);
     }
     setCvOpening(false);
+  };
+
+  const handleOpenCertificate = async (certificateIndex) => {
+    setCertificateError('');
+    setCertificateOpeningIndex(certificateIndex);
+    const result = await openCandidateCertificate(
+      candidato.id,
+      certificateIndex,
+    );
+    if (!result.success) {
+      setCertificateError(result.error);
+    }
+    setCertificateOpeningIndex(null);
   };
 
   if (!candidato) {
@@ -370,36 +389,47 @@ export default function PerfilCandidato({
               </InfoSection>
             ) : null}
 
-            {candidato.certificateFiles &&
-            candidato.certificateFiles.length > 0 ? (
+            {candidato.certificateCount > 0 ? (
               <InfoSection title="Certificados">
                 <div className={styles.fileList}>
-                  {candidato.certificateFiles.map((certUrl, i) => (
-                    <a
-                      key={i}
-                      href={certUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={styles.fileCard}
-                    >
-                      <svg
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        aria-hidden="true"
+                  {Array.from(
+                    { length: candidato.certificateCount },
+                    (_, i) => (
+                      <button
+                        key={`certificate-${i}`}
+                        type="button"
+                        onClick={() => handleOpenCertificate(i)}
+                        disabled={certificateOpeningIndex !== null}
+                        className={styles.fileCard}
                       >
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                        <polyline points="14 2 14 8 20 8" />
-                        <line x1="16" y1="13" x2="8" y2="13" />
-                        <line x1="16" y1="17" x2="8" y2="17" />
-                      </svg>
-                      <span>Certificado {i + 1}</span>
-                    </a>
-                  ))}
+                        <svg
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          aria-hidden="true"
+                        >
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                          <polyline points="14 2 14 8 20 8" />
+                          <line x1="16" y1="13" x2="8" y2="13" />
+                          <line x1="16" y1="17" x2="8" y2="17" />
+                        </svg>
+                        <span>
+                          {certificateOpeningIndex === i
+                            ? 'A abrir certificado…'
+                            : `Certificado ${i + 1}`}
+                        </span>
+                      </button>
+                    ),
+                  )}
                 </div>
+                {certificateError ? (
+                  <p className={styles.actionError} role="alert">
+                    {certificateError}
+                  </p>
+                ) : null}
               </InfoSection>
             ) : null}
 
@@ -649,11 +679,11 @@ export async function getServerSideProps(context) {
       return redirectToLogin(context);
     }
 
-    const token = await admin.auth().verifyIdToken(cookies.token);
+    const token = await admin.auth().verifyIdToken(cookies.token, true);
     const uid = token.uid;
 
     const userDoc = await admin.firestore().collection('users').doc(uid).get();
-    if (!userDoc.exists) {
+    if (!userDoc.exists || !isUserAccountActive(userDoc.data())) {
       return { redirect: { destination: '/dashboard', permanent: false } };
     }
 
@@ -699,24 +729,6 @@ export async function getServerSideProps(context) {
       userData.userType === 'empresa' &&
       !planSummary?.features?.canSendDirectMessages;
 
-    if (userData.userType === 'empresa') {
-      const dayKey = new Date().toISOString().slice(0, 10);
-      const viewRef = admin
-        .firestore()
-        .collection('candidateProfileViews')
-        .doc(`${id}_${uid}_${dayKey}`);
-      await viewRef.set(
-        {
-          candidateId: id,
-          companyId: uid,
-          companyName: userData.name || userData.fullName || 'Empresa',
-          dayKey,
-          viewedAt: admin.firestore.FieldValue.serverTimestamp(),
-        },
-        { merge: true },
-      );
-    }
-
     const candidato = {
       id,
       fullName: candidatoData.fullName || candidatoData.name || '',
@@ -742,11 +754,14 @@ export async function getServerSideProps(context) {
       experience: profileData.experience || [],
       bio: profileData.bio || '',
       certifications: profileData.certifications || [],
-      certificateFiles: Array.isArray(profileData.certificateFiles)
-        ? profileData.certificateFiles
-            .map((url) => normalizeExternalUrl(url))
-            .filter(Boolean)
-        : [],
+      // O cliente só conhece a quantidade. Os URLs permanentes permanecem no
+      // servidor e cada abertura passa pela rota autenticada de curta duração.
+      certificateCount:
+        !contactLocked && Array.isArray(profileData.certificateFiles)
+          ? profileData.certificateFiles.filter(
+              (value) => typeof value === 'string' && value.trim(),
+            ).length
+          : 0,
       // Só a existência: o download passa por /api/files/candidate-cv, que
       // reavalia a permissão e devolve um URL assinado de curta duração.
       hasCv: Boolean(profileData.cvUrl || candidatoData.cvUrl),
@@ -829,6 +844,27 @@ export async function getServerSideProps(context) {
       !canViewerAccessCandidate(privacy, { isAdmin, isEmpresa })
     ) {
       return { notFound: true };
+    }
+
+    // Só contabilizar uma visualização depois de todas as regras de acesso
+    // terem autorizado a página. Um pedido recusado por privacidade não deve
+    // aparecer ao candidato como uma visita real ao seu perfil.
+    if (isEmpresa) {
+      const dayKey = new Date().toISOString().slice(0, 10);
+      const viewRef = admin
+        .firestore()
+        .collection('candidateProfileViews')
+        .doc(`${id}_${uid}_${dayKey}`);
+      await viewRef.set(
+        {
+          candidateId: id,
+          companyId: uid,
+          companyName: userData.name || userData.fullName || 'Empresa',
+          dayKey,
+          viewedAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true },
+      );
     }
 
     return {
