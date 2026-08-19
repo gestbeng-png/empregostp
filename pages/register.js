@@ -18,7 +18,6 @@ import {
   FiUser,
 } from 'react-icons/fi';
 import { doc, getDoc } from 'firebase/firestore';
-import nookies from 'nookies';
 import auth from '../lib/firebaseAuth';
 import db from '../lib/firestore';
 import AuthShell from '../components/auth/AuthShell';
@@ -29,6 +28,14 @@ import {
   normalizeEmail,
 } from '../lib/validation';
 import { INDUSTRY_SECTORS } from '../lib/companyOptions';
+import {
+  createServerSession,
+  destroyServerSession,
+} from '../lib/authSessionClient';
+import {
+  BLOCKED_ACCOUNT_MESSAGE,
+  isUserAccountActive,
+} from '../lib/userStatus';
 import styles from '../styles/AuthPage.module.css';
 
 const ACCOUNT_TYPES = [
@@ -61,8 +68,12 @@ export default function Register() {
   const typeQuery = Array.isArray(router.query.type)
     ? router.query.type[0]
     : router.query.type;
+  const googleQuery = Array.isArray(router.query.google)
+    ? router.query.google[0]
+    : router.query.google;
 
   const normalizedTypeQuery = normalizeAccountType(typeQuery);
+  const isGoogleContinuation = googleQuery === 'true';
   const [accountNames, setAccountNames] = useState({
     candidato: '',
     empresa: '',
@@ -82,6 +93,8 @@ export default function Register() {
   const [verificationSent, setVerificationSent] = useState(false);
   const [resendState, setResendState] = useState('');
   const [passwordFocused, setPasswordFocused] = useState(false);
+  const [pendingEmailRegistration, setPendingEmailRegistration] =
+    useState(null);
 
   const passwordChecks = getPasswordChecks(password);
   const passwordRules = [
@@ -142,23 +155,38 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const provider = new GoogleAuthProvider();
-      const userCredential = await signInWithPopup(auth, provider);
-      const user = userCredential.user;
+      const currentGoogleUser =
+        isGoogleContinuation &&
+        auth.currentUser?.providerData?.some(
+          (providerData) => providerData.providerId === 'google.com',
+        )
+          ? auth.currentUser
+          : null;
+      const user = currentGoogleUser
+        ? currentGoogleUser
+        : (await signInWithPopup(auth, new GoogleAuthProvider())).user;
       const token = await user.getIdToken();
-
-      nookies.set(null, 'token', token, {
-        maxAge: 30 * 24 * 60 * 60,
-        path: '/',
-        secure: process.env.NODE_ENV === 'production',
-      });
 
       const userDocRef = doc(db, 'users', user.uid);
       const userDoc = await getDoc(userDocRef);
 
-      if (userDoc.exists()) {
+      const shouldCompleteGoogleProfile =
+        isGoogleContinuation &&
+        userDoc.exists() &&
+        userDoc.data().needsTypeSelection;
+
+      if (userDoc.exists() && !shouldCompleteGoogleProfile) {
         const userData = userDoc.data();
         const userTypeData = userData.userType;
+
+        if (!isUserAccountActive(userData)) {
+          await Promise.allSettled([auth.signOut(), destroyServerSession()]);
+          setError(BLOCKED_ACCOUNT_MESSAGE);
+          setLoading(false);
+          return;
+        }
+
+        await createServerSession(token);
 
         if (userTypeData === 'empresa') {
           window.location.href = '/dashboard/empresa';
@@ -189,7 +217,7 @@ export default function Register() {
         googlePayload.industrySectors = [companySector];
       }
 
-      await fetch('/api/auth/setup-user', {
+      const setupResponse = await fetch('/api/auth/setup-user', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -197,6 +225,12 @@ export default function Register() {
         },
         body: JSON.stringify(googlePayload),
       });
+
+      if (!setupResponse.ok) {
+        throw new Error('Não foi possível configurar a conta Google.');
+      }
+
+      await createServerSession(token);
 
       if (userType === 'empresa') {
         window.location.href = '/dashboard/empresa';
@@ -258,36 +292,7 @@ export default function Register() {
     setLoading(true);
     const normalizedEmail = normalizeEmail(email);
 
-    // A criação da conta é o único passo cuja falha deve ser relatada como
-    // "não foi possível criar a conta": depois dela, o utilizador já existe
-    // no Firebase Auth, e um erro em setup-user, no envio do email ou no
-    // signOut não pode reaparecer com essa mensagem — o utilizador tentaria
-    // registar-se de novo e receberia "email já em uso" sem perceber porquê.
-    let token;
-    try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        normalizedEmail,
-        password,
-      );
-      token = await userCredential.user.getIdToken();
-    } catch (err) {
-      setLoading(false);
-      if (err.code === 'auth/email-already-in-use') {
-        setError('Este email já está em uso.');
-      } else if (err.code === 'auth/weak-password') {
-        setError(
-          'A senha deve ter pelo menos 8 caracteres, com letra maiúscula, letra minúscula, número e símbolo especial.',
-        );
-      } else if (err.code === 'auth/invalid-email') {
-        setError('Introduza um email válido.');
-      } else {
-        setError('Não foi possível criar a conta. Tente novamente.');
-      }
-      return;
-    }
-
-    const payload = {
+    const currentPayload = {
       userType,
       fullName: name.trim(),
       name: name.trim(),
@@ -295,25 +300,74 @@ export default function Register() {
     };
 
     if (userType === 'empresa') {
-      payload.phone = companyPhone.trim();
-      payload.nif = companyNif.trim();
-      payload.location = companyLocation.trim();
-      payload.industrySectors = [companySector];
+      currentPayload.phone = companyPhone.trim();
+      currentPayload.nif = companyNif.trim();
+      currentPayload.location = companyLocation.trim();
+      currentPayload.industrySectors = [companySector];
+    }
+
+    // Se setup-user falhar, conservamos o utilizador autenticado e o payload
+    // exato para uma repetição idempotente. Assim o segundo clique conclui o
+    // mesmo registo em vez de tentar criar outra conta e cair em email-em-uso.
+    const registration = pendingEmailRegistration || {
+      payload: currentPayload,
+      user: null,
+    };
+    let registeredUser = registration.user;
+    let token;
+
+    if (!registeredUser) {
+      try {
+        const userCredential = await createUserWithEmailAndPassword(
+          auth,
+          normalizedEmail,
+          password,
+        );
+        registeredUser = userCredential.user;
+      } catch (err) {
+        setLoading(false);
+        if (err.code === 'auth/email-already-in-use') {
+          setError('Este email já está em uso.');
+        } else if (err.code === 'auth/weak-password') {
+          setError(
+            'A senha deve ter pelo menos 8 caracteres, com letra maiúscula, letra minúscula, número e símbolo especial.',
+          );
+        } else if (err.code === 'auth/invalid-email') {
+          setError('Introduza um email válido.');
+        } else {
+          setError('Não foi possível criar a conta. Tente novamente.');
+        }
+        return;
+      }
     }
 
     try {
-      await fetch('/api/auth/setup-user', {
+      token = await registeredUser.getIdToken();
+      const setupResponse = await fetch('/api/auth/setup-user', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(registration.payload),
       });
+
+      if (!setupResponse.ok) {
+        throw new Error(`setup_user_${setupResponse.status}`);
+      }
     } catch (setupError) {
-      // Melhor esforço: o perfil pode ser completado mais tarde a partir do
-      // painel; não bloqueia a confirmação do email.
+      setPendingEmailRegistration({
+        payload: registration.payload,
+        user: registeredUser,
+      });
+      setLoading(false);
+      setError(
+        'Não foi possível concluir o registo. A conta ainda não está pronta; carregue em “Concluir registo” para tentar novamente.',
+      );
+      return;
     }
+
+    setPendingEmailRegistration(null);
 
     // Enviar o nosso email de confirmação (marca EmpregoSTP). Ao contrário da
     // versão anterior, o resultado é verificado: sem isto, uma rota que
@@ -701,12 +755,16 @@ export default function Register() {
             className={styles.primaryButton}
           >
             {loading
-              ? 'A criar conta…'
-              : userType === 'empresa'
-                ? 'Criar conta da empresa'
-                : userType === 'candidato'
-                  ? 'Criar conta de candidato'
-                  : 'Selecione o tipo de conta'}
+              ? pendingEmailRegistration
+                ? 'A concluir registo…'
+                : 'A criar conta…'
+              : pendingEmailRegistration
+                ? 'Concluir registo'
+                : userType === 'empresa'
+                  ? 'Criar conta da empresa'
+                  : userType === 'candidato'
+                    ? 'Criar conta de candidato'
+                    : 'Selecione o tipo de conta'}
           </button>
         </form>
 

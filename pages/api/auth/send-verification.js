@@ -1,6 +1,7 @@
 import { admin } from '../../../lib/firebaseAdmin';
 import { isValidEmail } from '../../../lib/validation';
 import { sendVerificationEmail, resolveBaseUrl } from '../../../lib/authEmails';
+import { enforceApiRateLimit } from '../../../lib/apiRateLimit';
 import { logServerError, logServerWarning } from '../../../lib/serverLog';
 
 /**
@@ -11,6 +12,18 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
     return res.status(405).json({ error: 'Método não permitido' });
+  }
+
+  if (
+    !(await enforceApiRateLimit(req, res, {
+      scope: 'auth_email_verification',
+      limit: 5,
+      windowMs: 10 * 60_000,
+      failClosed: true,
+      message: 'Demasiados pedidos de confirmação. Tente novamente mais tarde.',
+    }))
+  ) {
+    return;
   }
 
   const authHeader = req.headers.authorization;

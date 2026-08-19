@@ -1,6 +1,7 @@
 import { admin } from '../../../lib/firebaseAdmin';
 import { getDefaultBasicPlanForUserType } from '../../../lib/defaultPlans';
 import { isValidEmail } from '../../../lib/validation';
+import { enforceApiRateLimit } from '../../../lib/apiRateLimit';
 import { logServerError } from '../../../lib/serverLog';
 
 /**
@@ -12,6 +13,17 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
     return res.status(405).json({ error: 'Método não permitido' });
+  }
+
+  if (
+    !(await enforceApiRateLimit(req, res, {
+      scope: 'auth_setup_user',
+      limit: 10,
+      windowMs: 10 * 60_000,
+      failClosed: true,
+    }))
+  ) {
+    return;
   }
 
   const authHeader = req.headers.authorization;

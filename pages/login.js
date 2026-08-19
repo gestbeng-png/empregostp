@@ -8,12 +8,20 @@ import {
   GoogleAuthProvider,
 } from 'firebase/auth';
 import { FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
-import nookies from 'nookies';
 import { doc, getDoc } from 'firebase/firestore';
 import auth from '../lib/firebaseAuth';
 import { db } from '../lib/firebase';
 import AuthShell from '../components/auth/AuthShell';
 import { isValidEmail, normalizeEmail } from '../lib/validation';
+import { sanitizeLoginRedirect } from '../lib/loginRedirect';
+import {
+  createServerSession,
+  destroyServerSession,
+} from '../lib/authSessionClient';
+import {
+  BLOCKED_ACCOUNT_MESSAGE,
+  isUserAccountActive,
+} from '../lib/userStatus';
 import styles from '../styles/AuthPage.module.css';
 
 export default function Login() {
@@ -25,9 +33,10 @@ export default function Login() {
   const [resending, setResending] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const redirect = Array.isArray(router.query.redirect)
+  const requestedRedirect = Array.isArray(router.query.redirect)
     ? router.query.redirect[0]
     : router.query.redirect;
+  const redirect = sanitizeLoginRedirect(requestedRedirect);
 
   const handleGoogleLogin = async () => {
     setError('');
@@ -40,27 +49,31 @@ export default function Login() {
 
       const userDocRef = doc(db, 'users', user.uid);
       const userDoc = await getDoc(userDocRef);
-      const token = await user.getIdToken();
-
-      nookies.set(null, 'token', token, {
-        maxAge: 30 * 24 * 60 * 60,
-        path: '/',
-        secure: process.env.NODE_ENV === 'production',
-      });
 
       if (!userDoc.exists()) {
-        window.location.href = '/escolha-tipo?google=true';
+        await destroyServerSession().catch(() => undefined);
+        window.location.href = '/register?google=true';
         return;
       }
 
       const userData = userDoc.data();
 
       if (userData.needsTypeSelection) {
-        window.location.href = '/escolha-tipo?google=true';
+        await destroyServerSession().catch(() => undefined);
+        window.location.href = '/register?google=true';
+        return;
+      }
+
+      if (!isUserAccountActive(userData)) {
+        await Promise.allSettled([auth.signOut(), destroyServerSession()]);
+        setError(BLOCKED_ACCOUNT_MESSAGE);
+        setLoading(false);
         return;
       }
 
       const userType = userData.userType;
+      const token = await user.getIdToken();
+      await createServerSession(token);
 
       if (redirect) {
         window.location.href = redirect;
@@ -73,6 +86,9 @@ export default function Login() {
       }
     } catch (err) {
       console.error('Erro ao iniciar sessão com Google:', err);
+      if (err.code === 'ACCOUNT_BLOCKED') {
+        await Promise.allSettled([auth.signOut(), destroyServerSession()]);
+      }
       setLoading(false);
 
       if (err.code === 'auth/popup-closed-by-user') {
@@ -88,6 +104,8 @@ export default function Login() {
         setError(
           'O login com Google está temporariamente indisponível neste domínio. Por favor use o email e a senha, ou tente novamente mais tarde.',
         );
+      } else if (err.code === 'ACCOUNT_BLOCKED') {
+        setError(BLOCKED_ACCOUNT_MESSAGE);
       } else {
         setError(
           'Não foi possível iniciar sessão com o Google. Tente novamente.',
@@ -124,7 +142,7 @@ export default function Login() {
 
       // Bloquear acesso enquanto o email não estiver confirmado.
       if (!user.emailVerified) {
-        await auth.signOut();
+        await Promise.allSettled([auth.signOut(), destroyServerSession()]);
         setNeedsVerification(true);
         setError(
           'Confirme o seu email antes de iniciar sessão. Verifique a caixa de entrada e a pasta de spam.',
@@ -133,24 +151,26 @@ export default function Login() {
         return;
       }
 
-      const token = await user.getIdToken();
-      nookies.set(null, 'token', token, {
-        maxAge: 30 * 24 * 60 * 60,
-        path: '/',
-        secure: process.env.NODE_ENV === 'production',
-      });
-
       const userDoc = await getDoc(doc(db, 'users', user.uid));
 
       if (!userDoc.exists()) {
-        await auth.signOut();
+        await Promise.allSettled([auth.signOut(), destroyServerSession()]);
         setError('Utilizador não encontrado. Conclua o seu registo.');
         setLoading(false);
         return;
       }
 
       const userData = userDoc.data();
+      if (!isUserAccountActive(userData)) {
+        await Promise.allSettled([auth.signOut(), destroyServerSession()]);
+        setError(BLOCKED_ACCOUNT_MESSAGE);
+        setLoading(false);
+        return;
+      }
+
       const userType = userData.userType;
+      const token = await user.getIdToken();
+      await createServerSession(token);
 
       if (redirect) {
         window.location.href = redirect;
@@ -164,7 +184,10 @@ export default function Login() {
     } catch (err) {
       setLoading(false);
 
-      if (
+      if (err.code === 'ACCOUNT_BLOCKED') {
+        await Promise.allSettled([auth.signOut(), destroyServerSession()]);
+        setError(BLOCKED_ACCOUNT_MESSAGE);
+      } else if (
         err.code === 'auth/invalid-email' ||
         err.code === 'auth/user-not-found' ||
         err.code === 'auth/wrong-password' ||
