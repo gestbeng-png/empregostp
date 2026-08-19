@@ -9,7 +9,6 @@ const footerGroups = [
     links: [
       ['Encontrar vagas', '/vagas'],
       ['Criar currículo', '/recursos/gerador-cv'],
-      ['Alertas de vagas', '/dashboard/candidato'],
       ['Dicas de carreira', '/blog'],
     ],
   },
@@ -17,8 +16,7 @@ const footerGroups = [
     name: 'Links de Empresas',
     links: [
       ['Publicar vagas', '/dashboard/empresa/vaga/criar-vaga'],
-      ['Procurar candidatos', '/candidatos'],
-      ['Planos e preços', '/premium/empresa'],
+      ['Procurar candidatos', '/#candidatos-verificados'],
       ['Recursos', '/recursos'],
     ],
   },
@@ -64,9 +62,9 @@ test.describe('footer público', () => {
         const contentInfo = document.querySelector('footer');
         return Boolean(
           main &&
-            contentInfo &&
-            main.compareDocumentPosition(contentInfo) &
-              Node.DOCUMENT_POSITION_FOLLOWING,
+          contentInfo &&
+          main.compareDocumentPosition(contentInfo) &
+            Node.DOCUMENT_POSITION_FOLLOWING,
         );
       }),
     ).toBe(true);
@@ -143,11 +141,19 @@ test.describe('footer público', () => {
       for (let index = 0; index < targetRects.length; index += 1) {
         const current = targetRects[index];
         if (!current) continue;
-        for (let peerIndex = index + 1; peerIndex < targetRects.length; peerIndex += 1) {
+        for (
+          let peerIndex = index + 1;
+          peerIndex < targetRects.length;
+          peerIndex += 1
+        ) {
           const peer = targetRects[peerIndex];
           if (!peer) continue;
-          const overlapX = Math.min(current.right, peer.right) - Math.max(current.left, peer.left);
-          const overlapY = Math.min(current.bottom, peer.bottom) - Math.max(current.top, peer.top);
+          const overlapX =
+            Math.min(current.right, peer.right) -
+            Math.max(current.left, peer.left);
+          const overlapY =
+            Math.min(current.bottom, peer.bottom) -
+            Math.max(current.top, peer.top);
           if (overlapX > 1 && overlapY > 1) {
             collisions.push(`${current.label} / ${peer.label}`);
           }
@@ -210,9 +216,12 @@ test.describe('footer público', () => {
     }
 
     if (testInfo.project.name === 'mobile-chromium') {
-      expect(Math.abs(candidateBox.y - companyBox.y)).toBeLessThanOrEqual(3);
-      expect(platformBox.y).toBeGreaterThan(candidateBox.y);
+      expect(companyBox.y).toBeGreaterThan(candidateBox.y);
+      expect(platformBox.y).toBeGreaterThan(companyBox.y);
       expect(contactBox.y).toBeGreaterThan(platformBox.y);
+      expect(Math.abs(candidateBox.x - companyBox.x)).toBeLessThanOrEqual(1);
+      expect(Math.abs(companyBox.x - platformBox.x)).toBeLessThanOrEqual(1);
+      expect(Math.abs(platformBox.x - contactBox.x)).toBeLessThanOrEqual(1);
     } else {
       expect(Math.abs(candidateBox.y - companyBox.y)).toBeLessThanOrEqual(3);
       expect(Math.abs(companyBox.y - platformBox.y)).toBeLessThanOrEqual(3);

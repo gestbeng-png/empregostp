@@ -60,4 +60,20 @@ test.describe('página pública de vagas', () => {
     expect(pageErrors).toEqual([]);
     expect(await collectWcagViolations(page)).toEqual([]);
   });
+
+  test('/vagas no telemóvel termina sem navegação inferior duplicada', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    const response = await page.goto('/vagas', { waitUntil: 'networkidle' });
+
+    expect(response?.ok()).toBe(true);
+    await expect(
+      page.getByRole('navigation', { name: 'Navegação móvel de vagas' }),
+    ).toHaveCount(0);
+
+    await expect(
+      page.getByRole('link', { name: 'Voltar à pesquisa de vagas' }),
+    ).toHaveCount(0);
+  });
 });

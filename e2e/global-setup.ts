@@ -8,6 +8,9 @@ import {
   e2eAdmin,
   e2eCandidate,
   e2eCompany,
+  e2eCompanyPro,
+  e2eProApplication,
+  e2eProJob,
   e2ePublicGuide,
   e2ePublicJob,
   e2ePublicPost,
@@ -52,6 +55,13 @@ export default async function globalSetup(): Promise<void> {
       password: e2eCompany.password,
       uid: e2eCompany.uid,
     });
+    await getAuth(app).createUser({
+      displayName: e2eCompanyPro.name,
+      email: e2eCompanyPro.email,
+      emailVerified: true,
+      password: e2eCompanyPro.password,
+      uid: e2eCompanyPro.uid,
+    });
 
     const firestore = getFirestore(app);
     await firestore.collection('users').doc(e2eAdmin.uid).set({
@@ -86,6 +96,55 @@ export default async function globalSetup(): Promise<void> {
       planTierId: 'basic_empresa',
       userType: 'empresa',
     });
+    // Empresa com escalão pago: só assim as jornadas de mensagens e entrevistas
+    // passam o gating de `lib/empresaPlanFeatures.js`.
+    await firestore.collection('users').doc(e2eCompanyPro.uid).set({
+      companyName: e2eCompanyPro.name,
+      createdAt: new Date().toISOString(),
+      currentPlan: 'unlimited_empresa',
+      destaque: true,
+      email: e2eCompanyPro.email,
+      industry: 'Serviços profissionais',
+      location: 'São Tomé',
+      name: e2eCompanyPro.name,
+      planEndDate: null,
+      planId: 'unlimited_empresa',
+      planName: 'Ilimitado',
+      planTierId: 'unlimited_empresa',
+      status: 'active',
+      userType: 'empresa',
+      vagasLimit: 999,
+    });
+    await firestore
+      .collection('jobs')
+      .doc(e2eProJob.id)
+      .set({
+        companyId: e2eCompanyPro.uid,
+        companyName: e2eCompanyPro.name,
+        createdAt: new Date('2029-01-08T10:00:00.000Z'),
+        dataAbertura: new Date('2029-01-08T10:00:00.000Z'),
+        dataFecho: '2030-12-31T23:59:59.000Z',
+        descricao: 'Coordenar operações e acompanhar equipas.',
+        empresaNome: e2eCompanyPro.name,
+        localizacao: 'São Tomé',
+        status: 'active',
+        tipoContrato: 'full-time',
+        titulo: e2eProJob.title,
+      });
+    await firestore
+      .collection('applications')
+      .doc(e2eProApplication.id)
+      .set({
+        appliedAt: new Date('2029-01-09T10:00:00.000Z'),
+        candidateEmail: e2eCandidate.email,
+        candidateId: e2eCandidate.uid,
+        candidateName: e2eCandidate.name,
+        companyId: e2eCompanyPro.uid,
+        jobId: e2eProJob.id,
+        jobTitle: e2eProJob.title,
+        status: 'pending',
+      });
+
     await firestore
       .collection('profiles')
       .doc(e2eCandidate.uid)

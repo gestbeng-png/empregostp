@@ -23,10 +23,11 @@ const candidateRoutes = [
   },
   {
     path: '/candidatos/internacional',
-    heading: /Prepare a sua carreira para trabalhar no exterior/i,
-    currentMarket: 'Carreira Internacional',
-    assurance: 'Escolha o nível de apoio certo para o seu percurso',
-    serviceHeading: 'Preparação para trabalhar no exterior',
+    heading: /Encontre o seu próximo emprego em São Tomé e Príncipe/i,
+    currentMarket: 'Talento Internacional',
+    assurance:
+      'Apoio para candidatos internacionais que querem trabalhar em STP',
+    serviceHeading: 'Preparação para trabalhar em São Tomé e Príncipe',
   },
 ] as const;
 

@@ -1,48 +1,29 @@
 import { expect, test } from '@playwright/test';
 
-import {
-  collectVisibleUiMetrics,
-  collectWcagViolations,
-  monitorPageErrors,
-} from './ui-audit';
+test.describe('entrada no registo', () => {
+  test('o botão do header abre diretamente o registo', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.getByRole('button', { name: 'Abrir menu' }).click();
 
-test.describe('escolha do tipo de conta', () => {
-  test('apresenta as duas opções e mantém os destinos corretos', async ({
-    page,
-  }) => {
-    const pageErrors = monitorPageErrors(page);
+    const createAccountLink = page
+      .getByRole('link', { name: 'Criar conta' })
+      .first();
+    await expect(createAccountLink).toHaveAttribute('href', '/register');
 
-    await page.emulateMedia({ reducedMotion: 'reduce' });
-    await page.goto('/escolha-tipo', { waitUntil: 'networkidle' });
-
-    await expect(page.getByRole('main')).toHaveCount(1);
+    await createAccountLink.click();
+    await expect(page).toHaveURL('/register');
     await expect(
-      page.getByRole('heading', {
-        level: 1,
-        name: 'Escolha como pretende utilizar a plataforma',
-      }),
+      page.getByRole('group', { name: 'Tipo de conta' }),
     ).toBeVisible();
-    await expect(
-      page.getByRole('button', { name: 'Criar conta de candidato' }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole('button', { name: 'Criar conta de empresa' }),
-    ).toBeVisible();
+  });
 
-    const metrics = await collectVisibleUiMetrics(page);
-    expect(metrics.horizontalOverflow).toBeLessThanOrEqual(0);
-    expect(metrics.smallText).toEqual([]);
-    expect(metrics.shortTargets).toEqual([]);
-    expect(pageErrors).toEqual([]);
-    expect(await collectWcagViolations(page)).toEqual([]);
+  test('a rota antiga já não existe', async ({ page }) => {
+    const response = await page.goto('/escolha-tipo', {
+      waitUntil: 'domcontentloaded',
+    });
 
-    await page
-      .getByRole('button', { name: 'Criar conta de candidato' })
-      .click();
-    await expect(page).toHaveURL('/register?type=candidato');
-
-    await page.goto('/escolha-tipo', { waitUntil: 'networkidle' });
-    await page.getByRole('button', { name: 'Criar conta de empresa' }).click();
-    await expect(page).toHaveURL('/register?type=empresa');
+    expect(response?.status()).toBe(404);
+    await expect(page).toHaveURL('/escolha-tipo');
   });
 });

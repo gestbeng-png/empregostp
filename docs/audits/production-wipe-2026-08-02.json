@@ -1,0 +1,243 @@
+{
+  "executedAt": "2026-08-02T20:10:31.686Z",
+  "backup": "gs://empregostp.firebasestorage.app/firestore-exports/pre-wipe-20260802T200830Z",
+  "keptAdmins": [
+    {
+      "uid": "I71Og7to44h1R0zjJXT9z0HR5Cn2",
+      "email": "edmir@emprego.st",
+      "userType": "admin"
+    },
+    {
+      "uid": "dnX2Tj1FB4XFWIgYUmNhqhW6ZyX2",
+      "email": "empregoSTP@gmail.com",
+      "userType": "admin"
+    },
+    {
+      "uid": "rYmzJpBcJvVp0NvOnXEjdT2H6Lv1",
+      "email": "admin@empregostp.com",
+      "userType": "admin"
+    },
+    {
+      "uid": "xNtRvmo0F0dnFmKHkijix31msf92",
+      "email": "admin@emprego.st",
+      "userType": "admin"
+    }
+  ],
+  "deletedAccounts": [
+    {
+      "uid": "0yFTpAeP37bc2EJVA8gMy8DI6U63",
+      "email": "paulolima@mail.com",
+      "userType": "empresa"
+    },
+    {
+      "uid": "2dxeqhvyvJcuc9JoikzuGuOtqxf1",
+      "email": "joao@gmail.com",
+      "userType": "empresa"
+    },
+    {
+      "uid": "5eLs9MMv9IMNZkdVNKrjc0qHHmC2",
+      "email": "joel@email.com",
+      "userType": "candidato"
+    },
+    {
+      "uid": "5rTAZJzJAUMpamaT07RCNzvlYSJ3",
+      "email": "edmir@edmir.com",
+      "userType": "empresa"
+    },
+    {
+      "uid": "61yQBLei47Xt5BjEZqqvqoqkVdF3",
+      "email": "limited.otter.qfjo@hidepost.net",
+      "userType": "candidato"
+    },
+    {
+      "uid": "8PIQ8Y4W7QbQgV4xnUOHD8NNPKZ2",
+      "email": "ed@jack.com",
+      "userType": "candidato"
+    },
+    {
+      "uid": "9rJhH0V5VxTYx2ZX7IAU3ITYEWB3",
+      "email": "banana@banana.com",
+      "userType": "candidato"
+    },
+    {
+      "uid": "AQlqCVcty4MozS8YKT6wTxCxwVn1",
+      "email": "ed@ed.com",
+      "userType": "candidato"
+    },
+    {
+      "uid": "FAy8ew7VpIQZWGd4ER3FcBvtClv2",
+      "email": "mauro@gmail.com",
+      "userType": "candidato"
+    },
+    {
+      "uid": "HAAHDeDP23NrAm715q3SoiRCUt13",
+      "email": "fruta@fruta.com",
+      "userType": "candidato"
+    },
+    {
+      "uid": "Hkniih5D3ySOXOqrfBzkVellpDx2",
+      "email": "banana@banana.pt",
+      "userType": "empresa"
+    },
+    {
+      "uid": "INdQzqXr7pVUEAUB7lj3kGRrIab2",
+      "email": "edmirsantos2@gmail.com",
+      "userType": "candidato"
+    },
+    {
+      "uid": "JkZexjZ50vNd6W44utXrDshkZg63",
+      "email": "borgesedson432@gmail.com",
+      "userType": "candidato"
+    },
+    {
+      "uid": "Kewtem1dvoSJRGyqR1HBMvFhZm32",
+      "email": "gestbengss@gmail.com",
+      "userType": "candidato"
+    },
+    {
+      "uid": "KvRCcBLLHMamfmJ48J8303LlnyW2",
+      "email": "info.djinola@gmail.com",
+      "userType": "empresa"
+    },
+    {
+      "uid": "NZ2ikaZhkQNZExwoKMxbX5HzLbJ3",
+      "email": "hhhh@gmail.com",
+      "userType": "candidato"
+    },
+    {
+      "uid": "Re9UWWrpyyOxupUUdcVQE0JP33t1",
+      "email": "regent@empresa.com",
+      "userType": "empresa"
+    },
+    {
+      "uid": "SRm5p7oZZacBkYbQUyNDMCwDRR62",
+      "email": "pavlo9723@uorak.com",
+      "userType": "candidato"
+    },
+    {
+      "uid": "UJjyFKolDreg08iE7ZePjou4w3D2",
+      "email": "gest@gmail.com",
+      "userType": "candidato"
+    },
+    {
+      "uid": "UeHNQ7PaWsdWiodrwIhGJfoLD5P2",
+      "email": "gestbsenhg@gmail.com",
+      "userType": "empresa"
+    },
+    {
+      "uid": "VDqN5Bxv3maSHMBJH2g15aprcy43",
+      "email": "edmirlaranja@gmail.com",
+      "userType": "candidato"
+    },
+    {
+      "uid": "WikgRiy7LlSFmDLtsOuGnSJwdm52",
+      "email": "edmirsantos28@gmail.comb",
+      "userType": "candidato"
+    },
+    {
+      "uid": "YacWDBw8v0UnOOW9x8uWD2l0ZSt2",
+      "email": "qwe@ed.com",
+      "userType": "candidato"
+    },
+    {
+      "uid": "awlcH4kIdyWanOF8z7kZHLYcfNj2",
+      "email": "(sem email)",
+      "userType": "empresa"
+    },
+    {
+      "uid": "bRZPyBQy2rcP3NyeyLzuCm0Y71r1",
+      "email": "gestbeng1@gmail.com",
+      "userType": "candidato"
+    },
+    {
+      "uid": "bUKxJ5OfxGhxeImPpeeXDRt24tD3",
+      "email": "gestbseng@gmail.com",
+      "userType": "candidato"
+    },
+    {
+      "uid": "fIa7XGg0JRMicRPUTnFi7UF00Ez1",
+      "email": "jovensparatransparencia@gmail.com",
+      "userType": "empresa"
+    },
+    {
+      "uid": "itV2F4b80xQpKFLBEPTZV7U5NYf1",
+      "email": "alright.cat.ludk@hidepost.net",
+      "userType": "candidato"
+    },
+    {
+      "uid": "jTozBf7wpqZ22KbvN1zEj6Swvxf2",
+      "email": "infodjinola@gmail.com",
+      "userType": "empresa"
+    },
+    {
+      "uid": "m8vlz0oGSAhVgwU4DrzRjebgbS63",
+      "email": "tivihob187@dysonc.com",
+      "userType": "candidato"
+    },
+    {
+      "uid": "mAwr2Zx89halD1p50R3wHH8Use92",
+      "email": "fonseca@fonseca.com",
+      "userType": "candidato"
+    },
+    {
+      "uid": "oGjEJpnTjmNmHxA8zXf0V2F0sKn1",
+      "email": "edmirestacaoneves@gmail.com",
+      "userType": "empresa"
+    },
+    {
+      "uid": "prIE0TWj4Ce4ZTlECTmoM6XLPhV2",
+      "email": "fonseca@edmir.com",
+      "userType": "empresa"
+    },
+    {
+      "uid": "qvX38bVvd1X8CEvfCZdKkqCaSKr2",
+      "email": "edmirsantos30@gmail.com",
+      "userType": "empresa"
+    },
+    {
+      "uid": "r2GiU3CzsLdGc6m9aQYiO2lchNy1",
+      "email": "edmirsantos28@gmail.com",
+      "userType": "candidato"
+    },
+    {
+      "uid": "ti3vDVMxuBfWXmf0DOLCEBS7HSt1",
+      "email": "gestbengssg@gmail.com",
+      "userType": "empresa"
+    },
+    {
+      "uid": "uzF7hdHxMaZHEJt6qF7E108stPe2",
+      "email": "joel.benguela@icloud.com",
+      "userType": "candidato"
+    },
+    {
+      "uid": "yOV5LpOhjPb2pftERudftudieYV2",
+      "email": "gestbeng@gmail.com",
+      "userType": "candidato"
+    }
+  ],
+  "wipedCollections": [
+    "jobs",
+    "applications",
+    "savedJobs",
+    "subscriptions",
+    "subscription-requests",
+    "notifications",
+    "push-subscriptions",
+    "verifications",
+    "conversations",
+    "activities",
+    "admin_activities",
+    "audit_logs",
+    "jobViews",
+    "candidateProfileViews",
+    "candidate_usage",
+    "scheduledTasks",
+    "hrServiceRequests",
+    "affiliateApplications",
+    "testimonials",
+    "newsletterSubscribers",
+    "jobAlerts",
+    "contactMessages",
+    "apiRateLimits"
+  ]
+}
