@@ -89,3 +89,8 @@ docs/audits/qa-accounts.json
 # mais pesado para sempre, mesmo depois de removidos. Se forem para preservar,
 # usar Git LFS ou um bucket.
 docs/audits/screenshots/
+
+# Artefactos de execuções de auditoria (builds Next descartáveis)
+tmp/
+private/
+.next-mobile-build-final/

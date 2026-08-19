@@ -9,12 +9,26 @@ jest.mock('nookies', () => ({
 }));
 
 jest.mock('../../../lib/firebaseAdmin', () => {
-  const mockedAdmin = { auth: jest.fn() };
+  const mockedAdmin = { auth: jest.fn(), firestore: jest.fn() };
   return { __esModule: true, admin: mockedAdmin, default: mockedAdmin };
 });
 
 const cookiesGet = nookies.get as unknown as jest.Mock;
 const authMock = admin.auth as unknown as jest.Mock;
+const firestoreMock = admin.firestore as unknown as jest.Mock;
+
+function mockUser(data: Record<string, unknown> = { userType: 'candidato' }) {
+  firestoreMock.mockReturnValue({
+    collection: jest.fn().mockReturnValue({
+      doc: jest.fn().mockReturnValue({
+        get: jest.fn().mockResolvedValue({
+          data: () => data,
+          exists: true,
+        }),
+      }),
+    }),
+  });
+}
 
 describe('requireSession', () => {
   beforeEach(() => jest.clearAllMocks());
@@ -24,6 +38,39 @@ describe('requireSession', () => {
     authMock.mockReturnValue({
       verifyIdToken: jest.fn().mockResolvedValue({ uid: 'user-1' }),
     });
+    mockUser();
+
+    await expect(
+      requireSession({ resolvedUrl: '/dashboard/candidato' }),
+    ).resolves.toBeNull();
+    expect(authMock().verifyIdToken).toHaveBeenCalledWith('tok', true);
+  });
+
+  test.each(['inactive', 'suspended', 'disabled'])(
+    'nega uma conta com status %s',
+    async (status) => {
+      cookiesGet.mockReturnValue({ token: 'tok' });
+      authMock.mockReturnValue({
+        verifyIdToken: jest.fn().mockResolvedValue({ uid: 'user-1' }),
+      });
+      mockUser({ status, userType: 'candidato' });
+
+      const result = await requireSession({
+        resolvedUrl: '/dashboard/candidato',
+      });
+
+      expect(result?.redirect.destination).toBe(
+        '/login?redirect=%2Fdashboard%2Fcandidato',
+      );
+    },
+  );
+
+  test('mantém compatibilidade com perfis antigos sem status', async () => {
+    cookiesGet.mockReturnValue({ token: 'tok' });
+    authMock.mockReturnValue({
+      verifyIdToken: jest.fn().mockResolvedValue({ uid: 'user-1' }),
+    });
+    mockUser({ userType: 'candidato' });
 
     await expect(
       requireSession({ resolvedUrl: '/dashboard/candidato' }),

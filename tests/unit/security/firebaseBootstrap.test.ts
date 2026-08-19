@@ -22,20 +22,28 @@ function installFirebaseMocks(existingApp = false) {
   const getAuth = jest.fn(() => auth);
   const getFirestore = jest.fn(() => db);
   const getStorage = jest.fn(() => storage);
+  const getAnalytics = jest.fn();
+  const connectAuthEmulator = jest.fn();
+  const connectFirestoreEmulator = jest.fn();
+  const connectStorageEmulator = jest.fn();
+  const setPersistence = jest.fn();
 
   jest.doMock('firebase/app', () => ({ initializeApp, getApp, getApps }));
-  jest.doMock('firebase/analytics', () => ({ getAnalytics: jest.fn() }));
+  jest.doMock('firebase/analytics', () => ({ getAnalytics }));
   jest.doMock('firebase/auth', () => ({
     browserLocalPersistence: 'local',
-    connectAuthEmulator: jest.fn(),
+    connectAuthEmulator,
     getAuth,
-    setPersistence: jest.fn(),
+    setPersistence,
   }));
   jest.doMock('firebase/firestore', () => ({
-    connectFirestoreEmulator: jest.fn(),
+    connectFirestoreEmulator,
     getFirestore,
   }));
-  jest.doMock('firebase/storage', () => ({ getStorage }));
+  jest.doMock('firebase/storage', () => ({
+    connectStorageEmulator,
+    getStorage,
+  }));
 
   return {
     app,
@@ -45,8 +53,13 @@ function installFirebaseMocks(existingApp = false) {
     initializeApp,
     getApp,
     getAuth,
+    getAnalytics,
     getFirestore,
     getStorage,
+    connectAuthEmulator,
+    connectFirestoreEmulator,
+    connectStorageEmulator,
+    setPersistence,
   };
 }
 
@@ -71,6 +84,11 @@ describe('bootstrap Firebase do cliente', () => {
     jest.resetModules();
     jest.clearAllMocks();
     process.env = { ...originalEnvironment, ...requiredEnvironment };
+    delete (
+      window as Window & {
+        __EMPREGOSTP_FIREBASE_EMULATORS_CONNECTED__?: boolean;
+      }
+    ).__EMPREGOSTP_FIREBASE_EMULATORS_CONNECTED__;
   });
 
   afterAll(() => {
@@ -115,5 +133,33 @@ describe('bootstrap Firebase do cliente', () => {
 
     expect(mocks.initializeApp).not.toHaveBeenCalled();
     expect(mocks.getApp).toHaveBeenCalledTimes(1);
+  });
+
+  test('isola Auth, Firestore e Storage e não inicia Analytics/Installations no modo emulador', () => {
+    process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS = 'true';
+    process.env.NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST = 'localhost:19099';
+    process.env.NEXT_PUBLIC_FIRESTORE_EMULATOR_HOST = 'localhost:18080';
+    process.env.NEXT_PUBLIC_FIREBASE_STORAGE_EMULATOR_HOST = 'localhost:19199';
+    const mocks: FirebaseMocks = installFirebaseMocks();
+
+    loadFirebaseModule();
+
+    expect(mocks.connectAuthEmulator).toHaveBeenCalledWith(
+      mocks.auth,
+      'http://localhost:19099',
+      { disableWarnings: true },
+    );
+    expect(mocks.connectFirestoreEmulator).toHaveBeenCalledWith(
+      mocks.db,
+      'localhost',
+      18080,
+    );
+    expect(mocks.connectStorageEmulator).toHaveBeenCalledWith(
+      mocks.storage,
+      'localhost',
+      19199,
+    );
+    expect(mocks.getAnalytics).not.toHaveBeenCalled();
+    expect(mocks.setPersistence).toHaveBeenCalledWith(mocks.auth, 'local');
   });
 });

@@ -68,9 +68,21 @@ const companyProfile = {
 };
 
 function mockProfileRequest() {
-  mockFetch.mockResolvedValueOnce({
-    ok: true,
-    json: async () => ({ profile: companyProfile }),
+  mockFetch.mockImplementation(async (input, options) => {
+    const url = String(input);
+    if (url === '/api/empresa' && options?.method === 'PUT') {
+      return { ok: true, json: async () => ({}) };
+    }
+    if (url === '/api/empresa') {
+      return { ok: true, json: async () => ({ profile: companyProfile }) };
+    }
+    if (url.startsWith('/api/drafts/')) {
+      return {
+        ok: true,
+        json: async () => ({ draft: null }),
+      };
+    }
+    throw new Error(`Pedido inesperado: ${url}`);
   });
 }
 
@@ -145,10 +157,6 @@ describe('edição do perfil da empresa', () => {
 
   test('mantém a seleção de setores e a gravação funcional', async () => {
     mockProfileRequest();
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ profile: companyProfile }),
-    });
 
     render(<CompanyProfilePage />);
 
@@ -157,9 +165,19 @@ describe('edição do perfil da empresa', () => {
     fireEvent.click(screen.getByRole('checkbox', { name: 'Turismo' }));
     fireEvent.click(screen.getByRole('button', { name: 'Guardar alterações' }));
 
-    await waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(2));
+    await waitFor(() =>
+      expect(
+        mockFetch.mock.calls.some(
+          ([url, options]) =>
+            url === '/api/empresa' && options?.method === 'PUT',
+        ),
+      ).toBe(true),
+    );
 
-    const [, saveRequest] = mockFetch.mock.calls;
+    const saveRequest = mockFetch.mock.calls.find(
+      ([url, options]) => url === '/api/empresa' && options?.method === 'PUT',
+    );
+    if (!saveRequest) throw new Error('Pedido PUT do perfil não encontrado');
     const [, requestOptions] = saveRequest;
     const body = JSON.parse(requestOptions.body as string);
 

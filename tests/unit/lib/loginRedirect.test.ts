@@ -1,4 +1,8 @@
-import { buildLoginUrl, redirectToLogin } from '../../../lib/loginRedirect';
+import {
+  buildLoginUrl,
+  redirectToLogin,
+  sanitizeLoginRedirect,
+} from '../../../lib/loginRedirect';
 
 describe('buildLoginUrl', () => {
   test('preserva o destino codificado', () => {
@@ -24,6 +28,14 @@ describe('buildLoginUrl', () => {
     expect(buildLoginUrl('//atacante.example.com')).toBe('/login');
   });
 
+  test('recusa variantes codificadas, barras invertidas e controlos', () => {
+    expect(buildLoginUrl('/\\atacante.example.com')).toBe('/login');
+    expect(buildLoginUrl('/%5Catacante.example.com')).toBe('/login');
+    expect(buildLoginUrl('/%255Catacante.example.com')).toBe('/login');
+    expect(buildLoginUrl('/%2F%2Fatacante.example.com')).toBe('/login');
+    expect(buildLoginUrl('/vagas%0Ajavascript:alert(1)')).toBe('/login');
+  });
+
   test('recusa destinos que não começam por barra', () => {
     expect(buildLoginUrl('dashboard/empresa')).toBe('/login');
     expect(buildLoginUrl('javascript:alert(1)')).toBe('/login');
@@ -34,6 +46,18 @@ describe('buildLoginUrl', () => {
     expect(buildLoginUrl('/recursos/gerador-cv')).toBe(
       '/login?redirect=%2Frecursos%2Fgerador-cv',
     );
+  });
+});
+
+describe('sanitizeLoginRedirect', () => {
+  test('valida novamente o valor já lido da query do login', () => {
+    expect(sanitizeLoginRedirect('/dashboard/candidato?tab=plans')).toBe(
+      '/dashboard/candidato?tab=plans',
+    );
+    expect(sanitizeLoginRedirect('javascript:alert(1)')).toBeNull();
+    expect(sanitizeLoginRedirect('//atacante.example.com')).toBeNull();
+    expect(sanitizeLoginRedirect('/\\atacante.example.com')).toBeNull();
+    expect(sanitizeLoginRedirect(undefined)).toBeNull();
   });
 });
 

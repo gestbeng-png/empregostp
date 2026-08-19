@@ -21,6 +21,7 @@ jest.mock('../../../lib/serverLog', () => ({
 
 const cookiesGet = nookies.get as unknown as jest.Mock;
 const authMock = admin.auth as unknown as jest.Mock;
+const firestoreMock = admin.firestore as unknown as jest.Mock;
 
 function withSession(valid = true) {
   cookiesGet.mockReturnValue({ token: 'tok' });
@@ -28,6 +29,16 @@ function withSession(valid = true) {
     verifyIdToken: valid
       ? jest.fn().mockResolvedValue({ uid: 'user-1' })
       : jest.fn().mockRejectedValue(new Error('expirado')),
+  });
+  firestoreMock.mockReturnValue({
+    collection: jest.fn().mockReturnValue({
+      doc: jest.fn().mockReturnValue({
+        get: jest.fn().mockResolvedValue({
+          data: () => ({ userType: 'candidato' }),
+          exists: true,
+        }),
+      }),
+    }),
   });
 }
 

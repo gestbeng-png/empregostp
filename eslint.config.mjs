@@ -50,7 +50,19 @@ const config = [
     },
   },
   {
-    ignores: ['.next/**', '.next-e2e/**', 'node_modules/**', 'coverage/**'],
+    // Artefactos gerados. `tmp/`, `private/` e `.next-mobile-build-final/` são
+    // builds de Next produzidos por execuções de auditoria: sem os ignorar, o
+    // ESLint analisa código compilado e devolve centenas de erros que não são
+    // do código-fonte, tornando `npm run lint` inutilizável como gate.
+    ignores: [
+      '.next/**',
+      '.next-e2e/**',
+      '.next-mobile-build-final/**',
+      'node_modules/**',
+      'coverage/**',
+      'tmp/**',
+      'private/**',
+    ],
   },
   {
     rules: {

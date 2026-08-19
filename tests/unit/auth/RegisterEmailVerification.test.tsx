@@ -125,11 +125,13 @@ describe('confirmação de email após o registo', () => {
     );
   });
 
-  test('uma falha depois de criar a conta não é relatada como "não foi possível criar a conta"', async () => {
-    // setup-user e o encerramento de sessão podem falhar sem que isso negue
-    // que a conta em si foi criada com sucesso no Firebase Auth.
-    global.fetch = jest.fn().mockRejectedValue(new Error('boom')) as typeof fetch;
-    signOutMock.mockRejectedValueOnce(new Error('sign-out failed'));
+  test('falha de setup não mostra sucesso e permite concluir sem criar outra conta', async () => {
+    const fetchMock = jest
+      .fn()
+      .mockRejectedValueOnce(new Error('network down'))
+      .mockResolvedValueOnce({ ok: true, status: 200 })
+      .mockResolvedValueOnce({ ok: true, status: 200 });
+    global.fetch = fetchMock as typeof fetch;
     const user = userEvent.setup();
     render(<Register />);
     await fillCandidateForm(user);
@@ -138,10 +140,20 @@ describe('confirmação de email após o registo', () => {
       screen.getByRole('button', { name: 'Criar conta de candidato' }),
     );
 
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      /Não foi possível concluir o registo/i,
+    );
+    expect(screen.queryByText('Confirme o seu email')).not.toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole('button', { name: 'Concluir registo' }),
+    );
+
     await waitFor(() =>
       expect(screen.getByText('Confirme o seu email')).toBeVisible(),
     );
-    expect(screen.queryByText('Não foi possível criar a conta. Tente novamente.')).not.toBeInTheDocument();
+    expect(mockedCreateUser).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 
   test('uma falha real na criação da conta continua a mostrar o erro específico', async () => {

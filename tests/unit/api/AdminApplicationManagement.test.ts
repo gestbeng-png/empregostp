@@ -37,7 +37,13 @@ function createResponse() {
   return response;
 }
 
-function configureFirestore(jobData: Record<string, unknown>) {
+function configureFirestore(
+  jobData: Record<string, unknown>,
+  options: {
+    application?: Record<string, unknown>;
+    userData?: Record<string, unknown>;
+  } = {},
+) {
   const applicationData = {
     candidateId: 'candidate-1',
     companyId: '',
@@ -45,6 +51,7 @@ function configureFirestore(jobData: Record<string, unknown>) {
     jobTitle: 'Gestor de Projetos',
     status: 'pending',
     timeline: [],
+    ...(options.application || {}),
   };
   const applicationRef = {
     get: jest.fn().mockResolvedValue({
@@ -67,7 +74,8 @@ function configureFirestore(jobData: Record<string, unknown>) {
       return {
         doc: jest.fn(() => ({
           get: jest.fn().mockResolvedValue({
-            data: () => ({ name: 'Administrador', userType: 'admin' }),
+            data: () =>
+              options.userData || { name: 'Administrador', userType: 'admin' },
             exists: true,
           }),
         })),
@@ -161,6 +169,46 @@ describe('gestão administrativa das candidaturas', () => {
 
     expect(response.status).toHaveBeenCalledWith(403);
     expect(runTransaction).not.toHaveBeenCalled();
+    expect(activityAdd).not.toHaveBeenCalled();
+    expect(notificationMock).not.toHaveBeenCalled();
+  });
+
+  test('impede a empresa de reabrir uma candidatura retirada', async () => {
+    authMock.mockReturnValue({
+      verifyIdToken: jest.fn().mockResolvedValue({ uid: 'company-1' }),
+    });
+    const { activityAdd, transactionUpdate } = configureFirestore(
+      {
+        companyId: 'company-1',
+        createdBy: 'company-1',
+        createdByRole: 'empresa',
+      },
+      {
+        application: {
+          candidateId: 'candidate-1',
+          companyId: 'company-1',
+          status: 'withdrawn',
+        },
+        userData: { name: 'Empresa STP', userType: 'empresa' },
+      },
+    );
+    const response = createResponse();
+
+    await applicationStatusHandler(
+      {
+        body: { status: 'approved' },
+        headers: { authorization: 'Bearer valid-token' },
+        method: 'PATCH',
+        query: { id: 'application-1' },
+      },
+      response,
+    );
+
+    expect(response.status).toHaveBeenCalledWith(409);
+    expect(response.json).toHaveBeenCalledWith(
+      expect.objectContaining({ code: 'APPLICATION_WITHDRAWN' }),
+    );
+    expect(transactionUpdate).not.toHaveBeenCalled();
     expect(activityAdd).not.toHaveBeenCalled();
     expect(notificationMock).not.toHaveBeenCalled();
   });

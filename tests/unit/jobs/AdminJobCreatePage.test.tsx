@@ -11,6 +11,16 @@ jest.mock('../../../lib/firebaseAdmin', () => ({
   admin: {},
 }));
 
+jest.mock('../../../context/AuthContext', () => ({
+  useAuth: () => ({
+    loading: false,
+    user: {
+      getIdToken: jest.fn().mockResolvedValue('admin-token'),
+      uid: 'admin-1',
+    },
+  }),
+}));
+
 jest.mock('../../../lib/firebase', () => ({
   auth: { currentUser: { uid: 'admin-1' } },
   storage: {},
@@ -23,6 +33,14 @@ jest.mock('firebase/storage', () => ({
 }));
 
 describe('formulário administrativo de criação de vagas', () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+    global.fetch = jest.fn().mockResolvedValue({
+      json: async () => ({ draft: null }),
+      ok: true,
+    }) as typeof fetch;
+  });
+
   test('permite informar manualmente a empresa e o nome da vaga', () => {
     render(
       <AdminJobCreate

@@ -1,4 +1,7 @@
-import { projectPublicJob } from '../../../lib/publicJob';
+import {
+  deduplicateRelatedJobs,
+  projectPublicJob,
+} from '../../../lib/publicJob';
 
 describe('projeção pública de vagas', () => {
   test('mantém apenas dados públicos e remove respostas da avaliação', () => {
@@ -61,5 +64,36 @@ describe('projeção pública de vagas', () => {
     expect(result.vagasDisponiveis).toBe(0);
     expect(result.remoto).toBeNull();
     expect(result.tdrUrl).toBe('https://example.com/tdr.pdf');
+  });
+
+  test('remove sugestões semanticamente duplicadas e preserva vagas distintas', () => {
+    const jobs = [
+      {
+        id: 'job-1',
+        titulo: 'Técnico de Turismo',
+        empresaNome: 'Programa Tatô',
+        localizacao: 'São Tomé',
+        tipoContrato: 'full-time',
+      },
+      {
+        id: 'job-2',
+        titulo: '  técnico de turismo  ',
+        empresaNome: 'PROGRAMA TATÔ',
+        localizacao: 'São Tomé',
+        tipoContrato: 'full-time',
+      },
+      {
+        id: 'job-3',
+        titulo: 'Técnico de Turismo',
+        empresaNome: 'Programa Tatô',
+        localizacao: 'Príncipe',
+        tipoContrato: 'full-time',
+      },
+    ];
+
+    expect(deduplicateRelatedJobs(jobs).map((job) => job.id)).toEqual([
+      'job-1',
+      'job-3',
+    ]);
   });
 });

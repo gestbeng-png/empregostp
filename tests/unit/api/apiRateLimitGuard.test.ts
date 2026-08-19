@@ -161,6 +161,31 @@ describe('enforceApiRateLimit', () => {
     );
   });
 
+  test('usa uma partição anonimizada em vez do IP quando fornecida', async () => {
+    mockedConsume.mockResolvedValue({
+      allowed: true,
+      remaining: 1,
+      retryAfterSeconds: 0,
+    });
+
+    const response = createResponse();
+    await enforceApiRateLimit(
+      { headers: { 'x-forwarded-for': '203.0.113.7' } },
+      response,
+      {
+        scope: 'auth_password_reset_account',
+        limit: 3,
+        partition: 'email_abc123',
+      },
+    );
+
+    expect(mockedConsume).toHaveBeenCalledWith(
+      expect.objectContaining({
+        key: 'auth_password_reset_account_email_abc123',
+      }),
+    );
+  });
+
   test('falha aberto com aviso classificado quando o limitador rebenta', async () => {
     const infraError = Object.assign(
       new Error('token canário deadline atingido'),
@@ -182,5 +207,31 @@ describe('enforceApiRateLimit', () => {
     );
     expect(response.status).not.toHaveBeenCalled();
     expect(response.json).not.toHaveBeenCalled();
+  });
+
+  test('falha fechado sem executar o efeito numa rota sensível', async () => {
+    mockedConsume.mockRejectedValue(new Error('firestore indisponível'));
+
+    const response = createResponse();
+    const allowed = await enforceApiRateLimit(
+      { headers: { 'x-forwarded-for': '203.0.113.7' } },
+      response,
+      {
+        failClosed: true,
+        limit: 5,
+        scope: 'auth_password_reset',
+      },
+    );
+
+    expect(allowed).toBe(false);
+    expect(response.status).toHaveBeenCalledWith(503);
+    expect(response.json).toHaveBeenCalledWith({
+      error:
+        'Não foi possível validar o limite de pedidos. Tente novamente mais tarde.',
+    });
+    expect(mockedWarning).toHaveBeenCalledWith(
+      'rate_limit.check_failed',
+      expect.any(Error),
+    );
   });
 });
