@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { FiArrowRight, FiX } from 'react-icons/fi';
+import { sanitizeRichHtml } from '../lib/sanitizeRichHtml';
 import styles from '../styles/AnnouncementBar.module.css';
 
 const DISMISSED_KEY = 'empregostp:announcement-dismissed';
@@ -98,7 +99,11 @@ function NewsDetailModal({ item, onClose }) {
         <div className={styles.modalBody}>
           {item.content ? (
             hasHtmlMarkup(item.content) ? (
-              <div dangerouslySetInnerHTML={{ __html: item.content }} />
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: sanitizeRichHtml(item.content),
+                }}
+              />
             ) : paragraphs.length > 0 ? (
               paragraphs.map((paragraph, index) => (
                 <p key={index}>{paragraph}</p>

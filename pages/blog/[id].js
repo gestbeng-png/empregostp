@@ -14,6 +14,7 @@ import {
 } from 'react-icons/fi';
 import PublicPageShell from '../../components/PublicPageShell';
 import { admin } from '../../lib/firebaseAdmin';
+import { sanitizeRichHtml } from '../../lib/sanitizeRichHtml';
 import {
   isContentPublished,
   normalizeContentStatus,
@@ -464,7 +465,11 @@ export default function BlogPost({ post, relatedPosts = [] }) {
 
                   <div className={styles.articleContent}>
                     {hasHtmlMarkup(articleCopy) ? (
-                      <div dangerouslySetInnerHTML={{ __html: articleCopy }} />
+                      <div
+                        dangerouslySetInnerHTML={{
+                          __html: sanitizeRichHtml(articleCopy),
+                        }}
+                      />
                     ) : (
                       <PlainTextArticle content={articleCopy} />
                     )}

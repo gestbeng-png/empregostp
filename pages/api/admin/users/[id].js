@@ -1,6 +1,27 @@
 import { admin } from '../../../../lib/firebaseAdmin';
 import { logServerError } from '../../../../lib/serverLog';
 
+/**
+ * Alinha o Firebase Auth com o estado administrativo da conta.
+ *
+ * Uma conta suspensa ou inactiva fica desactivada no Auth e vê os seus tokens
+ * revogados, para que as sessões já abertas caiam de imediato. Reactivar
+ * devolve o acesso. As falhas são registadas mas não revertem a escrita no
+ * Firestore: os guards do servidor já negam pelo `status`, e é preferível a
+ * suspensão ficar parcialmente aplicada a ficar por aplicar.
+ */
+async function syncAuthAccess(uid, status) {
+  const deveBloquear = status !== 'active';
+  try {
+    await admin.auth().updateUser(uid, { disabled: deveBloquear });
+    if (deveBloquear) {
+      await admin.auth().revokeRefreshTokens(uid);
+    }
+  } catch (error) {
+    logServerError('admin_users_id.sincronizar_acesso_auth_failed', error);
+  }
+}
+
 export default async function handler(req, res) {
   const { id } = req.query;
 
@@ -67,6 +88,32 @@ export default async function handler(req, res) {
         return res.status(400).json({ message: 'Status inválido' });
       }
 
+      const targetData = userDoc.data() || {};
+      const perdeAcessoAdmin = targetData.userType === 'admin' &&
+        (userType !== 'admin' || status !== 'active');
+
+      if (perdeAcessoAdmin) {
+        // Sem isto era possível ficar sem nenhum administrador activo, e
+        // deixar a plataforma sem quem a gerisse.
+        if (String(id) === String(adminUid)) {
+          return res.status(409).json({
+            message: 'Não pode remover nem suspender o seu próprio acesso de administrador.',
+            code: 'ADMIN_SELF_LOCKOUT'
+          });
+        }
+
+        const adminsSnapshot = await admin.firestore()
+          .collection('users')
+          .where('userType', '==', 'admin')
+          .get();
+        if ((adminsSnapshot.size ?? adminsSnapshot.docs.length) <= 1) {
+          return res.status(409).json({
+            message: 'Este é o último administrador activo. Promova outro antes de o alterar.',
+            code: 'LAST_ADMIN'
+          });
+        }
+      }
+
       // Atualizar no Firestore
       await admin.firestore().collection('users').doc(id).update({
         name,
@@ -75,6 +122,12 @@ export default async function handler(req, res) {
         updatedAt: new Date().toISOString(),
         updatedBy: adminUid
       });
+
+      // O Firestore sozinho não chega: os guards leem `status` a cada pedido,
+      // mas enquanto a conta continuasse activa no Firebase Auth o utilizador
+      // podia autenticar-se e usar o SDK cliente. Desactivar e revogar fecha
+      // também as sessões já emitidas.
+      await syncAuthAccess(id, status);
 
       // Registrar atividade
       await admin.firestore().collection('activities').add({
@@ -96,6 +149,8 @@ export default async function handler(req, res) {
         updatedAt: new Date().toISOString(),
         updatedBy: adminUid
       });
+
+      await syncAuthAccess(id, 'inactive');
 
       // Registrar atividade
       const userData = userDoc.data();
