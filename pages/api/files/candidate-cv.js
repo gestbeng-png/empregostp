@@ -4,6 +4,7 @@ import { getEmpresaPlanSummary } from '../../../lib/empresaPlanFeatures';
 import { logServerError } from '../../../lib/serverLog';
 import { findExistingStorageFile } from '../../../lib/storageBucket';
 import { resolveOwnedStorageObjectPath } from '../../../lib/storageObjectPath';
+import { requireActiveApiUser } from '../../../lib/apiUserAuth';
 
 // Entrega o CV de um candidato através de um URL assinado de curta duração,
 // gerado no servidor depois de reavaliar a permissão.
@@ -21,19 +22,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Inicie sessão para abrir o CV.' });
-    }
-
-    let decodedToken;
-    try {
-      decodedToken = await admin.auth().verifyIdToken(
-        authHeader.split('Bearer ')[1],
-      );
-    } catch (error) {
-      return res.status(401).json({ error: 'A sessão já não é válida.' });
-    }
+    const authResult = await requireActiveApiUser(req, res, {
+      invalidTokenMessage: 'A sessão já não é válida.',
+      missingTokenMessage: 'Inicie sessão para abrir o CV.',
+    });
+    if (!authResult) return;
+    const { uid: viewerUid, userData: viewerData } = authResult;
 
     const candidateId = typeof req.body?.candidateId === 'string'
       ? req.body.candidateId.trim()
@@ -43,8 +37,7 @@ export default async function handler(req, res) {
     }
 
     const firestore = admin.firestore();
-    const [viewerDoc, candidateDoc, candidateProfileDoc] = await Promise.all([
-      firestore.collection('users').doc(decodedToken.uid).get(),
+    const [candidateDoc, candidateProfileDoc] = await Promise.all([
       firestore.collection('users').doc(candidateId).get(),
       firestore.collection('profiles').doc(candidateId).get(),
     ]);
@@ -53,7 +46,6 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: 'Candidato não encontrado.' });
     }
 
-    const viewerData = viewerDoc.exists ? viewerDoc.data() || {} : {};
     const candidateData = candidateDoc.data() || {};
     const candidateProfile = candidateProfileDoc.exists
       ? candidateProfileDoc.data() || {}
@@ -63,7 +55,7 @@ export default async function handler(req, res) {
       candidateId,
       candidateProfile,
       viewer: {
-        uid: decodedToken.uid,
+        uid: viewerUid,
         userType: viewerData.userType,
         planFeatures:
           viewerData.userType === 'empresa'

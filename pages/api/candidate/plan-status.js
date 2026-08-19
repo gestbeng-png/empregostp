@@ -3,6 +3,7 @@ import { getPlanSummary, canApplyToJob, canSaveJob, canUploadCertificate, canUse
 import { buildCandidateVisibility, calculateCandidateProfileCompletion } from '../../../lib/candidateProfileInsights';
 import { buildCandidateOptimizationInsights } from '../../../lib/candidateOptimizationInsights';
 import { logServerError } from '../../../lib/serverLog';
+import { requireActiveApiUser } from '../../../lib/apiUserAuth';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -11,22 +12,11 @@ export default async function handler(req, res) {
   }
 
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Token de autenticação não fornecido' });
-    }
-
-    const token = authHeader.split('Bearer ')[1];
-    const decodedToken = await admin.auth().verifyIdToken(token);
-    const uid = decodedToken.uid;
-
-    // Buscar dados do usuário
-    const userDoc = await admin.firestore().collection('users').doc(uid).get();
-    if (!userDoc.exists) {
-      return res.status(404).json({ error: 'Usuário não encontrado' });
-    }
-
-    const userData = userDoc.data();
+    const authResult = await requireActiveApiUser(req, res, {
+      missingUserMessage: 'Usuário não encontrado',
+    });
+    if (!authResult) return;
+    const { uid, userData } = authResult;
     if (userData.userType !== 'candidato') {
       return res.status(403).json({ error: 'Esta API é apenas para candidatos' });
     }

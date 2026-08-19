@@ -2,6 +2,15 @@ import { admin } from '../../../lib/firebaseAdmin';
 import { enforceApiRateLimit, getClientIp } from '../../../lib/apiRateLimit';
 import { sendEmail, isEmailConfigured } from '../../../lib/email';
 import { filterPublishedJobs, buildJobAlertEmail } from '../../../lib/jobAlertEmail';
+import {
+  buildJobAlertFilterKey,
+  buildJobAlertId,
+  buildJobAlertUnsubscribeUrl,
+  createJobAlertUnsubscribeToken,
+  findEquivalentActiveJobAlert,
+  getCanonicalJobAlertSiteUrl,
+  hashJobAlertUnsubscribeToken,
+} from '../../../lib/jobAlertSubscription';
 import { logServerError } from '../../../lib/serverLog';
 
 // Regista a subscrição do alerta e envia de imediato um email com todas as
@@ -9,15 +18,6 @@ import { logServerError } from '../../../lib/serverLog';
 // vagas continua a poder ser feito por um processo agendado à parte.
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-function baseUrl(req) {
-  if (process.env.NEXT_PUBLIC_SITE_URL) {
-    return process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '');
-  }
-  const proto = (req.headers['x-forwarded-proto'] || 'https').split(',')[0].trim();
-  const host = req.headers['x-forwarded-host'] || req.headers.host;
-  return host ? `${proto}://${host}` : '';
-}
 
 function sanitize(value, max = 120) {
   if (typeof value !== 'string') return '';
@@ -91,24 +91,99 @@ export default async function handler(req, res) {
         : 0,
     };
 
-    // Guardar a subscrição (para futuros envios agendados).
-    await admin.firestore().collection('jobAlerts').add({
+    const firestore = admin.firestore();
+    const alertsCollection = firestore.collection('jobAlerts');
+    const filterKey = buildJobAlertFilterKey(filters);
+    const existingSnapshot = await alertsCollection
+      .where('email', '==', email)
+      .get();
+    const equivalentAlert = findEquivalentActiveJobAlert(
+      existingSnapshot.docs,
+      filters,
+    );
+
+    if (
+      equivalentAlert &&
+      equivalentAlert.data()?.unsubscribeTokenHash &&
+      equivalentAlert.data()?.confirmationEmailSent === true
+    ) {
+      return res.status(200).json({
+        message: 'Este alerta já está ativo com os mesmos filtros.',
+        emailSent: false,
+        deduplicated: true,
+      });
+    }
+
+    const unsubscribeToken = createJobAlertUnsubscribeToken();
+    const unsubscribeTokenHash = hashJobAlertUnsubscribeToken(
+      unsubscribeToken,
+    );
+    let alertRef = equivalentAlert?.ref || alertsCollection.doc(
+      buildJobAlertId(email, filters),
+    );
+    let duplicateCreatedConcurrently = false;
+    const now = admin.firestore.FieldValue.serverTimestamp();
+    const alertData = {
       email,
       filters,
+      filterKey,
       active: true,
-      status: 'pending',
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      status: 'active',
+      unsubscribeTokenHash,
+      confirmationEmailSent: false,
+      createdAt: now,
+      updatedAt: now,
       userAgent: req.headers['user-agent'] || null,
       ip: getClientIp(req),
-    });
+    };
+
+    if (equivalentAlert) {
+      await alertRef.set(alertData, { merge: true });
+    } else {
+      await firestore.runTransaction(async (transaction) => {
+        const current = await transaction.get(alertRef);
+        const currentData = current.exists ? current.data() || {} : {};
+        const isEquivalentActive =
+          current.exists &&
+          currentData.active !== false &&
+          currentData.status !== 'unsubscribed' &&
+          (currentData.filterKey || buildJobAlertFilterKey(currentData.filters || {})) === filterKey;
+
+        if (
+          isEquivalentActive &&
+          currentData.unsubscribeTokenHash &&
+          currentData.confirmationEmailSent === true
+        ) {
+          duplicateCreatedConcurrently = true;
+          return;
+        }
+
+        transaction.set(alertRef, alertData, { merge: true });
+      });
+    }
+
+    if (duplicateCreatedConcurrently) {
+      return res.status(200).json({
+        message: 'Este alerta já está ativo com os mesmos filtros.',
+        emailSent: false,
+        deduplicated: true,
+      });
+    }
 
     // Reunir as vagas publicadas que correspondem aos filtros e enviar já o email.
     const allJobs = await fetchPublishedJobs();
     const matchingJobs = filterPublishedJobs(allJobs, filters).slice(0, 30);
+    const siteUrl = getCanonicalJobAlertSiteUrl();
+    const unsubscribeUrl = buildJobAlertUnsubscribeUrl(
+      alertRef.id,
+      unsubscribeToken,
+      siteUrl,
+    );
     const { subject, html, text } = buildJobAlertEmail({
       jobs: matchingJobs,
       filters,
-      baseUrl: baseUrl(req),
+      baseUrl: siteUrl,
+      unsubscribeUrl,
     });
 
     if (!isEmailConfigured()) {
@@ -123,6 +198,15 @@ export default async function handler(req, res) {
 
     try {
       await sendEmail({ to: email, subject, html, text });
+      try {
+        await alertRef.update({
+          confirmationEmailSent: true,
+          confirmationEmailSentAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      } catch (updateError) {
+        logServerError('job_alerts.marcar_email_enviado_failed', updateError);
+      }
     } catch (emailError) {
       logServerError('job_alerts.enviar_email_de_alerta_failed', emailError);
       return res.status(202).json({

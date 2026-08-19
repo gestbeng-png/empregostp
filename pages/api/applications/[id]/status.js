@@ -4,6 +4,7 @@ import { canScheduleInterview, getEmpresaPlanSummary } from '../../../../lib/emp
 import { createServerNotification } from '../../../../lib/serverNotifications';
 import { resolveApplicationCompanyId } from '../../../../lib/applicationOwnership';
 import { isAdminPublishedJob } from '../../../../lib/adminJobManagement';
+import { normalizeDateValue } from '../../../../lib/dateValue';
 import { logServerError } from '../../../../lib/serverLog';
 
 function buildTimelineEvent({ status, notes, interviewDetails, companyName, actorType = 'empresa' }) {
@@ -86,6 +87,12 @@ const serializeTimestamp = (value) => {
   return value;
 };
 
+function applicationStatusError(code, message) {
+  const error = new Error(message);
+  error.code = code;
+  return error;
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'PATCH' && req.method !== 'PUT') {
     return res.status(405).setHeader('Allow', ['PATCH', 'PUT']).json({ error: 'Método não permitido' });
@@ -107,6 +114,12 @@ export default async function handler(req, res) {
   const validStatuses = ['pending', 'analysis', 'interview', 'approved', 'rejected'];
   if (!status || !validStatuses.includes(status)) {
     return res.status(400).json({ error: 'Status invalido. Use: ' + validStatuses.join(', ') });
+  }
+
+  const normalizedInterviewDate =
+    status === 'interview' ? normalizeDateValue(interviewDate) : null;
+  if (status === 'interview' && !normalizedInterviewDate) {
+    return res.status(400).json({ error: 'Informe uma data valida para a entrevista.' });
   }
 
   try {
@@ -182,7 +195,7 @@ export default async function handler(req, res) {
     const interviewDetails =
       status === 'interview'
         ? {
-            scheduledAt: interviewDate ? new Date(interviewDate).toISOString() : null,
+            scheduledAt: normalizedInterviewDate.toISOString(),
             mode: interviewMode || 'online',
             location: interviewLocation || '',
             link: interviewLink || '',
@@ -192,10 +205,6 @@ export default async function handler(req, res) {
         : null;
 
     if (status === 'interview') {
-      if (!interviewDetails.scheduledAt || Number.isNaN(new Date(interviewDetails.scheduledAt).getTime())) {
-        return res.status(400).json({ error: 'Informe uma data valida para a entrevista.' });
-      }
-
       if (interviewDetails.mode === 'online' && !interviewDetails.link) {
         return res.status(400).json({ error: 'Informe o link da entrevista online.' });
       }
@@ -238,19 +247,35 @@ export default async function handler(req, res) {
       actorType: isAdminActor ? 'admin' : 'empresa'
     });
 
-    await adminApp.firestore().runTransaction(async (transaction) => {
-      const freshDoc = await transaction.get(applicationRef);
-      if (!freshDoc.exists) {
-        throw new Error('Candidatura nao encontrada');
-      }
-      const freshData = freshDoc.data() || {};
-      const currentTimeline = Array.isArray(freshData.timeline) ? freshData.timeline : [];
-      const nextTimeline = [...currentTimeline, timelineEvent].slice(-40);
-      transaction.update(applicationRef, {
-        ...updateData,
-        timeline: nextTimeline
+    try {
+      await adminApp.firestore().runTransaction(async (transaction) => {
+        const freshDoc = await transaction.get(applicationRef);
+        if (!freshDoc.exists) {
+          throw new Error('Candidatura nao encontrada');
+        }
+        const freshData = freshDoc.data() || {};
+        if (String(freshData.status || '').toLowerCase() === 'withdrawn') {
+          throw applicationStatusError(
+            'APPLICATION_WITHDRAWN',
+            'Esta candidatura foi retirada pelo candidato e já não pode ser atualizada.',
+          );
+        }
+        const currentTimeline = Array.isArray(freshData.timeline) ? freshData.timeline : [];
+        const nextTimeline = [...currentTimeline, timelineEvent].slice(-40);
+        transaction.update(applicationRef, {
+          ...updateData,
+          timeline: nextTimeline
+        });
       });
-    });
+    } catch (transactionError) {
+      if (transactionError?.code === 'APPLICATION_WITHDRAWN') {
+        return res.status(409).json({
+          code: transactionError.code,
+          error: transactionError.message,
+        });
+      }
+      throw transactionError;
+    }
 
     // Create notification for candidate
     if (applicationData.candidateId) {

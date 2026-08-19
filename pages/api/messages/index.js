@@ -5,6 +5,7 @@ import {
   canUsersStartConversation,
 } from '../../../lib/conversationPolicy';
 import { logServerError, logServerWarning } from '../../../lib/serverLog';
+import { requireActiveApiUser } from '../../../lib/apiUserAuth';
 
 function isMissingIndexError(error) {
   return error?.code === 9 || String(error?.details || error?.message || '').toLowerCase().includes('requires an index');
@@ -54,25 +55,11 @@ async function listUserConversations(uid) {
  *   body: { participantId: string }
  */
 export default async function handler(req, res) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Token de autenticação não fornecido' });
-  }
-  const token = authHeader.split('Bearer ')[1];
-
-  let uid;
-  try {
-    const decoded = await admin.auth().verifyIdToken(token);
-    uid = decoded.uid;
-  } catch {
-    return res.status(401).json({ error: 'Token inválido' });
-  }
-
-  const requesterDoc = await admin.firestore().collection('users').doc(uid).get();
-  if (!requesterDoc.exists) {
-    return res.status(404).json({ error: 'Utilizador não encontrado' });
-  }
-  const requesterData = requesterDoc.data() || {};
+  const authResult = await requireActiveApiUser(req, res, {
+    invalidTokenMessage: 'Token inválido',
+  });
+  if (!authResult) return;
+  const { uid, userData: requesterData } = authResult;
 
   if (req.method === 'GET') {
     try {

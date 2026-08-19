@@ -2,6 +2,7 @@ import { admin as adminApp } from '../../../../lib/firebaseAdmin';
 import * as firebaseAdmin from 'firebase-admin';
 import { sendPushToUser } from '../../../../lib/serverNotifications';
 import { logServerError } from '../../../../lib/serverLog';
+import { requireActiveApiUser } from '../../../../lib/apiUserAuth';
 
 function serializeTimestamp(value) {
   if (!value) return null;
@@ -42,12 +43,6 @@ export default async function handler(req, res) {
     return res.status(405).setHeader('Allow', ['POST']).json({ error: 'Método não permitido' });
   }
 
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Token de autenticação não fornecido' });
-  }
-
-  const token = authHeader.split('Bearer ')[1];
   const { id } = req.query;
   const { action, reason } = req.body || {};
 
@@ -61,19 +56,13 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Motivo muito longo' });
   }
 
-  let uid;
-  try {
-    const decoded = await adminApp.auth().verifyIdToken(token);
-    uid = decoded.uid;
-  } catch {
-    return res.status(401).json({ error: 'Token inválido' });
-  }
-
-  const userDoc = await adminApp.firestore().collection('users').doc(uid).get();
-  if (!userDoc.exists) {
-    return res.status(404).json({ error: 'Usuário não encontrado' });
-  }
-  const userData = userDoc.data() || {};
+  const authResult = await requireActiveApiUser(req, res, {
+    adminApp,
+    invalidTokenMessage: 'Token inválido',
+    missingUserMessage: 'Usuário não encontrado',
+  });
+  if (!authResult) return;
+  const { uid, userData } = authResult;
   if (userData.userType !== 'candidato') {
     return res.status(403).json({ error: 'Apenas candidatos podem responder à entrevista' });
   }

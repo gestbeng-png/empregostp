@@ -3,6 +3,7 @@ import { getPlanSummary } from '../../lib/candidatePlanFeatures';
 import { buildCandidateSignals } from '../../lib/candidateProfileInsights';
 import { analyzeCandidateJobFit } from '../../lib/candidateOptimizationInsights';
 import { logServerError } from '../../lib/serverLog';
+import { requireActiveApiUser } from '../../lib/apiUserAuth';
 
 const serializeTimestamp = (value) => {
   if (!value) return null;
@@ -18,28 +19,20 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Método não permitido' });
   }
 
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Token de autenticacao nao fornecido' });
-  }
-
   try {
-    const token = authHeader.split('Bearer ')[1];
-    const decodedToken = await admin.auth().verifyIdToken(token);
-    const uid = decodedToken.uid;
+    const authResult = await requireActiveApiUser(req, res, {
+      missingTokenMessage: 'Token de autenticacao nao fornecido',
+      missingUserMessage: 'Usuario nao encontrado',
+    });
+    if (!authResult) return;
+    const { uid, userData } = authResult;
 
-    const [userDoc, profileDoc, applicationsSnap, jobsSnap] = await Promise.all([
-      admin.firestore().collection('users').doc(uid).get(),
+    const [profileDoc, applicationsSnap, jobsSnap] = await Promise.all([
       admin.firestore().collection('profiles').doc(uid).get(),
       admin.firestore().collection('applications').where('candidateId', '==', uid).get(),
       admin.firestore().collection('jobs').where('status', '==', 'active').get()
     ]);
 
-    if (!userDoc.exists) {
-      return res.status(404).json({ error: 'Usuario nao encontrado' });
-    }
-
-    const userData = userDoc.data();
     if (userData.userType !== 'candidato') {
       return res.status(403).json({ error: 'Apenas candidatos podem aceder a recomendacoes' });
     }

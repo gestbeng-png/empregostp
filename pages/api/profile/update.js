@@ -2,6 +2,7 @@ import { admin } from '../../../lib/firebaseAdmin';
 import { canUploadCertificate, getPlanSummary } from '../../../lib/candidatePlanFeatures';
 import { extractLinkedInProfileHints, normalizeLinkedInUrl } from '../../../lib/linkedin';
 import { logServerError } from '../../../lib/serverLog';
+import { requireActiveApiUser } from '../../../lib/apiUserAuth';
 
 const normalizeSkills = (value) => {
   if (Array.isArray(value)) {
@@ -77,22 +78,16 @@ export default async function handler(req, res) {
   }
 
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Token de autenticação não fornecido' });
-    }
-
-    const token = authHeader.split('Bearer ')[1];
-    const decodedToken = await admin.auth().verifyIdToken(token);
-    const uid = decodedToken.uid;
-    const userRef = admin.firestore().collection('users').doc(uid);
+    const authResult = await requireActiveApiUser(req, res, {
+      missingUserMessage: 'Usuário não encontrado',
+    });
+    if (!authResult) return;
+    const {
+      uid,
+      userData: existingUserData,
+      userRef,
+    } = authResult;
     const profileRef = admin.firestore().collection('profiles').doc(uid);
-
-    const existingUserSnap = await userRef.get();
-    if (!existingUserSnap.exists) {
-      return res.status(404).json({ error: 'Usuário não encontrado' });
-    }
-    const existingUserData = existingUserSnap.data() || {};
 
     const { name, headline, bio, location, phone, skills, experiences, photoUrl, coverUrl } = req.body;
 

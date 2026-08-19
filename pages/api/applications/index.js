@@ -16,6 +16,7 @@ import { analyzeCandidateJobFit } from '../../../lib/candidateOptimizationInsigh
 import { calculateSkillsAssessmentResult, getPublicSkillsAssessment } from '../../../lib/skillsAssessment';
 import { createServerNotification } from '../../../lib/serverNotifications';
 import { logServerError } from '../../../lib/serverLog';
+import { requireActiveApiUser } from '../../../lib/apiUserAuth';
 
 function applicationError(code, message, details = {}) {
   const error = new Error(message);
@@ -27,26 +28,13 @@ function applicationError(code, message, details = {}) {
 export default async function handler(req, res) {
   const { method } = req;
 
-  // Verificar cabeçalho de autorização
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Token de autenticação não fornecido' });
-  }
-
-  const token = authHeader.split('Bearer ')[1];
-
   try {
-    // Verificar token e obter UID
-    const decodedToken = await adminApp.auth().verifyIdToken(token);
-    const uid = decodedToken.uid;
-
-    // Buscar dados do usuário
-    const userDocRef = adminApp.firestore().collection('users').doc(uid);
-    const userDoc = await userDocRef.get();
-    if (!userDoc.exists) {
-      return res.status(404).json({ error: 'Usuário não encontrado' });
-    }
-    const userData = userDoc.data();
+    const authResult = await requireActiveApiUser(req, res, {
+      adminApp,
+      missingUserMessage: 'Usuário não encontrado',
+    });
+    if (!authResult) return;
+    const { uid, userData } = authResult;
 
     if (userData.userType !== 'candidato') {
       return res.status(403).json({ error: 'Somente candidatos podem se candidatar a vagas' });

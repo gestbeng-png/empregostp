@@ -2,6 +2,7 @@ import { admin } from '../../lib/firebaseAdmin';
 import { enforceApiRateLimit } from '../../lib/apiRateLimit';
 import { createServerNotification } from '../../lib/serverNotifications';
 import { logServerError } from '../../lib/serverLog';
+import { requireActiveApiUser } from '../../lib/apiUserAuth';
 
 export default async function handler(req, res) {
   // Rate limit: no máximo 30 pedidos por minuto por IP
@@ -16,21 +17,11 @@ export default async function handler(req, res) {
 async function handleNotifications(req, res) {
   try {
     const { method } = req;
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Token de autenticação não fornecido' });
-    }
-
-    const token = authHeader.split('Bearer ')[1];
-    const decodedToken = await admin.auth().verifyIdToken(token);
-    const actingUid = decodedToken.uid;
-    const actingUserDoc = await admin.firestore().collection('users').doc(actingUid).get();
-
-    if (!actingUserDoc.exists) {
-      return res.status(404).json({ error: 'Usuário não encontrado' });
-    }
-
-    const actingUser = actingUserDoc.data();
+    const authResult = await requireActiveApiUser(req, res, {
+      missingUserMessage: 'Usuário não encontrado',
+    });
+    if (!authResult) return;
+    const { uid: actingUid, userData: actingUser } = authResult;
     const isAdmin = actingUser.userType === 'admin';
 
     if (method === 'GET') {

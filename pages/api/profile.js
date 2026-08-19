@@ -1,5 +1,6 @@
 import { admin } from '../../lib/firebaseAdmin';
 import { logServerError } from '../../lib/serverLog';
+import { requireActiveApiUser } from '../../lib/apiUserAuth';
 
 const serializeTimestamp = (value) => {
   if (!value) return null;
@@ -29,25 +30,17 @@ export default async function handler(req, res) {
   }
 
   try {
-    const authHeader = req.headers.authorization;
-    let authenticatedUid = null;
-    let isAdmin = false;
-
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      const token = authHeader.split('Bearer ')[1];
-      const decodedToken = await admin.auth().verifyIdToken(token);
-      authenticatedUid = decodedToken.uid;
-
-      const requesterDoc = await admin.firestore().collection('users').doc(authenticatedUid).get();
-      if (requesterDoc.exists) {
-        isAdmin = requesterDoc.data().userType === 'admin';
-      }
-    }
+    const authResult = await requireActiveApiUser(req, res, {
+      missingTokenMessage: 'Token de autenticação obrigatório',
+    });
+    if (!authResult) return;
+    const { uid: authenticatedUid, userData: requesterData, userDoc: requesterDoc } = authResult;
+    const isAdmin = requesterData.userType === 'admin';
 
     const requestedUid = req.method === 'POST' ? req.body.uid : req.query.uid;
     const uid = requestedUid || authenticatedUid;
 
-    if (!uid || !authenticatedUid) {
+    if (!uid) {
       return res.status(401).json({ error: 'Token de autenticação obrigatório' });
     }
 
@@ -57,7 +50,9 @@ export default async function handler(req, res) {
 
     const [profileSnap, userSnap] = await Promise.all([
       admin.firestore().collection('profiles').doc(uid).get(),
-      admin.firestore().collection('users').doc(uid).get()
+      uid === authenticatedUid
+        ? Promise.resolve(requesterDoc)
+        : admin.firestore().collection('users').doc(uid).get()
     ]);
 
     if (!profileSnap.exists && !userSnap.exists) {

@@ -9,6 +9,7 @@ import {
   validateVerificationRecord,
 } from '../../lib/candidateVerification';
 import { logServerError } from '../../lib/serverLog';
+import { requireActiveApiUser } from '../../lib/apiUserAuth';
 
 async function isAdminUser(uid) {
   if (!uid) return false;
@@ -93,18 +94,11 @@ async function syncVerificationState(uid, verificationId, record) {
 
 export default async function handler(req, res) {
   try {
-    const token = req.headers.authorization?.split('Bearer ')[1];
-
-    if (!token) {
-      return res.status(401).json({ error: 'Token não fornecido' });
-    }
-
-    let decodedToken;
-    try {
-      decodedToken = await admin.auth().verifyIdToken(token);
-    } catch (err) {
-      return res.status(401).json({ error: 'Token inválido ou expirado' });
-    }
+    const authResult = await requireActiveApiUser(req, res, {
+      missingTokenMessage: 'Token não fornecido',
+    });
+    if (!authResult) return;
+    const { decodedToken } = authResult;
 
     if (req.method === 'POST') {
       return handlePost(req, res, decodedToken);

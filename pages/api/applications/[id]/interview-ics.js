@@ -1,12 +1,14 @@
 import { admin as adminApp } from '../../../../lib/firebaseAdmin';
+import { normalizeDateValue } from '../../../../lib/dateValue';
+import { requireActiveApiUser } from '../../../../lib/apiUserAuth';
 
 function pad2(n) {
   return String(n).padStart(2, '0');
 }
 
-function toICSDateUTC(iso) {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return null;
+function toICSDateUTC(value) {
+  const d = normalizeDateValue(value);
+  if (!d) return null;
   return (
     d.getUTCFullYear() +
     pad2(d.getUTCMonth() + 1) +
@@ -39,27 +41,23 @@ export default async function handler(req, res) {
       .json({ error: 'Método não permitido' });
   }
 
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).end('Unauthorized');
-  }
-
-  const token = authHeader.split('Bearer ')[1];
   const { id } = req.query;
   if (!id) {
     return res.status(400).end('Missing id');
   }
 
-  let uid;
-  try {
-    const decoded = await adminApp.auth().verifyIdToken(token);
-    uid = decoded.uid;
-  } catch {
-    return res.status(401).end('Unauthorized');
-  }
-
-  const userDoc = await adminApp.firestore().collection('users').doc(uid).get();
-  if (!userDoc.exists || userDoc.data()?.userType !== 'candidato') {
+  const authResult = await requireActiveApiUser(req, res, {
+    adminApp,
+    blockedMessage: 'Forbidden',
+    invalidTokenMessage: 'Unauthorized',
+    missingTokenMessage: 'Unauthorized',
+    missingUserMessage: 'Forbidden',
+    missingUserStatus: 403,
+    responseMode: 'text',
+  });
+  if (!authResult) return;
+  const { uid, userData } = authResult;
+  if (userData.userType !== 'candidato') {
     return res.status(403).end('Forbidden');
   }
 
@@ -78,12 +76,13 @@ export default async function handler(req, res) {
     return res.status(400).end('No interview scheduled');
   }
 
-  const dtStart = toICSDateUTC(scheduledAt);
-  if (!dtStart) {
+  const scheduledDate = normalizeDateValue(scheduledAt);
+  if (!scheduledDate) {
     return res.status(400).end('Invalid interview date');
   }
+  const dtStart = toICSDateUTC(scheduledDate);
   // Default duration: 60 minutes
-  const end = new Date(new Date(scheduledAt).getTime() + 60 * 60 * 1000).toISOString();
+  const end = new Date(scheduledDate.getTime() + 60 * 60 * 1000);
   const dtEnd = toICSDateUTC(end);
 
   const title = `Entrevista - ${app.jobTitle || 'Vaga'}`;
@@ -120,4 +119,3 @@ export default async function handler(req, res) {
   res.setHeader('Content-Disposition', `attachment; filename="entrevista_${id}.ics"`);
   return res.status(200).send(ics);
 }
-

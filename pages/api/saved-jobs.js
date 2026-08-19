@@ -1,27 +1,70 @@
 import { admin } from '../../lib/firebaseAdmin';
 import { canSaveJob, isPlanActive, getPlanSummary } from '../../lib/candidatePlanFeatures';
 import { logServerError } from '../../lib/serverLog';
+import { requireActiveApiUser } from '../../lib/apiUserAuth';
+
+export const FIRESTORE_IN_QUERY_LIMIT = 30;
+
+function chunk(values, size = FIRESTORE_IN_QUERY_LIMIT) {
+  const chunks = [];
+  for (let index = 0; index < values.length; index += size) {
+    chunks.push(values.slice(index, index + size));
+  }
+  return chunks;
+}
+
+/**
+ * Resolve os detalhes das vagas sem ultrapassar o limite de 30 valores do
+ * operador `in` do Firestore. A resposta conserva a ordem dos registos em
+ * savedJobs e ignora referências para vagas entretanto eliminadas.
+ */
+export async function fetchSavedJobDetails(adminInstance, savedJobDocs = []) {
+  const savedEntries = savedJobDocs
+    .map((doc) => ({
+      jobId: doc.data()?.jobId,
+      savedAt: doc.data()?.savedAt,
+    }))
+    .filter((entry) => Boolean(entry.jobId));
+
+  const uniqueJobIds = [...new Set(savedEntries.map((entry) => entry.jobId))];
+  if (uniqueJobIds.length === 0) return [];
+
+  const snapshots = await Promise.all(
+    chunk(uniqueJobIds).map((jobIds) =>
+      adminInstance
+        .firestore()
+        .collection('jobs')
+        .where(adminInstance.firestore.FieldPath.documentId(), 'in', jobIds)
+        .get(),
+    ),
+  );
+
+  const jobsById = new Map();
+  snapshots.forEach((snapshot) => {
+    snapshot.docs.forEach((doc) => {
+      jobsById.set(doc.id, { id: doc.id, ...doc.data() });
+    });
+  });
+
+  const emittedJobIds = new Set();
+  return savedEntries.flatMap(({ jobId, savedAt }) => {
+    if (emittedJobIds.has(jobId)) return [];
+    const job = jobsById.get(jobId);
+    if (!job) return [];
+    emittedJobIds.add(jobId);
+    return [{ ...job, savedAt }];
+  });
+}
 
 export default async function handler(req, res) {
   try {
     const { method } = req;
-    const authHeader = req.headers.authorization;
-    const token = authHeader?.split('Bearer ')[1];
-    
-    if (!token) {
-      return res.status(401).json({ error: 'Não autorizado' });
-    }
-
-    // Verificar token
-    const decodedToken = await admin.auth().verifyIdToken(token);
-    const uid = decodedToken.uid;
-
-    // Buscar dados do usuário para verificar plano
-    const userDoc = await admin.firestore().collection('users').doc(uid).get();
-    if (!userDoc.exists) {
-      return res.status(404).json({ error: 'Usuário não encontrado' });
-    }
-    const userData = userDoc.data();
+    const authResult = await requireActiveApiUser(req, res, {
+      missingTokenMessage: 'Não autorizado',
+      missingUserMessage: 'Usuário não encontrado',
+    });
+    if (!authResult) return;
+    const { uid, userData } = authResult;
 
     if (userData.userType !== 'candidato') {
       return res.status(403).json({ error: 'Apenas candidatos podem gerenciar vagas salvas' });
@@ -34,23 +77,11 @@ export default async function handler(req, res) {
         .where('candidateId', '==', uid)
         .get();
 
-      const savedJobIds = savedJobsSnapshot.docs.map(doc => doc.data().jobId);
-
-      if (savedJobIds.length === 0) {
+      if (savedJobsSnapshot.empty) {
         return res.status(200).json({ savedJobs: [] });
       }
 
-      // Buscar detalhes das vagas salvas
-      const jobsSnapshot = await admin.firestore()
-        .collection('jobs')
-        .where(admin.firestore.FieldPath.documentId(), 'in', savedJobIds)
-        .get();
-
-      const savedJobs = jobsSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        savedAt: savedJobsSnapshot.docs.find(d => d.data().jobId === doc.id)?.data().savedAt
-      }));
+      const savedJobs = await fetchSavedJobDetails(admin, savedJobsSnapshot.docs);
 
       return res.status(200).json({ savedJobs });
     }
@@ -151,5 +182,3 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 }
-
-

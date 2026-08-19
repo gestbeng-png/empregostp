@@ -2,6 +2,7 @@ import { admin } from '../../../lib/firebaseAdmin';
 import { serializeFirestoreValue } from '../../../lib/empresaPlansCatalog';
 import { getCandidateMarketingPlans } from '../../../lib/candidateCatalog';
 import { logServerError } from '../../../lib/serverLog';
+import { requireActiveApiUser } from '../../../lib/apiUserAuth';
 
 // Modelo "3 planos fixos": o candidato vê sempre exatamente os planos canónicos
 // (Verificação, Profissional, Premium). O admin pode editar nome, preço, rótulo
@@ -27,21 +28,11 @@ export default async function handler(req, res) {
   }
 
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Token de autenticação não fornecido' });
-    }
-
-    const token = authHeader.split('Bearer ')[1];
-    const decodedToken = await admin.auth().verifyIdToken(token);
-    const uid = decodedToken.uid;
-
-    const userDoc = await admin.firestore().collection('users').doc(uid).get();
-    if (!userDoc.exists) {
-      return res.status(404).json({ error: 'Usuário não encontrado' });
-    }
-
-    const userData = userDoc.data() || {};
+    const authResult = await requireActiveApiUser(req, res, {
+      missingUserMessage: 'Usuário não encontrado',
+    });
+    if (!authResult) return;
+    const { userData } = authResult;
     if (userData.userType !== 'candidato') {
       return res.status(403).json({ error: 'Esta API é apenas para candidatos' });
     }
