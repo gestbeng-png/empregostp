@@ -1,4 +1,5 @@
 import { admin } from '../../../../lib/firebaseAdmin';
+import { JOB_STATUS_PENDING_REVIEW } from '../../../../lib/jobModeration';
 import { logServerError } from '../../../../lib/serverLog';
 
 export default async function handler(req, res) {
@@ -72,6 +73,17 @@ export default async function handler(req, res) {
 
       if (!['active', 'closed', 'disabled'].includes(status)) {
         return res.status(400).json({ message: 'Status inválido' });
+      }
+
+      // Uma vaga à espera de moderação só sai desse estado pela rota dedicada
+      // (/api/admin/jobs/[id]/moderate), que regista quem decidiu, o motivo,
+      // grava a auditoria e notifica a empresa. Permitir a mudança aqui era um
+      // caminho paralelo que publicava a vaga sem nada disso.
+      if (String(jobData.status || '') === JOB_STATUS_PENDING_REVIEW) {
+        return res.status(409).json({
+          message: 'Esta vaga está em moderação. Use a acção de aprovar ou rejeitar.',
+          code: 'JOB_REQUIRES_MODERATION'
+        });
       }
 
       // Preparar dados para atualização

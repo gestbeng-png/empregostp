@@ -13,6 +13,55 @@ export default function AdminJobs({ jobs = [] }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [sourceFilter, setSourceFilter] = useState('all');
+  const [moderatingId, setModeratingId] = useState('');
+  const [moderationFeedback, setModerationFeedback] = useState(null);
+
+  // O endpoint de moderação existia sem qualquer chamador na interface: as
+  // vagas ficavam em `pending_review` sem forma de as aprovar, e a única saída
+  // era o PUT genérico, que publicava sem registo nem notificação.
+  const moderateJob = async (job, action) => {
+    if (moderatingId) return;
+
+    let reason = '';
+    if (action === 'reject') {
+      reason = window.prompt('Motivo da rejeição (visível para a empresa):') || '';
+      if (!reason.trim()) return;
+    }
+
+    setModeratingId(job.id);
+    setModerationFeedback(null);
+
+    try {
+      const { getAuth } = await import('firebase/auth');
+      const token = await getAuth().currentUser?.getIdToken();
+      const response = await fetch(`/api/admin/jobs/${job.id}/moderate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ action, reason: reason.trim() || undefined }),
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.error || data.message || 'Não foi possível concluir.');
+      }
+
+      setModerationFeedback({
+        ok: true,
+        text:
+          action === 'approve'
+            ? `"${job.titulo}" foi aprovada e publicada.`
+            : `"${job.titulo}" foi rejeitada.`,
+      });
+      router.replace(router.asPath, undefined, { scroll: false });
+    } catch (error) {
+      setModerationFeedback({ ok: false, text: error.message });
+    } finally {
+      setModeratingId('');
+    }
+  };
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -61,6 +110,7 @@ export default function AdminJobs({ jobs = [] }) {
     active: jobs.filter((job) => job.status === 'active').length,
     closed: jobs.filter((job) => job.status === 'closed').length,
     disabled: jobs.filter((job) => job.status === 'disabled').length,
+    pendingReview: jobs.filter((job) => job.status === 'pending_review').length,
   };
 
   return (
@@ -122,6 +172,13 @@ export default function AdminJobs({ jobs = [] }) {
             onClick={() => setFilterStatus('all')}
           />
           <StatCard
+            title="Em moderação"
+            value={stats.pendingReview}
+            active={filterStatus === 'pending_review'}
+            accent="#9a6206"
+            onClick={() => setFilterStatus('pending_review')}
+          />
+          <StatCard
             title="Ativas"
             value={stats.active}
             active={filterStatus === 'active'}
@@ -143,6 +200,18 @@ export default function AdminJobs({ jobs = [] }) {
             onClick={() => setFilterStatus('disabled')}
           />
         </section>
+
+        {moderationFeedback ? (
+          <div
+            role="status"
+            aria-live="polite"
+            className={`${styles.alert} ${
+              moderationFeedback.ok ? styles.alertSuccess : styles.alertError
+            }`}
+          >
+            {moderationFeedback.text}
+          </div>
+        ) : null}
 
         <section
           className={`${styles.surface} ${styles.panel} ${styles.section}`}
@@ -279,6 +348,26 @@ export default function AdminJobs({ jobs = [] }) {
                         className={`${styles.tableCell} ${styles.alignRight}`}
                       >
                         <div className={styles.buttonGroup}>
+                          {job.status === 'pending_review' ? (
+                            <>
+                              <button
+                                type="button"
+                                disabled={moderatingId === job.id}
+                                onClick={() => moderateJob(job, 'approve')}
+                                className={`${styles.buttonBase} ${styles.buttonSuccess} ${styles.buttonSmall}`}
+                              >
+                                {moderatingId === job.id ? 'A processar…' : 'Aprovar'}
+                              </button>
+                              <button
+                                type="button"
+                                disabled={moderatingId === job.id}
+                                onClick={() => moderateJob(job, 'reject')}
+                                className={`${styles.buttonBase} ${styles.buttonDanger} ${styles.buttonSmall}`}
+                              >
+                                Rejeitar
+                              </button>
+                            </>
+                          ) : null}
                           <Link
                             href={`/dashboard/admin/jobs/${job.id}`}
                             className={`${styles.linkButton} ${styles.buttonPrimary} ${styles.buttonSmall}`}
@@ -351,6 +440,22 @@ function StatusBadge({ status }) {
         '--badge-bg': 'rgba(123, 141, 168, 0.12)',
         '--badge-color': 'var(--admin-muted)',
         '--badge-border': '1px solid rgba(123, 141, 168, 0.18)',
+      },
+    },
+    pending_review: {
+      label: 'Em moderação',
+      style: {
+        '--badge-bg': 'rgba(245, 158, 11, 0.16)',
+        '--badge-color': '#9a6206',
+        '--badge-border': '1px solid rgba(245, 158, 11, 0.3)',
+      },
+    },
+    rejected: {
+      label: 'Rejeitada',
+      style: {
+        '--badge-bg': 'rgba(239, 68, 68, 0.12)',
+        '--badge-color': 'var(--dash-danger-text, #c62828)',
+        '--badge-border': '1px solid rgba(239, 68, 68, 0.22)',
       },
     },
   };

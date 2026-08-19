@@ -1,5 +1,6 @@
 import { admin } from '../../lib/firebaseAdmin';
 import { getPlanSummary } from '../../lib/candidatePlanFeatures';
+import { getEffectiveJobStatus } from '../../lib/jobExpiration';
 import { shouldNotifyCandidateForJob } from '../../lib/candidateProfileInsights';
 import { sendPushToUser } from '../../lib/serverNotifications';
 import { logServerError } from '../../lib/serverLog';
@@ -27,9 +28,9 @@ export default async function handler(req, res) {
     const decodedToken = await admin.auth().verifyIdToken(token);
     const companyUid = decodedToken.uid;
 
-    const { jobId, jobTitle, jobLocation } = req.body;
+    const { jobId } = req.body;
 
-    if (!jobId || !jobTitle) {
+    if (!jobId) {
       return res.status(400).json({ error: 'Dados incompletos' });
     }
 
@@ -42,13 +43,31 @@ export default async function handler(req, res) {
       return res.status(403).json({ error: 'Apenas empresas podem notificar candidatos' });
     }
 
-    const jobData = jobDoc.exists
-      ? { id: jobDoc.id, ...jobDoc.data() }
-      : {
-          id: jobId,
-          titulo: jobTitle,
-          localizacao: jobLocation || '',
-        };
+    // A vaga tem de existir, ser desta empresa e estar publicada. Antes, uma
+    // vaga inexistente era substituida por um objeto construido a partir do
+    // corpo do pedido, o que permitia a qualquer empresa autenticada difundir
+    // texto a escolha dela para candidatos Premium — e divulgar vagas alheias,
+    // fechadas ou ainda por moderar.
+    if (!jobDoc.exists) {
+      return res.status(404).json({ error: 'Vaga não encontrada' });
+    }
+
+    const jobData = { id: jobDoc.id, ...jobDoc.data() };
+
+    if (jobData.companyId !== companyUid) {
+      return res.status(403).json({ error: 'Esta vaga não pertence à sua empresa' });
+    }
+
+    if (getEffectiveJobStatus(jobData) !== 'active') {
+      return res.status(409).json({
+        error: 'Só é possível divulgar vagas publicadas e dentro do prazo.'
+      });
+    }
+
+    // O conteudo entregue ao candidato vem sempre do registo guardado, nunca
+    // do corpo do pedido.
+    const jobTitle = jobData.titulo || '';
+    const jobLocation = jobData.localizacao || '';
 
     // Buscar candidatos (limitado para performance)
     const candidatesSnapshot = await admin.firestore()

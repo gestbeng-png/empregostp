@@ -624,19 +624,23 @@ export default function CriarVaga() {
 
       await clearJobDraft();
 
-      if (!isEditMode) {
+      // Uma vaga que ficou à espera de moderação ainda não é pública: notificar
+      // candidatos nessa altura divulgava algo que ninguém pode abrir. O
+      // servidor já recusa (409), mas evitamos o pedido inútil.
+      const jobIsPublished =
+        String(createData.job?.status || "active") === "active";
+
+      if (!isEditMode && jobIsPublished) {
         try {
+          // Título e localização vêm do registo guardado, no servidor: enviá-los
+          // daqui não teria efeito e mascararia a origem do conteúdo.
           await fetch("/api/notify-candidates", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${await user.getIdToken()}`,
             },
-            body: JSON.stringify({
-              jobId: createData.job?.id,
-              jobTitle: createData.job?.titulo || vagaData.titulo,
-              jobLocation: createData.job?.localizacao || vagaData.localizacao,
-            }),
+            body: JSON.stringify({ jobId: createData.job?.id }),
           });
         } catch (notifError) {
           console.error(

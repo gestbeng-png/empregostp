@@ -93,6 +93,19 @@ export default async function handler(req, res) {
     }
 
     const verificationData = serializeVerificationTimestamps(verificationDoc.data() || {});
+
+    // O `uid` vem do cliente, mas a elegibilidade é avaliada sobre o dono do
+    // pedido. Sem esta igualdade era possível aprovar a verificação de A — que
+    // tem CV e plano — e escrever `verified: true` em B, que nunca submeteu
+    // nem pagou, porque a sincronização, o log e a notificação usavam o `uid`
+    // recebido em vez do que consta no pedido.
+    if (String(uid) !== String(verificationData.uid || '')) {
+      return res.status(400).json({
+        error: 'O utilizador indicado não corresponde ao do pedido de verificação.',
+        code: 'VERIFICATION_UID_MISMATCH',
+      });
+    }
+
     const targetItem = verificationType ? verificationData.verificationItems?.[verificationType] : null;
     if (verificationType && !targetItem) {
       return res.status(404).json({ error: 'Verification type not found in this request' });
