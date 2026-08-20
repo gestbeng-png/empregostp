@@ -384,3 +384,79 @@ Google, push FCM real, uploads para Storage e pagamento.
 
 **Ganho isolado mais rentável:** a Fase 2.1 — uma linha de CSS que deve resolver 39% das
 falhas do E2E.
+
+---
+
+# Estado de execução (20 de agosto de 2026)
+
+As fases 0 a 4 foram executadas. Resumo do que ficou feito, do que foi
+descartado por não se confirmar, e do que continua em aberto.
+
+## Fechado
+
+| Fase | Conteúdo | Prova |
+|---|---|---|
+| **0** | CI verde e todo o trabalho commitado | typecheck 8→0, lint 301→0, testes 2 falhas→0 |
+| **1** | AUD-004, 005, 010, 011, 012 | 22 testes, todos vermelhos antes |
+| **2** | UX-001, 002, 006, 007, 009 | axe 0 em 30 medições públicas + 8 rotas admin |
+| **3** | AUD-015, 016, 017, 022, NEW-004, NEW-005 | 8 testes novos; 105 suites / 506 testes |
+| **4** | UX-005, UX-008 (parcial), pipeline E2E, JDK | ver abaixo |
+
+## Descartado após verificação — eram falsos positivos da auditoria
+
+Quatro achados meus não sobreviveram à medição instrumentada:
+
+- **UX-003** (caixas de seleção a 20 px): media o `<input>`, mas o alvo real de
+  ativação é o `<label>` que o envolve, já com `min-height: 44px`.
+- **UX-004** (imagens sem `alt`): tinham `alt=""` explícito, que é a forma
+  correta de marcar imagens decorativas — e o axe nunca as sinalizou.
+- **Modo escuro do painel**: medido na aplicação real, o fundo alterna
+  corretamente. O diagnóstico anterior vinha de um harness com ordem de CSS
+  artificial. As duas correções revertidas não eram necessárias.
+- **UX-007** estava sobredimensionado: eram 6 rotas sem `<h1>`, não 8.
+
+## Em aberto — decisões de dados (Fase 3)
+
+Não executadas por serem irreversíveis e dependerem de critérios de negócio.
+
+1. **NEW-001 — 20 coleções órfãs, 58 documentos.** Confirmadas **4 com dados
+   pessoais** (não 2): `affiliate_applications`, `partnerApplications`,
+   `partners`, `externalHrRequests` — emails, telefones e NIF. Nenhum código as
+   referencia. Migrar, exportar-e-apagar ou documentar são todas defensáveis; a
+   escolha depende de obrigações de retenção.
+2. **NEW-007 — catálogo de planos.** Pior do que reportado: **9 de 14** planos
+   estão fora dos escalões canónicos (`basic`, `bronze_candidato`,
+   `ouro_candidato`, `ouro_empresa`, `prata_candidato`, `prata_empresa`,
+   `professional`, `unlimited` e um com ID gerado). Limpar mexe em preços
+   visíveis a clientes.
+3. **NEW-006 — 2 alertas sem `unsubscribeTokenHash`**, logo não canceláveis.
+   Gerar token retroativamente ou expirá-los.
+
+## Em aberto — trabalho com âmbito próprio
+
+4. **UX-008 — escala tipográfica dos painéis.** Corrigido o que os testes
+   acusavam e o que era inequivocamente pequeno: o bloco de perfil da topbar e
+   a etiqueta de plano. Fica por decidir a escala geral: `/dashboard/admin/users`
+   ainda tem 71 elementos entre 12,8 px e 13,12 px, e `/dashboard/empresa/vagas`
+   14. São **414 declarações** em 10 folhas, quase todas em `rem`. Subi-las
+   todas muda a densidade de informação de cada tabela — é uma decisão de
+   sistema de design, não uma correção pontual, e não pode ser feita sem
+   validar o resultado ecrã a ecrã.
+
+5. **AUD-025 — bundle.** `_app` mantém-se em **443 KB cru / 135 KB gzip**, pago
+   por todas as visitas anónimas porque `AuthProvider` é importado
+   estaticamente em `pages/_app.js` e arrasta o SDK do Firebase (auth,
+   firestore, app, storage).
+   **Não foi alterado de propósito.** `useAuth()` é consumido também por
+   componentes públicos (o cabeçalho decide entre "Iniciar sessão" e o perfil),
+   pelo que retirar o provider das rotas públicas parte essas leituras; e tornar
+   o Firebase preguiçoso dentro do provider mexe no caminho de autenticação,
+   onde um erro subtil é caro. Merece uma tarefa própria, com as jornadas
+   autenticadas de `e2e/authenticated-flows.spec.ts` como rede de segurança.
+
+6. **AUD-023 / AUD-024 — superfícies e feedback.** "Novo utilizador" continua a
+   não criar utilizador; falta gestão especializada de empresas e candidatos.
+   Não abordado nesta passagem.
+
+7. **Rotação da chave Firebase Admin** — continua a ser o único bloqueador de
+   segurança fora do código. Ver `docs/DEPLOY-GUIDE.md`, passo 0.

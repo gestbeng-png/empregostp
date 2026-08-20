@@ -16,8 +16,13 @@ export default defineConfig({
   use: {
     baseURL,
     screenshot: 'only-on-failure',
-    trace: 'retain-on-failure',
-    video: 'retain-on-failure',
+    // `retain-on-failure` guardava trace e vídeo de cada falha. Com a suíte a
+    // falhar em massa isso gerou 131 MB numa só execução e ajudou a esgotar o
+    // disco, o que corrompeu o cache do Next e produziu HTTP 500 — falhas de
+    // laboratório indistinguíveis de defeitos. `retain-on-first-failure` dá o
+    // mesmo diagnóstico para o primeiro caso de cada tipo, sem o acumular.
+    trace: 'retain-on-first-failure',
+    video: process.env.PLAYWRIGHT_VIDEO === 'on' ? 'retain-on-failure' : 'off',
   },
   projects: [
     {
@@ -32,7 +37,15 @@ export default defineConfig({
   webServer: configuredBaseURL
     ? undefined
     : {
-        command: `npm run dev -- --port ${port}`,
+        // O servidor de desenvolvimento compila a pedido e satura sob carga
+        // paralela: em duas execuções desta suíte começou a devolver 500 e a
+        // produzir falhas que não eram do produto. Com E2E_PRODUCTION_BUILD=1
+        // corre-se contra um build real, que é o que a auditoria recomenda
+        // para CI. Localmente o modo dev continua a ser o predefinido, por ser
+        // muito mais rápido a arrancar.
+        command: process.env.E2E_PRODUCTION_BUILD
+          ? `npm run build && npx next start --port ${port}`
+          : `npm run dev -- --port ${port}`,
         env: {
           ...process.env,
           NEXT_DIST_DIR: '.next-e2e',
@@ -48,7 +61,8 @@ export default defineConfig({
           NEXT_PUBLIC_FIRESTORE_EMULATOR_HOST: '127.0.0.1:8080',
         },
         reuseExistingServer: !process.env.CI,
-        timeout: 120_000,
+        // Um build de produção demora mais a ficar de pé do que o dev server.
+        timeout: process.env.E2E_PRODUCTION_BUILD ? 300_000 : 120_000,
         url: baseURL,
       },
 });

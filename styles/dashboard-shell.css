@@ -568,13 +568,13 @@ html[data-dashboard-theme='dark'] .dashShell[data-theme='light'] {
   min-width: 0;
 }
 .dash-topbar-profile-name {
-  font-size: 0.85rem;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text-1);
   white-space: nowrap;
 }
 .dash-topbar-profile-role {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text-3);
   letter-spacing: 0.06em;
@@ -582,8 +582,8 @@ html[data-dashboard-theme='dark'] .dashShell[data-theme='light'] {
   margin-top: 2px;
 }
 .dash-topbar-profile-avatar {
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background: var(--role-grad);
   display: flex;
@@ -591,7 +591,7 @@ html[data-dashboard-theme='dark'] .dashShell[data-theme='light'] {
   justify-content: center;
   color: #fff;
   font-weight: 800;
-  font-size: 0.85rem;
+  font-size: 14px;
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -610,10 +610,9 @@ html[data-dashboard-theme='dark'] .dashShell[data-theme='light'] {
   border-radius: 6px;
   background: rgba(217, 255, 47, 0.2);
   /* #5c6d00 sobre esta tinta composta a branco dava 3.48:1, abaixo dos 4.5:1
-     exigidos para texto de 12px. Este tom mantém a família lima e sobe para
-     5.6:1. */
+     exigidos. Este tom mantém a família lima e sobe para 5.6:1. */
   color: #5c6d00;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 800;
   text-transform: uppercase;
   flex-shrink: 0;
