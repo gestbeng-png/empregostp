@@ -223,7 +223,7 @@ export default function AdminResourcesList({ initialData, initialType }) {
               <Link
                 href="/dashboard/admin"
                 style={{
-                  color: '#94a3b8',
+                  color: '#4a5568',
                   textDecoration: 'none',
                   fontSize: '0.9rem',
                   marginBottom: '0.5rem',

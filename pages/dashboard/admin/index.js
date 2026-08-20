@@ -148,7 +148,7 @@ const ADMIN_QUICK_ACTIONS = [
     href: '/dashboard/admin/verificacoes',
     label: 'Verificações',
     icon: FiShield,
-    color: 'var(--dash-success-text, #168a55)',
+    color: 'var(--dash-success-text, #0f6b41)',
     bg: 'rgba(61,187,122,0.1)',
     border: 'rgba(61,187,122,0.2)',
   },

@@ -348,8 +348,14 @@ function JobCard({ job, referenceNow }) {
         </Link>
         <p className={styles.companyName}>
           {companyName}
+          {/* `role="img"` é obrigatório: um <span> sem role não pode ter
+              `aria-label`, e os leitores de ecrã ignoravam o selo. */}
           {job.companyVerified ? (
-            <span title="Empresa verificada" aria-label="Empresa verificada">
+            <span
+              role="img"
+              title="Empresa verificada"
+              aria-label="Empresa verificada"
+            >
               <FiCheckCircle aria-hidden="true" />
             </span>
           ) : null}

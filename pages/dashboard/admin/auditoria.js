@@ -28,27 +28,27 @@ const TYPE_LABELS = {
 };
 
 const TYPE_COLORS = {
-  user_created: '#10b981',
+  user_created: '#0b6644',
   user_updated: '#3b82f6',
-  user_deactivated: '#ef4444',
-  job_created: '#10b981',
+  user_deactivated: '#b91c1c',
+  job_created: '#0b6644',
   job_updated: '#3b82f6',
   job_disabled: '#f59e0b',
-  service_created: '#10b981',
+  service_created: '#0b6644',
   service_updated: '#3b82f6',
-  service_deleted: '#ef4444',
-  plan_created: '#10b981',
+  service_deleted: '#b91c1c',
+  plan_created: '#0b6644',
   plan_updated: '#3b82f6',
-  plan_deleted: '#ef4444',
-  subscription_approved: '#10b981',
-  subscription_rejected: '#ef4444',
+  plan_deleted: '#b91c1c',
+  subscription_approved: '#0b6644',
+  subscription_rejected: '#b91c1c',
   payment_settings_updated: '#8b5cf6',
-  verification_approved: '#10b981',
-  verification_rejected: '#ef4444',
+  verification_approved: '#0b6644',
+  verification_rejected: '#b91c1c',
 };
 
 function getTypeColor(type) {
-  return TYPE_COLORS[type] || '#64748b';
+  return TYPE_COLORS[type] || '#4a5568';
 }
 
 function getTypeLabel(type) {
@@ -73,8 +73,7 @@ function formatDate(dateStr) {
 const s = {
   page: {
     minHeight: '100vh',
-    background: 'linear-gradient(180deg, #0a0e1a 0%, #1a1f35 100%)',
-    color: '#fff',
+    color: '#102441',
   },
   container: {
     maxWidth: '1400px',
@@ -82,15 +81,13 @@ const s = {
     padding: '2rem',
   },
   card: {
-    background: 'rgba(255, 255, 255, 0.05)',
-    backdropFilter: 'blur(10px)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
+    background: '#ffffff',
+    border: '1px solid #e4e5e8',
     borderRadius: '16px',
     padding: '1.5rem',
   },
   statCard: (color) => ({
-    background: 'rgba(255, 255, 255, 0.05)',
-    backdropFilter: 'blur(10px)',
+    background: '#ffffff',
     border: `1px solid ${color}40`,
     borderRadius: '12px',
     padding: '1.25rem 1.5rem',
@@ -98,10 +95,10 @@ const s = {
   input: {
     width: '100%',
     padding: '0.65rem 1rem',
-    background: 'rgba(255, 255, 255, 0.07)',
-    border: '1px solid rgba(255, 255, 255, 0.15)',
+    background: '#ffffff',
+    border: '1px solid #cdd1d7',
     borderRadius: '8px',
-    color: '#fff',
+    color: '#102441',
     fontSize: '0.95rem',
     outline: 'none',
     boxSizing: 'border-box',
@@ -109,10 +106,10 @@ const s = {
   select: {
     width: '100%',
     padding: '0.65rem 1rem',
-    background: '#1e2840',
-    border: '1px solid rgba(255, 255, 255, 0.15)',
+    background: '#ffffff',
+    border: '1px solid #cdd1d7',
     borderRadius: '8px',
-    color: '#fff',
+    color: '#102441',
     fontSize: '0.95rem',
     outline: 'none',
     cursor: 'pointer',
@@ -121,7 +118,7 @@ const s = {
     display: 'block',
     marginBottom: '0.4rem',
     fontSize: '0.85rem',
-    color: 'rgba(255,255,255,0.65)',
+    color: '#4a5568',
     fontWeight: '600',
     letterSpacing: '0.04em',
     textTransform: 'uppercase',
@@ -129,8 +126,8 @@ const s = {
   th: {
     padding: '0.9rem 1rem',
     textAlign: 'left',
-    color: 'rgba(255, 255, 255, 0.5)',
-    borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+    color: '#4a5568',
+    borderBottom: '1px solid #e4e5e8',
     fontWeight: '600',
     fontSize: '0.8rem',
     textTransform: 'uppercase',
@@ -139,8 +136,8 @@ const s = {
   },
   td: {
     padding: '0.9rem 1rem',
-    color: 'rgba(255,255,255,0.85)',
-    borderBottom: '1px solid rgba(255, 255, 255, 0.04)',
+    color: '#102441',
+    borderBottom: '1px solid #eef1f4',
     fontSize: '0.9rem',
     verticalAlign: 'top',
   },
@@ -150,9 +147,9 @@ const s = {
     borderRadius: '20px',
     fontSize: '0.72rem',
     fontWeight: '700',
-    background: `${color}22`,
+    background: `${color}1f`,
     color: color,
-    border: `1px solid ${color}44`,
+    border: `1px solid ${color}55`,
     whiteSpace: 'nowrap',
   }),
   btn: {
@@ -169,9 +166,9 @@ const s = {
     color: '#fff',
   },
   secondaryBtn: {
-    background: 'rgba(255,255,255,0.08)',
-    color: 'rgba(255,255,255,0.8)',
-    border: '1px solid rgba(255,255,255,0.12)',
+    background: '#eef4f8',
+    color: '#1d3357',
+    border: '1px solid #cdd1d7',
   },
 };
 
@@ -315,7 +312,7 @@ export default function AdminAuditoria() {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '0.4rem',
-                color: '#60a5fa',
+                color: '#1d4ed8',
                 textDecoration: 'none',
                 fontWeight: '600',
                 marginBottom: '0.75rem',
@@ -357,7 +354,7 @@ export default function AdminAuditoria() {
                 <p
                   style={{
                     margin: '0.5rem 0 0',
-                    color: 'rgba(255,255,255,0.55)',
+                    color: '#4a5568',
                     fontSize: '1rem',
                   }}
                 >
@@ -404,7 +401,7 @@ export default function AdminAuditoria() {
               <div
                 style={{
                   fontSize: '0.75rem',
-                  color: 'rgba(255,255,255,0.5)',
+                  color: '#4a5568',
                   textTransform: 'uppercase',
                   letterSpacing: '0.06em',
                   marginBottom: '0.4rem',
@@ -413,7 +410,7 @@ export default function AdminAuditoria() {
                 Total de Ações
               </div>
               <div
-                style={{ fontSize: '2rem', fontWeight: 900, color: '#60a5fa' }}
+                style={{ fontSize: '2rem', fontWeight: 900, color: '#1d4ed8' }}
               >
                 {total}
               </div>
@@ -423,7 +420,7 @@ export default function AdminAuditoria() {
                 <div
                   style={{
                     fontSize: '0.75rem',
-                    color: 'rgba(255,255,255,0.5)',
+                    color: '#4a5568',
                     textTransform: 'uppercase',
                     letterSpacing: '0.06em',
                     marginBottom: '0.4rem',
@@ -562,11 +559,11 @@ export default function AdminAuditoria() {
                 alignItems: 'center',
                 marginBottom: '1rem',
                 paddingBottom: '0.75rem',
-                borderBottom: '1px solid rgba(255,255,255,0.08)',
+                borderBottom: '1px solid #e4e5e8',
               }}
             >
               <span
-                style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.95rem' }}
+                style={{ color: '#2d3f5c', fontSize: '0.95rem' }}
               >
                 {loading
                   ? 'A carregar...'
@@ -585,7 +582,7 @@ export default function AdminAuditoria() {
                 <div
                   className={`${adminStyles.spinner} ${adminStyles.spinnerLarge}`}
                 />
-                <p style={{ color: 'rgba(255,255,255,0.5)' }}>
+                <p style={{ color: '#4a5568' }}>
                   A carregar registos de auditoria...
                 </p>
               </div>
@@ -597,12 +594,12 @@ export default function AdminAuditoria() {
                   style={{ marginBottom: '1rem', color: 'var(--text-3)' }}
                 />
                 <p
-                  style={{ color: 'rgba(255,255,255,0.5)', fontSize: '1.1rem' }}
+                  style={{ color: '#4a5568', fontSize: '1.1rem' }}
                 >
                   Nenhum registo encontrado
                 </p>
                 <p
-                  style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.9rem' }}
+                  style={{ color: '#6b7280', fontSize: '0.9rem' }}
                 >
                   Tente ajustar os filtros ou aguarde que ações sejam registadas
                 </p>
@@ -626,7 +623,7 @@ export default function AdminAuditoria() {
                         style={{ transition: 'background 0.15s' }}
                         onMouseEnter={(e) =>
                           (e.currentTarget.style.background =
-                            'rgba(255,255,255,0.03)')
+                            '#f8fafb')
                         }
                         onMouseLeave={(e) =>
                           (e.currentTarget.style.background = 'transparent')
@@ -636,7 +633,7 @@ export default function AdminAuditoria() {
                           style={{
                             ...s.td,
                             whiteSpace: 'nowrap',
-                            color: 'rgba(255,255,255,0.5)',
+                            color: '#4a5568',
                             fontSize: '0.82rem',
                           }}
                         >
@@ -648,7 +645,7 @@ export default function AdminAuditoria() {
                           </span>
                         </td>
                         <td style={{ ...s.td, maxWidth: '380px' }}>
-                          <span style={{ color: 'rgba(255,255,255,0.85)' }}>
+                          <span style={{ color: '#102441' }}>
                             {activity.description || '—'}
                           </span>
                         </td>
@@ -657,7 +654,7 @@ export default function AdminAuditoria() {
                             <Link
                               href={`/dashboard/admin/users/${activity.userId}`}
                               style={{
-                                color: '#60a5fa',
+                                color: '#1d4ed8',
                                 textDecoration: 'none',
                                 fontSize: '0.85rem',
                               }}
@@ -665,7 +662,7 @@ export default function AdminAuditoria() {
                               {activity.userName || activity.userId}
                             </Link>
                           ) : (
-                            <span style={{ color: 'rgba(255,255,255,0.3)' }}>
+                            <span style={{ color: '#6b7280' }}>
                               —
                             </span>
                           )}
@@ -675,7 +672,7 @@ export default function AdminAuditoria() {
                             <Link
                               href={`/dashboard/admin/users/${activity.adminId}`}
                               style={{
-                                color: '#a78bfa',
+                                color: '#6d28d9',
                                 textDecoration: 'none',
                                 fontSize: '0.85rem',
                               }}
@@ -683,7 +680,7 @@ export default function AdminAuditoria() {
                               {activity.adminName || activity.adminId}
                             </Link>
                           ) : (
-                            <span style={{ color: 'rgba(255,255,255,0.3)' }}>
+                            <span style={{ color: '#6b7280' }}>
                               Sistema
                             </span>
                           )}
@@ -723,7 +720,7 @@ export default function AdminAuditoria() {
               </button>
               <p
                 style={{
-                  color: 'rgba(255,255,255,0.4)',
+                  color: '#4a5568',
                   fontSize: '0.85rem',
                   margin: 0,
                 }}

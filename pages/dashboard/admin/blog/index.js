@@ -115,7 +115,7 @@ export default function AdminBlogList({ posts: initialPosts }) {
                 <div style={styles.container}>
                     <div style={styles.header}>
                         <div>
-                            <Link href="/dashboard/admin" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.9rem', marginBottom: '0.5rem', display: 'block' }}>
+                            <Link href="/dashboard/admin" style={{ color: '#4a5568', textDecoration: 'none', fontSize: '0.9rem', marginBottom: '0.5rem', display: 'block' }}>
                                 ← Voltar ao Dashboard
                             </Link>
                             <h1 style={styles.title}>Gerir blog</h1>
@@ -166,7 +166,7 @@ export default function AdminBlogList({ posts: initialPosts }) {
                                                         borderRadius: '999px',
                                                         fontSize: '0.78rem',
                                                         fontWeight: 700,
-                                                        color: normalizeContentStatus(post.status) === CONTENT_STATUS.PUBLISHED ? '#34d399' : '#cbd5e1'
+                                                        color: normalizeContentStatus(post.status) === CONTENT_STATUS.PUBLISHED ? '#116e4b' : '#cbd5e1'
                                                     }}>
                                                         {normalizeContentStatus(post.status) === CONTENT_STATUS.PUBLISHED ? 'Publicado' : 'Rascunho'}
                                                     </span>

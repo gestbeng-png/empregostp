@@ -193,6 +193,7 @@ export default function CompactJobCard({
               {isVerified ? (
                 <span
                   className={styles.verifiedCompany}
+                  role="img"
                   aria-label="Empresa verificada"
                   title="Empresa verificada"
                 >

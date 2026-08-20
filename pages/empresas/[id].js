@@ -137,11 +137,10 @@ export default function PublicCompanyProfile({
                   <span className={styles.eyebrow}>Perfil da empresa</span>
                   <div className={styles.titleRow}>
                     <h1>{company.name}</h1>
+                    {/* O texto "Verificada" já nomeia o elemento, pelo que o
+                        `aria-label` era redundante — e proibido sem `role`. */}
                     {company.verified ? (
-                      <span
-                        className={styles.verified}
-                        aria-label="Empresa verificada"
-                      >
+                      <span className={styles.verified}>
                         <FiCheckCircle aria-hidden="true" />
                         Verificada
                       </span>

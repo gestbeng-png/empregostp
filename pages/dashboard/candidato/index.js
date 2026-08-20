@@ -688,8 +688,16 @@ function CandidateSectionHeader({
         {eyebrow ? (
           <span className={styles.candidateSectionEyebrow}>{eyebrow}</span>
         ) : null}
+        {/*
+          Cada separador é, para o utilizador, uma página: candidaturas, vagas
+          guardadas, entrevistas, verificação, mensagens e notificações. Como
+          um `h2`, nenhuma delas tinha cabeçalho de nível 1 e quem usa leitor
+          de ecrã ficava sem o principal mecanismo de orientação. Os restantes
+          separadores (visão geral, planos e definições) trazem o seu próprio
+          `h1` e não passam por aqui, por isso não há duplicação.
+        */}
         <div className={styles.candidateSectionTitleRow}>
-          <h2>{title}</h2>
+          <h1>{title}</h1>
           {count !== undefined ? (
             <span className={styles.candidateSectionCount}>{count}</span>
           ) : null}

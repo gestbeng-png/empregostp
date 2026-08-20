@@ -558,7 +558,7 @@ export default function AdminJobCreate({ companies = [] }) {
                           color: 'white',
                         }}
                       />
-                      <small style={{ color: '#94a3b8' }}>
+                      <small style={{ color: '#4a5568' }}>
                         A vaga será publicada com este nome, sem criar uma conta
                         empresarial.
                       </small>
@@ -907,7 +907,7 @@ export default function AdminJobCreate({ companies = [] }) {
                       color: 'white',
                     }}
                   />
-                  <small style={{ color: '#94a3b8' }}>
+                  <small style={{ color: '#4a5568' }}>
                     Opcional. Separe os benefícios por linha para facilitar a
                     leitura.
                   </small>
@@ -984,7 +984,7 @@ export default function AdminJobCreate({ companies = [] }) {
                             href={jobData.tdrUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            style={{ color: '#69c8ff', fontSize: '0.875rem' }}
+                            style={{ color: '#0a6fa8', fontSize: '0.875rem' }}
                           >
                             Ver documento
                           </a>
@@ -1032,7 +1032,7 @@ export default function AdminJobCreate({ companies = [] }) {
                       <FiUploadCloud
                         aria-hidden="true"
                         size={32}
-                        color="#69c8ff"
+                        color="#0a6fa8"
                       />
                       <strong>
                         {uploadingTDR

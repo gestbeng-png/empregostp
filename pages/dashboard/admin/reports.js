@@ -27,13 +27,13 @@ const getActivityColor = (type) => {
     case 'user_created':
       return '#3b82f6';
     case 'job_created':
-      return '#10b981';
+      return '#0b6644';
     case 'job_updated':
       return '#f59e0b';
     case 'application_created':
       return '#8b5cf6';
     default:
-      return '#64748b';
+      return '#4a5568';
   }
 };
 
@@ -114,7 +114,7 @@ export default function AdminReports({ reports = {} }) {
             <ReportCard
               title="Candidatos"
               value={reports.users?.candidatos || 0}
-              color="#10b981"
+              color="#0b6644"
               icon={
                 <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -149,7 +149,7 @@ export default function AdminReports({ reports = {} }) {
               <div className={styles.metricRow}>
                 <span className={styles.metricLabel}>Candidatos</span>
                 <div className={styles.metricTrack}>
-                  <div className={styles.metricFill} style={{ '--metric-width': `${safePercent(reports.users?.candidatos, userTotal)}%`, '--metric-color': '#10b981' }} />
+                  <div className={styles.metricFill} style={{ '--metric-width': `${safePercent(reports.users?.candidatos, userTotal)}%`, '--metric-color': '#0b6644' }} />
                 </div>
                 <span className={styles.metricValue}>{reports.users?.candidatos || 0}</span>
               </div>
@@ -187,7 +187,7 @@ export default function AdminReports({ reports = {} }) {
             <ReportCard
               title="Vagas Ativas"
               value={reports.jobs?.active || 0}
-              color="#10b981"
+              color="#0b6644"
               icon={
                 <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -197,7 +197,7 @@ export default function AdminReports({ reports = {} }) {
             <ReportCard
               title="Vagas Fechadas"
               value={reports.jobs?.closed || 0}
-              color="#ef4444"
+              color="#b91c1c"
               icon={
                 <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -222,21 +222,21 @@ export default function AdminReports({ reports = {} }) {
               <div className={styles.metricRow}>
                 <span className={styles.metricLabel}>Ativas</span>
                 <div className={styles.metricTrack}>
-                  <div className={styles.metricFill} style={{ '--metric-width': `${safePercent(reports.jobs?.active, jobTotal)}%`, '--metric-color': '#10b981' }} />
+                  <div className={styles.metricFill} style={{ '--metric-width': `${safePercent(reports.jobs?.active, jobTotal)}%`, '--metric-color': '#0b6644' }} />
                 </div>
                 <span className={styles.metricValue}>{reports.jobs?.active || 0}</span>
               </div>
               <div className={styles.metricRow}>
                 <span className={styles.metricLabel}>Fechadas</span>
                 <div className={styles.metricTrack}>
-                  <div className={styles.metricFill} style={{ '--metric-width': `${safePercent(reports.jobs?.closed, jobTotal)}%`, '--metric-color': '#ef4444' }} />
+                  <div className={styles.metricFill} style={{ '--metric-width': `${safePercent(reports.jobs?.closed, jobTotal)}%`, '--metric-color': '#b91c1c' }} />
                 </div>
                 <span className={styles.metricValue}>{reports.jobs?.closed || 0}</span>
               </div>
               <div className={styles.metricRow}>
                 <span className={styles.metricLabel}>Desativadas</span>
                 <div className={styles.metricTrack}>
-                  <div className={styles.metricFill} style={{ '--metric-width': `${safePercent(reports.jobs?.disabled, jobTotal)}%`, '--metric-color': '#94a3b8' }} />
+                  <div className={styles.metricFill} style={{ '--metric-width': `${safePercent(reports.jobs?.disabled, jobTotal)}%`, '--metric-color': '#4a5568' }} />
                 </div>
                 <span className={styles.metricValue}>{reports.jobs?.disabled || 0}</span>
               </div>

@@ -18,7 +18,7 @@ const getStatusConfig = (status) => {
       return {
         label: 'Aprovado',
         backgroundColor: 'rgba(16, 185, 129, 0.15)',
-        color: '#34d399',
+        color: '#116e4b',
         border: '1px solid rgba(16, 185, 129, 0.3)',
       };
     case 'rejected':
@@ -32,7 +32,7 @@ const getStatusConfig = (status) => {
       return {
         label: 'Aguardando comprovativo',
         backgroundColor: 'rgba(245, 158, 11, 0.15)',
-        color: '#fbbf24',
+        color: '#8a5a00',
         border: '1px solid rgba(245, 158, 11, 0.3)',
       };
   }
@@ -302,7 +302,7 @@ export default function SubscriptionRequests() {
                             className={`${styles.badge} ${styles.badgeSmall}`}
                             style={{
                               '--badge-bg': 'rgba(99, 102, 241, 0.15)',
-                              '--badge-color': '#a5b4fc',
+                              '--badge-color': '#4338ca',
                               '--badge-border':
                                 '1px solid rgba(99, 102, 241, 0.3)',
                             }}
@@ -376,8 +376,8 @@ export default function SubscriptionRequests() {
                                     ? 'rgba(16, 185, 129, 0.32)'
                                     : 'rgba(148, 163, 184, 0.18)',
                                   '--button-color': canApprove
-                                    ? '#34d399'
-                                    : '#94a3b8',
+                                    ? '#116e4b'
+                                    : '#4a5568',
                                 }}
                               >
                                 Aprovar

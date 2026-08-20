@@ -54,7 +54,7 @@ const FILTERS = [
   {
     key: 'completed',
     title: 'Concluídos',
-    accent: 'var(--dash-success-text, #168a55)',
+    accent: 'var(--dash-success-text, #0f6b41)',
   },
   {
     key: 'rejected',

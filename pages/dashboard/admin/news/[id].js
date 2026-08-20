@@ -266,7 +266,7 @@ export default function AdminNewsEdit({ newsData, isNew }) {
             <Link
               href="/dashboard/admin/news"
               style={{
-                color: '#94a3b8',
+                color: '#4a5568',
                 textDecoration: 'none',
                 fontSize: '0.9rem',
                 marginBottom: '0.5rem',

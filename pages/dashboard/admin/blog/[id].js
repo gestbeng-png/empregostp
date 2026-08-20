@@ -296,7 +296,7 @@ export default function AdminBlogEdit({ postData, isNew }) {
             <Link
               href="/dashboard/admin/blog"
               style={{
-                color: '#94a3b8',
+                color: '#4a5568',
                 textDecoration: 'none',
                 fontSize: '0.9rem',
                 marginBottom: '0.5rem',
@@ -430,7 +430,7 @@ export default function AdminBlogEdit({ postData, isNew }) {
                 id="blog-content-help"
                 style={{
                   fontSize: '0.8rem',
-                  color: '#94a3b8',
+                  color: '#4a5568',
                   marginBottom: '0.5rem',
                 }}
               >

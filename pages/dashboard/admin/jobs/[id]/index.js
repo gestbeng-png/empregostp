@@ -351,7 +351,7 @@ export default function AdminJobDetail({
                 background:
                   status === 'active'
                     ? 'rgba(16, 185, 129, 0.5)'
-                    : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    : 'linear-gradient(135deg, #0b6644 0%, #059669 100%)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '12px',
@@ -372,7 +372,7 @@ export default function AdminJobDetail({
                   status === 'closed'
                     ? 'rgba(245, 158, 11, 0.5)'
                     : 'rgba(245, 158, 11, 0.2)',
-                color: status === 'closed' ? '#fbbf24' : '#fbbf24',
+                color: status === 'closed' ? '#8a5a00' : '#8a5a00',
                 border: '2px solid rgba(245, 158, 11, 0.3)',
                 borderRadius: '12px',
                 fontWeight: '700',
@@ -533,7 +533,7 @@ export default function AdminJobDetail({
               <p
                 style={{
                   margin: 0,
-                  color: '#34d399',
+                  color: '#116e4b',
                   fontSize: '1.2rem',
                   fontWeight: '700',
                 }}
@@ -583,7 +583,7 @@ export default function AdminJobDetail({
                   background: 'rgba(245, 158, 11, 0.2)',
                   border: '1px solid rgba(245, 158, 11, 0.3)',
                   borderRadius: '10px',
-                  color: '#fbbf24',
+                  color: '#8a5a00',
                   fontSize: '0.9rem',
                   fontWeight: '700',
                 }}
@@ -609,7 +609,7 @@ export default function AdminJobDetail({
                   background: 'rgba(16, 185, 129, 0.2)',
                   border: '1px solid rgba(16, 185, 129, 0.3)',
                   borderRadius: '10px',
-                  color: '#34d399',
+                  color: '#116e4b',
                   fontSize: '0.9rem',
                   fontWeight: '700',
                 }}
@@ -836,7 +836,7 @@ function StatusBadge({ status }) {
   let color, bgColor, borderColor, label;
 
   if (status === 'active' || !status) {
-    color = '#34d399';
+    color = '#116e4b';
     bgColor = 'rgba(16, 185, 129, 0.2)';
     borderColor = 'rgba(16, 185, 129, 0.3)';
     label = 'Ativa';
@@ -846,12 +846,12 @@ function StatusBadge({ status }) {
     borderColor = 'rgba(239, 68, 68, 0.3)';
     label = 'Fechada';
   } else if (status === 'disabled') {
-    color = '#94a3b8';
+    color = '#4a5568';
     bgColor = 'rgba(100, 116, 139, 0.2)';
     borderColor = 'rgba(100, 116, 139, 0.3)';
     label = 'Desativada';
   } else if (status === 'pending') {
-    color = '#fbbf24';
+    color = '#8a5a00';
     bgColor = 'rgba(245, 158, 11, 0.2)';
     borderColor = 'rgba(245, 158, 11, 0.3)';
     label = 'Pendente';
@@ -866,7 +866,7 @@ function StatusBadge({ status }) {
     borderColor = 'rgba(139, 92, 246, 0.3)';
     label = 'Entrevista';
   } else if (status === 'approved') {
-    color = '#34d399';
+    color = '#116e4b';
     bgColor = 'rgba(16, 185, 129, 0.2)';
     borderColor = 'rgba(16, 185, 129, 0.3)';
     label = 'Aprovada';

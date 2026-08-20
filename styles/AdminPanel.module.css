@@ -365,7 +365,7 @@
 }
 
 .tableCellSoft {
-  color: #7b8da8;
+  color: #556377;
 }
 
 .tableCellStrong {
@@ -387,7 +387,7 @@
 .metaText {
   margin-top: 0.2rem;
   font-size: 0.85rem;
-  color: #7b8da8;
+  color: #556377;
 }
 
 .listCompact {
@@ -398,7 +398,7 @@
 }
 
 .listCompactEmpty {
-  color: #7b8da8;
+  color: #556377;
 }
 
 .badge {
@@ -466,7 +466,7 @@
 }
 
 .buttonDanger {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%);
   color: #162a55;
   box-shadow: 0 4px 16px rgba(239, 68, 68, 0.25);
 }
@@ -781,7 +781,13 @@
   gap: 0.35rem;
 }
 
+/* Alvo de toque: "Abrir comprovativo" media 128x20 px. É a acção que o
+   administrador usa para ver a prova de pagamento antes de aprovar, pelo que
+   convém cumprir os 44 px recomendados em vez de exigir pontaria. */
 .proofLink {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
   color: #2057d7;
   font-weight: 600;
   text-decoration: none;
@@ -904,7 +910,7 @@
 .verificationEvidenceItem span {
   display: block;
   margin-top: 0.35rem;
-  color: #7b8da8;
+  color: #556377;
   font-size: 0.78rem;
 }
 
@@ -1022,7 +1028,7 @@
   align-items: center;
   justify-content: center;
   color: #162a55;
-  background: var(--activity-color, #64748b);
+  background: var(--activity-color, #4a5568);
   flex-shrink: 0;
 }
 
@@ -1042,7 +1048,7 @@
 
 .activityDate {
   margin: 0;
-  color: #7b8da8;
+  color: #556377;
   font-size: 0.8rem;
 }
 
@@ -1170,7 +1176,7 @@
   --admin-bg: var(--bg, #f4f7fb);
   --admin-surface: var(--surface, #ffffff);
   --admin-text: var(--text-1, #17233b);
-  --admin-muted: var(--text-3, #64748b);
+  --admin-muted: var(--text-3, #4a5568);
   --admin-border: var(--border, #dfe7f1);
   --admin-radius: var(--dash-radius, 10px);
   --admin-shadow: var(--shadow-card, 0 2px 8px rgba(15, 23, 42, 0.055));
@@ -1855,7 +1861,7 @@
 .reportCard:hover,
 .actionCard:hover {
   transform: none;
-  border-color: var(--sky, #69c8ff);
+  border-color: var(--sky, #0a6fa8);
   box-shadow: var(--admin-shadow);
 }
 
@@ -1934,7 +1940,7 @@
 }
 
 .buttonAccent {
-  border-color: var(--sky, #69c8ff);
+  border-color: var(--sky, #0a6fa8);
   background: var(--admin-surface-soft);
   color: var(--admin-blue);
 }
@@ -2110,27 +2116,27 @@
 }
 
 .alertSuccess {
-  border-color: color-mix(in srgb, var(--success, #168a55) 30%, transparent);
+  border-color: color-mix(in srgb, var(--success, #0f6b41) 30%, transparent);
   background: color-mix(
     in srgb,
-    var(--success, #168a55) 12%,
+    var(--success, #0f6b41) 12%,
     var(--admin-surface)
   );
-  color: var(--success, #168a55);
+  color: var(--success, #0f6b41);
 }
 
 .alertError {
-  border-color: color-mix(in srgb, var(--danger, #c23d4f) 30%, transparent);
+  border-color: color-mix(in srgb, var(--danger, #a11d2f) 30%, transparent);
   background: color-mix(
     in srgb,
-    var(--danger, #c23d4f) 12%,
+    var(--danger, #a11d2f) 12%,
     var(--admin-surface)
   );
-  color: var(--danger, #c23d4f);
+  color: var(--danger, #a11d2f);
 }
 
 .buttonDanger {
-  background: var(--danger, #c23d4f);
+  background: var(--danger, #a11d2f);
   color: var(--dash-action-ink, #ffffff);
 }
 
@@ -2200,8 +2206,8 @@
     [style*='color: #46597a'],
     [style*='color: #607394'],
     [style*='color: #718096'],
-    [style*='color: #7b8da8'],
-    [style*='color: #94a3b8'],
+    [style*='color: #556377'],
+    [style*='color: #4a5568'],
     [style*='color: rgb(74, 85, 104)'],
     [style*='color: rgb(70, 89, 122)'],
     [style*='color: rgb(96, 115, 148)'],

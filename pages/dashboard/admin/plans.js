@@ -78,15 +78,15 @@ const PLAN_SECTIONS = [
     accent: '#f59e0b',
     createBg: 'rgba(245, 158, 11, 0.18)',
     createBorder: 'rgba(245, 158, 11, 0.35)',
-    createColor: '#fbbf24',
+    createColor: '#8a5a00',
   },
   {
     type: 'candidato',
     title: 'Planos para Candidatos',
-    accent: '#10b981',
+    accent: '#0b6644',
     createBg: 'rgba(16, 185, 129, 0.18)',
     createBorder: 'rgba(16, 185, 129, 0.35)',
-    createColor: '#34d399',
+    createColor: '#116e4b',
   },
 ];
 
@@ -112,14 +112,14 @@ const getRequestStatusConfig = (status) => {
       return {
         label: 'Aguardando comprovativo',
         backgroundColor: 'rgba(245, 158, 11, 0.18)',
-        color: '#fbbf24',
+        color: '#8a5a00',
         border: '1px solid rgba(245, 158, 11, 0.3)',
       };
     case 'approved':
       return {
         label: 'Aprovado',
         backgroundColor: 'rgba(16, 185, 129, 0.18)',
-        color: '#34d399',
+        color: '#116e4b',
         border: '1px solid rgba(16, 185, 129, 0.3)',
       };
     case 'rejected':
@@ -144,7 +144,7 @@ const getUserTypeConfig = (userType) => {
     return {
       label: 'Empresa',
       backgroundColor: 'rgba(245, 158, 11, 0.18)',
-      color: '#fbbf24',
+      color: '#8a5a00',
       border: '1px solid rgba(245, 158, 11, 0.3)',
     };
   }
@@ -152,7 +152,7 @@ const getUserTypeConfig = (userType) => {
   return {
     label: 'Candidato',
     backgroundColor: 'rgba(16, 185, 129, 0.18)',
-    color: '#34d399',
+    color: '#116e4b',
     border: '1px solid rgba(16, 185, 129, 0.3)',
   };
 };
@@ -601,8 +601,8 @@ export default function AdminPlans() {
                               ? 'rgba(16, 185, 129, 0.18)'
                               : 'rgba(100, 116, 139, 0.18)',
                             '--badge-color': plan.destaque
-                              ? '#34d399'
-                              : '#94a3b8',
+                              ? '#116e4b'
+                              : '#4a5568',
                             '--badge-border': plan.destaque
                               ? '1px solid rgba(16, 185, 129, 0.3)'
                               : '1px solid rgba(100, 116, 139, 0.3)',
@@ -621,8 +621,8 @@ export default function AdminPlans() {
                             ? 'rgba(16, 185, 129, 0.18)'
                             : 'rgba(100, 116, 139, 0.18)',
                           '--badge-color': plan.curriculoDestacado
-                            ? '#34d399'
-                            : '#94a3b8',
+                            ? '#116e4b'
+                            : '#4a5568',
                           '--badge-border': plan.curriculoDestacado
                             ? '1px solid rgba(16, 185, 129, 0.3)'
                             : '1px solid rgba(100, 116, 139, 0.3)',
@@ -808,8 +808,8 @@ export default function AdminPlans() {
                                 ? 'rgba(16, 185, 129, 0.32)'
                                 : 'rgba(148, 163, 184, 0.18)',
                               '--button-color': canApprove
-                                ? '#34d399'
-                                : '#94a3b8',
+                                ? '#116e4b'
+                                : '#4a5568',
                             }}
                           >
                             Aprovar
@@ -905,12 +905,12 @@ export default function AdminPlans() {
             <StatCard
               title="Aprovados"
               value={stats.approvedRequests}
-              color="#10b981"
+              color="#0b6644"
             />
             <StatCard
               title="Rejeitados"
               value={stats.rejectedRequests}
-              color="#ef4444"
+              color="#b91c1c"
             />
           </div>
         </section>

@@ -9,13 +9,13 @@ import styles from '../../../styles/AdminPanel.module.css';
 const STATUS_CONFIG = {
   pending: {
     label: 'Pendente',
-    color: '#fbbf24',
+    color: '#8a5a00',
     background: 'rgba(245, 158, 11, 0.18)',
     border: '1px solid rgba(245, 158, 11, 0.3)',
   },
   approved: {
     label: 'Aprovado',
-    color: '#34d399',
+    color: '#116e4b',
     background: 'rgba(16, 185, 129, 0.18)',
     border: '1px solid rgba(16, 185, 129, 0.3)',
   },
@@ -33,7 +33,7 @@ const STATUS_CONFIG = {
   },
   draft: {
     label: 'Rascunho',
-    color: '#94a3b8',
+    color: '#4a5568',
     background: 'rgba(148, 163, 184, 0.18)',
     border: '1px solid rgba(148, 163, 184, 0.3)',
   },
@@ -270,12 +270,12 @@ export default function AdminVerificacoes() {
             <StatCard
               title="Perfis públicos verificados"
               value={stats.verified}
-              color="#10b981"
+              color="#0b6644"
             />
             <StatCard
               title="Total carregados"
               value={stats.total}
-              color="#64748b"
+              color="#4a5568"
             />
           </div>
         </section>
@@ -359,10 +359,11 @@ export default function AdminVerificacoes() {
                             <span
                               className={`${styles.badge} ${styles.badgeSmall}`}
                               style={{
-                                '--badge-bg': 'rgba(255,255,255,0.08)',
-                                '--badge-color': '#e2e8f0',
+                                // Era branco-acinzentado sobre branco (1.23:1).
+                                '--badge-bg': 'rgba(21, 37, 79, 0.06)',
+                                '--badge-color': '#2d3f5c',
                                 '--badge-border':
-                                  '1px solid rgba(255,255,255,0.08)',
+                                  '1px solid rgba(21, 37, 79, 0.12)',
                               }}
                             >
                               {requestedTypeCount(verification)} tipo(s)
@@ -479,7 +480,7 @@ function VerificationReviewModal({
                     className={styles.badge}
                     style={{
                       '--badge-bg': 'rgba(245, 158, 11, 0.14)',
-                      '--badge-color': '#fbbf24',
+                      '--badge-color': '#8a5a00',
                       '--badge-border': '1px solid rgba(245, 158, 11, 0.2)',
                     }}
                   >
@@ -532,7 +533,7 @@ function VerificationReviewModal({
                         ? 'rgba(16, 185, 129, 0.14)'
                         : 'rgba(239, 68, 68, 0.14)',
                       '--badge-color': approvalEligibility.allowed
-                        ? '#34d399'
+                        ? '#116e4b'
                         : '#f87171',
                       '--badge-border': approvalEligibility.allowed
                         ? '1px solid rgba(16,185,129,0.2)'
@@ -682,7 +683,7 @@ function VerificationReviewModal({
                             style={{
                               '--button-bg': 'rgba(16, 185, 129, 0.15)',
                               '--button-border': 'rgba(16,185,129,0.3)',
-                              '--button-color': '#34d399',
+                              '--button-color': '#116e4b',
                             }}
                           >
                             Aprovar tipo

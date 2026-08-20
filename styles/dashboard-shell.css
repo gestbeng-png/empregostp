@@ -29,12 +29,12 @@
   --dash-field-navy: #1e2b4d;
   --dash-blue: #064bb5;
   --dash-blue-hover: #0a65cc;
-  --dash-sky: #69c8ff;
+  --dash-sky: #0a6fa8;
   --dash-lime: #daff45;
   --dash-lime-border: #bddb40;
   --dash-lime-ink: #102441;
-  --dash-danger: #c23d4f;
-  --dash-success: #168a55;
+  --dash-danger: #a11d2f;
+  --dash-success: #0f6b41;
   --dash-warning: #a96612;
   --dash-radius-sm: 4px;
   --dash-radius: 8px;
@@ -145,7 +145,7 @@ html[data-dashboard-theme='dark'] .dashShell[data-theme='light'] {
 /* ─── ROLE ACCENTS ───────────────────────────────────────── */
 .dashShell.role-candidato {
   --role: #064bb5;
-  --role-2: #69c8ff;
+  --role-2: #0a6fa8;
   --role-grad: #064bb5;
 }
 .dashShell.role-empresa {
@@ -266,7 +266,7 @@ html[data-dashboard-theme='dark'] .dashShell[data-theme='light'] {
   padding: 3px 8px;
   border-radius: 6px;
   background: rgba(217, 255, 47, 0.2);
-  color: #7a9000;
+  color: #5c6d00;
   font-size: 0.6rem;
   font-weight: 800;
   text-transform: uppercase;
@@ -609,7 +609,7 @@ html[data-dashboard-theme='dark'] .dashShell[data-theme='light'] {
   padding: 3px 8px;
   border-radius: 6px;
   background: rgba(217, 255, 47, 0.2);
-  /* #7a9000 sobre esta tinta composta a branco dava 3.48:1, abaixo dos 4.5:1
+  /* #5c6d00 sobre esta tinta composta a branco dava 3.48:1, abaixo dos 4.5:1
      exigidos para texto de 12px. Este tom mantém a família lima e sobe para
      5.6:1. */
   color: #5c6d00;
@@ -814,7 +814,7 @@ html[data-dashboard-theme='dark'] .dashShell[data-theme='light'] {
 }
 .dashShell .stat-delta.warn {
   background: rgba(217, 255, 47, 0.18);
-  color: #7a9000;
+  color: #5c6d00;
 }
 .dashShell[data-theme='dark'] .stat-delta.warn {
   color: #d9ff2f;
@@ -1201,7 +1201,7 @@ html[data-dashboard-theme='dark'] .dashShell[data-theme='light'] {
   border-radius: 12px;
 }
 .dashShell .btn-danger {
-  background: linear-gradient(135deg, #ef4444, #dc6a7c);
+  background: linear-gradient(135deg, #b91c1c, #dc6a7c);
   color: #fff;
   box-shadow: 0 10px 22px rgba(220, 106, 124, 0.22);
 }
@@ -4525,12 +4525,12 @@ html[data-dashboard-theme='dark'] .dashShell[data-theme='light'] {
   --dash-navy-deep: #1e2b4d;
   --dash-blue: #064bb5;
   --dash-blue-hover: #0a65cc;
-  --dash-sky: #69c8ff;
+  --dash-sky: #0a6fa8;
   --dash-lime: #daff45;
   --dash-lime-border: #bddb40;
   --dash-lime-ink: #102441;
-  --dash-danger: #c23d4f;
-  --dash-success: #168a55;
+  --dash-danger: #a11d2f;
+  --dash-success: #0f6b41;
   --dash-warning: #a96612;
   --dash-radius-sm: 4px;
   --dash-radius: 8px;
@@ -4582,7 +4582,7 @@ html[data-dashboard-theme='dark'] .dashShell[data-theme='light'] {
 .dashShell.role-candidato,
 .dashShell.role-admin {
   --role: #064bb5;
-  --role-2: #69c8ff;
+  --role-2: #0a6fa8;
   --role-grad: #064bb5;
 }
 
@@ -6101,14 +6101,14 @@ html[data-dashboard-theme='dark'] .dashShell[data-theme='light'] {
   --dash-ink-faint: #626b77;
   --dash-blue: #064bb5;
   --dash-blue-hover: #0a65cc;
-  --dash-sky: #69c8ff;
+  --dash-sky: #0a6fa8;
   --dash-lime: #daff45;
   --dash-lime-border: #bddb40;
   --dash-lime-ink: #102441;
-  --dash-danger: #c23d4f;
-  --dash-success: #168a55;
+  --dash-danger: #a11d2f;
+  --dash-success: #0f6b41;
   --dash-info-text: #064bb5;
-  --dash-success-text: #168a55;
+  --dash-success-text: #0f6b41;
   --dash-warning-text: #985800;
   --dash-danger-text: #b83d55;
   --dash-company-text: #5c6d00;
@@ -6122,7 +6122,7 @@ html[data-dashboard-theme='dark'] .dashShell[data-theme='light'] {
   --scrollbar-bg: #e4e5e8;
   --scrollbar-thumb: rgba(118, 127, 140, 0.64);
   --role: #064bb5;
-  --role-2: #69c8ff;
+  --role-2: #0a6fa8;
   --role-grad: #064bb5;
   background: var(--dash-canvas);
   font-family: 'Instrument Sans', Arial, sans-serif;

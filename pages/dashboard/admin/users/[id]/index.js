@@ -254,7 +254,7 @@ export default function AdminUserDetail({ user, profile, applications }) {
                   marginTop: '2rem',
                   padding: '0.875rem',
                   background:
-                    'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    'linear-gradient(135deg, #0b6644 0%, #059669 100%)',
                   color: 'white',
                   textAlign: 'center',
                   textDecoration: 'none',
@@ -556,22 +556,22 @@ function UserTypeBadge({ type }) {
   let color, bgColor, borderColor, label;
 
   if (type === 'candidato') {
-    color = '#34d399';
+    color = '#116e4b';
     bgColor = 'rgba(16, 185, 129, 0.2)';
     borderColor = 'rgba(16, 185, 129, 0.3)';
     label = 'Candidato';
   } else if (type === 'empresa') {
-    color = '#fbbf24';
+    color = '#8a5a00';
     bgColor = 'rgba(251, 191, 36, 0.2)';
     borderColor = 'rgba(251, 191, 36, 0.3)';
     label = 'Empresa';
   } else if (type === 'admin') {
-    color = '#a78bfa';
+    color = '#6d28d9';
     bgColor = 'rgba(139, 92, 246, 0.2)';
     borderColor = 'rgba(139, 92, 246, 0.3)';
     label = 'Admin';
   } else {
-    color = '#94a3b8';
+    color = '#4a5568';
     bgColor = 'rgba(100, 116, 139, 0.2)';
     borderColor = 'rgba(100, 116, 139, 0.3)';
     label = 'Desconhecido';
@@ -599,7 +599,7 @@ function ApplicationStatusBadge({ status }) {
   let color, bgColor, borderColor, label;
 
   if (status === 'approved') {
-    color = '#34d399';
+    color = '#116e4b';
     bgColor = 'rgba(16, 185, 129, 0.2)';
     borderColor = 'rgba(16, 185, 129, 0.3)';
     label = 'Aprovada';
@@ -609,7 +609,7 @@ function ApplicationStatusBadge({ status }) {
     borderColor = 'rgba(239, 68, 68, 0.3)';
     label = 'Rejeitada';
   } else {
-    color = '#fbbf24';
+    color = '#8a5a00';
     bgColor = 'rgba(245, 158, 11, 0.2)';
     borderColor = 'rgba(245, 158, 11, 0.3)';
     label = 'Pendente';

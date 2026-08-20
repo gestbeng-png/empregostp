@@ -398,7 +398,7 @@ export default function AdminResourceEdit({ itemData, isNew, type }) {
       marginBottom: '0.5rem',
     },
     subtitle: {
-      color: '#94a3b8',
+      color: '#4a5568',
       fontSize: '1rem',
     },
     card: {
@@ -504,7 +504,7 @@ export default function AdminResourceEdit({ itemData, isNew, type }) {
             <Link
               href={`/dashboard/admin/resources?type=${type}`}
               style={{
-                color: '#94a3b8',
+                color: '#4a5568',
                 textDecoration: 'none',
                 fontSize: '0.9rem',
                 marginBottom: '0.5rem',

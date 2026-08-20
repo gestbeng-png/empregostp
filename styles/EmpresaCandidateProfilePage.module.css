@@ -177,7 +177,7 @@
 
 .actionError {
   margin: 10px 0 0;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.5;
   color: var(--danger, #b42318);
 }

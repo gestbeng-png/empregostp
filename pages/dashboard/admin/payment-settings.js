@@ -214,7 +214,7 @@ export default function PaymentSettings() {
                 type="submit"
                 disabled={saving || loading}
                 className={`${styles.buttonBase} ${styles.buttonAccent}`}
-                style={{ '--button-bg': 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)', '--button-border': 'transparent', '--button-color': '#fff' }}
+                style={{ '--button-bg': 'linear-gradient(135deg, #8a5a00 0%, #f59e0b 100%)', '--button-border': 'transparent', '--button-color': '#fff' }}
               >
                 {saving ? 'Salvando...' : 'Salvar Configurações'}
               </button>

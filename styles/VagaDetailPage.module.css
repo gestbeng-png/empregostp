@@ -1763,7 +1763,7 @@
   min-height: 27px;
   padding: 5px 12px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 750;
   letter-spacing: 0;
   text-transform: none;
@@ -1820,7 +1820,7 @@
   border-radius: 999px;
   background: #f2f4f6;
   color: #44474e;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .heroActions {
@@ -1998,7 +1998,7 @@
 
 .detailLabel {
   color: #75777f;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .detailValue {
@@ -2089,7 +2089,7 @@
 
 .generalInfoRow dt {
   color: #75777f;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .generalInfoRow dd {
@@ -2160,7 +2160,7 @@
 
 .decisionAction {
   color: #75777f;
-  font-size: 12px;
+  font-size: 14px;
   text-transform: none;
 }
 
@@ -2435,7 +2435,7 @@
   .toolbarTitle {
     display: block;
     color: var(--job-navy);
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 650;
   }
 
@@ -2503,7 +2503,7 @@
   .newListingPill {
     min-height: 24px;
     padding: 4px 8px;
-    font-size: 12px;
+    font-size: 14px;
   }
 
   .title {
@@ -2674,7 +2674,7 @@
 
   .generalInfoRow dt {
     color: rgba(255, 255, 255, 0.62);
-    font-size: 13px;
+    font-size: 14px;
   }
 
   .generalInfoRow dd {
