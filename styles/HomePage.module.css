@@ -6065,3 +6065,28 @@
     transition: none;
   }
 }
+
+/* O campo de pesquisa é um input transparente e sem borda dentro de um pill
+   que já assinala o foco (`.searchForm:focus-within`: borda sólida mais halo).
+   A regra global de `input:focus-visible` desenhava por cima um contorno de
+   3px com 3px de recuo, que traçava a caixa interna do input e passava por
+   baixo do botão — duas indicações de foco a competir, e a de dentro
+   desalinhada com a composição.
+   Retira-se apenas o contorno do input: o indicador visível continua a ser o
+   do contentor, que envolve campo e botão. */
+.searchForm .searchInput:focus,
+.searchForm .searchInput:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Como o input deixa de ter indicador próprio, o do contentor tem de ser
+   inequívoco — não basta mudar a cor da borda.
+   O prefixo `.page.page.page` não é decorativo: esta folha tem uma regra que
+   usa esse mesmo truque para impor `box-shadow: none` a vários blocos, e com
+   especificidade superior à de um simples `.searchForm:focus-within`. Sem o
+   igualar, o halo era descartado silenciosamente. */
+.page.page.page .searchForm:focus-within {
+  border-color: #064bb5;
+  box-shadow: 0 0 0 3px rgba(6, 75, 181, 0.22);
+}
