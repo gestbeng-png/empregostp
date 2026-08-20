@@ -118,8 +118,27 @@ export default async function handler(req, res) {
     }
 
     if (req.method === "DELETE") {
+      // Apagar só a vaga deixava para trás as candidaturas e os favoritos que
+      // lhe apontavam: registos que a interface tenta abrir e nao encontra, e
+      // que continuavam a contar para estatisticas. Removidos no mesmo lote.
+      const [applicationsSnapshot, savedSnapshot] = await Promise.all([
+        admin.firestore().collection("applications").where("jobId", "==", id).get(),
+        admin.firestore().collection("savedJobs").where("jobId", "==", id).get(),
+      ]);
+
+      const batch = admin.firestore().batch();
+      applicationsSnapshot.docs.forEach((doc) => batch.delete(doc.ref));
+      savedSnapshot.docs.forEach((doc) => batch.delete(doc.ref));
+      await batch.commit();
+
       await jobRef.delete();
-      return res.status(200).json({ message: "Vaga eliminada com sucesso" });
+      return res.status(200).json({
+        message: "Vaga eliminada com sucesso",
+        removidos: {
+          candidaturas: applicationsSnapshot.size,
+          vagasGuardadas: savedSnapshot.size,
+        },
+      });
     }
 
     if (req.method === "PUT") {

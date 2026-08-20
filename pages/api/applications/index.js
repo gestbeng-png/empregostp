@@ -17,6 +17,7 @@ import { calculateSkillsAssessmentResult, getPublicSkillsAssessment } from '../.
 import { createServerNotification } from '../../../lib/serverNotifications';
 import { logServerError } from '../../../lib/serverLog';
 import { requireActiveApiUser } from '../../../lib/apiUserAuth';
+import { recordActivity } from '../../../lib/activityLog';
 
 function applicationError(code, message, details = {}) {
   const error = new Error(message);
@@ -293,12 +294,12 @@ export default async function handler(req, res) {
         }
 
         // Registrar atividade para auditoria
-        await adminApp.firestore().collection('admin_activities').add({
-          action: 'create_application',
+        await recordActivity(adminApp, {
+          type: 'application_created',
+          description: `Nova candidatura à vaga "${jobData.titulo || jobId}"`,
+          applicationId: applRef.id,
           candidateId: uid,
           jobId,
-          applicationId: applRef.id,
-          timestamp: firebaseAdmin.firestore.FieldValue.serverTimestamp(),
         });
 
         // Criar notificação para a empresa

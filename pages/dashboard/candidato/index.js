@@ -1607,9 +1607,14 @@ const CandidateDashboard = () => {
     return dayLabels.map((name) => ({ name, value: counts[name] || 0 }));
   }, [applications]);
 
+  // Enquanto `planStatus` não chega, não sabemos qual é o plano. O fallback
+  // anterior afirmava "Básico", pelo que um cliente Premium via o plano errado
+  // no topo do painel até a API responder — e ficava assim indefinidamente se
+  // ela falhasse. `planName: null` deixa a interface mostrar um estado neutro.
+  const planStatusLoaded = Boolean(planStatus?.plan);
   const activePlan = planStatus?.plan || {
     planId: 'basic_candidato',
-    planName: 'Básico',
+    planName: null,
     price: 0,
     isActive: true,
     daysRemaining: null,
@@ -1622,8 +1627,9 @@ const CandidateDashboard = () => {
     certificates: { allowed: false, current: 0, limit: 0 },
   };
 
-  const planHeading =
-    activePlan.price === 0
+  const planHeading = !planStatusLoaded
+    ? 'A carregar plano…'
+    : activePlan.price === 0
       ? 'Plano Grátis'
       : activePlan.planName || 'Plano EmpregoSTP';
   const planFeatureList = getPlanFeatureList(activePlan.features);
@@ -5339,7 +5345,9 @@ const CandidateDashboard = () => {
       ? `Bem-vindo de volta, ${firstName}`
       : formattedDate;
 
-  const planName = activePlan.planName || 'Gratuito';
+  const planName = planStatusLoaded
+    ? activePlan.planName || 'Gratuito'
+    : null;
   const candidatoNav = [
     {
       label: 'Menu principal',
@@ -5559,7 +5567,9 @@ const CandidateDashboard = () => {
         profile={{
           name: profileDisplayName,
           role: 'Candidato',
-          plan: planName === 'Gratuito' ? 'Free' : planName,
+          // `undefined` enquanto carrega: mais honesto do que anunciar um
+          // plano que ainda não sabemos qual é.
+          plan: planName ? (planName === 'Gratuito' ? 'Free' : planName) : undefined,
           avatarUrl: profile?.photoUrl || user?.avatar || undefined,
         }}
       >

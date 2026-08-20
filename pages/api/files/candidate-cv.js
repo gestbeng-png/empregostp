@@ -73,12 +73,19 @@ export default async function handler(req, res) {
       });
     }
 
-    // O caminho tem de estar dentro de cvUrl/{candidateId}/: o valor foi
-    // gravado a partir de input do cliente e não é confiável por si só.
+    // Preferir o caminho de armazenamento guardado ao reparsear o URL público:
+    // o URL antigo traz um token permanente e existe apenas por compatibilidade
+    // com os registos criados antes de `cvStoragePath` passar a ser gravado.
+    // Em qualquer dos casos o caminho tem de estar dentro de
+    // cvUrl/{candidateId}/, porque a origem foi input do cliente.
     const objectPath = resolveOwnedStorageObjectPath({
       ownerUid: candidateId,
       prefix: 'cvUrl',
-      value: candidateProfile.cvUrl || candidateData.cvUrl,
+      value:
+        candidateProfile.cvStoragePath ||
+        candidateData.cvStoragePath ||
+        candidateProfile.cvUrl ||
+        candidateData.cvUrl,
     });
 
     if (!objectPath) {

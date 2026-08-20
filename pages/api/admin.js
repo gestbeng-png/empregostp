@@ -1,4 +1,5 @@
 import { admin } from '../../lib/firebaseAdmin';
+import { getEffectiveJobStatus } from '../../lib/jobExpiration';
 import { logServerError } from '../../lib/serverLog';
 
 export default async function handler(req, res) {
@@ -47,9 +48,13 @@ export default async function handler(req, res) {
 
     // Estatísticas de vagas
     const jobsData = jobsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    const activeJobs = jobsData.filter(job => job.status === 'active').length;
-    const closedJobs = jobsData.filter(job => job.status === 'closed').length;
-    const disabledJobs = jobsData.filter(job => job.status === 'disabled').length;
+    // `status` sozinho conta como activa uma vaga cujo prazo ja passou mas que
+    // ainda nao foi fechada pelo cron. `getEffectiveJobStatus` aplica a
+    // expiracao, que e o que o publico ve.
+    const effectiveStatuses = jobsData.map((job) => getEffectiveJobStatus(job));
+    const activeJobs = effectiveStatuses.filter((s) => s === 'active').length;
+    const closedJobs = effectiveStatuses.filter((s) => s === 'closed').length;
+    const disabledJobs = effectiveStatuses.filter((s) => s === 'disabled').length;
 
     // Retornar os dados
     return res.status(200).json({

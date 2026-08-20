@@ -2,6 +2,7 @@ import { admin as adminApp } from '../../../../lib/firebaseAdmin';
 import { createServerNotification } from '../../../../lib/serverNotifications';
 import { logServerError } from '../../../../lib/serverLog';
 import { requireActiveApiUser } from '../../../../lib/apiUserAuth';
+import { recordActivity } from '../../../../lib/activityLog';
 
 export const WITHDRAWABLE_APPLICATION_STATUSES = new Set([
   'pending',
@@ -119,12 +120,12 @@ export default async function handler(req, res) {
     }
 
     try {
-      await adminApp.firestore().collection('admin_activities').add({
-        action: 'withdraw_application',
+      await recordActivity(adminApp, {
+        type: 'application_withdrawn',
+        description: `Candidatura retirada pelo candidato à vaga "${applicationData?.jobTitle || applicationData?.jobId || ''}"`,
         applicationId,
         candidateId: uid,
         jobId: applicationData?.jobId || null,
-        timestamp: adminApp.firestore.FieldValue.serverTimestamp(),
       });
 
       if (applicationData?.companyId) {

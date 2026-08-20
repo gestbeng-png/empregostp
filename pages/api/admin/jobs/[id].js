@@ -55,15 +55,21 @@ export default async function handler(req, res) {
       });
     } else if (req.method === 'PUT') {
       // Atualiza os dados da vaga
-      const { 
-        titulo, 
-        descricao, 
-        requisitos, 
-        salario, 
-        location, 
-        tipoContrato, 
+      // Campos canónicos — os mesmos que a criação de vagas grava e que
+      // lib/publicJob.js lê. O editor usava `salario`, `location` e `prazo`:
+      // `salario` não existe sequer na cadeia de leitura do público, e `prazo`
+      // fica sempre atrás de `dataFecho`. Resultado: o administrador editava,
+      // via "guardado com sucesso", e a vaga publicada não mudava.
+      const {
+        titulo,
+        descricao,
+        requisitos,
+        salarioDe,
+        salarioAte,
+        localizacao,
+        tipoContrato,
         status,
-        prazo
+        dataFecho
       } = req.body;
 
       // Validar dados
@@ -97,10 +103,11 @@ export default async function handler(req, res) {
 
       // Adicionar campos opcionais se fornecidos
       if (requisitos !== undefined) updateData.requisitos = requisitos;
-      if (salario !== undefined) updateData.salario = salario;
-      if (location !== undefined) updateData.location = location;
+      if (salarioDe !== undefined) updateData.salarioDe = salarioDe;
+      if (salarioAte !== undefined) updateData.salarioAte = salarioAte;
+      if (localizacao !== undefined) updateData.localizacao = localizacao;
       if (tipoContrato !== undefined) updateData.tipoContrato = tipoContrato;
-      if (prazo !== undefined) updateData.prazo = prazo;
+      if (dataFecho !== undefined) updateData.dataFecho = dataFecho;
 
       // Atualizar no Firestore
       await admin.firestore().collection('jobs').doc(id).update(updateData);

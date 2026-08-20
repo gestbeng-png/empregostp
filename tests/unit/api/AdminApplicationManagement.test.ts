@@ -94,7 +94,7 @@ function configureFirestore(
         })),
       };
     }
-    if (name === 'admin_activities') return { add: activityAdd };
+    if (name === 'activities') return { add: activityAdd };
     throw new Error(`Coleção inesperada: ${name}`);
   });
   firestoreMock.mockReturnValue({ collection, runTransaction });

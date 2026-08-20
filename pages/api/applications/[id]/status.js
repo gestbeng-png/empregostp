@@ -6,6 +6,7 @@ import { resolveApplicationCompanyId } from '../../../../lib/applicationOwnershi
 import { isAdminPublishedJob } from '../../../../lib/adminJobManagement';
 import { normalizeDateValue } from '../../../../lib/dateValue';
 import { logServerError } from '../../../../lib/serverLog';
+import { recordActivity } from '../../../../lib/activityLog';
 
 function buildTimelineEvent({ status, notes, interviewDetails, companyName, actorType = 'empresa' }) {
   const actorLabel = actorType === 'admin' ? 'A administração da vaga' : 'A empresa';
@@ -327,8 +328,9 @@ export default async function handler(req, res) {
     }
 
     // Log activity
-    await adminApp.firestore().collection('admin_activities').add({
-      action: 'update_application_status',
+    await recordActivity(adminApp, {
+      type: 'application_status_changed',
+      description: `Candidatura à vaga "${applicationData.jobTitle || applicationData.jobId}" passou de ${previousStatus} para ${status}`,
       actorId: uid,
       actorType: isAdminActor ? 'admin' : 'empresa',
       companyId: applicationCompanyId || null,
@@ -338,8 +340,7 @@ export default async function handler(req, res) {
       previousStatus,
       newStatus: status,
       notes: notes || null,
-      interviewDetails: interviewDetails || null,
-      timestamp: firebaseAdmin.firestore.FieldValue.serverTimestamp()
+      interviewDetails: interviewDetails || null
     });
 
     return res.status(200).json({ 

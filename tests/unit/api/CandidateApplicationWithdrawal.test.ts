@@ -77,7 +77,7 @@ function configureFirestore({
       if (name === 'applications') {
         return { doc: jest.fn(() => applicationRef) };
       }
-      if (name === 'admin_activities') return { add: activityAdd };
+      if (name === 'activities') return { add: activityAdd };
       throw new Error(`Coleção inesperada: ${name}`);
     }),
     runTransaction,
@@ -136,7 +136,7 @@ describe('retirada de candidatura pelo candidato', () => {
         }),
       );
       expect(activityAdd).toHaveBeenCalledWith(
-        expect.objectContaining({ action: 'withdraw_application' }),
+        expect.objectContaining({ type: 'application_withdrawn' }),
       );
       expect(notificationMock).toHaveBeenCalledWith(
         admin,

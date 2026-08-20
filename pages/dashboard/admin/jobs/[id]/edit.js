@@ -12,15 +12,20 @@ import AutoSaveStatus from '../../../../../components/forms/AutoSaveStatus';
 import useAutoDraft from '../../../../../hooks/useAutoDraft';
 import { createFormDraftKey } from '../../../../../lib/formDraft';
 
+// Campos canónicos, os mesmos que a criação de vagas grava e que
+// lib/publicJob.js lê. O editor usava `salario`, `location` e `prazo`, que a
+// página pública ignora (o salário nem sequer está na cadeia de leitura), pelo
+// que as edições pareciam guardadas sem alterar a vaga publicada.
 const EDITABLE_JOB_FIELDS = [
   'titulo',
   'descricao',
   'requisitos',
-  'salario',
-  'location',
+  'salarioDe',
+  'salarioAte',
+  'localizacao',
   'tipoContrato',
   'status',
-  'prazo',
+  'dataFecho',
 ];
 
 function prepareAdminJobDraft(value) {
@@ -32,16 +37,29 @@ function prepareAdminJobDraft(value) {
   }, {});
 }
 
+/** Data em `yyyy-mm-dd`, que é o que um <input type="date"> aceita. */
+function toDateInputValue(value) {
+  if (!value) return '';
+  const raw = typeof value?.toDate === 'function' ? value.toDate() : value;
+  const parsed = raw instanceof Date ? raw : new Date(String(raw));
+  return Number.isNaN(parsed.getTime())
+    ? ''
+    : parsed.toISOString().slice(0, 10);
+}
+
 function buildAdminJobForm(job) {
   return {
     titulo: job?.titulo || '',
     descricao: job?.descricao || '',
     requisitos: job?.requisitos || '',
-    salario: job?.salario || '',
-    location: job?.location || '',
+    // As vagas antigas ainda podem trazer os campos legados; lê-los aqui evita
+    // apresentar o formulário vazio e apagar o valor sem o admin dar por isso.
+    salarioDe: job?.salarioDe ?? job?.salario ?? '',
+    salarioAte: job?.salarioAte ?? '',
+    localizacao: job?.localizacao || job?.location || '',
     tipoContrato: job?.tipoContrato || 'CLT',
     status: job?.status || 'active',
-    prazo: job?.prazo || '',
+    dataFecho: toDateInputValue(job?.dataFecho || job?.prazo),
   };
 }
 
@@ -354,7 +372,7 @@ export default function EditJob({ job, companyName }) {
             >
               <div>
                 <label
-                  htmlFor="job-edit-salary"
+                  htmlFor="job-edit-salary-from"
                   style={{
                     display: 'block',
                     marginBottom: '0.5rem',
@@ -362,13 +380,14 @@ export default function EditJob({ job, companyName }) {
                     color: '#4a5568',
                   }}
                 >
-                  Salário
+                  Salário (de)
                 </label>
                 <input
-                  id="job-edit-salary"
+                  id="job-edit-salary-from"
                   type="text"
-                  name="salario"
-                  value={formData.salario}
+                  inputMode="numeric"
+                  name="salarioDe"
+                  value={formData.salarioDe}
                   onChange={handleChange}
                   style={{
                     width: '100%',
@@ -380,6 +399,37 @@ export default function EditJob({ job, companyName }) {
                 />
               </div>
 
+              <div>
+                <label
+                  htmlFor="job-edit-salary-to"
+                  style={{
+                    display: 'block',
+                    marginBottom: '0.5rem',
+                    fontWeight: '500',
+                    color: '#4a5568',
+                  }}
+                >
+                  Salário (até)
+                </label>
+                <input
+                  id="job-edit-salary-to"
+                  type="text"
+                  inputMode="numeric"
+                  name="salarioAte"
+                  value={formData.salarioAte}
+                  onChange={handleChange}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    borderRadius: '0.375rem',
+                    border: '1px solid #e2e8f0',
+                    fontSize: '1rem',
+                  }}
+                />
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '1.5rem' }}>
               <div>
                 <label
                   htmlFor="job-edit-location"
@@ -395,8 +445,8 @@ export default function EditJob({ job, companyName }) {
                 <input
                   id="job-edit-location"
                   type="text"
-                  name="location"
-                  value={formData.location}
+                  name="localizacao"
+                  value={formData.localizacao}
                   onChange={handleChange}
                   style={{
                     width: '100%',
@@ -466,8 +516,8 @@ export default function EditJob({ job, companyName }) {
                 <input
                   id="job-edit-deadline"
                   type="date"
-                  name="prazo"
-                  value={formData.prazo}
+                  name="dataFecho"
+                  value={formData.dataFecho}
                   onChange={handleChange}
                   style={{
                     width: '100%',
