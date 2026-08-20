@@ -16,6 +16,7 @@ import type {
 } from '@/domain/candidate-settings/CandidateSettings';
 import { FirebasePasswordService } from '@/infrastructure/firebase/auth/FirebasePasswordService';
 import { HttpCandidateSettingsGateway } from '@/infrastructure/http/HttpCandidateSettingsGateway';
+import { isNetworkError } from '@/lib/networkError';
 import { pt } from '@/shared/i18n/pt';
 
 export interface SettingsFeedback {
@@ -66,6 +67,10 @@ function readInitialSettings(value: unknown): CandidateSettings {
 }
 
 function errorMessage(error: unknown, fallback: string): string {
+  if (isNetworkError(error)) {
+    return pt.candidateSettings.password.errors.offline;
+  }
+
   if (typeof error === 'object' && error !== null && 'code' in error) {
     const code = String(error.code);
     const messages: Record<string, string> = {

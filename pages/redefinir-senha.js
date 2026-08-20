@@ -9,15 +9,17 @@ import {
   FiCheckCircle,
   FiCircle,
   FiClock,
+  FiWifiOff,
 } from 'react-icons/fi';
 import auth from '../lib/firebaseAuth';
 import AuthShell from '../components/auth/AuthShell';
 import { getPasswordChecks, isStrongPassword } from '../lib/validation';
+import { isNetworkError, OFFLINE_MESSAGE } from '../lib/networkError';
 import styles from '../styles/AuthPage.module.css';
 
 export default function RedefinirSenha() {
   const router = useRouter();
-  // checking | ready | invalid | done
+  // checking | ready | invalid | offline | done
   const [status, setStatus] = useState('checking');
   const [accountEmail, setAccountEmail] = useState('');
   const [oobCode, setOobCode] = useState('');
@@ -56,8 +58,16 @@ export default function RedefinirSenha() {
         setOobCode(code);
         setStatus('ready');
       })
-      .catch(() => {
-        if (active) setStatus('invalid');
+      .catch((err) => {
+        if (!active) return;
+        // Sem rede o link não pôde sequer ser validado: dizer "inválido ou
+        // expirado" mandaria o utilizador pedir um link novo sem necessidade.
+        if (isNetworkError(err)) {
+          setOobCode(code);
+          setStatus('offline');
+          return;
+        }
+        setStatus('invalid');
       });
 
     return () => {
@@ -85,7 +95,9 @@ export default function RedefinirSenha() {
       await confirmPasswordReset(auth, oobCode, password);
       setStatus('done');
     } catch (err) {
-      if (err.code === 'auth/weak-password') {
+      if (isNetworkError(err)) {
+        setError(OFFLINE_MESSAGE);
+      } else if (err.code === 'auth/weak-password') {
         setError(
           'A senha deve ter pelo menos 8 caracteres, com letra maiúscula, letra minúscula, número e símbolo especial.',
         );
@@ -128,6 +140,24 @@ export default function RedefinirSenha() {
             <Link href="/recuperar-senha" className={styles.primaryButton}>
               Pedir novo link
             </Link>
+          </div>
+        ) : null}
+
+        {status === 'offline' ? (
+          <div className={styles.verifyScreen} role="alert">
+            <FiWifiOff className={styles.verifyIcon} aria-hidden="true" />
+            <h1 className={styles.verifyTitle}>Sem ligação à internet</h1>
+            <p className={styles.verifyText}>
+              Não foi possível validar o link de recuperação. Verifique a sua
+              rede e tente novamente — o link continua válido.
+            </p>
+            <button
+              type="button"
+              className={styles.primaryButton}
+              onClick={() => router.reload()}
+            >
+              Tentar novamente
+            </button>
           </div>
         ) : null}
 

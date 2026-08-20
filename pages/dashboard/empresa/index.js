@@ -46,7 +46,7 @@ import {
   summarizeVerifiedCandidates,
 } from '../../../lib/publicCandidates';
 import { resolveDashboardTab } from '../../../lib/dashboardNavigation';
-import { redirectToLogin } from '../../../lib/loginRedirect';
+import { buildLoginUrl, redirectToLogin } from '../../../lib/loginRedirect';
 
 const EmpresaApplicationsChart = dynamic(
   () => import('../../../components/charts/EmpresaApplicationsChart'),

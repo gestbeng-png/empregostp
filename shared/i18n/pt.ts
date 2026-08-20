@@ -107,6 +107,8 @@ export const pt = {
           'Não foi possível alterar a palavra-passe. Tente novamente em instantes.',
         invalidCredential: 'A palavra-passe atual está incorreta.',
         mismatch: 'A confirmação não corresponde à nova palavra-passe.',
+        offline:
+          'Sem ligação à internet. Verifique a sua rede e tente novamente.',
         provider: 'Esta conta não permite alterar a palavra-passe nesta área.',
         recentLogin:
           'Inicie sessão novamente antes de alterar a palavra-passe.',

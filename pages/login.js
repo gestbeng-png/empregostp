@@ -14,6 +14,7 @@ import { db } from '../lib/firebase';
 import AuthShell from '../components/auth/AuthShell';
 import { isValidEmail, normalizeEmail } from '../lib/validation';
 import { sanitizeLoginRedirect } from '../lib/loginRedirect';
+import { isNetworkError, OFFLINE_MESSAGE } from '../lib/networkError';
 import {
   createServerSession,
   destroyServerSession,
@@ -91,7 +92,9 @@ export default function Login() {
       }
       setLoading(false);
 
-      if (err.code === 'auth/popup-closed-by-user') {
+      if (isNetworkError(err)) {
+        setError(OFFLINE_MESSAGE);
+      } else if (err.code === 'auth/popup-closed-by-user') {
         setError('Início de sessão cancelado.');
       } else if (err.code === 'auth/popup-blocked') {
         setError(
@@ -184,7 +187,9 @@ export default function Login() {
     } catch (err) {
       setLoading(false);
 
-      if (err.code === 'ACCOUNT_BLOCKED') {
+      if (isNetworkError(err)) {
+        setError(OFFLINE_MESSAGE);
+      } else if (err.code === 'ACCOUNT_BLOCKED') {
         await Promise.allSettled([auth.signOut(), destroyServerSession()]);
         setError(BLOCKED_ACCOUNT_MESSAGE);
       } else if (
@@ -227,7 +232,9 @@ export default function Login() {
         'Email de confirmação reenviado. Verifique a sua caixa de entrada.',
       );
     } catch (err) {
-      if (err.code === 'auth/too-many-requests') {
+      if (isNetworkError(err)) {
+        setError(OFFLINE_MESSAGE);
+      } else if (err.code === 'auth/too-many-requests') {
         setError('Muitos pedidos. Aguarde alguns minutos e tente novamente.');
       } else {
         setError('Não foi possível reenviar. Confirme o email e a senha.');

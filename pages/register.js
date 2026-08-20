@@ -28,6 +28,7 @@ import {
   normalizeEmail,
 } from '../lib/validation';
 import { INDUSTRY_SECTORS } from '../lib/companyOptions';
+import { isNetworkError, OFFLINE_MESSAGE } from '../lib/networkError';
 import {
   createServerSession,
   destroyServerSession,
@@ -241,7 +242,9 @@ export default function Register() {
       console.error('Erro ao criar conta com Google:', err);
       setLoading(false);
 
-      if (err.code === 'auth/popup-closed-by-user') {
+      if (isNetworkError(err)) {
+        setError(OFFLINE_MESSAGE);
+      } else if (err.code === 'auth/popup-closed-by-user') {
         setError('Criação da conta cancelada.');
       } else if (err.code === 'auth/popup-blocked') {
         setError(
@@ -326,7 +329,9 @@ export default function Register() {
         registeredUser = userCredential.user;
       } catch (err) {
         setLoading(false);
-        if (err.code === 'auth/email-already-in-use') {
+        if (isNetworkError(err)) {
+          setError(OFFLINE_MESSAGE);
+        } else if (err.code === 'auth/email-already-in-use') {
           setError('Este email já está em uso.');
         } else if (err.code === 'auth/weak-password') {
           setError(
@@ -362,7 +367,9 @@ export default function Register() {
       });
       setLoading(false);
       setError(
-        'Não foi possível concluir o registo. A conta ainda não está pronta; carregue em “Concluir registo” para tentar novamente.',
+        isNetworkError(setupError)
+          ? 'Sem ligação à internet. A conta ainda não está pronta; assim que voltar a ter rede, carregue em “Concluir registo”.'
+          : 'Não foi possível concluir o registo. A conta ainda não está pronta; carregue em “Concluir registo” para tentar novamente.',
       );
       return;
     }
@@ -426,7 +433,11 @@ export default function Register() {
       setResendState('sent');
     } catch (err) {
       console.error('Erro ao reenviar email de confirmação:', err);
-      setResendState('Não foi possível reenviar. Tente novamente.');
+      setResendState(
+        isNetworkError(err)
+          ? OFFLINE_MESSAGE
+          : 'Não foi possível reenviar. Tente novamente.',
+      );
     }
   };
 

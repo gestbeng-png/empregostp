@@ -4,6 +4,7 @@ import Head from 'next/head';
 import { FiAlertCircle, FiMail } from 'react-icons/fi';
 import AuthShell from '../components/auth/AuthShell';
 import { isValidEmail, normalizeEmail } from '../lib/validation';
+import { isNetworkError, OFFLINE_MESSAGE } from '../lib/networkError';
 import styles from '../styles/AuthPage.module.css';
 
 export default function RecuperarSenha() {
@@ -46,7 +47,9 @@ export default function RecuperarSenha() {
       }
     } catch (err) {
       setError(
-        'Não foi possível enviar o email de recuperação. Tente novamente.',
+        isNetworkError(err)
+          ? OFFLINE_MESSAGE
+          : 'Não foi possível enviar o email de recuperação. Tente novamente.',
       );
     } finally {
       setLoading(false);

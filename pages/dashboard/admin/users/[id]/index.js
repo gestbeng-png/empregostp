@@ -409,7 +409,7 @@ export default function AdminUserDetail({ user, profile, applications }) {
               </div>
 
               <div
-                className={styles.userDetailActions}
+                className={adminStyles.userDetailActions}
                 style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}
               >
                 <button
