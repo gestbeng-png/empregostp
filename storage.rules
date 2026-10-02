@@ -36,6 +36,18 @@ service firebase.storage {
       allow write: if isAuthenticated() && isOwner(userId);
     }
 
+    // Documentos anexados a uma candidatura (registo criminal, atestado
+    // médico, BI...). Mesma regra dos restantes ficheiros pessoais: a empresa
+    // NÃO lê por aqui. O acesso legítimo passa por
+    // POST /api/files/application-document, que confirma que quem pede é dono
+    // da vaga a que a candidatura pertence.
+    match /candidaturas/{userId}/{jobId}/{fileName} {
+      allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow write: if isAuthenticated()
+        && isOwner(userId)
+        && request.resource.size < 10 * 1024 * 1024;
+    }
+
     // A fotografia de perfil é exibida em páginas públicas de candidatos
     // (perfil e listagens) através de <Image src>, sem sessão. Continua
     // legível; a privacidade do perfil é aplicada a montante, decidindo se a

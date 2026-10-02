@@ -34,6 +34,7 @@ import useAutoDraft from '../../../hooks/useAutoDraft';
 import { COMPANY_SIZES, INDUSTRY_SECTORS } from '../../../lib/companyOptions';
 import { createFormDraftKey } from '../../../lib/formDraft';
 import styles from '../../../styles/EmpresaProfilePage.module.css';
+import { requireCompanySession } from '../../../lib/serverSession';
 import { buildLoginUrl } from '../../../lib/loginRedirect';
 
 function prepareCompanyProfileDraft(value) {
@@ -813,4 +814,14 @@ function TextAreaField({
       ) : null}
     </div>
   );
+}
+
+
+// Painel da empresa: o guard corre no servidor para ninguém sem sessão de
+// empresa chegar a ver a página.
+export async function getServerSideProps(context) {
+  const guard = await requireCompanySession(context);
+  if (guard) return guard;
+
+  return { props: {} };
 }

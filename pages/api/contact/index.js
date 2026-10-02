@@ -2,6 +2,7 @@ import { admin } from '../../../lib/firebaseAdmin';
 import { enforceApiRateLimit, getClientIp } from '../../../lib/apiRateLimit';
 import { sendEmail, isEmailConfigured } from '../../../lib/email';
 import { logServerError } from '../../../lib/serverLog';
+import { notificationEmail } from '../../../lib/contactEmails';
 
 // Recebe mensagens do formulário público de contacto.
 // As mensagens ficam guardadas em `contactMessages` e, quando o email estiver
@@ -9,13 +10,14 @@ import { logServerError } from '../../../lib/serverLog';
 // `replyTo` do remetente, para responder diretamente.
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const SUPPORT_INBOX = process.env.CONTACT_INBOX || 'suporte@empregos.st';
+const SUPPORT_INBOX = process.env.CONTACT_INBOX || 'contacto@empregostp.com';
 
 const SUBJECTS = new Set([
   'candidato',
   'empresa',
   'suporte',
   'parceria',
+  'carreira',
   'outro',
 ]);
 
@@ -24,6 +26,7 @@ const SUBJECT_LABEL = {
   empresa: 'Sou empresa',
   suporte: 'Apoio / conta',
   parceria: 'Parceria ou imprensa',
+  carreira: 'Quer juntar-se à equipa',
   outro: 'Outro assunto',
 };
 
@@ -44,51 +47,6 @@ function sanitizeMessage(value, max = 4000) {
     .replace(/[ \t]+/g, ' ')
     .trim()
     .slice(0, max);
-}
-
-function escapeHtml(value) {
-  return String(value || '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-}
-
-function notificationEmail({ name, email, phone, subjectLabel, message }) {
-  const safeMessage = escapeHtml(message).replace(/\n/g, '<br />');
-  const html = `<!doctype html>
-<html lang="pt">
-  <body style="margin:0;padding:0;background:#f4f7fc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f7fc;padding:24px 12px;">
-      <tr><td align="center">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
-          <tr>
-            <td style="padding:24px;background:linear-gradient(135deg,#14264f,#0c1834);border-radius:16px 16px 0 0;">
-              <div style="color:#d9ff3f;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;">EmpregoSTP · Contacto</div>
-              <div style="margin-top:8px;color:#ffffff;font-size:21px;font-weight:800;">Nova mensagem de contacto</div>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:22px 24px;background:#ffffff;border-radius:0 0 16px 16px;">
-              <p style="margin:0 0 6px;color:#0f1b34;font-size:15px;font-weight:700;">${escapeHtml(name)}</p>
-              <p style="margin:0 0 4px;color:#3b4a66;font-size:14px;">Email: <a href="mailto:${escapeHtml(email)}" style="color:#2f6edb;">${escapeHtml(email)}</a></p>
-              ${phone ? `<p style="margin:0 0 4px;color:#3b4a66;font-size:14px;">Telefone: ${escapeHtml(phone)}</p>` : ''}
-              <p style="margin:0 0 16px;color:#3b4a66;font-size:14px;">Assunto: ${escapeHtml(subjectLabel)}</p>
-              <div style="padding:16px;background:#f4f7fc;border-radius:12px;color:#0f1b34;font-size:14px;line-height:1.6;">${safeMessage}</div>
-            </td>
-          </tr>
-        </table>
-      </td></tr>
-    </table>
-  </body>
-</html>`;
-
-  const text = `Nova mensagem de contacto\n\nNome: ${name}\nEmail: ${email}\n${phone ? `Telefone: ${phone}\n` : ''}Assunto: ${subjectLabel}\n\n${message}`;
-
-  return {
-    subject: `Contacto EmpregoSTP · ${subjectLabel} — ${name}`,
-    html,
-    text,
-  };
 }
 
 export default async function handler(req, res) {
@@ -149,6 +107,7 @@ export default async function handler(req, res) {
         name,
         email,
         phone,
+        subject,
         subjectLabel,
         message,
       });
@@ -161,7 +120,10 @@ export default async function handler(req, res) {
           text,
         });
       } catch (emailError) {
-        logServerError('contact.notificar_contacto_por_email_failed', emailError);
+        logServerError(
+          'contact.notificar_contacto_por_email_failed',
+          emailError,
+        );
         return res.status(202).json({
           message:
             'Mensagem recebida! A nossa equipa vai responder assim que possível.',

@@ -94,8 +94,16 @@ function CandidateCard({ candidate }) {
   );
 }
 
-/** @param {{ candidates?: VerifiedCandidate[] }} props */
-export default function VerifiedCandidatesCarousel({ candidates = [] }) {
+/**
+ * @param {{ candidates?: VerifiedCandidate[], variante?: 'home' | 'larga' }} props
+ *
+ * `variante="larga"` serve as páginas onde o carrossel ocupa a largura toda
+ * (a /empresas): três cartões lado a lado em vez da escada estreita da home.
+ */
+export default function VerifiedCandidatesCarousel({
+  candidates = [],
+  variante = 'home',
+}) {
   const trackRef = useRef(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const candidatePages = useMemo(() => {
@@ -171,7 +179,9 @@ export default function VerifiedCandidatesCarousel({ candidates = [] }) {
 
   return (
     <div
-      className={styles.candidateCarousel}
+      className={`${styles.candidateCarousel} ${
+        variante === 'larga' ? styles.carouselWide : ''
+      }`}
       role="region"
       aria-roledescription="carrossel"
       aria-label="Perfis verificados"

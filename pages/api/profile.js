@@ -70,6 +70,7 @@ export default async function handler(req, res) {
       userType: userData.userType || profileData.userType || '',
       cvUrl: userData.cvUrl || profileData.cvUrl || '',
       cvName: userData.cvName || profileData.cvName || '',
+      cvUpdatedAt: userData.cvUpdatedAt || profileData.cvUpdatedAt || '',
       photoUrl: userData.photoUrl || profileData.photoUrl || '',
       coverUrl: userData.coverUrl || profileData.coverUrl || '',
       currentPlan: userData.currentPlan || null,

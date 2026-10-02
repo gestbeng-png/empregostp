@@ -6,7 +6,7 @@ import { admin } from '../../../../lib/firebaseAdmin';
 import adminStyles from '../../../../styles/AdminPanel.module.css';
 import { deleteDocument } from '../../../../lib/db';
 import { safeText, safeTimestampToISOString, safeTimestampToMillis } from '../../../../lib/firestoreNormalize';
-import { CONTENT_STATUS, normalizeContentStatus } from '../../../../lib/contentPublication';
+import { CONTENT_STATUS, isContentExpired, normalizeContentStatus, parseContentExpiry } from '../../../../lib/contentPublication';
 import { redirectToLogin } from '../../../../lib/loginRedirect';
 
 export default function AdminNewsList({ news: initialNews }) {
@@ -160,15 +160,21 @@ export default function AdminNewsList({ news: initialNews }) {
                                                 <td style={styles.td}>
                                                     <span style={{
                                                         padding: '0.25rem 0.6rem',
-                                                        background: normalizeContentStatus(item.status) === CONTENT_STATUS.PUBLISHED ? 'rgba(16, 185, 129, 0.2)' : 'rgba(148, 163, 184, 0.2)',
-                                                        border: `1px solid ${normalizeContentStatus(item.status) === CONTENT_STATUS.PUBLISHED ? 'rgba(16, 185, 129, 0.35)' : 'rgba(148, 163, 184, 0.35)'}`,
+                                                        background: item.estado === 'publicado' ? 'rgba(16, 185, 129, 0.2)' : item.estado === 'expirado' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(148, 163, 184, 0.2)',
+                                                        border: `1px solid ${item.estado === 'publicado' ? 'rgba(16, 185, 129, 0.35)' : item.estado === 'expirado' ? 'rgba(245, 158, 11, 0.45)' : 'rgba(148, 163, 184, 0.35)'}`,
                                                         borderRadius: '999px',
                                                         fontSize: '0.78rem',
                                                         fontWeight: 700,
-                                                        color: normalizeContentStatus(item.status) === CONTENT_STATUS.PUBLISHED ? '#116e4b' : '#cbd5e1'
+                                                        color: item.estado === 'publicado' ? '#116e4b' : item.estado === 'expirado' ? '#f5b544' : '#cbd5e1'
                                                     }}>
-                                                        {normalizeContentStatus(item.status) === CONTENT_STATUS.PUBLISHED ? 'Publicado' : 'Rascunho'}
+                                                        {item.estado === 'publicado' ? 'Publicado' : item.estado === 'expirado' ? 'Expirado' : 'Rascunho'}
                                                     </span>
+                                                    {item.expiresAt ? (
+                                                        <small style={{ display: 'block', marginTop: '0.35rem', color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.75rem' }}>
+                                                            {item.estado === 'expirado' ? 'Saiu em ' : 'Até '}
+                                                            {new Date(item.expiresAt).toLocaleString('pt-PT', { dateStyle: 'short', timeStyle: 'short' })}
+                                                        </small>
+                                                    ) : null}
                                                 </td>
                                                 <td style={styles.td}>{item.date}</td>
                                                 <td style={styles.td}>
@@ -239,11 +245,18 @@ export async function getServerSideProps(context) {
                     createdAt ? new Date(createdAt).toLocaleDateString() : 'N/A'
                 );
 
+                const status = normalizeContentStatus(data.status);
+                // Mesmo instante efectivo que a API pública usa para filtrar.
+                const expiresAt = parseContentExpiry(data.expiresAt)?.toISOString() || '';
+                const expirado = status === CONTENT_STATUS.PUBLISHED && isContentExpired(expiresAt);
+
                 return {
                     id: doc.id,
                     title: safeText(data.title, 'Sem título'),
                     category: safeText(data.category, 'Atualização'),
-                    status: normalizeContentStatus(data.status),
+                    status,
+                    estado: status === CONTENT_STATUS.DRAFT ? 'rascunho' : expirado ? 'expirado' : 'publicado',
+                    expiresAt,
                     date: displayDate,
                     createdAt,
                     updatedAt,

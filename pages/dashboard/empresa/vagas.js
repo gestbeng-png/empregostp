@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
 import styles from '../../../styles/EmpresaVagasManagement.module.css';
+import { requireCompanySession } from '../../../lib/serverSession';
 
 export default function VagasManagement() {
   const { user, loading } = useAuth();
@@ -316,4 +317,14 @@ function SummaryCard({ label, value, accent }) {
       <strong className={styles.summaryValue}>{value}</strong>
     </article>
   );
+}
+
+
+// Painel da empresa: o guard corre no servidor para ninguém sem sessão de
+// empresa chegar a ver a página.
+export async function getServerSideProps(context) {
+  const guard = await requireCompanySession(context);
+  if (guard) return guard;
+
+  return { props: {} };
 }

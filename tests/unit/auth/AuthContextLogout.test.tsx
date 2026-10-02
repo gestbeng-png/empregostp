@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { onIdTokenChanged, signOut } from 'firebase/auth';
 import { useState } from 'react';
 
 import { AuthProvider, useAuth } from '../../../context/AuthContext';
@@ -8,7 +8,7 @@ import { destroyServerSession } from '../../../lib/authSessionClient';
 import { unregisterCurrentPushToken } from '../../../lib/webPushClient';
 
 jest.mock('firebase/auth', () => ({
-  onAuthStateChanged: jest.fn(),
+  onIdTokenChanged: jest.fn(),
   signOut: jest.fn(),
 }));
 
@@ -20,6 +20,7 @@ jest.mock('../../../lib/firebase', () => ({
 }));
 
 jest.mock('../../../lib/authSessionClient', () => ({
+  createServerSession: jest.fn(),
   destroyServerSession: jest.fn(),
 }));
 
@@ -27,7 +28,7 @@ jest.mock('../../../lib/webPushClient', () => ({
   unregisterCurrentPushToken: jest.fn(),
 }));
 
-const mockedAuthState = jest.mocked(onAuthStateChanged);
+const mockedAuthState = jest.mocked(onIdTokenChanged);
 const mockedSignOut = jest.mocked(signOut);
 const mockedDestroySession = jest.mocked(destroyServerSession);
 const mockedUnregisterPush = jest.mocked(unregisterCurrentPushToken);

@@ -624,3 +624,14 @@
   );
   color: var(--text-1, #102441);
 }
+
+/* Cada entrada do histórico: o cartão de topo mais tudo o que foi enviado. */
+.applicationEntry {
+  display: block;
+}
+
+.applicationEntry + .applicationEntry {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border, #dfe7f1);
+}

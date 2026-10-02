@@ -27,7 +27,10 @@ async function getViewerAccess(context, admin) {
     isAdmin: false,
     isOwner: false,
     canViewDetailedInfo: false,
-    canContactCandidate: false,
+    // Contactar pela plataforma depende só do plano; ver email/telefone/CV
+    // depende do plano *e* da privacidade escolhida pelo candidato.
+    canMessageCandidate: false,
+    canViewContactDetails: false,
     planName: null,
   };
 
@@ -53,7 +56,8 @@ async function getViewerAccess(context, admin) {
         userType: userData.userType || 'guest',
         isAdmin,
         canViewDetailedInfo: isAdmin,
-        canContactCandidate: isAdmin,
+        canMessageCandidate: isAdmin,
+        canViewContactDetails: isAdmin,
       };
     }
 
@@ -62,14 +66,17 @@ async function getViewerAccess(context, admin) {
     const planSummary = getEmpresaPlanSummary(userData);
     const features = planSummary?.features || {};
 
+    // O `baseAccess` tem de entrar aqui também: sem ele faltavam `isAdmin` e
+    // `isOwner`, e o Next recusava serializar as props com um "undefined
+    // cannot be serialized" assim que uma empresa abria um perfil.
     return {
+      ...baseAccess,
       userType: 'empresa',
       uid: decoded.uid,
       isEmpresa: true,
       canViewDetailedInfo: Boolean(features.accessTalentPool),
-      canContactCandidate: Boolean(
-        features.canViewCandidateContact || features.canSendDirectMessages,
-      ),
+      canMessageCandidate: Boolean(features.canSendDirectMessages),
+      canViewContactDetails: Boolean(features.canViewCandidateContact),
       planName: planSummary?.planName || features.name || 'Básico',
     };
   } catch (error) {
@@ -110,11 +117,20 @@ export async function getServerSideProps(context) {
       resolvedViewerAccess.isOwner ||
       resolvedViewerAccess.isAdmin ||
       resolvedViewerAccess.canViewDetailedInfo;
-    const canContactCandidate =
-      resolvedViewerAccess.isOwner ||
-      resolvedViewerAccess.isAdmin ||
-      (privacy.showContactInfo &&
-        resolvedViewerAccess.canContactCandidate);
+    const isPrivileged =
+      resolvedViewerAccess.isOwner || resolvedViewerAccess.isAdmin;
+
+    // O botão de mensagem só depende do plano: é a mesma regra do dashboard
+    // da empresa, onde `messagingLocked` ignora a privacidade do candidato.
+    const canMessageCandidate =
+      isPrivileged || resolvedViewerAccess.canMessageCandidate;
+
+    // Email, telefone, links e CV são o que o candidato pode esconder. Quando
+    // é ele a esconder, não faz sentido empurrar um upgrade de plano.
+    const contactHiddenByCandidate = !isPrivileged && !privacy.showContactInfo;
+    const canViewContactDetails =
+      isPrivileged ||
+      (privacy.showContactInfo && resolvedViewerAccess.canViewContactDetails);
 
     const toArray = (value) => {
       if (!value) return [];
@@ -223,6 +239,7 @@ export async function getServerSideProps(context) {
     );
     const education = normalizeStringList(p.education);
     const languages = normalizeStringList(p.languages);
+    const certifications = normalizeStringList(p.certifications);
 
     const userVerificationStatus = String(
       u.verificationStatus || '',
@@ -251,8 +268,14 @@ export async function getServerSideProps(context) {
     const candidato = {
       id,
       fullName: u.fullName || u.name || p.fullName || 'Candidato',
+      // O título profissional já aparece no carrossel público da home, por
+      // isso não é um detalhe reservado a planos.
+      headline: toPlainText(p.headline || u.headline || ''),
       photoUrl: u.photoUrl || u.photo || p.photoUrl || '',
-      location: u.cidade || u.localizacao || p.location || u.location || '',
+      // O formulário do candidato grava a localização em `profiles.city`.
+      // Ler apenas `p.location` deixava este campo sempre vazio.
+      location:
+        p.city || p.location || u.cidade || u.localizacao || u.location || '',
       bio: canViewDetailedInfo
         ? u.bio || u.sobre || p.bio || ''
         : '',
@@ -262,15 +285,19 @@ export async function getServerSideProps(context) {
       objectiveType: canViewDetailedInfo
         ? p.objectiveType || ''
         : '',
+      objectiveAspiration: canViewDetailedInfo
+        ? toPlainText(p.objectiveAspiration)
+        : '',
       skills: canViewDetailedInfo ? allSkills : [],
       softSkills: canViewDetailedInfo ? softSkills : [],
       experiences: canViewDetailedInfo ? experiences : [],
       education: canViewDetailedInfo ? education : [],
       languages: canViewDetailedInfo ? languages : [],
-      linkedin: canContactCandidate
+      certifications: canViewDetailedInfo ? certifications : [],
+      linkedin: canViewContactDetails
         ? normalizeExternalUrl(p.linkedin)
         : '',
-      website: canContactCandidate
+      website: canViewContactDetails
         ? normalizeExternalUrl(p.website)
         : '',
       destaque: Boolean(u.destaque || u.curriculoDestacado),
@@ -278,22 +305,25 @@ export async function getServerSideProps(context) {
       // O CV nunca viaja no payload SSR: ficaria no __NEXT_DATA__ do HTML
       // como URL de leitura permanente. A página pública sinaliza apenas a
       // existência; o download passa por /api/files/candidate-cv.
-      hasCv: canContactCandidate && Boolean(p.cvUrl || u.cvUrl),
-      email: canContactCandidate ? u.email || p.email || '' : '',
-      phone: canContactCandidate ? u.phone || p.phone || '' : '',
+      hasCv: canViewContactDetails && Boolean(p.cvUrl || u.cvUrl),
+      email: canViewContactDetails ? u.email || p.email || '' : '',
+      phone: canViewContactDetails ? u.phone || p.phone || '' : '',
     };
 
     return {
       props: {
         candidato,
         viewerAccess: {
-          userType: resolvedViewerAccess.userType,
-          isEmpresa: resolvedViewerAccess.isEmpresa,
-          isAdmin: resolvedViewerAccess.isAdmin,
-          isOwner: resolvedViewerAccess.isOwner,
-          canViewDetailedInfo,
-          canContactCandidate,
-          planName: resolvedViewerAccess.planName,
+          // `null` em vez de `undefined`: o Next só serializa JSON válido.
+          userType: resolvedViewerAccess.userType || 'guest',
+          isEmpresa: Boolean(resolvedViewerAccess.isEmpresa),
+          isAdmin: Boolean(resolvedViewerAccess.isAdmin),
+          isOwner: Boolean(resolvedViewerAccess.isOwner),
+          canViewDetailedInfo: Boolean(canViewDetailedInfo),
+          canMessageCandidate: Boolean(canMessageCandidate),
+          canViewContactDetails: Boolean(canViewContactDetails),
+          contactHiddenByCandidate: Boolean(contactHiddenByCandidate),
+          planName: resolvedViewerAccess.planName || null,
         },
         allowSearchIndexing: canIndexCandidateProfile(privacy),
       },
@@ -310,8 +340,20 @@ export default function PublicCandidatoProfile({
   allowSearchIndexing = false,
 }) {
   const initials = candidato.fullName?.[0]?.toUpperCase() || '?';
+  // O motivo do bloqueio muda a mensagem: sugerir um upgrade a quem já tem o
+  // plano certo — e está apenas a bater na privacidade do candidato — é o que
+  // fazia a página parecer avariada.
+  const contactHint = !viewerAccess?.canMessageCandidate
+    ? 'O contacto direto é reservado a empresas com acesso elegível ao banco de talentos.'
+    : viewerAccess?.contactHiddenByCandidate
+      ? 'Este candidato optou por não mostrar email, telefone e CV. Fale com ele por mensagem na plataforma.'
+      : !viewerAccess?.canViewContactDetails
+        ? 'O seu plano permite mensagens, mas não mostrar email, telefone e CV do candidato.'
+        : '';
+
   const hasMainContent = Boolean(
     candidato.bio ||
+    candidato.objectiveAspiration ||
     candidato.experiences.length > 0 ||
     candidato.education.length > 0,
   );
@@ -377,6 +419,10 @@ export default function PublicCandidatoProfile({
                 )}
               </div>
 
+              {candidato.headline && (
+                <p className={styles.headline}>{candidato.headline}</p>
+              )}
+
               {candidato.objectiveArea && (
                 <p className={styles.objective}>
                   {candidato.objectiveArea}
@@ -439,6 +485,14 @@ export default function PublicCandidatoProfile({
                 {candidato.bio && (
                   <Section title="Sobre">
                     <p className={styles.text}>{candidato.bio}</p>
+                  </Section>
+                )}
+
+                {candidato.objectiveAspiration && (
+                  <Section title="Objetivo de carreira">
+                    <p className={styles.text}>
+                      {candidato.objectiveAspiration}
+                    </p>
                   </Section>
                 )}
 
@@ -521,11 +575,21 @@ export default function PublicCandidatoProfile({
                 </Section>
               )}
 
+              {candidato.certifications.length > 0 && (
+                <Section title="Certificações">
+                  <ul className={styles.list}>
+                    {candidato.certifications.map((item, i) => (
+                      <li key={i}>{item}</li>
+                    ))}
+                  </ul>
+                </Section>
+              )}
+
               <div className={styles.ctaCard}>
                 <p className={styles.ctaText}>
                   Pretende contactar este candidato?
                 </p>
-                {viewerAccess?.canContactCandidate ? (
+                {viewerAccess?.canMessageCandidate ? (
                   <>
                     <Link
                       href={`/dashboard/empresa?tab=messages&candidate=${candidato.id}`}
@@ -551,11 +615,8 @@ export default function PublicCandidatoProfile({
                     Iniciar sessão como empresa
                   </Link>
                 )}
-                {!viewerAccess?.canContactCandidate ? (
-                  <p className={styles.ctaHint}>
-                    O contacto direto é reservado a empresas com acesso elegível
-                    ao banco de talentos.
-                  </p>
+                {contactHint ? (
+                  <p className={styles.ctaHint}>{contactHint}</p>
                 ) : null}
               </div>
             </div>

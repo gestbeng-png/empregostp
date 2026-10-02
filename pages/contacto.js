@@ -40,8 +40,8 @@ const DIRECT_CONTACTS = [
   {
     icon: FiMail,
     label: 'Email',
-    value: 'suporte@empregos.st',
-    href: 'mailto:suporte@empregos.st',
+    value: 'contacto@empregostp.com',
+    href: 'mailto:contacto@empregostp.com',
   },
   {
     icon: FiPhone,

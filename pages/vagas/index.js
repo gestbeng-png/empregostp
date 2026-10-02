@@ -288,15 +288,6 @@ function getCompanyInitials(value = '') {
   );
 }
 
-function isNewJob(job, now = Date.now()) {
-  const value = job.publicadoEm || job.publishedAt || job.createdAt;
-  if (!value) return false;
-  const timestamp = new Date(value).getTime();
-  if (!Number.isFinite(timestamp)) return false;
-  const age = now - timestamp;
-  return age >= 0 && age <= 24 * 60 * 60 * 1000;
-}
-
 function JobCard({ job, referenceNow }) {
   const companyName = job.empresaNome || job.companyName || 'Empresa';
   const salary = formatSalary(job.salarioDe, job.salarioAte);
@@ -306,7 +297,6 @@ function JobCard({ job, referenceNow }) {
   const featured =
     job.destaque === true || job.featured === true || job.isFeatured === true;
   const closed = isClosedJob(job);
-  const recentlyPublished = isNewJob(job, referenceNow);
   const publishedAt = job.publicadoEm || job.publishedAt || job.createdAt;
   const companyLogo = job.empresaLogo || job.companyLogo;
   const modality = getModalityLabel(job);
@@ -335,11 +325,6 @@ function JobCard({ job, referenceNow }) {
             <span>{getCompanyInitials(companyName)}</span>
           )}
         </div>
-        {recentlyPublished || featured ? (
-          <span className={styles.newBadge}>
-            {recentlyPublished ? 'Novo' : 'Destaque'}
-          </span>
-        ) : null}
       </div>
 
       <div className={styles.jobCardContent}>

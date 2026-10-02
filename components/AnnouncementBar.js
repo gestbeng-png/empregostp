@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { FiArrowRight, FiX } from 'react-icons/fi';
+import { FiArrowRight, FiExternalLink, FiX } from 'react-icons/fi';
+import { isContentExpired } from '../lib/contentPublication';
+import { normalizeExternalUrl } from '../lib/externalUrl';
 import { sanitizeRichHtml } from '../lib/sanitizeRichHtml';
 import styles from '../styles/AnnouncementBar.module.css';
 
@@ -67,6 +69,11 @@ function NewsDetailModal({ item, onClose }) {
     .map((block) => block.trim())
     .filter(Boolean);
 
+  // Links opcionais definidos pelo admin: formulário de inscrição e site externo.
+  const formUrl = normalizeExternalUrl(item.formUrl);
+  const siteUrl = normalizeExternalUrl(item.siteUrl);
+  const hasActions = Boolean(formUrl || siteUrl);
+
   return (
     <div
       className={styles.modalOverlay}
@@ -111,10 +118,38 @@ function NewsDetailModal({ item, onClose }) {
             ) : (
               <p>{item.content}</p>
             )
-          ) : (
+          ) : hasActions ? null : (
             <p>Sem detalhes adicionais para esta atualização.</p>
           )}
         </div>
+        {hasActions ? (
+          <div className={styles.modalActions}>
+            {formUrl ? (
+              <a
+                className={`${styles.modalAction} ${styles.modalActionPrimary}`}
+                href={formUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Preencher o formulário (abre numa nova janela)"
+              >
+                Preencher formulário
+                <FiExternalLink aria-hidden="true" />
+              </a>
+            ) : null}
+            {siteUrl ? (
+              <a
+                className={`${styles.modalAction} ${styles.modalActionSecondary}`}
+                href={siteUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Ir ao site (abre numa nova janela)"
+              >
+                Ir ao site
+                <FiExternalLink aria-hidden="true" />
+              </a>
+            ) : null}
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -135,7 +170,11 @@ export default function AnnouncementBar() {
         const response = await fetch('/api/news');
         if (!response.ok) return;
         const json = await response.json();
-        const items = Array.isArray(json.news) ? json.news : [];
+        // A resposta é cacheada até 5 minutos: reconfirmamos o prazo aqui para
+        // não mostrar um aviso que já expirou entretanto.
+        const items = (Array.isArray(json.news) ? json.news : []).filter(
+          (item) => !isContentExpired(item.expiresAt),
+        );
         if (!active || items.length === 0) return;
 
         const dismissedId = window.localStorage.getItem(DISMISSED_KEY);

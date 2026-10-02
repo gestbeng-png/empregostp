@@ -7,6 +7,16 @@ import PublicPageShell from '../../components/PublicPageShell';
 import UpgradeModal from '../../components/UpgradeModal';
 import AutoSaveStatus from '../../components/forms/AutoSaveStatus';
 import useAutoDraft from '../../hooks/useAutoDraft';
+import ApplicationModal from '../../components/ApplicationModal';
+import {
+  createEmptyApplicationForm,
+  normalizeApplicationForm,
+} from '../../lib/applicationForm';
+import {
+  normalizeRequiredDocuments,
+  resolveDocumentRequirements,
+  validateApplicationDocuments,
+} from '../../lib/applicationDocuments';
 import styles from '../../styles/VagaDetailPage.module.css';
 import {
   FiArrowLeft,
@@ -349,6 +359,8 @@ function RelatedJobsPanel({ jobs, className = '', headingLevel = 'h3' }) {
   );
 }
 
+const MAX_DOCUMENT_BYTES = 10 * 1024 * 1024;
+
 export default function VagaDetalhe({
   vaga,
   relatedJobs = [],
@@ -370,7 +382,10 @@ export default function VagaDetalhe({
   const [assessmentAnswers, setAssessmentAnswers] = useState(() =>
     new Array(vaga?.skillsAssessment?.questions?.length || 0).fill(null),
   );
-  const [coverLetter, setCoverLetter] = useState('');
+  const [applyModalOpen, setApplyModalOpen] = useState(false);
+  const [applicationForm, setApplicationForm] = useState(() =>
+    createEmptyApplicationForm(),
+  );
   const [isGeneratingCoverLetter, setIsGeneratingCoverLetter] = useState(false);
   const jobId = vaga?.id || '';
   const assessmentQuestions = useMemo(
@@ -381,17 +396,112 @@ export default function VagaDetalhe({
 
   useEffect(() => {
     setAssessmentAnswers(new Array(assessmentQuestions.length).fill(null));
-    setCoverLetter('');
+    setApplicationForm(createEmptyApplicationForm());
     setAppliedJobId(jobId);
   }, [assessmentQuestions, jobId]);
+
+  // Pré-preenche o formulário com o que o perfil já sabe. Só toca em campos
+  // ainda vazios: um rascunho restaurado ou o que a pessoa escreveu ganham
+  // sempre ao perfil.
+  useEffect(() => {
+    if (!candidateProfileData) return;
+
+    const linhasDe = (valor, maximo) =>
+      String(valor || '')
+        .split('\n')
+        .map((linha) => linha.trim())
+        .filter(Boolean)
+        .slice(0, maximo);
+
+    setApplicationForm((anterior) => {
+      const seguinte = { ...anterior };
+      const preencher = (campo, valor) => {
+        if (!seguinte[campo] && valor) seguinte[campo] = valor;
+      };
+
+      preencher(
+        'fullName',
+        candidateProfileData.fullName || candidateProfileData.name,
+      );
+      preencher('email', candidateProfileData.email);
+      preencher('phone', candidateProfileData.phone);
+      preencher(
+        'location',
+        candidateProfileData.city || candidateProfileData.location,
+      );
+      preencher('nationality', candidateProfileData.nationality);
+      preencher('birthDate', candidateProfileData.birthDate);
+
+      const formacoes = linhasDe(candidateProfileData.education, 5);
+      const semFormacao = seguinte.education.every(
+        (item) => !item.degree && !item.institution && !item.year,
+      );
+      if (formacoes.length && semFormacao) {
+        seguinte.education = formacoes.map((linha) => ({
+          degree: linha,
+          institution: '',
+          year: '',
+        }));
+      }
+
+      const idiomas = linhasDe(candidateProfileData.languages, 6);
+      const semIdiomas = seguinte.languages.every((item) => !item.language);
+      if (idiomas.length && semIdiomas) {
+        seguinte.languages = idiomas.map((linha) => ({
+          language: linha,
+          level: '',
+        }));
+      }
+
+      return seguinte;
+    });
+  }, [candidateProfileData]);
+
+  // O que esta vaga exige, já descontado do que o perfil tem. Recalcula
+  // quando o perfil chega: até lá não dá para saber se o CV serve.
+  const documentRequirements = useMemo(
+    () =>
+      resolveDocumentRequirements({
+        job: vaga,
+        profile: candidateProfileData || {},
+      }),
+    [vaga, candidateProfileData],
+  );
+
+  const handleUploadDocument = async (documentId, file) => {
+    if (!user?.uid) throw new Error('Inicie sessão para enviar documentos.');
+    if (file.size > MAX_DOCUMENT_BYTES) {
+      throw new Error('O ficheiro tem mais de 10 MB. Envie um mais pequeno.');
+    }
+
+    // Nome higienizado: o original vai parar a um caminho do Storage e a um
+    // cabeçalho de download.
+    const nomeSeguro = file.name
+      .replace(/[^\w.\-]+/g, '_')
+      .slice(-80);
+    const caminho = `candidaturas/${user.uid}/${jobId}/${documentId}-${Date.now()}-${nomeSeguro}`;
+
+    // Import dinâmico: o SDK do Storage só é carregado quando alguém anexa
+    // mesmo um ficheiro, e assim não pesa no bundle de quem só lê a vaga.
+    const [{ ref, uploadBytes, getDownloadURL }, { storage }] =
+      await Promise.all([
+        import('firebase/storage'),
+        import('../../lib/firebase'),
+      ]);
+
+    const destino = ref(storage, caminho);
+    await uploadBytes(destino, file);
+    const url = await getDownloadURL(destino);
+    return { url, name: file.name.slice(0, 160) };
+  };
 
   const applicationDraftReady = Boolean(
     user?.uid && jobId && appliedJobId === jobId,
   );
 
   const applicationDraftValue = useMemo(
-    () => ({ assessmentAnswers, coverLetter }),
-    [assessmentAnswers, coverLetter],
+    () => ({ assessmentAnswers, applicationForm }),
+    [assessmentAnswers, applicationForm],
   );
   const applicationDraftKey = createFormDraftKey({
     scope: 'job-application',
@@ -424,9 +534,15 @@ export default function VagaDetalhe({
         : new Array(assessmentQuestions.length).fill(null);
 
       setAssessmentAnswers(restoredAnswers);
-      setCoverLetter(
-        typeof draft?.coverLetter === 'string' ? draft.coverLetter : '',
-      );
+      // `draft.coverLetter` à solta é o formato dos rascunhos gravados antes
+      // do formulário completo: recupera-se para dentro do campo novo.
+      setApplicationForm({
+        ...createEmptyApplicationForm(),
+        ...(draft?.applicationForm || {}),
+        ...(typeof draft?.coverLetter === 'string' && draft.coverLetter
+          ? { coverLetter: draft.coverLetter }
+          : {}),
+      });
     },
   });
 
@@ -608,8 +724,8 @@ export default function VagaDetalhe({
     [candidateProfileData],
   );
   const normalizedCoverLetter = useMemo(
-    () => normalizeCoverLetter(coverLetter),
-    [coverLetter],
+    () => normalizeCoverLetter(applicationForm.coverLetter),
+    [applicationForm.coverLetter],
   );
   const premiumApplyRestriction = useMemo(() => {
     if (!user || (userType && userType !== 'candidato')) return null;
@@ -756,20 +872,16 @@ export default function VagaDetalhe({
   const isApplying = applyStatus === 'loading';
   const isApplied = applyStatus === 'success';
   const isBlocked = Boolean(userType && userType !== 'candidato');
-  const missingRequiredCoverLetter = Boolean(
-    premiumConfig.requireCoverLetter &&
-    user &&
-    candidatePremiumAccess.canUseCoverLetter &&
-    !normalizedCoverLetter,
-  );
+  // A carta deixou de bloquear o botão: vive dentro do modal, que a valida
+  // antes do envio. Desativar o botão aqui deixava a pessoa sem forma de a
+  // escrever.
   const applyDisabled =
     !isOpen ||
     isApplying ||
     isApplied ||
     isBlocked ||
     profileLoading ||
-    !assessmentComplete ||
-    missingRequiredCoverLetter;
+    !assessmentComplete;
   const applicationButtonLabel = isApplying
     ? 'A enviar…'
     : profileLoading
@@ -782,9 +894,7 @@ export default function VagaDetalhe({
             ? 'Desbloquear acesso'
             : !assessmentComplete
               ? 'Concluir teste'
-              : missingRequiredCoverLetter
-                ? 'Adicionar carta'
-                : 'Candidatar agora';
+              : 'Candidatar agora';
 
   const applicationCount = Number(
     vaga.applicationsCount ||
@@ -927,7 +1037,7 @@ export default function VagaDetalhe({
         'Descreva abaixo o motivo da denúncia:',
       ].join('\n'),
     );
-    window.location.href = `mailto:suporte@empregos.st?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:contacto@empregostp.com?subject=${subject}&body=${body}`;
   };
 
   const handleToggleSave = async () => {
@@ -1026,13 +1136,16 @@ export default function VagaDetalhe({
         userData: candidateProfileData || {},
         profileData: candidateProfileData || {},
       });
-      setCoverLetter(suggestion);
+      setApplicationForm((anterior) => ({
+        ...anterior,
+        coverLetter: suggestion,
+      }));
     } finally {
       setIsGeneratingCoverLetter(false);
     }
   };
 
-  const handleApply = async () => {
+  const handleApply = () => {
     if (!user) {
       window.location.href = `/login?redirect=/vaga/${vaga.id}`;
       return;
@@ -1056,15 +1169,12 @@ export default function VagaDetalhe({
       setApplyStatus('idle');
       return;
     }
-    if (
-      premiumConfig.requireCoverLetter &&
-      candidatePremiumAccess.canUseCoverLetter &&
-      !normalizedCoverLetter
-    ) {
-      setErrorMsg('Esta vaga exige carta de apresentação personalizada.');
-      setApplyStatus('error');
-      return;
-    }
+    // A partir daqui é o modal que recolhe e valida a candidatura.
+    setErrorMsg('');
+    setApplyModalOpen(true);
+  };
+
+  const handleSubmitApplication = async (formulario) => {
     try {
       setApplyStatus('loading');
       setErrorMsg('');
@@ -1086,12 +1196,14 @@ export default function VagaDetalhe({
         body: JSON.stringify({
           jobId: vaga.id,
           assessmentAnswers,
-          coverLetter: normalizedCoverLetter,
+          coverLetter: normalizeCoverLetter(formulario.coverLetter),
+          applicationForm: normalizeApplicationForm(formulario),
         }),
       });
 
       if (response.status === 409) {
         await clearApplicationDraft();
+        setApplyModalOpen(false);
         setApplyStatus('success');
         return;
       }
@@ -1109,6 +1221,7 @@ export default function VagaDetalhe({
               data.code === 'EARLY_ACCESS_RESTRICTED' ||
               data.code === 'PREMIUM_APPLICATION_TOOLS_ONLY')
           ) {
+            setApplyModalOpen(false);
             setUpgradeModal({
               open: true,
               message:
@@ -1129,6 +1242,7 @@ export default function VagaDetalhe({
       }
 
       await clearApplicationDraft();
+      setApplyModalOpen(false);
       setApplyStatus('success');
     } catch (err) {
       console.warn('Erro ao candidatar:', err?.message || err);
@@ -1139,6 +1253,29 @@ export default function VagaDetalhe({
 
   return (
     <>
+      <ApplicationModal
+        isOpen={applyModalOpen}
+        onClose={() => setApplyModalOpen(false)}
+        job={vaga}
+        form={applicationForm}
+        onChange={setApplicationForm}
+        onSubmit={handleSubmitApplication}
+        submitting={isApplying}
+        errorMessage={errorMsg}
+        onGenerateCoverLetter={handleGenerateCoverLetter}
+        generatingCoverLetter={isGeneratingCoverLetter}
+        documentRequirements={documentRequirements}
+        onUploadDocument={handleUploadDocument}
+        coverLetterEnabled={Boolean(candidatePremiumAccess.canUseCoverLetter)}
+        draftStatus={
+          <AutoSaveStatus
+            status={applicationDraftStatus}
+            lastSavedAt={applicationDraftLastSavedAt}
+            isOnline={applicationDraftIsOnline}
+          />
+        }
+      />
+
       <UpgradeModal
         isOpen={upgradeModal.open}
         onClose={() => setUpgradeModal({ open: false, message: '' })}
@@ -1662,11 +1799,6 @@ export default function VagaDetalhe({
                       Conclua o teste de competências para ativar a candidatura.
                     </p>
                   )}
-                  {missingRequiredCoverLetter && (
-                    <p className={styles.warningText}>
-                      Adicione a carta de apresentação para concluir o envio.
-                    </p>
-                  )}
                   {user &&
                   userType !== 'empresa' &&
                   (publicAssessment ||
@@ -1729,74 +1861,6 @@ export default function VagaDetalhe({
                     )}
                   </section>
                 ) : null}
-
-                {(premiumConfig.requireCoverLetter ||
-                  candidatePremiumAccess.canUseCoverLetter ||
-                  premiumApplyRestriction) &&
-                  userType !== 'empresa' && (
-                    <section
-                      className={`${styles.sidebarCard} ${styles.coverLetterCard}`}
-                    >
-                      <div className={styles.coverLetterHeader}>
-                        <div>
-                          <span className={styles.sidebarEyebrow}>
-                            Carta de apresentação
-                          </span>
-                          <h3 className={styles.sidebarTitle}>
-                            Preparar envio personalizado
-                          </h3>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={handleGenerateCoverLetter}
-                          disabled={isGeneratingCoverLetter}
-                          className={styles.generateButton}
-                        >
-                          {isGeneratingCoverLetter
-                            ? 'A gerar…'
-                            : 'Gerar sugestão'}
-                        </button>
-                      </div>
-
-                      <p className={styles.sidebarText}>
-                        {premiumConfig.requireCoverLetter
-                          ? 'Esta vaga exige carta personalizada no envio.'
-                          : 'Use uma carta assistida para reforçar o contexto da sua candidatura.'}
-                      </p>
-
-                      {candidatePremiumAccess.canUseCoverLetter ||
-                      premiumConfig.requireCoverLetter ? (
-                        <textarea
-                          value={coverLetter}
-                          onChange={(event) =>
-                            setCoverLetter(event.target.value)
-                          }
-                          placeholder="Escreva ou gere uma carta de apresentação personalizada para esta vaga."
-                          rows={7}
-                          className={styles.coverLetterInput}
-                        />
-                      ) : (
-                        <div className={styles.lockedBox}>
-                          Escolha um plano para usar uma carta de apresentação
-                          personalizada nesta candidatura.
-                        </div>
-                      )}
-
-                      <div className={styles.coverLetterFooter}>
-                        <span className={styles.sidebarMuted}>
-                          {normalizedCoverLetter
-                            ? `${normalizedCoverLetter.length} caracteres prontos para envio`
-                            : 'A carta será anexada junto com a candidatura.'}
-                        </span>
-                        {candidatePremiumAccess.priorityApplied && (
-                          <span className={styles.priorityPill}>
-                            <FiZap size={12} />
-                            Candidatura prioritária
-                          </span>
-                        )}
-                      </div>
-                    </section>
-                  )}
 
                 <section
                   className={`${styles.sidebarCard} ${styles.companyCard}`}
@@ -2064,6 +2128,11 @@ export async function getServerSideProps({ params }) {
         currentJob.empresaNome ||
         'Empresa',
       skillsAssessment: getPublicSkillsAssessment(currentJob.skillsAssessment),
+      // Normalizado aqui para vagas antigas, criadas antes de existirem
+      // documentos exigidos, chegarem à página com o CV e os certificados.
+      requiredDocuments: normalizeRequiredDocuments(
+        currentJob.requiredDocuments || {},
+      ),
     };
 
     const rankedRelatedJobs = relatedRaw

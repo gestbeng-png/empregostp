@@ -1,7 +1,10 @@
 import nookies from 'nookies';
 
 import { admin } from '../../../lib/firebaseAdmin';
-import { requireSession } from '../../../lib/serverSession';
+import {
+  requireCandidateSession,
+  requireSession,
+} from '../../../lib/serverSession';
 
 jest.mock('nookies', () => ({
   __esModule: true,
@@ -110,5 +113,52 @@ describe('requireSession', () => {
     const result = await requireSession({ resolvedUrl: '/dashboard' });
 
     expect(result?.redirect.destination).toBe('/login?redirect=%2Fdashboard');
+  });
+});
+
+describe('requireCandidateSession', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  function comSessao(userType: string) {
+    cookiesGet.mockReturnValue({ token: 'tok' });
+    authMock.mockReturnValue({
+      verifyIdToken: jest.fn().mockResolvedValue({ uid: 'user-1' }),
+    });
+    mockUser({ userType });
+  }
+
+  test('deixa passar um candidato', async () => {
+    comSessao('candidato');
+
+    await expect(
+      requireCandidateSession({ resolvedUrl: '/dashboard/candidato' }),
+    ).resolves.toBeNull();
+  });
+
+  test.each(['empresa', 'admin'])(
+    'reencaminha %s para o seu próprio painel em vez de o deixar preencher o formulário',
+    async (userType) => {
+      comSessao(userType);
+
+      const result = await requireCandidateSession({
+        resolvedUrl: '/dashboard/candidato',
+      });
+
+      expect(result).toEqual({
+        redirect: { destination: '/dashboard', permanent: false },
+      });
+    },
+  );
+
+  test('sem sessão vai para o login com o destino preservado', async () => {
+    cookiesGet.mockReturnValue({});
+
+    const result = await requireCandidateSession({
+      resolvedUrl: '/dashboard/candidato',
+    });
+
+    expect(result?.redirect.destination).toBe(
+      '/login?redirect=%2Fdashboard%2Fcandidato',
+    );
   });
 });

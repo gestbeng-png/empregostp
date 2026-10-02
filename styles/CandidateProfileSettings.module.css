@@ -394,6 +394,19 @@
   appearance: none;
   cursor: pointer;
 }
+.charCount {
+  display: block;
+  margin-top: 6px;
+  color: var(--text-3, #6b7891);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-align: right;
+}
+
+.charCountOver {
+  color: #b42318;
+}
+
 .textarea {
   min-height: 118px;
   line-height: 1.6;

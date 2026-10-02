@@ -14,6 +14,7 @@ import {
   FiUsers,
 } from 'react-icons/fi';
 import PublicPageShell from '../PublicPageShell';
+import VerifiedCandidatesCarousel from '../home/VerifiedCandidatesCarousel';
 import { getCandidateMarketingPlans } from '../../lib/candidateCatalog';
 import styles from '../../styles/CandidatosStitchPage.module.css';
 
@@ -342,7 +343,10 @@ function CandidatePlanCard({ plan }) {
   );
 }
 
-export default function CandidateMarketPage({ market = 'national' }) {
+export default function CandidateMarketPage({
+  market = 'national',
+  verifiedCandidates = [],
+}) {
   const config = MARKET_CONFIGS[market] || MARKET_CONFIGS.national;
   const isNational = market === 'national';
 
@@ -508,6 +512,40 @@ export default function CandidateMarketPage({ market = 'national' }) {
               </p>
             </div>
           </section>
+
+          {verifiedCandidates.length ? (
+            <section
+              className={styles.talentSection}
+              aria-labelledby="candidatos-verificados-title"
+            >
+              <div className={styles.container}>
+                <div className={styles.talentHeading}>
+                  <div>
+                    <span className={styles.sectionEyebrow}>
+                      Perfis verificados
+                    </span>
+                    <h2 id="candidatos-verificados-title">
+                      Quem já está verificado no EmpregoSTP
+                    </h2>
+                    <p>
+                      Profissionais com percurso confirmado pela nossa equipa.
+                      Verifique o seu perfil e apareça também aqui, à frente de
+                      quem contrata.
+                    </p>
+                  </div>
+                  <Link href="/candidatos" className={styles.talentLink}>
+                    Ver todos os perfis
+                    <FiArrowRight aria-hidden="true" />
+                  </Link>
+                </div>
+
+                <VerifiedCandidatesCarousel
+                  candidates={verifiedCandidates}
+                  variante="larga"
+                />
+              </div>
+            </section>
+          ) : null}
 
           <section className={styles.ctaSection}>
             <div className={styles.container}>

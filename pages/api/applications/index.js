@@ -11,10 +11,22 @@ import {
   evaluateCandidateJobAccess,
   normalizeCoverLetter,
 } from '../../../lib/candidateApplicationPremium';
+import {
+  normalizeApplicationForm,
+  validateApplicationForm,
+} from '../../../lib/applicationForm';
+import {
+  resolveDocumentRequirements,
+  validateApplicationDocuments,
+} from '../../../lib/applicationDocuments';
+import { resolveOwnedStorageObjectPath } from '../../../lib/storageObjectPath';
 import { getEffectiveJobStatus, syncExpiredJobStatus } from '../../../lib/jobExpiration';
 import { analyzeCandidateJobFit } from '../../../lib/candidateOptimizationInsights';
 import { calculateSkillsAssessmentResult, getPublicSkillsAssessment } from '../../../lib/skillsAssessment';
 import { createServerNotification } from '../../../lib/serverNotifications';
+import { isEmailConfigured, sendEmail } from '../../../lib/email';
+import { buildNewApplicationEmail } from '../../../lib/applicationEmails';
+import { resolveBaseUrl } from '../../../lib/authEmails';
 import { logServerError } from '../../../lib/serverLog';
 import { requireActiveApiUser } from '../../../lib/apiUserAuth';
 import { recordActivity } from '../../../lib/activityLog';
@@ -43,7 +55,12 @@ export default async function handler(req, res) {
 
     switch (method) {
       case 'POST': {
-        const { jobId, assessmentAnswers = [], coverLetter = '' } = req.body;
+        const {
+          jobId,
+          assessmentAnswers = [],
+          coverLetter = '',
+          applicationForm = null,
+        } = req.body;
         if (!jobId) return res.status(400).json({ error: 'jobId é obrigatório' });
 
         // Buscar vaga e perfil do candidato
@@ -152,6 +169,92 @@ export default async function handler(req, res) {
           }
         }
 
+        // O formulário é revalidado aqui de propósito. O modal valida para dar
+        // resposta imediata a quem escreve, mas o pedido pode não vir do modal
+        // — e a carta é a única parte que já tinha regras do lado do servidor.
+        const coverLetterAllowed = canUseCoverLetter(planId).allowed;
+        const normalizedApplicationForm = applicationForm
+          ? normalizeApplicationForm({
+              ...applicationForm,
+              coverLetter: normalizedCoverLetter,
+            })
+          : null;
+
+        if (!normalizedApplicationForm) {
+          return res.status(400).json({
+            error: 'Preencha o formulário de candidatura para enviar.',
+            code: 'APPLICATION_FORM_REQUIRED',
+          });
+        }
+
+        const applicationFormErrors = validateApplicationForm(
+          normalizedApplicationForm,
+          { coverLetterEnabled: coverLetterAllowed },
+        );
+        if (Object.keys(applicationFormErrors).length > 0) {
+          return res.status(400).json({
+            error: 'Há campos por preencher no formulário de candidatura.',
+            code: 'APPLICATION_FORM_INVALID',
+            fields: applicationFormErrors,
+          });
+        }
+
+        // Os requisitos são recalculados aqui a partir da vaga e do perfil. A
+        // lista não vem do cliente de propósito: bastaria enviá-la vazia para
+        // saltar todos os documentos exigidos.
+        const documentRequirements = resolveDocumentRequirements({
+          job: jobData,
+          profile: {
+            cvUrl: profileData.cvUrl || userData.cvUrl || '',
+            cvUpdatedAt: profileData.cvUpdatedAt || userData.cvUpdatedAt || '',
+            certificateFiles: profileData.certificateFiles || [],
+          },
+        });
+
+        // Cada anexo tem de estar dentro da pasta do próprio candidato. Sem
+        // isto, bastava colar o URL do ficheiro de outra pessoa para o anexar
+        // à sua candidatura — e a rota que assina os downloads passaria a
+        // servi-lo como se fosse dele.
+        const documentosVerificados = {};
+        for (const [tipo, valor] of Object.entries(
+          normalizedApplicationForm.documents || {},
+        )) {
+          const ficheiros = Array.isArray(valor) ? valor : [valor];
+          const validos = [];
+          for (const ficheiro of ficheiros) {
+            const storagePath = resolveOwnedStorageObjectPath({
+              ownerUid: uid,
+              prefix: 'candidaturas',
+              value: ficheiro.url,
+            });
+            if (!storagePath) {
+              return res.status(400).json({
+                error: 'Um dos documentos enviados não é válido.',
+                code: 'APPLICATION_DOCUMENT_INVALID',
+              });
+            }
+            validos.push({ ...ficheiro, storagePath });
+          }
+          if (validos.length) {
+            documentosVerificados[tipo] = Array.isArray(valor)
+              ? validos
+              : validos[0];
+          }
+        }
+        normalizedApplicationForm.documents = documentosVerificados;
+
+        const documentErrors = validateApplicationDocuments(
+          documentRequirements,
+          documentosVerificados,
+        );
+        if (Object.keys(documentErrors).length > 0) {
+          return res.status(400).json({
+            error: 'Faltam documentos exigidos por esta vaga.',
+            code: 'APPLICATION_DOCUMENTS_MISSING',
+            fields: documentErrors,
+          });
+        }
+
         if (jobData.requireCoverLetter && !normalizedCoverLetter) {
           return res.status(400).json({
             error: 'Esta vaga exige carta de apresentação personalizada.',
@@ -187,6 +290,14 @@ export default async function handler(req, res) {
           status: 'pending',
           skillsAssessmentResult,
           coverLetter: normalizedCoverLetter,
+          applicationForm: normalizedApplicationForm,
+          requiredDocuments: documentRequirements.map(
+            ({ id, label, satisfiedByProfile }) => ({
+              id,
+              label,
+              satisfiedByProfile,
+            }),
+          ),
           priorityApplied: Boolean(candidatePremiumAccess.priorityApplied),
           applicationHighlighted: Boolean(candidatePremiumAccess.highlighted),
           priorityLevel: Number(candidatePremiumAccess.priorityLevel) || 0,
@@ -293,6 +404,40 @@ export default async function handler(req, res) {
           throw transactionError;
         }
 
+        // Os documentos entregues ficam guardados no perfil: quem já entregou
+        // um registo criminal numa vaga não devia ter de o voltar a carregar
+        // na seguinte. Falhar aqui não invalida a candidatura, que já está
+        // gravada — por isso o erro é registado e não propagado.
+        if (Object.keys(documentosVerificados).length > 0) {
+          try {
+            const guardados = {};
+            for (const [tipo, valor] of Object.entries(documentosVerificados)) {
+              // O CV tem o seu próprio campo no perfil e a sua própria data.
+              if (tipo === 'cv') continue;
+              guardados[`documents.${tipo}`] = valor;
+            }
+            if (Object.keys(guardados).length > 0) {
+              await adminApp
+                .firestore()
+                .collection('profiles')
+                .doc(uid)
+                .set(
+                  { documents: {} },
+                  { merge: true },
+                )
+                .then(() =>
+                  adminApp
+                    .firestore()
+                    .collection('profiles')
+                    .doc(uid)
+                    .update(guardados),
+                );
+            }
+          } catch (error) {
+            logServerError('applications.guardar_documentos_no_perfil', error);
+          }
+        }
+
         // Registrar atividade para auditoria
         await recordActivity(adminApp, {
           type: 'application_created',
@@ -318,6 +463,34 @@ export default async function handler(req, res) {
             });
           } catch (notifError) {
             logServerError('applications.criar_notificacao_failed', notifError);
+          }
+
+          // Aviso por email à empresa: a notificação in-app só é vista quem entra no painel.
+          if (isEmailConfigured()) {
+            try {
+              const companyDoc = await adminApp
+                .firestore()
+                .collection('users')
+                .doc(jobData.companyId)
+                .get();
+              const companyEmail = companyDoc.exists ? companyDoc.data()?.email : null;
+              if (companyEmail) {
+                await sendEmail({
+                  to: companyEmail,
+                  ...buildNewApplicationEmail({
+                    candidateName: applicationData.candidateName,
+                    jobTitle: jobData.titulo || jobData.title || '',
+                    compatibilityLabel: applicationData.compatibilityLabel,
+                    compatibilityScore: applicationData.compatibilityScore,
+                    hasCoverLetter: Boolean(normalizedCoverLetter),
+                    priorityApplied: Boolean(candidatePremiumAccess.priorityApplied),
+                    site: resolveBaseUrl(req),
+                  }),
+                });
+              }
+            } catch (emailError) {
+              logServerError('applications.enviar_email_empresa_failed', emailError);
+            }
           }
         }
 

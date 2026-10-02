@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Head from 'next/head';
 import {
   signInWithEmailAndPassword,
   signInWithPopup,
+  onIdTokenChanged,
   GoogleAuthProvider,
 } from 'firebase/auth';
 import { FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
@@ -25,6 +26,30 @@ import {
 } from '../lib/userStatus';
 import styles from '../styles/AuthPage.module.css';
 
+// Só uma tentativa de retoma automática por período curto: se o destino nos
+// devolver ao login (cookies bloqueados, relógio adiantado), o formulário
+// aparece em vez de o browser entrar num ciclo de recarregamentos.
+const RETOMA_CHAVE = 'empregostp:retoma-sessao';
+const RETOMA_INTERVALO_MS = 30_000;
+
+function podeRetomarSessao() {
+  try {
+    const ultima = Number(window.sessionStorage.getItem(RETOMA_CHAVE) || 0);
+    return !ultima || Date.now() - ultima > RETOMA_INTERVALO_MS;
+  } catch {
+    // Sem sessionStorage não há como travar o ciclo: não arriscamos.
+    return false;
+  }
+}
+
+function marcarRetomaSessao() {
+  try {
+    window.sessionStorage.setItem(RETOMA_CHAVE, String(Date.now()));
+  } catch {
+    // Ignorado: a retoma segue à mesma, só fica sem travão.
+  }
+}
+
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -38,6 +63,28 @@ export default function Login() {
     ? router.query.redirect[0]
     : router.query.redirect;
   const redirect = sanitizeLoginRedirect(requestedRedirect);
+
+  // Quem já tem sessão guardada no browser não devia ter de a escrever outra
+  // vez: o cookie do servidor expirou, mas o Firebase ainda tem o utilizador.
+  // Recriamos a sessão e seguimos para o destino pedido.
+  useEffect(() => {
+    const unsubscribe = onIdTokenChanged(auth, async (utilizadorAtual) => {
+      if (!utilizadorAtual || !podeRetomarSessao()) return;
+
+      try {
+        const token = await utilizadorAtual.getIdToken();
+        await createServerSession(token);
+        marcarRetomaSessao();
+        // O cookie já está escrito: o `getServerSideProps` do destino corre
+        // com a sessão válida, por isso basta navegar.
+        router.replace(redirect || '/dashboard');
+      } catch (err) {
+        // Conta bloqueada ou token recusado: fica o formulário.
+      }
+    });
+
+    return () => unsubscribe();
+  }, [redirect, router]);
 
   const handleGoogleLogin = async () => {
     setError('');

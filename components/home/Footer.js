@@ -110,13 +110,13 @@ export default function Footer() {
                   <span>+239 986 9673</span>
                 </a>
                 <a
-                  href="mailto:suporte@empregos.st"
+                  href="mailto:contacto@empregostp.com"
                   className={styles.contactItem}
                 >
                   <span className={styles.contactIcon}>
                     <FiMail aria-hidden="true" />
                   </span>
-                  <span>suporte@empregos.st</span>
+                  <span>contacto@empregostp.com</span>
                 </a>
               </div>
             </nav>

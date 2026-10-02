@@ -139,6 +139,13 @@
   text-transform: uppercase;
 }
 
+.headline {
+  margin-top: 0.5rem;
+  color: var(--app-text-secondary);
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
 .objective {
   margin-top: 0.45rem;
   color: #2057d7;
@@ -478,6 +485,7 @@
 }
 
 .title,
+.headline,
 .location,
 .objectiveType,
 .cardTitle,

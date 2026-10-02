@@ -33,6 +33,7 @@ import {
   DEFAULT_TEMPLATES,
   DEFAULT_TOOLS,
   RESOURCE_AUDIENCE,
+  isHiddenTool,
   normalizeAudience,
   resolveGuideContentId,
   resolveTemplateContentId,
@@ -234,15 +235,6 @@ const normalizeBoolean = (value, fallback = false) => {
   return fallback;
 };
 
-const isRemovedTool = (tool) => {
-  const id = String(tool?.id || '')
-    .trim()
-    .toLowerCase();
-  // Mantemos apenas o filtro de itens antigos/duplicados do Firestore.
-  // O Criador de CV /recursos/gerador-cv deve aparecer nesta rota.
-  return id === 'tool2' || id === 'tool-cv';
-};
-
 const getResourceKey = (item, index = 0) => {
   const titleKey = slugifyFilename(
     item?.title || item?.name || item?.question || '',
@@ -363,7 +355,7 @@ export default function RecursosPage({
 
   const normalizedTools = useMemo(() => {
     return (tools || [])
-      .filter((tool) => !isRemovedTool(tool))
+      .filter((tool) => !isHiddenTool(tool))
       .map((tool) => ({
         ...tool,
         audience: normalizeAudience(tool.audience, RESOURCE_AUDIENCE.all),

@@ -4,7 +4,8 @@ import {
   parseJobCloseDate,
   syncExpiredJobStatus,
 } from '../../../../lib/jobExpiration';
-import { logServerError } from '../../../../lib/serverLog';
+import { logServerError, logServerWarning } from '../../../../lib/serverLog';
+import { broadcastNewJob } from '../../../../lib/newJobBroadcast';
 
 const serializeTimestamp = (value) => {
   if (!value) return null;
@@ -306,6 +307,17 @@ export default async function handler(req, res) {
           companyName: companyDisplayName,
           createdAt: new Date().toISOString(),
         });
+
+      // Vaga publicada pelo admin nasce activa: os candidatos sao avisados.
+      try {
+        await broadcastNewJob(admin, {
+          job: savedJob.data(),
+          jobId: jobRef.id,
+          req,
+        });
+      } catch (broadcastError) {
+        logServerWarning('admin_jobs.new_job_broadcast_failed', broadcastError);
+      }
 
       return res.status(201).json({
         message: 'Vaga criada com sucesso',

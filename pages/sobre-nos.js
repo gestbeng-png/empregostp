@@ -142,6 +142,8 @@ export default function SobreNos() {
   const [testimonialStatus, setTestimonialStatus] = useState(null);
   const [submittingTestimonial, setSubmittingTestimonial] = useState(false);
   const [joinOpen, setJoinOpen] = useState(false);
+  const [joinStatus, setJoinStatus] = useState(null);
+  const [submittingJoin, setSubmittingJoin] = useState(false);
   const [joinForm, setJoinForm] = useState({
     name: '',
     email: '',
@@ -156,22 +158,64 @@ export default function SobreNos() {
     setJoinForm((previous) => ({ ...previous, [field]: value }));
   };
 
-  const handleJoinSubmit = (event) => {
+  // Antes abria o cliente de email do visitante com um mailto: para um domínio
+  // que não existe, e a candidatura perdia-se. Agora vai pelo servidor, fica
+  // registada em `contactMessages` e chega à caixa institucional.
+  const handleJoinSubmit = async (event) => {
     event.preventDefault();
+    if (submittingJoin) return;
 
-    const subject = `Junte-se à equipa - ${joinForm.name.trim() || 'Candidatura'}`;
-    const body = [
-      `Nome: ${joinForm.name.trim()}`,
-      `Email: ${joinForm.email.trim()}`,
-      '',
-      'Mensagem:',
-      joinForm.message.trim(),
-    ].join('\n');
+    setJoinStatus(null);
 
-    window.location.href = `mailto:suporte@empregostp.st?subject=${encodeURIComponent(
-      subject,
-    )}&body=${encodeURIComponent(body)}`;
-    setJoinOpen(false);
+    if (joinForm.name.trim().length < 2) {
+      setJoinStatus({ type: 'error', text: 'Indique o seu nome.' });
+      return;
+    }
+    if (joinForm.message.trim().length < 10) {
+      setJoinStatus({
+        type: 'error',
+        text: 'Escreva uma mensagem com pelo menos 10 caracteres.',
+      });
+      return;
+    }
+
+    setSubmittingJoin(true);
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: joinForm.name.trim(),
+          email: joinForm.email.trim(),
+          subject: 'carreira',
+          message: joinForm.message.trim(),
+          source: 'carreiras',
+        }),
+      });
+      const resultado = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        setJoinStatus({
+          type: 'error',
+          text: resultado.error || 'Não foi possível enviar. Tente novamente.',
+        });
+        return;
+      }
+
+      setJoinStatus({
+        type: 'success',
+        text:
+          resultado.message || 'Candidatura enviada! Entraremos em contacto.',
+      });
+      setJoinForm({ name: '', email: '', message: '' });
+    } catch {
+      setJoinStatus({
+        type: 'error',
+        text: 'Falha de ligação. Verifique a internet e tente novamente.',
+      });
+    } finally {
+      setSubmittingJoin(false);
+    }
   };
 
   const handleTestimonialField = (field) => (event) => {
@@ -829,7 +873,7 @@ export default function SobreNos() {
                 <h2 id="join-title">Junte-se à nossa equipa</h2>
                 <p id="join-description" className={styles.modalDescription}>
                   Conte-nos quem é e como gostaria de contribuir para o Emprego
-                  STP. Abriremos o seu email com a mensagem pronta para enviar.
+                  STP. A sua candidatura chega diretamente à nossa equipa.
                 </p>
 
                 <form className={styles.joinForm} onSubmit={handleJoinSubmit}>
@@ -877,8 +921,25 @@ export default function SobreNos() {
                     <small>{joinForm.message.length}/1200</small>
                   </label>
 
-                  <button type="submit" className={styles.submitButton}>
-                    Enviar por email
+                  {joinStatus ? (
+                    <p
+                      className={`${styles.formStatus} ${
+                        joinStatus.type === 'success'
+                          ? styles.formStatusSuccess
+                          : styles.formStatusError
+                      }`}
+                      role="status"
+                    >
+                      {joinStatus.text}
+                    </p>
+                  ) : null}
+
+                  <button
+                    type="submit"
+                    className={styles.submitButton}
+                    disabled={submittingJoin}
+                  >
+                    {submittingJoin ? 'A enviar...' : 'Enviar candidatura'}
                     <FiSend aria-hidden="true" />
                   </button>
                 </form>

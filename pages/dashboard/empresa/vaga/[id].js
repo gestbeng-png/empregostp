@@ -1,4 +1,7 @@
 import { admin } from "../../../../lib/firebaseAdmin";
+import ApplicationSubmission, {
+  serializeApplicationSubmission,
+} from "../../../../components/empresa/ApplicationSubmission";
 import nookies from "nookies";
 import Link from "next/link";
 import Head from "next/head";
@@ -636,12 +639,12 @@ export default function DetalheVaga({ vaga, candidaturas }) {
                             ) : null}
                           </div>
                         ) : null}
-                        {candidatura.coverLetter ? (
-                          <div className={styles.applicationInsight}>
-                            <strong>Carta de apresentação</strong>
-                            <p>{candidatura.coverLetter}</p>
-                          </div>
-                        ) : null}
+                        <ApplicationSubmission
+                          applicationId={candidatura.id}
+                          form={candidatura.applicationForm}
+                          documents={candidatura.documents}
+                          requiredDocuments={candidatura.requiredDocuments}
+                        />
                       </div>
 
                       <div className={styles.applicationAside}>
@@ -800,7 +803,7 @@ export async function getServerSideProps(context) {
         candidateEmail: data.candidateEmail || "",
         status: data.status || "pending",
         skillsAssessmentResult: data.skillsAssessmentResult || null,
-        coverLetter: data.coverLetter || "",
+        ...serializeApplicationSubmission(data),
         priorityApplied: Boolean(data.priorityApplied),
         applicationHighlighted: Boolean(data.applicationHighlighted),
         priorityLevel: Number(data.priorityLevel) || 0,

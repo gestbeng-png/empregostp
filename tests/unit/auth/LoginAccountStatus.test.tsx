@@ -14,6 +14,11 @@ jest.mock('firebase/auth', () => ({
   GoogleAuthProvider: jest.fn(),
   signInWithEmailAndPassword: jest.fn(),
   signInWithPopup: jest.fn(),
+  // Sem sessão guardada: o observador devolve logo `null`.
+  onIdTokenChanged: jest.fn((_auth, callback) => {
+    callback(null);
+    return () => undefined;
+  }),
 }));
 
 jest.mock('firebase/firestore', () => ({

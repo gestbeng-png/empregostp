@@ -1085,23 +1085,6 @@
   font-weight: 800;
 }
 
-.newBadge {
-  position: absolute;
-  top: 18px;
-  right: 22px;
-  display: inline-flex;
-  min-height: 27px;
-  padding: 4px 12px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  background: var(--jobs-lime);
-  color: var(--jobs-navy);
-  font-size: 14px;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
 .jobCardContent {
   min-width: 0;
   padding-top: 1px;
@@ -1597,14 +1580,6 @@
     height: 52px;
     flex-basis: 52px;
     border-radius: 8px;
-  }
-
-  .newBadge {
-    position: static;
-    min-height: 22px;
-    margin-left: auto;
-    padding: 3px 10px;
-    font-size: 14px;
   }
 
   .jobCardContent {

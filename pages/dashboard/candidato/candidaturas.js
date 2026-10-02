@@ -15,6 +15,7 @@ import {
   getInterviewStatusLabelPt,
   isLikelyUrl,
 } from "../../../lib/interviewClient";
+import { requireCandidateSession } from "../../../lib/serverSession";
 import styles from "../../../styles/CandidaturasPage.module.css";
 
 const ALLOWED_FILTERS = [
@@ -1062,4 +1063,10 @@ function InfoItem({ label, value }) {
       <div className={styles.infoValue}>{value}</div>
     </div>
   );
+}
+
+export async function getServerSideProps(context) {
+  const guard = await requireCandidateSession(context);
+  if (guard) return guard;
+  return { props: {} };
 }

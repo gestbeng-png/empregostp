@@ -356,6 +356,7 @@ export async function getServerSideProps(context) {
         email: firestoreUser.email || '',
         phone: profileData.phone || firestoreUser.phone || '',
         location:
+          profileData.city ||
           profileData.location ||
           firestoreUser.location ||
           firestoreUser.cidade ||

@@ -765,3 +765,90 @@
   background: var(--surface-3, #eef4f8);
   color: var(--dash-info-text, #064bb5);
 }
+
+/* Formulário completo de candidatura, dentro do cartão de insight. */
+.applicationFormGrid {
+  display: grid;
+  gap: 6px 16px;
+  margin: 4px 0 0;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.applicationFormRow {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.applicationFormRow dt {
+  color: var(--text-2, #475569);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.applicationFormRow dd {
+  margin: 0;
+  color: var(--text-1, #102441);
+  font-size: 0.86rem;
+  overflow-wrap: anywhere;
+}
+
+.applicationFormBlock {
+  margin-top: 8px;
+}
+
+.applicationFormBlockTitle {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--text-2, #475569);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.applicationFormBlock ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--text-1, #102441);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.applicationFormConsent {
+  margin: 8px 0 0;
+  color: #1f7a44;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.documentButton {
+  display: block;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  color: #064bb5;
+  font: inherit;
+  font-size: 0.86rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.documentButton:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.documentButton:disabled {
+  color: var(--text-2, #475569);
+  cursor: progress;
+}
+
+.documentError {
+  margin: 6px 0 0;
+  color: #c0392b;
+  font-size: 0.8rem;
+  font-weight: 600;
+}

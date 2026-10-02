@@ -48,9 +48,13 @@ import AutoSaveStatus from '../../../components/forms/AutoSaveStatus';
 import useAutoDraft from '../../../hooks/useAutoDraft';
 import styles from '../../../styles/DashboardCandidato.module.css';
 import ps from '../../../styles/CandidateProfileSettings.module.css';
+import {
+  CANDIDATE_PROFILE_LIMITS as LIMITES,
+  excedenteDe,
+} from '../../../lib/candidateProfileLimits';
 import { createFormDraftKey } from '../../../lib/formDraft';
 import { buildLoginUrl } from '../../../lib/loginRedirect';
-import { requireSession } from '../../../lib/serverSession';
+import { requireCandidateSession } from '../../../lib/serverSession';
 
 const CandidateApplicationsChart = dynamic(
   () => import('../../../components/charts/CandidateApplicationsChart'),
@@ -766,6 +770,26 @@ function CandidateLoadingState() {
       </div>
       <span className={styles.srOnly}>A carregar dados do dashboard.</span>
     </div>
+  );
+}
+
+/**
+ * Contador de caracteres dos campos longos do perfil.
+ *
+ * Mostra o excedente em vez de o esconder: um perfil gravado antes destes
+ * limites pode chegar aqui já acima do máximo, e a pessoa tem de perceber que
+ * o texto vai ser cortado ao guardar.
+ */
+function ContadorCaracteres({ value, max }) {
+  const usados = String(value || '').length;
+  const excedente = excedenteDe(value, max);
+
+  return (
+    <small className={`${ps.charCount} ${excedente ? ps.charCountOver : ''}`}>
+      {excedente
+        ? `${usados} / ${max} caracteres — ${excedente} a mais serão cortados ao guardar`
+        : `${usados} / ${max} caracteres`}
+    </small>
   );
 }
 
@@ -3072,6 +3096,7 @@ const CandidateDashboard = () => {
                         <input
                           className={ps.idNameInput}
                           value={profileForm.name}
+                          maxLength={LIMITES.name}
                           placeholder="Nome completo"
                           aria-label="Nome completo"
                           onChange={(e) =>
@@ -3081,6 +3106,7 @@ const CandidateDashboard = () => {
                         <input
                           className={ps.idHeadlineInput}
                           value={profileForm.headline}
+                          maxLength={LIMITES.headline}
                           placeholder="Título profissional (ex.: Senior Fullstack Developer)"
                           aria-label="Título profissional"
                           onChange={(e) =>
@@ -3124,6 +3150,7 @@ const CandidateDashboard = () => {
                           <input
                             className={ps.input}
                             value={profileForm.name}
+                            maxLength={LIMITES.name}
                             onChange={(e) =>
                               handleProfileFieldChange('name', e.target.value)
                             }
@@ -3142,6 +3169,7 @@ const CandidateDashboard = () => {
                           <input
                             className={ps.input}
                             value={profileForm.phone}
+                            maxLength={LIMITES.phone}
                             onChange={(e) =>
                               handleProfileFieldChange('phone', e.target.value)
                             }
@@ -3157,6 +3185,7 @@ const CandidateDashboard = () => {
                             <input
                               className={ps.input}
                               value={profileForm.location}
+                              maxLength={LIMITES.location}
                               onChange={(e) =>
                                 handleProfileFieldChange(
                                   'location',
@@ -3185,6 +3214,7 @@ const CandidateDashboard = () => {
                           <input
                             className={ps.input}
                             value={profileForm.nationality}
+                            maxLength={LIMITES.nationality}
                             onChange={(e) =>
                               handleProfileFieldChange(
                                 'nationality',
@@ -3213,6 +3243,7 @@ const CandidateDashboard = () => {
                           <input
                             className={ps.input}
                             value={profileForm.maritalStatus}
+                            maxLength={LIMITES.maritalStatus}
                             onChange={(e) =>
                               handleProfileFieldChange(
                                 'maritalStatus',
@@ -3228,6 +3259,7 @@ const CandidateDashboard = () => {
                               className={ps.input}
                               placeholder="https://linkedin.com/in/…"
                               value={profileForm.linkedin}
+                              maxLength={LIMITES.linkedin}
                               onChange={(e) =>
                                 handleProfileFieldChange(
                                   'linkedin',
@@ -3249,6 +3281,7 @@ const CandidateDashboard = () => {
                           <input
                             className={ps.input}
                             value={profileForm.website}
+                            maxLength={LIMITES.website}
                             onChange={(e) =>
                               handleProfileFieldChange(
                                 'website',
@@ -3276,6 +3309,7 @@ const CandidateDashboard = () => {
                           <input
                             className={ps.input}
                             value={profileForm.objectiveArea}
+                            maxLength={LIMITES.objectiveArea}
                             onChange={(e) =>
                               handleProfileFieldChange(
                                 'objectiveArea',
@@ -3291,6 +3325,7 @@ const CandidateDashboard = () => {
                           <input
                             className={ps.input}
                             value={profileForm.objectiveType}
+                            maxLength={LIMITES.objectiveType}
                             onChange={(e) =>
                               handleProfileFieldChange(
                                 'objectiveType',
@@ -3305,12 +3340,17 @@ const CandidateDashboard = () => {
                         <textarea
                           className={ps.textarea}
                           value={profileForm.objectiveAspiration}
+                          maxLength={LIMITES.objectiveAspiration}
                           onChange={(e) =>
                             handleProfileFieldChange(
                               'objectiveAspiration',
                               e.target.value,
                             )
                           }
+                        />
+                        <ContadorCaracteres
+                          value={profileForm.objectiveAspiration}
+                          max={LIMITES.objectiveAspiration}
                         />
                       </label>
                     </section>
@@ -3331,9 +3371,14 @@ const CandidateDashboard = () => {
                         aria-label="Resumo profissional"
                         className={ps.textarea}
                         value={profileForm.bio}
+                        maxLength={LIMITES.bio}
                         onChange={(e) =>
                           handleProfileFieldChange('bio', e.target.value)
                         }
+                      />
+                      <ContadorCaracteres
+                        value={profileForm.bio}
+                        max={LIMITES.bio}
                       />
                     </section>
 
@@ -3362,6 +3407,7 @@ const CandidateDashboard = () => {
                                 className={ps.input}
                                 placeholder="Cargo"
                                 value={exp.role}
+                                maxLength={LIMITES.experienceRole}
                                 onChange={(e) =>
                                   handleExperienceChange(
                                     index,
@@ -3374,6 +3420,7 @@ const CandidateDashboard = () => {
                                 className={ps.input}
                                 placeholder="Empresa"
                                 value={exp.company}
+                                maxLength={LIMITES.experienceCompany}
                                 onChange={(e) =>
                                   handleExperienceChange(
                                     index,
@@ -3386,6 +3433,7 @@ const CandidateDashboard = () => {
                                 className={ps.input}
                                 placeholder="Período (ex.: 2022 - Atual)"
                                 value={exp.period}
+                                maxLength={LIMITES.experiencePeriod}
                                 onChange={(e) =>
                                   handleExperienceChange(
                                     index,
@@ -3398,6 +3446,7 @@ const CandidateDashboard = () => {
                                 className={ps.textarea}
                                 placeholder="Descrição"
                                 value={exp.description}
+                                maxLength={LIMITES.experienceDescription}
                                 onChange={(e) =>
                                   handleExperienceChange(
                                     index,
@@ -3405,6 +3454,10 @@ const CandidateDashboard = () => {
                                     e.target.value,
                                   )
                                 }
+                              />
+                              <ContadorCaracteres
+                                value={exp.description}
+                                max={LIMITES.experienceDescription}
                               />
                             </div>
                             <button
@@ -3436,12 +3489,17 @@ const CandidateDashboard = () => {
                         <textarea
                           className={ps.textarea}
                           value={profileForm.certifications}
+                          maxLength={LIMITES.certifications}
                           onChange={(e) =>
                             handleProfileFieldChange(
                               'certifications',
                               e.target.value,
                             )
                           }
+                        />
+                        <ContadorCaracteres
+                          value={profileForm.certifications}
+                          max={LIMITES.certifications}
                         />
                       </label>
                       <p className={ps.hint} style={{ marginTop: '14px' }}>
@@ -3504,6 +3562,7 @@ const CandidateDashboard = () => {
                             aria-label="Hard skills, separadas por vírgula"
                             className={ps.input}
                             value={profileForm.skills}
+                            maxLength={LIMITES.skills}
                             onChange={(e) =>
                               handleProfileFieldChange('skills', e.target.value)
                             }
@@ -3526,6 +3585,7 @@ const CandidateDashboard = () => {
                             aria-label="Soft skills, separadas por vírgula"
                             className={ps.input}
                             value={profileForm.skillsSoft}
+                            maxLength={LIMITES.skillsSoft}
                             onChange={(e) =>
                               handleProfileFieldChange(
                                 'skillsSoft',
@@ -3558,6 +3618,7 @@ const CandidateDashboard = () => {
                               name="skill"
                               className={ps.input}
                               placeholder="Adicionar ferramenta…"
+                              maxLength={LIMITES.skillTag}
                             />
                             <button
                               type="submit"
@@ -3605,9 +3666,14 @@ const CandidateDashboard = () => {
                         aria-label="Educação"
                         className={ps.textarea}
                         value={profileForm.education}
+                        maxLength={LIMITES.education}
                         onChange={(e) =>
                           handleProfileFieldChange('education', e.target.value)
                         }
+                      />
+                      <ContadorCaracteres
+                        value={profileForm.education}
+                        max={LIMITES.education}
                       />
                     </section>
 
@@ -3626,9 +3692,14 @@ const CandidateDashboard = () => {
                         aria-label="Idiomas"
                         className={ps.textarea}
                         value={profileForm.languages}
+                        maxLength={LIMITES.languages}
                         onChange={(e) =>
                           handleProfileFieldChange('languages', e.target.value)
                         }
+                      />
+                      <ContadorCaracteres
+                        value={profileForm.languages}
+                        max={LIMITES.languages}
                       />
                     </section>
 
@@ -3770,6 +3841,7 @@ const CandidateDashboard = () => {
                       <input
                         className={styles.profileInput}
                         value={profileForm.name}
+                        maxLength={LIMITES.name}
                         onChange={(e) =>
                           handleProfileFieldChange('name', e.target.value)
                         }
@@ -3777,6 +3849,7 @@ const CandidateDashboard = () => {
                       <input
                         className={styles.profileInput}
                         value={profileForm.headline}
+                        maxLength={LIMITES.headline}
                         onChange={(e) =>
                           handleProfileFieldChange('headline', e.target.value)
                         }
@@ -5585,7 +5658,7 @@ export default CandidateDashboard;
 // servidor: sem sessão, o utilizador deixa de ver a shell antes de ser
 // redirecionado, e o destino pretendido é preservado.
 export async function getServerSideProps(context) {
-  const guard = await requireSession(context);
+  const guard = await requireCandidateSession(context);
   if (guard) return guard;
   return { props: {} };
 }

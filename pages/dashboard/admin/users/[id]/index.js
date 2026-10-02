@@ -219,6 +219,7 @@ export default function AdminUserDetail({ user, profile, applications }) {
               <InfoItem
                 label="Localização"
                 value={
+                  profile?.city ||
                   profile?.location ||
                   user.location ||
                   user.cidade ||

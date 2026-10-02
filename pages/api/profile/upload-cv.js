@@ -67,10 +67,16 @@ export default async function handler(req, res) {
     const userRef = admin.firestore().collection('users').doc(uid);
     const profileRef = admin.firestore().collection('profiles').doc(uid);
 
+    // `updatedAt` muda a cada edição do perfil e não serve para saber a idade
+    // do CV. Sem uma data própria, não há como distinguir um CV de ontem de um
+    // de há três anos — que é o que decide se voltamos a pedi-lo.
+    const cvUpdatedAt = new Date().toISOString();
+
     await userRef.update({
       cvUrl,
       cvName,
       cvStoragePath,
+      cvUpdatedAt,
       updatedAt: admin.firestore.FieldValue.serverTimestamp()
     });
     await profileRef.set(
@@ -78,6 +84,7 @@ export default async function handler(req, res) {
         cvUrl,
         cvName,
         cvStoragePath,
+        cvUpdatedAt,
         updatedAt: admin.firestore.FieldValue.serverTimestamp()
       },
       { merge: true }
@@ -94,6 +101,7 @@ export default async function handler(req, res) {
       userType: userData.userType,
       cvUrl: userData.cvUrl || profileData.cvUrl || '',
       cvName: userData.cvName || profileData.cvName || '',
+      cvUpdatedAt: userData.cvUpdatedAt || profileData.cvUpdatedAt || '',
       verificationStatus: userData.verificationStatus || profileData.verificationStatus || 'unverified',
       verificationSummary: serializeValue(userData.verificationSummary || profileData.verificationSummary || null),
       verificationItems: serializeValue(userData.verificationItems || profileData.verificationItems || null),

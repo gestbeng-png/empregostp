@@ -5,9 +5,11 @@ import {
   safeTimestampToMillis,
 } from '../../lib/firestoreNormalize';
 import {
-  isContentPublished,
+  isContentVisible,
   normalizeContentStatus,
+  parseContentExpiry,
 } from '../../lib/contentPublication';
+import { normalizeExternalUrl } from '../../lib/externalUrl';
 import { logServerError } from '../../lib/serverLog';
 
 export default async function handler(req, res) {
@@ -34,6 +36,7 @@ export default async function handler(req, res) {
       .map((doc) => {
         const data = doc.data() || {};
         const createdAt = safeTimestampToISOString(data.createdAt);
+        const expiry = parseContentExpiry(data.expiresAt);
 
         return {
           id: doc.id,
@@ -44,11 +47,16 @@ export default async function handler(req, res) {
             createdAt ? new Date(createdAt).toLocaleDateString('pt-PT') : '',
           ),
           content: safeText(data.content, ''),
+          // Links opcionais: só saem da API se forem http(s) válidos.
+          siteUrl: normalizeExternalUrl(safeText(data.siteUrl, '')),
+          formUrl: normalizeExternalUrl(safeText(data.formUrl, '')),
           status: normalizeContentStatus(data.status),
+          // Instante exacto em que a notícia sai da timeline (vazio = sem fim).
+          expiresAt: expiry ? expiry.toISOString() : '',
           createdAtMs: safeTimestampToMillis(data.createdAt),
         };
       })
-      .filter((item) => isContentPublished(item.status))
+      .filter((item) => isContentVisible(item))
       .sort((a, b) => (b.createdAtMs || 0) - (a.createdAtMs || 0))
       .slice(0, 5)
       .map(({ createdAtMs, ...item }) => item);

@@ -16,6 +16,9 @@ import {
 } from '../../../../lib/candidatePrivacy';
 import { collectCompanyApplicationHistory } from '../../../../lib/applicationOwnership';
 import { normalizeExternalUrl } from '../../../../lib/externalUrl';
+import ApplicationSubmission, {
+  serializeApplicationSubmission,
+} from '../../../../components/empresa/ApplicationSubmission';
 import styles from '../../../../styles/EmpresaCandidateProfilePage.module.css';
 import { redirectToLogin } from '../../../../lib/loginRedirect';
 import { isUserAccountActive } from '../../../../lib/userStatus';
@@ -243,8 +246,11 @@ export default function PerfilCandidato({
               <h1 className={styles.title}>
                 {candidato.fullName || candidato.name || 'Nome não informado'}
               </h1>
+              {candidato.headline ? (
+                <p className={styles.subtitle}>{candidato.headline}</p>
+              ) : null}
               {candidato.location ? (
-                <p className={styles.subtitle}>{candidato.location}</p>
+                <p className={styles.metaText}>{candidato.location}</p>
               ) : null}
               {candidato.objectiveArea ? (
                 <p className={styles.metaText}>
@@ -569,41 +575,53 @@ export default function PerfilCandidato({
               {applications.length > 0 ? (
                 <div className={styles.applicationList}>
                   {applications.map((app, i) => (
-                    <div key={i} className={styles.applicationCard}>
-                      <div className={styles.applicationCopy}>
-                        <div className={styles.applicationTitle}>
-                          {app.jobTitle || 'Vaga não especificada'}
-                        </div>
-                        {app.createdAt ? (
-                          <div className={styles.applicationDate}>
-                            {new Date(app.createdAt).toLocaleDateString(
-                              'pt-PT',
-                              {
-                                day: '2-digit',
-                                month: 'long',
-                                year: 'numeric',
-                              },
-                            )}
+                    <div key={i} className={styles.applicationEntry}>
+                      <div className={styles.applicationCard}>
+                        <div className={styles.applicationCopy}>
+                          <div className={styles.applicationTitle}>
+                            {app.jobTitle || 'Vaga não especificada'}
                           </div>
-                        ) : null}
+                          {app.createdAt ? (
+                            <div className={styles.applicationDate}>
+                              {new Date(app.createdAt).toLocaleDateString(
+                                'pt-PT',
+                                {
+                                  day: '2-digit',
+                                  month: 'long',
+                                  year: 'numeric',
+                                },
+                              )}
+                            </div>
+                          ) : null}
+                        </div>
+                        <div
+                          className={`${styles.statusBadge} ${
+                            styles[
+                              `status${String(app.status || 'pending')
+                                .charAt(0)
+                                .toUpperCase()}${String(app.status || 'pending').slice(1)}`
+                            ] || styles.statusPending
+                          }`}
+                        >
+                          {app.status === 'pending'
+                            ? 'Pendente'
+                            : app.status === 'approved'
+                              ? 'Aprovada'
+                              : app.status === 'rejected'
+                                ? 'Rejeitada'
+                                : app.status}
+                        </div>
                       </div>
-                      <div
-                        className={`${styles.statusBadge} ${
-                          styles[
-                            `status${String(app.status || 'pending')
-                              .charAt(0)
-                              .toUpperCase()}${String(app.status || 'pending').slice(1)}`
-                          ] || styles.statusPending
-                        }`}
-                      >
-                        {app.status === 'pending'
-                          ? 'Pendente'
-                          : app.status === 'approved'
-                            ? 'Aprovada'
-                            : app.status === 'rejected'
-                              ? 'Rejeitada'
-                              : app.status}
-                      </div>
+
+                      <ApplicationSubmission
+                        applicationId={app.id}
+                        coverLetter={app.coverLetter}
+                        form={app.applicationForm}
+                        documents={app.documents}
+                        requiredDocuments={app.requiredDocuments}
+                        assessment={app.assessment}
+                        hideContact={contactLocked}
+                      />
                     </div>
                   ))}
                 </div>
@@ -733,10 +751,17 @@ export async function getServerSideProps(context) {
       id,
       fullName: candidatoData.fullName || candidatoData.name || '',
       name: candidatoData.name || '',
+      headline: profileData.headline || candidatoData.headline || '',
       email: contactLocked ? '' : candidatoData.email || '',
       phone: contactLocked ? '' : candidatoData.phone || '',
       photoUrl: candidatoData.photoUrl || '',
-      location: profileData.location || candidatoData.location || '',
+      // O formulário do candidato grava a localização em `profiles.city`.
+      location:
+        profileData.city ||
+        profileData.location ||
+        candidatoData.cidade ||
+        candidatoData.location ||
+        '',
       objectiveArea: profileData.objectiveArea || '',
       objectiveType: profileData.objectiveType || '',
       objectiveAspiration: profileData.objectiveAspiration || '',
@@ -833,6 +858,10 @@ export async function getServerSideProps(context) {
       jobTitle: application.jobTitle || '',
       status: application.status || 'pending',
       createdAt: safeTimestampToMillis(application.createdAt),
+      // Tudo o que o candidato enviou nesta candidatura. Só chegam aqui as
+      // candidaturas às vagas desta empresa (ou todas, para o admin), por isso
+      // não há aqui exposição nova: é o mesmo alcance do histórico.
+      ...serializeApplicationSubmission(application),
     }));
 
     // Uma empresa pode sempre ver o perfil de quem se candidatou às suas vagas,

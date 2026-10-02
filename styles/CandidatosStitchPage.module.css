@@ -79,8 +79,12 @@
   order: 4;
 }
 
-.ctaSection {
+.talentSection {
   order: 5;
+}
+
+.ctaSection {
+  order: 6;
 }
 
 .marketSwitch {
@@ -598,6 +602,96 @@
   color: var(--candidate-muted);
   font-size: 14px;
   text-align: center;
+}
+
+.talentSection {
+  padding: 8px 0 72px;
+  background: var(--candidate-white);
+}
+
+.talentHeading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 36px;
+}
+
+.talentHeading > div {
+  display: grid;
+  max-width: 640px;
+  gap: 10px;
+}
+
+.talentHeading h2 {
+  margin: 0;
+  color: var(--candidate-navy);
+  font-size: clamp(28px, 2.6vw, 36px);
+  font-weight: 600;
+  line-height: 1.22;
+  letter-spacing: -0.02em;
+}
+
+.talentHeading p {
+  margin: 0;
+  color: var(--candidate-muted);
+  font-size: 16px;
+  line-height: 25px;
+}
+
+.talentLink {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 12px 22px;
+  border: 1px solid var(--candidate-navy);
+  border-radius: 999px;
+  color: var(--candidate-navy);
+  background: var(--candidate-white);
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    color 0.18s ease,
+    background-color 0.18s ease;
+}
+
+.talentLink:hover {
+  /* A cor vai junto com o fundo: o `a:hover` global é mais específico do que a
+     regra de base e trocaria o texto por azul sobre azul-escuro. */
+  color: var(--candidate-white);
+  background: var(--candidate-navy);
+}
+
+.talentLink svg {
+  width: 17px;
+  height: 17px;
+}
+
+@media (max-width: 720px) {
+  .talentSection {
+    padding: 4px 0 48px;
+  }
+
+  .talentHeading {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+
+  .talentHeading > div {
+    max-width: none;
+    justify-items: center;
+  }
+
+  .talentLink {
+    justify-content: center;
+    width: 100%;
+  }
 }
 
 .ctaSection {

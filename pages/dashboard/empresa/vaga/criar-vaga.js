@@ -8,12 +8,18 @@ import { EARLY_ACCESS_HOUR_OPTIONS } from "../../../../lib/candidateApplicationP
 import { auth, storage } from "../../../../lib/firebase";
 import { getFirebaseStorageErrorMessage } from "../../../../lib/firebaseStorageError";
 import { normalizeSkillsAssessmentInput } from "../../../../lib/skillsAssessment";
+import {
+  OPTIONAL_DOCUMENT_TYPES,
+  OTHER_DOCUMENTS_LABEL_LIMIT,
+} from "../../../../lib/applicationDocuments";
 import { FiArrowLeft } from "react-icons/fi";
 import { useAuth } from "../../../../context/AuthContext";
 import DashboardShell from "../../../../components/dashboard/DashboardShell";
 import AutoSaveStatus from "../../../../components/forms/AutoSaveStatus";
 import useAutoDraft from "../../../../hooks/useAutoDraft";
 import { createFormDraftKey } from "../../../../lib/formDraft";
+import { buildLoginUrl } from "../../../../lib/loginRedirect";
+import { requireCompanySession } from "../../../../lib/serverSession";
 import styles from "../../../../styles/EmpresaJobForm.module.css";
 
 const EMPLOYMENT_TYPES = [
@@ -81,6 +87,7 @@ const INITIAL_JOB_DATA = {
   premiumOnly: false,
   earlyAccessHours: "0",
   requireCoverLetter: false,
+  requiredDocuments: { types: [], otherLabel: "" },
   skillsAssessment: {
     enabled: false,
     passingScore: 70,
@@ -123,6 +130,12 @@ function hydrateJobForm(job) {
     premiumOnly: Boolean(job?.premiumOnly),
     earlyAccessHours: String(job?.earlyAccessHours || 0),
     requireCoverLetter: Boolean(job?.requireCoverLetter),
+    requiredDocuments: {
+      types: Array.isArray(job?.requiredDocuments?.types)
+        ? job.requiredDocuments.types
+        : [],
+      otherLabel: job?.requiredDocuments?.otherLabel || "",
+    },
     skillsAssessment: {
       enabled: Boolean(job?.skillsAssessment?.enabled),
       passingScore: job?.skillsAssessment?.passingScore || 70,
@@ -515,6 +528,17 @@ export default function CriarVaga() {
       setErrorAction(null);
       return;
     }
+    if (
+      currentStep === 3 &&
+      jobData.requiredDocuments.types.includes("other") &&
+      !jobData.requiredDocuments.otherLabel.trim()
+    ) {
+      setError(
+        "Diga que outros documentos exige, ou desligue essa opção. O candidato não consegue entregar o que não sabe o que é.",
+      );
+      setErrorAction(null);
+      return;
+    }
     if (currentStep === 3 && jobData.skillsAssessment.enabled) {
       const normalizedAssessment = normalizeSkillsAssessmentInput(
         jobData.skillsAssessment,
@@ -571,8 +595,13 @@ export default function CriarVaga() {
     try {
       const user = auth.currentUser;
       if (!user) {
-        setError("Você precisa estar logado");
-        setErrorAction(null);
+        setError(
+          "A sua sessão terminou. Inicie sessão outra vez para publicar a vaga — o que preencheu fica guardado.",
+        );
+        setErrorAction({
+          href: buildLoginUrl("/dashboard/empresa/vaga/criar-vaga"),
+          label: "Iniciar sessão",
+        });
         setIsLoading(false);
         return;
       }
@@ -624,31 +653,12 @@ export default function CriarVaga() {
 
       await clearJobDraft();
 
-      // Uma vaga que ficou à espera de moderação ainda não é pública: notificar
-      // candidatos nessa altura divulgava algo que ninguém pode abrir. O
-      // servidor já recusa (409), mas evitamos o pedido inútil.
-      const jobIsPublished =
-        String(createData.job?.status || "active") === "active";
-
-      if (!isEditMode && jobIsPublished) {
-        try {
-          // Título e localização vêm do registo guardado, no servidor: enviá-los
-          // daqui não teria efeito e mascararia a origem do conteúdo.
-          await fetch("/api/notify-candidates", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${await user.getIdToken()}`,
-            },
-            body: JSON.stringify({ jobId: createData.job?.id }),
-          });
-        } catch (notifError) {
-          console.error(
-            "Aviso: Erro ao enviar notificações (não crítico):",
-            notifError,
-          );
-        }
-      }
+      // A difusão aos candidatos passou para o servidor
+      // (lib/newJobBroadcast.js), accionada em todos os caminhos que publicam
+      // uma vaga: criação pela empresa, criação pelo admin e aprovação em
+      // moderação. Manter aqui a chamada antiga duplicaria as notificações —
+      // e, feita a partir do cliente, falhava em silêncio se a pessoa fechasse
+      // o separador antes de o pedido concluir.
 
       setSuccess(
         createData.warning
@@ -1149,6 +1159,85 @@ export default function CriarVaga() {
                 <div className={styles.assessmentHeader}>
                   <div>
                     <h3 className={styles.advancedTitle}>
+                      Documentos exigidos ao candidato
+                    </h3>
+                    <p className={styles.advancedDescription}>
+                      O CV e os certificados são sempre pedidos. Escolha aqui o
+                      que mais esta vaga exige — o candidato só entrega o que
+                      ainda não tiver no perfil.
+                    </p>
+                  </div>
+                </div>
+
+                <div className={styles.toggleGrid}>
+                  {OPTIONAL_DOCUMENT_TYPES.map((tipo) => (
+                    <label key={tipo.id} className={styles.optionCard}>
+                      <div>
+                        <strong className={styles.optionTitle}>
+                          {tipo.label}
+                        </strong>
+                        <span className={styles.optionDescription}>
+                          {tipo.hint}
+                        </span>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={jobData.requiredDocuments.types.includes(
+                          tipo.id,
+                        )}
+                        onChange={(evento) =>
+                          setJobData((anterior) => {
+                            const tipos = new Set(
+                              anterior.requiredDocuments.types,
+                            );
+                            if (evento.target.checked) tipos.add(tipo.id);
+                            else tipos.delete(tipo.id);
+                            return {
+                              ...anterior,
+                              requiredDocuments: {
+                                ...anterior.requiredDocuments,
+                                types: [...tipos],
+                              },
+                            };
+                          })
+                        }
+                        className={styles.checkbox}
+                      />
+                    </label>
+                  ))}
+                </div>
+
+                {jobData.requiredDocuments.types.includes("other") && (
+                  <div className={styles.uploadBlock}>
+                    <label
+                      className={styles.fieldLabel}
+                      htmlFor="outros-documentos"
+                    >
+                      Que outros documentos exige?
+                    </label>
+                    <input
+                      id="outros-documentos"
+                      type="text"
+                      className={styles.input}
+                      value={jobData.requiredDocuments.otherLabel}
+                      maxLength={OTHER_DOCUMENTS_LABEL_LIMIT}
+                      placeholder="Ex.: Carta de condução categoria B"
+                      onChange={(evento) =>
+                        setJobData((anterior) => ({
+                          ...anterior,
+                          requiredDocuments: {
+                            ...anterior.requiredDocuments,
+                            otherLabel: evento.target.value,
+                          },
+                        }))
+                      }
+                    />
+                  </div>
+                )}
+
+                <div className={styles.assessmentHeader}>
+                  <div>
+                    <h3 className={styles.advancedTitle}>
                       Teste de habilidades
                     </h3>
                     <p className={styles.advancedDescription}>
@@ -1345,6 +1434,20 @@ export default function CriarVaga() {
                   value={jobData.requireCoverLetter ? "Sim" : "Não"}
                 />
                 <ReviewItem
+                  label="Documentos exigidos"
+                  value={[
+                    "CV",
+                    "Certificados",
+                    ...OPTIONAL_DOCUMENT_TYPES.filter((tipo) =>
+                      jobData.requiredDocuments.types.includes(tipo.id),
+                    ).map((tipo) =>
+                      tipo.id === "other"
+                        ? jobData.requiredDocuments.otherLabel || tipo.label
+                        : tipo.label,
+                    ),
+                  ].join(", ")}
+                />
+                <ReviewItem
                   label="TDR"
                   value={jobData.tdrFileName || "Não enviado"}
                 />
@@ -1519,4 +1622,14 @@ function TextAreaField({
       />
     </label>
   );
+}
+
+// Página de painel: sem sessão de empresa não há formulário nenhum para
+// mostrar. O guard corre no servidor, por isso quem não tem conta nunca chega
+// a ver os campos — vai direto ao login, e volta aqui depois de entrar.
+export async function getServerSideProps(context) {
+  const guard = await requireCompanySession(context);
+  if (guard) return guard;
+
+  return { props: {} };
 }

@@ -6090,3 +6090,153 @@
   border-color: #064bb5;
   box-shadow: 0 0 0 3px rgba(6, 75, 181, 0.22);
 }
+
+/* ------------------------------------------------------------------
+   Variante larga do carrossel de candidatos verificados.
+
+   O layout normal está preso ao wrapper `.page` da home e é desenhado
+   para uma coluna estreita, com os cartões em escada. A página
+   /empresas mostra o mesmo carrossel a toda a largura, por isso precisa
+   de três cartões lado a lado. As regras vivem aqui, com o resto do
+   carrossel, para não haver duas cópias do mesmo componente.
+   ------------------------------------------------------------------ */
+
+.carouselWide.carouselWide {
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+  gap: 22px;
+}
+
+.carouselWide.carouselWide .candidateCarouselTrack {
+  width: 100%;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 100%;
+  gap: 26px;
+  margin: 0;
+  padding: 4px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-inline: contain;
+  scroll-behavior: smooth;
+  scroll-snap-type: inline mandatory;
+  scrollbar-width: none;
+}
+
+.carouselWide.carouselWide .candidateCarouselTrack::-webkit-scrollbar {
+  display: none;
+}
+
+.carouselWide.carouselWide .candidateCarouselPage {
+  width: 100%;
+  min-width: 0;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+.carouselWide.carouselWide .candidateStack {
+  width: 100%;
+  max-width: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+  margin: 0;
+  padding: 0;
+}
+
+.carouselWide.carouselWide .homeCandidateListItem:nth-child(n) {
+  width: 100%;
+  margin-left: 0;
+}
+
+/* Cartão em coluna: a foto por cima do nome aproveita melhor a largura de
+   um terço do que a versão em linha da home. */
+.carouselWide.carouselWide .homeCandidateCard {
+  position: relative;
+  height: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  justify-items: center;
+  gap: 14px;
+  padding: 26px 20px 22px;
+  border: 1px solid rgba(16, 36, 65, 0.1);
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 10px 26px rgba(16, 36, 65, 0.07);
+  text-align: center;
+}
+
+.carouselWide.carouselWide .homeCandidateCard:hover {
+  transform: translateY(-3px);
+  border-color: rgba(37, 99, 235, 0.28);
+  box-shadow: 0 16px 34px rgba(16, 36, 65, 0.12);
+}
+
+.carouselWide.carouselWide
+  :is(.homeCandidateAvatar, .homeCandidateAvatarImage) {
+  width: 92px;
+  height: 92px;
+  border-radius: 999px;
+  font-size: 26px;
+}
+
+.carouselWide.carouselWide .homeCandidateInfo {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  width: 100%;
+}
+
+.carouselWide.carouselWide .homeCandidateName {
+  font-size: 18px;
+}
+
+.carouselWide.carouselWide .homeCandidateHeadline {
+  order: -1;
+  color: #2057d7;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.carouselWide.carouselWide .homeCandidateExperience {
+  color: #5b6b86;
+  font-size: 14px;
+}
+
+.carouselWide.carouselWide .homeCandidateStatus {
+  margin-top: 6px;
+  color: #102441;
+  font-weight: 800;
+}
+
+/* O selo fica no canto, para não empurrar o texto centrado. */
+.carouselWide.carouselWide .homeCandidateVerified {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+}
+
+@media (max-width: 960px) {
+  .carouselWide.carouselWide .candidateStack {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .carouselWide.carouselWide .candidateStack {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .carouselWide.carouselWide .candidateCarouselTrack {
+    gap: 18px;
+  }
+
+  .carouselWide.carouselWide .homeCandidateCard {
+    padding: 22px 16px 18px;
+  }
+}

@@ -7,7 +7,7 @@
     "node": ">=22.11.0"
   },
   "scripts": {
-    "generate:firebase-sw-config": "node --env-file-if-exists=.env.local scripts/generate-firebase-sw-config.mjs",
+    "generate:firebase-sw-config": "node --import ./scripts/preloadEnv.mjs scripts/generate-firebase-sw-config.mjs",
     "predev": "npm run generate:firebase-sw-config",
     "dev": "next dev --webpack",
     "build": "next build --webpack",
@@ -26,6 +26,10 @@
     "format:check": "prettier --check .",
     "quality": "npm run typecheck && npm run lint && npm run test",
     "gen:env": "node scripts/generate-env.mjs",
+    "test:email": "node scripts/test-email.mjs",
+    "check:email-dns": "node scripts/check-email-dns.mjs",
+    "preview:emails": "node scripts/preview-emails.mjs",
+    "test:auth-emails": "node scripts/test-auth-emails.mjs",
     "deploy": "bash deploy.sh",
     "deploy:msg": "bash deploy.sh",
     "firestore:index": "node scripts/create-firestore-index.js",

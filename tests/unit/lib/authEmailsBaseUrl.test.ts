@@ -38,7 +38,7 @@ describe('resolveBaseUrl', () => {
           'x-forwarded-proto': 'https',
         },
       }),
-    ).toBe('https://empregostp.vercel.app');
+    ).toBe('https://empregostp.com');
   });
 
   test('usa apenas o URL canónico HTTPS configurado', () => {
@@ -53,7 +53,7 @@ describe('resolveBaseUrl', () => {
   test('recusa HTTP remoto e permite localhost apenas fora de produção', () => {
     mutableEnv.NODE_ENV = 'production';
     process.env.SITE_URL = 'http://atacante.example';
-    expect(resolveBaseUrl({})).toBe('https://empregostp.vercel.app');
+    expect(resolveBaseUrl({})).toBe('https://empregostp.com');
 
     mutableEnv.NODE_ENV = 'test';
     process.env.SITE_URL = 'http://localhost:3300/';

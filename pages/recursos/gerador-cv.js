@@ -1,6 +1,13 @@
 import Head from 'next/head';
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import AutoSaveStatus from '../../components/forms/AutoSaveStatus';
 import PublicPageShell from '../../components/PublicPageShell';
 import { useAuth } from '../../context/AuthContext';
@@ -11,6 +18,8 @@ import {
 } from '../../lib/candidatePlanFeatures';
 import { resolveProfessionalResourceAccess } from '../../lib/resourcePremiumAccess';
 import { slugifyFilename } from '../../lib/resourcesCatalog';
+import { validarFormularioCv } from '../../lib/cvValidation';
+import { formatarIntervaloAnos } from '../../lib/cvDates';
 import { readLocalDraft, writeLocalDraft } from '../../lib/formDraft';
 import {
   CV_LOCAL_PHOTO_MAX_DATA_URL_LENGTH,
@@ -34,6 +43,7 @@ import {
   FiTrash2,
   FiPlus,
   FiCheckCircle,
+  FiX,
 } from 'react-icons/fi';
 import styles from '../../styles/GeradorCv.module.css';
 import { redirectToLogin } from '../../lib/loginRedirect';
@@ -190,10 +200,7 @@ const migrateLegacyCvDraft = (legacyDraft) => {
 
   // O formato manual v1 guardava uma string vazia quando a fotografia local
   // era um data URL. Omiti-la mantém a fotografia já existente no perfil.
-  if (
-    !migratedForm.photo ||
-    String(migratedForm.photo).startsWith('data:')
-  ) {
+  if (!migratedForm.photo || String(migratedForm.photo).startsWith('data:')) {
     delete migratedForm.photo;
   }
 
@@ -257,28 +264,6 @@ const hasProjectContent = (item) =>
   Boolean(item.name || item.role || item.link || item.summary);
 const hasCertificationContent = (item) =>
   Boolean(item.title || item.issuer || item.year);
-
-const formatMonthYear = (value) => {
-  if (!value) return '';
-  const [year, month] = String(value).split('-');
-  const numericYear = Number(year);
-  const numericMonth = Number(month);
-  if (!numericYear || !numericMonth) return value;
-
-  return new Intl.DateTimeFormat('pt-PT', {
-    month: 'short',
-    year: 'numeric',
-  }).format(new Date(numericYear, numericMonth - 1, 1));
-};
-
-const formatDateRange = (startDate, endDate, current = false) => {
-  const start = formatMonthYear(startDate);
-  const end = current ? 'Atual' : formatMonthYear(endDate);
-  if (!start && !end) return '';
-  if (!start) return end;
-  if (!end) return start;
-  return `${start} a ${end}`;
-};
 
 const formatBirthDate = (value) => {
   if (!value) return '';
@@ -386,7 +371,7 @@ const buildCvDocument = (
         nonEmpty(item.role, item.employer).join(' · ') ||
         'Experiência profissional',
       meta: nonEmpty(
-        formatDateRange(item.startDate, item.endDate, item.current),
+        formatarIntervaloAnos(item.startDate, item.endDate, item.current),
         nonEmpty(item.city, item.country).join(', '),
       ).join(' • '),
       description: String(item.description || '').trim(),
@@ -401,7 +386,7 @@ const buildCvDocument = (
         nonEmpty(item.qualification, item.institution).join(' · ') ||
         'Formação académica',
       meta: nonEmpty(
-        formatDateRange(item.startDate, item.endDate, false),
+        formatarIntervaloAnos(item.startDate, item.endDate, false),
         nonEmpty(item.city, item.country).join(', '),
       ).join(' • '),
       description: String(item.details || '').trim(),
@@ -467,17 +452,43 @@ const buildCvDocument = (
   };
 };
 
-function TextField({ label, value, onChange, type = 'text', placeholder }) {
+function TextField({
+  label,
+  value,
+  onChange,
+  onBlur,
+  type = 'text',
+  placeholder,
+  error = '',
+  hint = '',
+}) {
+  const id = useId();
+  const idErro = `${id}-erro`;
+  const idAjuda = `${id}-ajuda`;
+
   return (
-    <label className={styles.field}>
+    <label className={styles.field} htmlFor={id}>
       <span>{label}</span>
       <input
-        className={styles.input}
+        id={id}
+        className={`${styles.input} ${error ? styles.inputInvalid : ''}`}
         value={value}
         onChange={onChange}
+        onBlur={onBlur}
         type={type}
         placeholder={placeholder}
+        aria-invalid={error ? 'true' : undefined}
+        aria-describedby={error ? idErro : hint ? idAjuda : undefined}
       />
+      {error ? (
+        <small id={idErro} className={styles.fieldError} role="alert">
+          {error}
+        </small>
+      ) : hint ? (
+        <small id={idAjuda} className={styles.characterCount}>
+          {hint}
+        </small>
+      ) : null}
     </label>
   );
 }
@@ -486,11 +497,13 @@ function TextAreaField({
   label,
   value,
   onChange,
+  onBlur,
   placeholder,
   compact = false,
   maxLength,
   showCount = false,
   showChips = false,
+  error = '',
 }) {
   const chips = showChips ? splitItems(value) : [];
 
@@ -498,12 +511,21 @@ function TextAreaField({
     <label className={styles.field}>
       <span>{label}</span>
       <textarea
-        className={`${styles.textarea} ${compact ? styles.compactTextarea : ''}`}
+        className={`${styles.textarea} ${compact ? styles.compactTextarea : ''} ${
+          error ? styles.inputInvalid : ''
+        }`}
         value={value}
         onChange={onChange}
+        onBlur={onBlur}
         placeholder={placeholder}
         maxLength={maxLength}
+        aria-invalid={error ? 'true' : undefined}
       />
+      {error ? (
+        <small className={styles.fieldError} role="alert">
+          {error}
+        </small>
+      ) : null}
       {showCount && maxLength ? (
         <small className={styles.characterCount}>
           {String(value || '').length} / {maxLength} caracteres
@@ -586,6 +608,10 @@ export default function GeradorCvPage() {
   });
   const [statusMessage, setStatusMessage] = useState('');
   const [isExporting, setIsExporting] = useState(false);
+  // `tocados` guarda os campos que o utilizador já visitou: só mostramos o erro
+  // depois de sair do campo, para não o corrigir enquanto ainda está a escrever.
+  const [tocados, setTocados] = useState({});
+  const [mostrarTodosErros, setMostrarTodosErros] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [previewOpenMobile, setPreviewOpenMobile] = useState(false);
   const wizardRef = useRef(null);
@@ -612,68 +638,73 @@ export default function GeradorCvPage() {
     ],
   );
 
-  const restoreDraft = useCallback((draft, metadata = {}) => {
-    const restoredDraft = normalizeCvDraft(draft);
-    if (!restoredDraft) return;
+  const restoreDraft = useCallback(
+    (draft, metadata = {}) => {
+      const restoredDraft = normalizeCvDraft(draft);
+      if (!restoredDraft) return;
 
-    const mergedDraft = mergeCvDraftWithLocalPhoto(
-      restoredDraft,
-      preservedLocalPhotoRef.current,
-    );
-    const restoredPhoto = mergedDraft.form.photo;
-    if (isStorableLocalCvPhoto(restoredPhoto)) {
-      preservedLocalPhotoRef.current = restoredPhoto;
-    } else if (Object.prototype.hasOwnProperty.call(mergedDraft.form, 'photo')) {
-      preservedLocalPhotoRef.current = '';
-    }
-
-    if (
-      metadata.source === 'remote' &&
-      mergedDraft !== restoredDraft &&
-      typeof window !== 'undefined' &&
-      user?.uid
-    ) {
-      const savedAtMs = Date.parse(String(metadata.savedAt || ''));
-      try {
-        // O rascunho remoto não contém data URLs por desenho. Voltamos a
-        // associar apenas a fotografia privada deste dispositivo antes que o
-        // espelho remoto substitua a cópia local.
-        writeLocalDraft(
-          window.localStorage,
-          getCvDraftKey(user.uid),
-          mergedDraft,
-          {
-            version: CV_DRAFT_VERSION,
-            allowDataUrls: true,
-            maxDataUrlLength: CV_LOCAL_PHOTO_MAX_DATA_URL_LENGTH,
-            ...(Number.isFinite(savedAtMs) ? { now: savedAtMs } : {}),
-          },
-        );
-      } catch {
-        // A restauração em memória continua mesmo sem localStorage disponível.
-      }
-    }
-
-    setForm((previous) => {
-      const restoredForm = { ...mergedDraft.form };
-      const hasStoredPhoto = Object.prototype.hasOwnProperty.call(
-        restoredForm,
-        'photo',
+      const mergedDraft = mergeCvDraftWithLocalPhoto(
+        restoredDraft,
+        preservedLocalPhotoRef.current,
       );
+      const restoredPhoto = mergedDraft.form.photo;
+      if (isStorableLocalCvPhoto(restoredPhoto)) {
+        preservedLocalPhotoRef.current = restoredPhoto;
+      } else if (
+        Object.prototype.hasOwnProperty.call(mergedDraft.form, 'photo')
+      ) {
+        preservedLocalPhotoRef.current = '';
+      }
 
-      return {
-        ...previous,
-        ...restoredForm,
-        photo: hasStoredPhoto ? restoredForm.photo : previous.photo,
-      };
-    });
-    setExperiences(mergedDraft.experiences);
-    setEducationEntries(mergedDraft.educationEntries);
-    setLanguageEntries(mergedDraft.languageEntries);
-    setProjectEntries(mergedDraft.projectEntries);
-    setCertificationEntries(mergedDraft.certificationEntries);
-    setCurrentStep(mergedDraft.currentStep);
-  }, [user?.uid]);
+      if (
+        metadata.source === 'remote' &&
+        mergedDraft !== restoredDraft &&
+        typeof window !== 'undefined' &&
+        user?.uid
+      ) {
+        const savedAtMs = Date.parse(String(metadata.savedAt || ''));
+        try {
+          // O rascunho remoto não contém data URLs por desenho. Voltamos a
+          // associar apenas a fotografia privada deste dispositivo antes que o
+          // espelho remoto substitua a cópia local.
+          writeLocalDraft(
+            window.localStorage,
+            getCvDraftKey(user.uid),
+            mergedDraft,
+            {
+              version: CV_DRAFT_VERSION,
+              allowDataUrls: true,
+              maxDataUrlLength: CV_LOCAL_PHOTO_MAX_DATA_URL_LENGTH,
+              ...(Number.isFinite(savedAtMs) ? { now: savedAtMs } : {}),
+            },
+          );
+        } catch {
+          // A restauração em memória continua mesmo sem localStorage disponível.
+        }
+      }
+
+      setForm((previous) => {
+        const restoredForm = { ...mergedDraft.form };
+        const hasStoredPhoto = Object.prototype.hasOwnProperty.call(
+          restoredForm,
+          'photo',
+        );
+
+        return {
+          ...previous,
+          ...restoredForm,
+          photo: hasStoredPhoto ? restoredForm.photo : previous.photo,
+        };
+      });
+      setExperiences(mergedDraft.experiences);
+      setEducationEntries(mergedDraft.educationEntries);
+      setLanguageEntries(mergedDraft.languageEntries);
+      setProjectEntries(mergedDraft.projectEntries);
+      setCertificationEntries(mergedDraft.certificationEntries);
+      setCurrentStep(mergedDraft.currentStep);
+    },
+    [user?.uid],
+  );
 
   const getDraftToken = useCallback(() => user?.getIdToken(), [user]);
   const {
@@ -844,6 +875,31 @@ export default function GeradorCvPage() {
     hydrateProfile();
   }, [authLoading, user]);
 
+  const validacao = useMemo(() => validarFormularioCv(form), [form]);
+
+  const marcarTocado = useCallback(
+    (campo) => () =>
+      setTocados((anteriores) => ({ ...anteriores, [campo]: true })),
+    [],
+  );
+
+  /** Erro a mostrar num campo simples: só depois de tocado ou de tentar exportar. */
+  const erroDe = useCallback(
+    (campo) =>
+      tocados[campo] || mostrarTodosErros ? validacao.erros[campo] || '' : '',
+    [tocados, mostrarTodosErros, validacao],
+  );
+
+  /** Erro a mostrar num campo de uma lista (experiências, formação, ...). */
+  const erroDaLista = useCallback(
+    (lista, indice, campo) => {
+      const chave = `${lista}.${indice}.${campo}`;
+      if (!tocados[chave] && !mostrarTodosErros) return '';
+      return validacao.erros[lista]?.[indice]?.[campo] || '';
+    },
+    [tocados, mostrarTodosErros, validacao],
+  );
+
   const cvDocument = useMemo(
     () =>
       buildCvDocument(
@@ -895,6 +951,27 @@ export default function GeradorCvPage() {
       languageEntries,
     ],
   );
+
+  // Em telemóvel a pré-visualização ocupa o ecrã todo (ver `.previewColumnOpen`
+  // no CSS): enquanto está aberta, o fundo não deve deslizar e o Escape fecha.
+  useEffect(() => {
+    if (typeof window === 'undefined' || !previewOpenMobile) return undefined;
+
+    const emTelemovel = window.matchMedia('(max-width: 680px)');
+    if (!emTelemovel.matches) return undefined;
+
+    function fecharComEscape(event) {
+      if (event.key === 'Escape') setPreviewOpenMobile(false);
+    }
+
+    document.body.classList.add('modal-open');
+    document.addEventListener('keydown', fecharComEscape);
+
+    return () => {
+      document.body.classList.remove('modal-open');
+      document.removeEventListener('keydown', fecharComEscape);
+    };
+  }, [previewOpenMobile]);
 
   const goToStep = (index) => {
     setCurrentStep(Math.max(0, Math.min(index, STEPS.length - 1)));
@@ -958,435 +1035,30 @@ export default function GeradorCvPage() {
 
   const exportPdf = async () => {
     if (gate.status !== 'ready' && gate.status !== 'offline') return;
-    if (!String(form.fullName || '').trim()) {
+
+    // Exportar um CV com um email inválido ou datas trocadas é pior do que não
+    // exportar: o candidato só descobre quando ninguém lhe responde.
+    if (!validacao.valido) {
+      setMostrarTodosErros(true);
       setStatusMessage(
-        'Preencha pelo menos o nome completo antes de exportar o PDF.',
+        validacao.total === 1
+          ? 'Há 1 campo por corrigir antes de exportar o PDF.'
+          : `Há ${validacao.total} campos por corrigir antes de exportar o PDF.`,
       );
+      wizardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       return;
     }
 
     try {
       setIsExporting(true);
       setStatusMessage('');
-      const { jsPDF } = await import('jspdf');
-      const doc = new jsPDF({ unit: 'pt', format: 'a4' });
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-      const marginX = 44;
-      const marginY = 54;
-      const bottomY = pageHeight - marginY;
-      const leftColWidth = 158; // coluna de rótulos (estilo Europass)
-      const colGap = 16;
-      const rightX = marginX + leftColWidth + colGap;
-      const rightWidth = pageWidth - marginX - rightX;
-      const colors = {
-        ink: [15, 23, 42],
-        muted: [71, 85, 105],
-        light: [148, 163, 184],
-        divider: [226, 232, 240],
-        primary: [29, 78, 216],
-      };
-      let cursorY = marginY;
-      let photoDataUrl = '';
-
-      if (cvDocument.photo) {
-        try {
-          photoDataUrl = await normalizePhotoForPdf(cvDocument.photo);
-        } catch (error) {
-          photoDataUrl = '';
-        }
-      }
-
-      const ensureSpace = (needed = 24, { forceNewPage = false } = {}) => {
-        if (!forceNewPage && cursorY + needed <= bottomY) return;
-        doc.addPage();
-        cursorY = marginY;
-        // Cabeçalho repetido simples (ajuda a leitura em múltiplas páginas).
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(9);
-        doc.setTextColor(...colors.muted);
-        doc.text(cvDocument.fullName, pageWidth - marginX, marginY - 22, {
-          align: 'right',
-        });
-        doc.setDrawColor(...colors.divider);
-        doc.setLineWidth(1);
-        doc.line(marginX, marginY - 14, pageWidth - marginX, marginY - 14);
-      };
-
-      const split = (text, width) =>
-        doc.splitTextToSize(String(text || ''), width);
-
-      const drawSectionHeader = (title) => {
-        ensureSpace(34);
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(9.4);
-        doc.setTextColor(...colors.primary);
-        doc.text(String(title).toUpperCase(), marginX, cursorY);
-        doc.setDrawColor(...colors.divider);
-        doc.setLineWidth(1);
-        doc.line(rightX, cursorY + 2, pageWidth - marginX, cursorY + 2);
-        cursorY += 18;
-      };
-
-      const drawKeyValueRow = (label, value, { url } = {}) => {
-        const safeValue = String(value || '').trim();
-        if (!safeValue) return;
-
-        const labelLines = split(label, leftColWidth);
-        const valueLines = split(safeValue, rightWidth);
-        const labelSize = 9.2;
-        const valueSize = 10.2;
-        const labelLineHeight = 12.6;
-        const valueLineHeight = 14.2;
-        const rowHeight =
-          Math.max(
-            labelLines.length * labelLineHeight,
-            valueLines.length * valueLineHeight,
-          ) + 2;
-
-        ensureSpace(rowHeight);
-
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(labelSize);
-        doc.setTextColor(...colors.muted);
-        labelLines.forEach((line, idx) => {
-          doc.text(line, marginX, cursorY + idx * labelLineHeight);
-        });
-
-        const normalizedUrl = normalizeExternalUrl(url || safeValue);
-        const canLink = Boolean(
-          normalizedUrl &&
-          (normalizedUrl.startsWith('http://') ||
-            normalizedUrl.startsWith('https://') ||
-            normalizedUrl.startsWith('mailto:') ||
-            normalizedUrl.startsWith('tel:')),
-        );
-
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(valueSize);
-        doc.setTextColor(...(canLink ? colors.primary : colors.ink));
-        valueLines.forEach((line, idx) => {
-          const y = cursorY + idx * valueLineHeight;
-          if (canLink) {
-            doc.textWithLink(line, rightX, y, { url: normalizedUrl });
-          } else {
-            doc.text(line, rightX, y);
-          }
-        });
-
-        cursorY += rowHeight;
-      };
-
-      const drawParagraphRow = (label, text) => {
-        const safeText = String(text || '').trim();
-        if (!safeText) return;
-
-        const labelLines = split(label, leftColWidth);
-        const textLines = split(safeText, rightWidth);
-        const labelLineHeight = 12.6;
-        const textLineHeight = 14.4;
-        const rowHeight =
-          Math.max(
-            labelLines.length * labelLineHeight,
-            textLines.length * textLineHeight,
-          ) + 2;
-        ensureSpace(rowHeight);
-
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(9.2);
-        doc.setTextColor(...colors.muted);
-        labelLines.forEach((line, idx) =>
-          doc.text(line, marginX, cursorY + idx * labelLineHeight),
-        );
-
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(10.2);
-        doc.setTextColor(...colors.ink);
-        textLines.forEach((line, idx) =>
-          doc.text(line, rightX, cursorY + idx * textLineHeight),
-        );
-
-        cursorY += rowHeight;
-      };
-
-      const drawBulletsRow = (label, bullets) => {
-        const items = Array.isArray(bullets) ? bullets.filter(Boolean) : [];
-        if (!items.length) return;
-
-        const bulletLines = [];
-        items.forEach((item) => {
-          const wrapped = split(`• ${String(item).trim()}`, rightWidth);
-          bulletLines.push(...wrapped);
-        });
-
-        const labelLines = split(label, leftColWidth);
-        const labelLineHeight = 12.6;
-        const textLineHeight = 14.4;
-        const rowHeight =
-          Math.max(
-            labelLines.length * labelLineHeight,
-            bulletLines.length * textLineHeight,
-          ) + 2;
-        ensureSpace(rowHeight);
-
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(9.2);
-        doc.setTextColor(...colors.muted);
-        labelLines.forEach((line, idx) =>
-          doc.text(line, marginX, cursorY + idx * labelLineHeight),
-        );
-
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(10.2);
-        doc.setTextColor(...colors.ink);
-        bulletLines.forEach((line, idx) =>
-          doc.text(line, rightX, cursorY + idx * textLineHeight),
-        );
-
-        cursorY += rowHeight;
-      };
-
-      const drawEntryBlock = (leftLabel, item) => {
-        const titleLines = split(item.title || '', rightWidth);
-        const metaLines = item.meta ? split(item.meta, rightWidth) : [];
-        const descLines = item.description
-          ? split(item.description, rightWidth)
-          : [];
-        const bulletLines = [];
-        (item.achievements || []).forEach((ach) =>
-          bulletLines.push(...split(`• ${ach}`, rightWidth)),
-        );
-
-        const leftLines = split(leftLabel || '', leftColWidth);
-        const lhLeft = 12.6;
-        const lhTitle = 14.6;
-        const lhText = 14.2;
-
-        const rightHeight =
-          titleLines.length * lhTitle +
-          (metaLines.length ? metaLines.length * 12.8 + 2 : 0) +
-          (descLines.length ? descLines.length * lhText + 2 : 0) +
-          (bulletLines.length ? bulletLines.length * lhText + 2 : 0) +
-          6;
-        const leftHeight = leftLines.length * lhLeft;
-        const blockHeight = Math.max(leftHeight, rightHeight);
-
-        ensureSpace(blockHeight);
-
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(9.2);
-        doc.setTextColor(...colors.muted);
-        leftLines.forEach((line, idx) =>
-          doc.text(line, marginX, cursorY + idx * lhLeft),
-        );
-
-        let y = cursorY;
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(10.6);
-        doc.setTextColor(...colors.ink);
-        titleLines.forEach((line, idx) =>
-          doc.text(line, rightX, y + idx * lhTitle),
-        );
-        y += titleLines.length * lhTitle;
-
-        if (metaLines.length) {
-          y += 1;
-          doc.setFont('helvetica', 'normal');
-          doc.setFontSize(9.4);
-          doc.setTextColor(...colors.muted);
-          metaLines.forEach((line, idx) =>
-            doc.text(line, rightX, y + idx * 12.8),
-          );
-          y += metaLines.length * 12.8;
-        }
-
-        if (descLines.length) {
-          y += 3;
-          doc.setFont('helvetica', 'normal');
-          doc.setFontSize(10.2);
-          doc.setTextColor(...colors.ink);
-          descLines.forEach((line, idx) =>
-            doc.text(line, rightX, y + idx * lhText),
-          );
-          y += descLines.length * lhText;
-        }
-
-        if (bulletLines.length) {
-          y += 3;
-          doc.setFont('helvetica', 'normal');
-          doc.setFontSize(10.2);
-          doc.setTextColor(...colors.ink);
-          bulletLines.forEach((line, idx) =>
-            doc.text(line, rightX, y + idx * lhText),
-          );
-        }
-
-        cursorY += blockHeight;
-      };
-
-      // Header (nome + headline + foto)
-      const headerTop = cursorY;
-      const photoSize = photoDataUrl ? 88 : 0;
-      const photoX = photoDataUrl ? pageWidth - marginX - photoSize : 0;
-      const nameMaxWidth = photoDataUrl
-        ? photoX - 14 - marginX
-        : pageWidth - marginX * 2;
-
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(22);
-      doc.setTextColor(...colors.ink);
-      const nameLines = split(cvDocument.fullName, nameMaxWidth);
-      nameLines.forEach((line, idx) =>
-        doc.text(line, marginX, cursorY + idx * 24),
-      );
-      cursorY += nameLines.length * 24;
-
-      if (cvDocument.headline) {
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(11.2);
-        doc.setTextColor(...colors.primary);
-        const headlineLines = split(cvDocument.headline, nameMaxWidth);
-        headlineLines.forEach((line, idx) =>
-          doc.text(line, marginX, cursorY + idx * 15.2),
-        );
-        cursorY += headlineLines.length * 15.2;
-      }
-
-      if (photoDataUrl) {
-        const photoY = headerTop - 2;
-        doc.setDrawColor(...colors.divider);
-        doc.setLineWidth(1);
-        doc.rect(photoX, photoY, photoSize, photoSize);
-        doc.addImage(
-          photoDataUrl,
-          'JPEG',
-          photoX + 1,
-          photoY + 1,
-          photoSize - 2,
-          photoSize - 2,
-          undefined,
-          'FAST',
-        );
-        cursorY = Math.max(cursorY, photoY + photoSize + 10);
-      } else {
-        cursorY += 8;
-      }
-
-      // Secções (estilo Europass: coluna de rótulos à esquerda)
-      const personal = cvDocument.personal || {};
-      drawSectionHeader('Informação pessoal');
-      drawKeyValueRow('Email', personal.email, {
-        url:
-          personal.email && personal.email.includes('@')
-            ? `mailto:${personal.email}`
-            : '',
-      });
-      drawKeyValueRow('Telefone', personal.phone);
-      drawKeyValueRow('Morada', personal.location);
-      drawKeyValueRow('Nacionalidade', personal.nationality);
-      drawKeyValueRow(
-        'Data de nascimento',
-        personal.birthDateFormatted || personal.birthDate,
-      );
-      drawKeyValueRow('Carta de condução', personal.drivingLicense);
-      drawKeyValueRow('LinkedIn', personal.linkedin, {
-        url: personal.linkedin,
-      });
-      drawKeyValueRow('Website', personal.website, { url: personal.website });
-      drawKeyValueRow('Portefólio', personal.portfolio, {
-        url: personal.portfolio,
-      });
-
-      if (cvDocument.summary) {
-        drawSectionHeader('Resumo');
-        drawParagraphRow('Resumo', cvDocument.summary);
-      }
-
-      if (cvDocument.objective) {
-        drawSectionHeader('Objetivo');
-        drawParagraphRow('Objetivo', cvDocument.objective);
-      }
-
-      if (cvDocument.experiences.length) {
-        drawSectionHeader('Experiência profissional');
-        cvDocument.experiences.forEach((item) => {
-          drawEntryBlock(
-            String(item.meta || '')
-              .split('•')[0]
-              .trim() || '',
-            item,
-          );
-          cursorY += 6;
-        });
-      }
-
-      if (cvDocument.educationEntries.length) {
-        drawSectionHeader('Educação e formação');
-        cvDocument.educationEntries.forEach((item) => {
-          drawEntryBlock(
-            String(item.meta || '')
-              .split('•')[0]
-              .trim() || '',
-            item,
-          );
-          cursorY += 6;
-        });
-      }
-
-      if (cvDocument.projects.length) {
-        drawSectionHeader('Projetos');
-        cvDocument.projects.forEach((item) => {
-          drawEntryBlock('', item);
-          cursorY += 6;
-        });
-      }
-
-      if (cvDocument.certifications.length) {
-        drawSectionHeader('Certificações');
-        cvDocument.certifications.forEach((item) => {
-          drawEntryBlock('', item);
-          cursorY += 6;
-        });
-      }
-
-      if (cvDocument.languages.length) {
-        drawSectionHeader('Idiomas');
-        cvDocument.languages.forEach((lang) => {
-          drawKeyValueRow(lang.title || 'Idioma', lang.meta || '');
-        });
-      }
-
-      if (
-        cvDocument.technicalSkills.length ||
-        cvDocument.digitalSkills.length ||
-        cvDocument.softSkills.length
-      ) {
-        drawSectionHeader('Competências');
-        drawBulletsRow('Técnicas', cvDocument.technicalSkills);
-        drawBulletsRow('Digitais', cvDocument.digitalSkills);
-        drawBulletsRow('Interpessoais', cvDocument.softSkills);
-      }
-
-      if (cvDocument.interests.length) {
-        drawSectionHeader('Interesses');
-        drawBulletsRow('Interesses', cvDocument.interests);
-      }
-
-      if (cvDocument.references.length) {
-        drawSectionHeader('Referências');
-        drawBulletsRow('Referências', cvDocument.references);
-      }
-
-      if (cvDocument.additionalInfo.length) {
-        drawSectionHeader('Informações adicionais');
-        drawBulletsRow('Notas', cvDocument.additionalInfo);
-      }
-
-      doc.setProperties({
-        title: `CV - ${cvDocument.fullName}`,
-        subject: 'Currículo gerado no EmpregoSTP',
-        author: cvDocument.fullName,
-        creator: 'EmpregoSTP',
+      // O desenho do PDF vive em lib/cvPdf.js: o formulário e o layout do
+      // documento mudam por razões diferentes.
+      const { gerarCvPdf } = await import('../../lib/cvPdf');
+      const doc = await gerarCvPdf(cvDocument, {
+        normalizarUrl: normalizeExternalUrl,
+        // Converte URLs remotos do perfil em data URL antes do recorte.
+        prepararFoto: normalizePhotoForPdf,
       });
       doc.save(
         `${slugifyFilename(cvDocument.fullName || 'cv-profissional')}.pdf`,
@@ -1690,6 +1362,15 @@ export default function GeradorCvPage() {
                             <span className={styles.stepLabel}>
                               {step.label}
                             </span>
+                            {/* No telemóvel não cabe o rótulo completo. O
+                                `aria-label` do botão já anuncia o nome longo,
+                                por isso esta versão curta é decorativa. */}
+                            <span
+                              className={styles.stepLabelShort}
+                              aria-hidden="true"
+                            >
+                              {step.short}
+                            </span>
                           </span>
                         </button>
                       );
@@ -1800,6 +1481,8 @@ export default function GeradorCvPage() {
                                 }))
                               }
                               placeholder="Ex.: Maria Graça"
+                              error={erroDe('fullName')}
+                              onBlur={marcarTocado('fullName')}
                             />
                             <TextField
                               label="Título profissional"
@@ -1825,6 +1508,8 @@ export default function GeradorCvPage() {
                                 }))
                               }
                               placeholder="maria@exemplo.com"
+                              error={erroDe('email')}
+                              onBlur={marcarTocado('email')}
                             />
                             <TextField
                               label="Telefone"
@@ -1836,6 +1521,8 @@ export default function GeradorCvPage() {
                                 }))
                               }
                               placeholder="+239 900 0000"
+                              error={erroDe('phone')}
+                              onBlur={marcarTocado('phone')}
                             />
                             <TextField
                               label="Localização"
@@ -1871,6 +1558,8 @@ export default function GeradorCvPage() {
                                   birthDate: event.target.value,
                                 }))
                               }
+                              error={erroDe('birthDate')}
+                              onBlur={marcarTocado('birthDate')}
                             />
                             <TextField
                               label="Carta de condução"
@@ -1895,6 +1584,8 @@ export default function GeradorCvPage() {
                                 }))
                               }
                               placeholder="https://www.linkedin.com/in/..."
+                              error={erroDe('linkedin')}
+                              onBlur={marcarTocado('linkedin')}
                             />
                             <TextField
                               label="Website"
@@ -1906,6 +1597,8 @@ export default function GeradorCvPage() {
                                 }))
                               }
                               placeholder="https://..."
+                              error={erroDe('website')}
+                              onBlur={marcarTocado('website')}
                             />
                             <TextField
                               label="Portefólio"
@@ -1917,6 +1610,8 @@ export default function GeradorCvPage() {
                                 }))
                               }
                               placeholder="Behance, GitHub, Dribbble, Notion..."
+                              error={erroDe('portfolio')}
+                              onBlur={marcarTocado('portfolio')}
                             />
                           </div>
                         </div>
@@ -2069,6 +1764,14 @@ export default function GeradorCvPage() {
                                       event.target.value,
                                     )
                                   }
+                                  error={erroDaLista(
+                                    'experiences',
+                                    index,
+                                    'startDate',
+                                  )}
+                                  onBlur={marcarTocado(
+                                    `experiences.${index}.startDate`,
+                                  )}
                                 />
                                 <TextField
                                   label="Fim"
@@ -2082,6 +1785,14 @@ export default function GeradorCvPage() {
                                       event.target.value,
                                     )
                                   }
+                                  error={erroDaLista(
+                                    'experiences',
+                                    index,
+                                    'endDate',
+                                  )}
+                                  onBlur={marcarTocado(
+                                    `experiences.${index}.endDate`,
+                                  )}
                                 />
                                 <label className={styles.checkboxRow}>
                                   <input
@@ -2248,6 +1959,14 @@ export default function GeradorCvPage() {
                                       event.target.value,
                                     )
                                   }
+                                  error={erroDaLista(
+                                    'educationEntries',
+                                    index,
+                                    'startDate',
+                                  )}
+                                  onBlur={marcarTocado(
+                                    `educationEntries.${index}.startDate`,
+                                  )}
                                 />
                                 <TextField
                                   label="Fim"
@@ -2261,6 +1980,14 @@ export default function GeradorCvPage() {
                                       event.target.value,
                                     )
                                   }
+                                  error={erroDaLista(
+                                    'educationEntries',
+                                    index,
+                                    'endDate',
+                                  )}
+                                  onBlur={marcarTocado(
+                                    `educationEntries.${index}.endDate`,
+                                  )}
                                 />
                               </div>
                               <TextAreaField
@@ -2361,6 +2088,10 @@ export default function GeradorCvPage() {
                                     )
                                   }
                                   placeholder="https://..."
+                                  error={erroDaLista('projects', index, 'link')}
+                                  onBlur={marcarTocado(
+                                    `projects.${index}.link`,
+                                  )}
                                 />
                               </div>
                               <TextAreaField
@@ -2456,6 +2187,14 @@ export default function GeradorCvPage() {
                                     )
                                   }
                                   placeholder="2026"
+                                  error={erroDaLista(
+                                    'certifications',
+                                    index,
+                                    'year',
+                                  )}
+                                  onBlur={marcarTocado(
+                                    `certifications.${index}.year`,
+                                  )}
                                 />
                               </div>
                             </div>
@@ -2624,6 +2363,20 @@ export default function GeradorCvPage() {
                       </section>
                     ) : null}
 
+                    {mostrarTodosErros && !validacao.valido ? (
+                      <div className={styles.validationSummary} role="alert">
+                        <strong>
+                          {validacao.total === 1
+                            ? 'Falta corrigir 1 campo antes de exportar.'
+                            : `Faltam corrigir ${validacao.total} campos antes de exportar.`}
+                        </strong>
+                        <span>
+                          Os campos com problema estão assinalados a vermelho ao
+                          longo dos passos do formulário.
+                        </span>
+                      </div>
+                    ) : null}
+
                     <div className={styles.wizardNav}>
                       <div className={styles.navStart}>
                         {currentStep === 0 ? (
@@ -2681,6 +2434,19 @@ export default function GeradorCvPage() {
                     className={`${styles.previewColumn} ${previewOpenMobile ? styles.previewColumnOpen : ''}`}
                   >
                     <div className={styles.previewSticky}>
+                      <div className={styles.previewSheetBar}>
+                        <span className={styles.previewSheetTitle}>
+                          Pré-visualização do CV
+                        </span>
+                        <button
+                          type="button"
+                          className={styles.previewSheetClose}
+                          onClick={() => setPreviewOpenMobile(false)}
+                        >
+                          <FiX aria-hidden="true" />
+                          Fechar
+                        </button>
+                      </div>
                       <section className={styles.panel}>
                         <div className={styles.previewToolbar}>
                           <div>

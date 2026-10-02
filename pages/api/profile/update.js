@@ -3,25 +3,34 @@ import { canUploadCertificate, getPlanSummary } from '../../../lib/candidatePlan
 import { extractLinkedInProfileHints, normalizeLinkedInUrl } from '../../../lib/linkedin';
 import { logServerError } from '../../../lib/serverLog';
 import { requireActiveApiUser } from '../../../lib/apiUserAuth';
+import { CANDIDATE_PROFILE_LIMITS, limitarTexto } from '../../../lib/candidateProfileLimits';
+
+// `maxLength` no formulário é uma sugestão ao browser; o pedido pode chegar de
+// qualquer lado. Os limites voltam a ser aplicados aqui, antes de gravar.
+const limitar = (value, campo) =>
+  limitarTexto(value, CANDIDATE_PROFILE_LIMITS[campo]);
 
 const normalizeSkills = (value) => {
-  if (Array.isArray(value)) {
-    return value.map((skill) => (typeof skill === 'string' ? skill.trim() : '')).filter(Boolean);
-  }
-  if (typeof value === 'string') {
-    return value.split(',').map((skill) => skill.trim()).filter(Boolean);
-  }
-  return [];
+  const lista = Array.isArray(value)
+    ? value.map((skill) => (typeof skill === 'string' ? skill.trim() : ''))
+    : typeof value === 'string'
+      ? value.split(',').map((skill) => skill.trim())
+      : [];
+
+  return lista
+    .filter(Boolean)
+    .map((skill) => limitar(skill, 'skillTag'))
+    .slice(0, 60);
 };
 
 const normalizeExperiences = (value) => {
   if (!Array.isArray(value)) return [];
   return value
     .map((item) => ({
-      company: (item.company || '').trim(),
-      role: (item.role || '').trim(),
-      period: (item.period || '').trim(),
-      description: (item.description || '').trim()
+      company: limitar((item.company || '').trim(), 'experienceCompany'),
+      role: limitar((item.role || '').trim(), 'experienceRole'),
+      period: limitar((item.period || '').trim(), 'experiencePeriod'),
+      description: limitar((item.description || '').trim(), 'experienceDescription')
     }))
     .filter((item) => item.company || item.role || item.period || item.description);
 };
@@ -64,6 +73,7 @@ const mapProfileResponse = (userData, profileData) => ({
   coverUrl: userData.coverUrl || profileData.coverUrl || '',
   cvUrl: userData.cvUrl || profileData.cvUrl || '',
   cvName: userData.cvName || profileData.cvName || '',
+  cvUpdatedAt: userData.cvUpdatedAt || profileData.cvUpdatedAt || '',
   verificationStatus: userData.verificationStatus || profileData.verificationStatus || 'unverified',
   verificationSummary: serializeValue(userData.verificationSummary || profileData.verificationSummary || null),
   verificationItems: serializeValue(userData.verificationItems || profileData.verificationItems || null),
@@ -92,16 +102,16 @@ export default async function handler(req, res) {
     const { name, headline, bio, location, phone, skills, experiences, photoUrl, coverUrl } = req.body;
 
     const userUpdates = {};
-    if (name) userUpdates.name = name;
-    if (phone !== undefined) userUpdates.phone = phone;
+    if (name) userUpdates.name = limitar(name, 'name');
+    if (phone !== undefined) userUpdates.phone = limitar(phone, 'phone');
     if (photoUrl !== undefined) userUpdates.photoUrl = photoUrl;
     if (coverUrl !== undefined) userUpdates.coverUrl = coverUrl;
 
     const profileUpdates = {};
-    if (headline !== undefined) profileUpdates.headline = headline;
-    if (bio !== undefined) profileUpdates.bio = bio;
-    if (location !== undefined) profileUpdates.city = location;
-    if (phone !== undefined) profileUpdates.phone = phone;
+    if (headline !== undefined) profileUpdates.headline = limitar(headline, 'headline');
+    if (bio !== undefined) profileUpdates.bio = limitar(bio, 'bio');
+    if (location !== undefined) profileUpdates.city = limitar(location, 'location');
+    if (phone !== undefined) profileUpdates.phone = limitar(phone, 'phone');
     if (photoUrl !== undefined) profileUpdates.photoUrl = photoUrl;
     if (coverUrl !== undefined) profileUpdates.coverUrl = coverUrl;
     if (skills !== undefined) profileUpdates.skillsHard = normalizeSkills(skills);
@@ -117,32 +127,58 @@ export default async function handler(req, res) {
     } = req.body;
 
     if (birthDate !== undefined) profileUpdates.birthDate = birthDate;
-    if (nationality !== undefined) profileUpdates.nationality = nationality;
+    if (nationality !== undefined) profileUpdates.nationality = limitar(nationality, 'nationality');
     if (gender !== undefined) profileUpdates.gender = gender;
-    if (maritalStatus !== undefined) profileUpdates.maritalStatus = maritalStatus;
+    if (maritalStatus !== undefined) profileUpdates.maritalStatus = limitar(maritalStatus, 'maritalStatus');
     if (linkedin !== undefined) {
       const normalizedLinkedin = normalizeLinkedInUrl(linkedin);
       const linkedinHints = extractLinkedInProfileHints(normalizedLinkedin);
-      profileUpdates.linkedin = normalizedLinkedin;
+      profileUpdates.linkedin = limitar(normalizedLinkedin, 'linkedin');
       if (!name && !existingUserData.name && linkedinHints.inferredName) {
         userUpdates.name = linkedinHints.inferredName;
       }
     }
-    if (website !== undefined) profileUpdates.website = website;
-    if (objectiveArea !== undefined) profileUpdates.objectiveArea = objectiveArea;
-    if (objectiveType !== undefined) profileUpdates.objectiveType = objectiveType;
-    if (objectiveAspiration !== undefined) profileUpdates.objectiveAspiration = objectiveAspiration;
-    if (skillsSoft !== undefined) profileUpdates.skillsSoft = skillsSoft; // string
+    if (website !== undefined) profileUpdates.website = limitar(website, 'website');
+    if (objectiveArea !== undefined) profileUpdates.objectiveArea = limitar(objectiveArea, 'objectiveArea');
+    if (objectiveType !== undefined) profileUpdates.objectiveType = limitar(objectiveType, 'objectiveType');
+    if (objectiveAspiration !== undefined)
+      profileUpdates.objectiveAspiration = limitar(objectiveAspiration, 'objectiveAspiration');
+    if (skillsSoft !== undefined) profileUpdates.skillsSoft = limitar(skillsSoft, 'skillsSoft'); // string
     if (digitalSkills !== undefined) profileUpdates.digitalSkills = digitalSkills; // array
-    if (education !== undefined) profileUpdates.education = education; // string (textarea)
-    if (languages !== undefined) profileUpdates.languages = languages; // string (textarea)
-    if (certifications !== undefined) profileUpdates.certifications = certifications; // string (textarea)
+    if (education !== undefined) profileUpdates.education = limitar(education, 'education'); // string (textarea)
+    if (languages !== undefined) profileUpdates.languages = limitar(languages, 'languages'); // string (textarea)
+    if (certifications !== undefined)
+      profileUpdates.certifications = limitar(certifications, 'certifications'); // string (textarea)
+    // O formulário do painel envia `certificateFiles` em todas as gravações,
+    // mesmo quando ninguém lhe tocou. Validar a lista sem antes confirmar que
+    // ela mudou fazia com que guardar o nome ou a bio pudesse rebentar com
+    // "Apenas candidatos podem gerir certificados" — e o perfil todo ficava
+    // por gravar. As regras abaixo só se aplicam a alterações reais.
+    const nextCertificates = Array.isArray(certificateFiles)
+      ? certificateFiles.filter((url) => typeof url === 'string')
+      : [];
+    let certificatesChanged = false;
+
     if (certificateFiles !== undefined) {
+      const currentProfileSnap = await profileRef.get();
+      const currentCertificates = Array.isArray(
+        currentProfileSnap.data()?.certificateFiles,
+      )
+        ? currentProfileSnap
+            .data()
+            .certificateFiles.filter((url) => typeof url === 'string')
+        : [];
+
+      certificatesChanged =
+        nextCertificates.length !== currentCertificates.length ||
+        nextCertificates.some((url, index) => url !== currentCertificates[index]);
+    }
+
+    if (certificatesChanged) {
       if (existingUserData.userType !== 'candidato') {
         return res.status(403).json({ error: 'Apenas candidatos podem gerir certificados' });
       }
 
-      const nextCertificates = Array.isArray(certificateFiles) ? certificateFiles : [];
       const planSummary = getPlanSummary(existingUserData);
 
       if (existingUserData.currentPlan && existingUserData.currentPlan !== planSummary.planId) {

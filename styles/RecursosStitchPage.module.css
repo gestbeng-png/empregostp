@@ -347,6 +347,10 @@
   transform: translateY(-2px);
 }
 
+.linkCard:hover {
+  color: var(--resource-navy);
+}
+
 .templateCard {
   display: flex;
   min-height: 340px;
@@ -490,6 +494,10 @@
 .toolButton:hover {
   border-color: var(--resource-blue);
   background: var(--resource-blue);
+  /* A cor tem de ser repetida no :hover: o `a:hover` do globals.css é mais
+     específico do que a regra de base e, sem isto, o texto passava a azul
+     sobre fundo azul. */
+  color: var(--resource-card);
 }
 
 .disabledButton {
@@ -589,12 +597,14 @@
 .guideDownloadButton:hover {
   border-color: var(--resource-blue-soft);
   background: var(--resource-blue-soft);
+  color: var(--resource-navy);
 }
 
 .guideDownloadButtonAccent,
 .guideDownloadButtonAccent:hover {
   border-color: var(--resource-lime);
   background: var(--resource-lime);
+  color: var(--resource-navy);
 }
 
 .toolsGrid {
@@ -682,6 +692,7 @@
 
 .upgradeButton:hover {
   background: var(--resource-blue-soft);
+  color: var(--resource-blue);
 }
 
 .supportSection {

@@ -5,6 +5,8 @@ import { getEffectiveJobStatus, syncExpiredJobStatus } from '../../../lib/jobExp
 import { JOB_STATUS_PENDING_REVIEW, isJobModerationEnabled } from '../../../lib/jobModeration';
 import { logServerError, logServerWarning } from '../../../lib/serverLog';
 import { normalizeSkillsAssessmentInput } from '../../../lib/skillsAssessment';
+import { normalizeRequiredDocuments } from '../../../lib/applicationDocuments';
+import { broadcastNewJob } from '../../../lib/newJobBroadcast';
 
 function toIsoDateString(value) {
   if (!value) return '';
@@ -171,7 +173,8 @@ export default async function handler(req, res) {
       skillsAssessment = null,
       premiumOnly = false,
       earlyAccessHours = 0,
-      requireCoverLetter = false
+      requireCoverLetter = false,
+      requiredDocuments = null
     } = req.body || {};
 
     if (!titulo || !descricao || !localizacao || !tipoContrato || !dataFecho) {
@@ -228,6 +231,7 @@ export default async function handler(req, res) {
       palavrasChave: normalizeKeywords(palavrasChave),
       categoria: `${categoria}`.trim(),
       skillsAssessment: normalizeSkillsAssessmentInput(skillsAssessment),
+      requiredDocuments: normalizeRequiredDocuments(requiredDocuments || {}),
       ...premiumApplicationFields,
       companyId: auth.uid,
       companyName: auth.userData.name || auth.userData.fullName || '',
@@ -268,6 +272,21 @@ export default async function handler(req, res) {
           })));
       } catch (notificationError) {
         logServerWarning('jobs.moderation_admin_notification_failed', notificationError);
+      }
+    } else {
+      // Sem moderação, a vaga nasce publicada: os candidatos são avisados aqui,
+      // no servidor. Antes isto dependia de o cliente chamar
+      // /api/notify-candidates depois de criar, o que falhava em silêncio se a
+      // pessoa fechasse o separador — e nunca cobria as vagas criadas pelo
+      // admin nem as aprovadas em moderação.
+      try {
+        await broadcastNewJob(admin, {
+          job: jobDoc.data(),
+          jobId: jobRef.id,
+          req,
+        });
+      } catch (broadcastError) {
+        logServerWarning('jobs.new_job_broadcast_failed', broadcastError);
       }
     }
 

@@ -2,13 +2,20 @@ import { act, render, waitFor } from '@testing-library/react';
 
 import VagaDetalhe from '../../../pages/vaga/[id]';
 
+// O que é gravado hoje. `coverLetter` à solta é o formato antigo, ainda
+// aceite em `onRestore` para não perder rascunhos já guardados.
 type ApplicationDraft = {
+  assessmentAnswers: Array<number | null>;
+  applicationForm: { coverLetter: string };
+};
+
+type ApplicationDraftLegado = {
   assessmentAnswers: Array<number | null>;
   coverLetter: string;
 };
 
 type AutoDraftOptions = {
-  onRestore: (draft: ApplicationDraft) => void;
+  onRestore: (draft: ApplicationDraftLegado) => void;
   ready: boolean;
   resourceId: string;
   value: ApplicationDraft;
@@ -136,7 +143,8 @@ describe('rascunho da candidatura ao navegar entre vagas', () => {
         getDraftCalls().some(
           (call) =>
             call.resourceId === 'job-a' &&
-            call.value.coverLetter === 'Carta pertencente à vaga A',
+            call.value.applicationForm.coverLetter ===
+              'Carta pertencente à vaga A',
         ),
       ).toBe(true);
     });
@@ -159,7 +167,8 @@ describe('rascunho da candidatura ao navegar entre vagas', () => {
       jobBCalls.some(
         (call) =>
           !call.ready &&
-          call.value.coverLetter === 'Carta pertencente à vaga A',
+          call.value.applicationForm.coverLetter ===
+            'Carta pertencente à vaga A',
       ),
     ).toBe(true);
 
@@ -168,10 +177,10 @@ describe('rascunho da candidatura ao navegar entre vagas', () => {
     );
     expect(readyJobBCalls).not.toHaveLength(0);
     readyJobBCalls.forEach((call) => {
-      expect(call.value).toEqual({
-        assessmentAnswers: [null, null],
-        coverLetter: '',
-      });
+      expect(call.value.assessmentAnswers).toEqual([null, null]);
+      // O que interessa aqui é a não-contaminação: nada da vaga A pode
+      // sobreviver à navegação para a vaga B.
+      expect(call.value.applicationForm.coverLetter).toBe('');
     });
 
     const jobBOptions = readyJobBCalls.at(-1);
@@ -190,7 +199,8 @@ describe('rascunho da candidatura ao navegar entre vagas', () => {
           (call) =>
             call.resourceId === 'job-b' &&
             call.ready &&
-            call.value.coverLetter === 'Carta pertencente à vaga B' &&
+            call.value.applicationForm.coverLetter ===
+              'Carta pertencente à vaga B' &&
             call.value.assessmentAnswers.join(',') === '0,1',
         ),
       ).toBe(true);

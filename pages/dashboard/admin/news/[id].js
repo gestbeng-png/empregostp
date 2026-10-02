@@ -17,6 +17,7 @@ import {
   resolvePublishedAt,
 } from '../../../../lib/contentPublication';
 import { redirectToLogin } from '../../../../lib/loginRedirect';
+import { normalizeExternalUrl } from '../../../../lib/externalUrl';
 
 const NEWS_DRAFT_FIELDS = [
   'title',
@@ -24,8 +25,23 @@ const NEWS_DRAFT_FIELDS = [
   'date',
   'status',
   'content',
+  'siteUrl',
+  'formUrl',
   'publishedAt',
+  'expiresAt',
 ];
+
+/**
+ * Valor para um <input type="datetime-local">: a hora tem de ser a local do
+ * admin, não a UTC, senão a data desvia-se a cada edição fora do fuso de STP.
+ */
+function toLocalInputValue(isoDate) {
+  if (!isoDate) return '';
+  const date = new Date(isoDate);
+  if (Number.isNaN(date.getTime())) return '';
+  const offsetMs = date.getTimezoneOffset() * 60 * 1000;
+  return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16);
+}
 
 function prepareNewsDraft(value) {
   if (!value || typeof value !== 'object') return {};
@@ -97,9 +113,7 @@ export default function AdminNewsEdit({ newsData, isNew }) {
     onRestore: restoreNewsDraft,
     getToken: getDraftToken,
     enabled: Boolean(draftOwnerId && draftResourceId),
-    ready: Boolean(
-      draftResourceId && appliedResourceId === draftResourceId,
-    ),
+    ready: Boolean(draftResourceId && appliedResourceId === draftResourceId),
     baseUpdatedAt: isNew
       ? ''
       : newsData?.updatedAt || newsData?.createdAt || '',
@@ -130,6 +144,10 @@ export default function AdminNewsEdit({ newsData, isNew }) {
         ...formData,
         status: normalizedStatus,
         publishedAt,
+        // Guardamos só links http(s) válidos; o resto fica vazio.
+        siteUrl: normalizeExternalUrl(formData.siteUrl),
+        formUrl: normalizeExternalUrl(formData.formUrl),
+        expiresAt: formData.expiresAt || '',
       };
 
       let savedNewsId = newsData?.id;
@@ -383,6 +401,60 @@ export default function AdminNewsEdit({ newsData, isNew }) {
             </div>
 
             <div style={styles.formGroup}>
+              <label htmlFor="news-site-url" style={styles.label}>
+                Link do site (opcional)
+              </label>
+              <input
+                id="news-site-url"
+                aria-describedby="news-site-url-help"
+                type="url"
+                name="siteUrl"
+                value={formData.siteUrl || ''}
+                onChange={handleChange}
+                style={styles.input}
+                placeholder="https://exemplo.st/pagina"
+              />
+              <small
+                id="news-site-url-help"
+                style={{
+                  color: 'rgba(255,255,255,0.5)',
+                  display: 'block',
+                  marginTop: '5px',
+                }}
+              >
+                Mostra o botão &quot;Ir ao site&quot; no aviso da página
+                inicial.
+              </small>
+            </div>
+
+            <div style={styles.formGroup}>
+              <label htmlFor="news-form-url" style={styles.label}>
+                Link do formulário (opcional)
+              </label>
+              <input
+                id="news-form-url"
+                aria-describedby="news-form-url-help"
+                type="url"
+                name="formUrl"
+                value={formData.formUrl || ''}
+                onChange={handleChange}
+                style={styles.input}
+                placeholder="https://forms.gle/..."
+              />
+              <small
+                id="news-form-url-help"
+                style={{
+                  color: 'rgba(255,255,255,0.5)',
+                  display: 'block',
+                  marginTop: '5px',
+                }}
+              >
+                Mostra o botão &quot;Preencher formulário&quot; (inscrições,
+                candidaturas, questionários).
+              </small>
+            </div>
+
+            <div style={styles.formGroup}>
               <label htmlFor="news-published-at" style={styles.label}>
                 Data de publicação (opcional)
               </label>
@@ -390,11 +462,7 @@ export default function AdminNewsEdit({ newsData, isNew }) {
                 id="news-published-at"
                 type="datetime-local"
                 name="publishedAt"
-                value={
-                  formData.publishedAt
-                    ? new Date(formData.publishedAt).toISOString().slice(0, 16)
-                    : ''
-                }
+                value={toLocalInputValue(formData.publishedAt)}
                 onChange={(e) => {
                   const value = e.target.value;
                   setFormData((prev) => ({
@@ -404,6 +472,38 @@ export default function AdminNewsEdit({ newsData, isNew }) {
                 }}
                 style={styles.input}
               />
+            </div>
+
+            <div style={styles.formGroup}>
+              <label htmlFor="news-expires-at" style={styles.label}>
+                Deixa de aparecer em (opcional)
+              </label>
+              <input
+                id="news-expires-at"
+                aria-describedby="news-expires-at-help"
+                type="datetime-local"
+                name="expiresAt"
+                value={toLocalInputValue(formData.expiresAt)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setFormData((prev) => ({
+                    ...prev,
+                    expiresAt: value ? new Date(value).toISOString() : '',
+                  }));
+                }}
+                style={styles.input}
+              />
+              <small
+                id="news-expires-at-help"
+                style={{
+                  color: 'rgba(255,255,255,0.5)',
+                  display: 'block',
+                  marginTop: '5px',
+                }}
+              >
+                A partir desta data a notícia sai do aviso da página inicial.
+                Deixe vazio para ficar sem prazo.
+              </small>
             </div>
 
             <button type="submit" style={styles.submitBtn} disabled={loading}>

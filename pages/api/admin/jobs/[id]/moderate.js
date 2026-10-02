@@ -1,5 +1,6 @@
 import { admin } from '../../../../../lib/firebaseAdmin';
 import { isEmailConfigured, sendEmail } from '../../../../../lib/email';
+import { decisionEmail } from '../../../../../lib/jobModerationEmail';
 import { parseJobCloseDate } from '../../../../../lib/jobExpiration';
 import {
   JOB_STATUS_PENDING_REVIEW,
@@ -7,59 +8,13 @@ import {
 } from '../../../../../lib/jobModeration';
 import { logServerError, logServerWarning } from '../../../../../lib/serverLog';
 import { createServerNotification } from '../../../../../lib/serverNotifications';
+import { broadcastNewJob } from '../../../../../lib/newJobBroadcast';
 
 const MAX_REASON_LENGTH = 500;
 
 function sanitizeReason(value) {
   if (typeof value !== 'string') return '';
   return value.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim().slice(0, MAX_REASON_LENGTH);
-}
-
-function escapeHtml(value) {
-  return String(value || '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-}
-
-function decisionEmail({ approved, jobTitle, reason }) {
-  const heading = approved ? 'Vaga aprovada 🎉' : 'Vaga não aprovada';
-  const body = approved
-    ? `A sua vaga <b>${escapeHtml(jobTitle)}</b> foi aprovada e já está publicada no EmpregoSTP. Os candidatos podem começar a candidatar-se.`
-    : `A sua vaga <b>${escapeHtml(jobTitle)}</b> não foi aprovada pela equipa de moderação.${reason ? ` Motivo: ${escapeHtml(reason)}.` : ''} Pode editar a vaga e submetê-la novamente.`;
-  const html = `<!doctype html>
-<html lang="pt">
-  <body style="margin:0;padding:0;background:#f4f7fc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f7fc;padding:24px 12px;">
-      <tr><td align="center">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
-          <tr>
-            <td style="padding:24px;background:linear-gradient(135deg,#14264f,#0c1834);border-radius:16px 16px 0 0;">
-              <div style="color:#d9ff3f;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;">EmpregoSTP · Vagas</div>
-              <div style="margin-top:8px;color:#ffffff;font-size:21px;font-weight:800;">${heading}</div>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:22px 24px;background:#ffffff;border-radius:0 0 16px 16px;">
-              <p style="margin:0 0 12px;color:#3b4a66;font-size:15px;line-height:1.6;">${body}</p>
-            </td>
-          </tr>
-        </table>
-      </td></tr>
-    </table>
-  </body>
-</html>`;
-  const text = approved
-    ? `A sua vaga "${jobTitle}" foi aprovada e já está publicada no EmpregoSTP.`
-    : `A sua vaga "${jobTitle}" não foi aprovada.${reason ? ` Motivo: ${reason}.` : ''} Pode editar a vaga e submetê-la novamente.`;
-
-  return {
-    subject: approved
-      ? `Vaga aprovada: ${jobTitle} — EmpregoSTP`
-      : `Vaga não aprovada: ${jobTitle} — EmpregoSTP`,
-    html,
-    text,
-  };
 }
 
 export default async function handler(req, res) {
@@ -150,6 +105,22 @@ export default async function handler(req, res) {
 
     const approved = action === 'approve';
     const jobTitle = jobData?.titulo || 'Sem título';
+
+    // Aprovar em moderação é o momento em que a vaga passa a ser pública, pelo
+    // que é aqui que os candidatos devem ser avisados — e não na criação, que
+    // nesse fluxo apenas a deixou pendente.
+    if (approved) {
+      try {
+        const publicada = await admin.firestore().collection('jobs').doc(id).get();
+        await broadcastNewJob(admin, {
+          job: publicada.data(),
+          jobId: id,
+          req,
+        });
+      } catch (broadcastError) {
+        logServerWarning('jobs.moderation_broadcast_failed', broadcastError);
+      }
+    }
 
     await admin.firestore().collection('activities').add({
       type: approved ? 'job_approved' : 'job_rejected',

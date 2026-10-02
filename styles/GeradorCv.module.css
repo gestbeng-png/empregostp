@@ -925,6 +925,47 @@
   margin-bottom: 12px;
 }
 
+/* Barra da folha de pré-visualização: só existe quando ela ocupa o ecrã
+   inteiro, ou seja, em telemóvel. */
+.previewSheetBar {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.previewSheetTitle {
+  min-width: 0;
+  color: var(--cv-navy);
+  font-size: max(1rem, 16px);
+  font-weight: 800;
+}
+
+.previewSheetClose {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid var(--cv-border);
+  border-radius: 999px;
+  color: var(--cv-copy);
+  background: var(--cv-surface);
+  cursor: pointer;
+  font-size: max(0.9rem, 14px);
+  font-weight: 750;
+}
+
+.previewSheetClose svg {
+  width: 17px;
+  height: 17px;
+}
+
+/* O rótulo curto do passo entra em cena no lugar do longo (ver telemóvel). */
+.stepLabelShort {
+  display: none;
+}
+
 .statusMessage {
   margin: 0 0 12px;
   padding: 11px 13px;
@@ -1267,113 +1308,219 @@
 
 @media (max-width: 680px) {
   .container {
-    padding: 18px 16px 64px;
+    padding: 14px 14px calc(20px + env(safe-area-inset-bottom));
   }
 
   .breadcrumb {
-    margin-bottom: 14px;
+    margin-bottom: 10px;
+    margin-left: -10px;
   }
 
   .hero {
-    gap: 18px;
-    margin-bottom: 22px;
-    padding-bottom: 22px;
+    gap: 10px;
+    margin-bottom: 14px;
+    padding-bottom: 14px;
   }
 
   .heroAside {
     display: none;
   }
 
+  .eyebrow {
+    min-height: 26px;
+    font-size: 13px;
+  }
+
   .title {
-    font-size: clamp(2rem, 10vw, 2.6rem);
+    margin: 8px 0 6px;
+    font-size: clamp(1.6rem, 7vw, 2.05rem);
+    line-height: 1.12;
   }
 
   .subtitle {
-    font-size: 1rem;
+    font-size: max(0.9rem, 14.5px);
+    line-height: 1.5;
   }
 
   .wizard {
-    gap: 14px;
+    gap: 12px;
+  }
+
+  /* Cartões mais suaves e a toda a largura útil: menos moldura, mais conteúdo. */
+  .stepperCard,
+  .panel,
+  .wizardNav,
+  .lockCard,
+  .loadingCard,
+  .errorCard,
+  .stepIntro {
+    border-radius: 14px;
+    box-shadow: 0 2px 10px rgba(11, 33, 71, 0.05);
   }
 
   .stepperCard {
-    padding: 16px;
+    padding: 14px;
   }
 
   .stepperTitle {
-    font-size: 1.05rem;
+    font-size: max(1rem, 16px);
   }
 
   .stepperSubtitle {
     display: none;
   }
 
+  .stepperHead {
+    gap: 6px;
+  }
+
   .stepperMeta {
-    margin-top: 2px;
+    margin-top: 0;
   }
 
   .progressTrack {
-    margin: 10px 0 14px;
+    margin: 8px 0 12px;
   }
 
+  /* Quatro passos, quatro colunas: ícone em cima, nome curto por baixo. Antes
+     ficavam só ícones, e ninguém sabia em que passo estava. */
   .stepper {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 6px;
   }
 
   .stepItem,
   .stepItem:last-child {
-    display: flex;
+    display: grid;
     min-width: 0;
-    min-height: 46px;
-    justify-content: center;
-    padding: 6px;
+    min-height: 66px;
+    grid-template-columns: minmax(0, 1fr);
+    align-content: center;
+    justify-items: center;
+    gap: 5px;
+    padding: 7px 4px;
+    border: 1px solid var(--cv-border-soft);
+    border-radius: 12px;
+    text-align: center;
   }
 
-  .stepText {
+  .stepItem::after {
     display: none;
   }
 
   .stepDot {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
+  }
+
+  .stepText {
+    display: block;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .stepIndex,
+  .stepLabel {
+    display: none;
+  }
+
+  .stepLabelShort {
+    /* Uma linha só, encurtada com reticências: partir "Competências" a meio
+       deixava um "s" órfão na segunda linha. */
+    display: block;
+    overflow: hidden;
+    color: inherit;
+    font-size: clamp(10px, 2.8vw, 11.5px);
+    font-weight: 750;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .stepItemActive {
+    border-color: var(--cv-navy);
+    background: var(--cv-blue-soft);
+  }
+
+  /* Chamada da pré-visualização: a toda a largura, para o polegar acertar. */
+  .previewToggle {
+    display: inline-flex;
+    width: 100%;
+    align-self: stretch;
+    min-height: 48px;
+    margin-bottom: 10px;
+    border-radius: 12px;
   }
 
   .stepIntro {
     gap: 12px;
-    padding: 18px 18px 15px;
+    padding: 16px 16px 13px;
+    border-radius: 14px 14px 0 0;
   }
 
   .stepIntroIcon {
-    width: 40px;
-    height: 40px;
+    width: 38px;
+    height: 38px;
   }
 
   .stepIntroTitle {
-    font-size: 1.18rem;
+    font-size: max(1.1rem, 17px);
   }
 
   .stepIntroHint {
-    font-size: 14px;
+    font-size: max(0.86rem, 13.5px);
   }
 
   .panel {
-    padding: 18px;
+    padding: 16px;
+  }
+
+  .stepIntro + .panel {
+    border-radius: 0 0 14px 14px;
+  }
+
+  .sectionBlock {
+    gap: 18px;
   }
 
   .grid2,
   .grid3 {
+    gap: 14px;
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* 16px é o mínimo que evita o zoom automático do Safari ao focar um campo:
+     com 15px o iPhone dava um salto de escala a cada toque. */
+  .input,
+  .textarea,
+  .select {
+    font-size: 16px;
+  }
+
+  .input,
+  .select {
+    min-height: 48px;
+  }
+
+  .textarea {
+    min-height: 118px;
+  }
+
+  .compactTextarea {
+    min-height: 92px;
   }
 
   .photoRow {
     align-items: flex-start;
-    padding: 18px;
+    padding: 16px;
   }
 
   .photoPreviewWrap {
-    width: 92px;
-    height: 92px;
-    flex-basis: 92px;
+    width: 84px;
+    height: 84px;
+    flex-basis: 84px;
   }
 
   .stepToolbar {
@@ -1385,24 +1532,99 @@
     width: 100%;
   }
 
+  /* Barra de navegação fixa ao fundo: deixa de ser preciso percorrer o passo
+     todo para chegar ao "Próximo". */
   .wizardNav {
-    align-items: stretch;
-    flex-direction: column-reverse;
-    padding: 12px;
+    position: sticky;
+    bottom: 0;
+    display: grid;
+    align-items: center;
+    grid-template-areas:
+      'save status'
+      'prev next';
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 8px 10px;
+    margin: 14px -14px 0;
+    padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+    border: 0;
+    border-top: 1px solid var(--cv-border-soft);
+    border-radius: 16px 16px 0 0;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 -6px 20px rgba(11, 33, 71, 0.1);
+    backdrop-filter: blur(10px);
   }
 
   .navStart {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: contents;
+  }
+
+  .navStart > .ghostButton {
+    min-height: 50px;
+    grid-area: prev;
+    width: 100%;
+  }
+
+  .navStart > .draftButton {
+    min-height: 38px;
+    grid-area: save;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-size: max(0.8rem, 13px);
   }
 
   .autoSaveStatus {
+    min-width: 0;
+    grid-area: status;
     margin-left: 0;
+    justify-self: start;
+    font-size: max(0.78rem, 12.5px);
   }
 
-  .wizardNav > .primaryButton,
-  .navStart > * {
+  .wizardNav > .primaryButton {
+    min-height: 50px;
+    grid-area: next;
     width: 100%;
+  }
+
+  /* A pré-visualização deixa de ficar pendurada no fim do formulário e passa a
+     abrir como folha sobre o ecrã, com barra própria para fechar. */
+  .previewColumnOpen {
+    position: fixed;
+    /* Acima do cabeçalho do site (z-index 120), senão ele ficava por cima da
+       folha aberta. */
+    z-index: 200;
+    inset: 0;
+    overflow-y: auto;
+    padding: 12px 12px calc(16px + env(safe-area-inset-bottom));
+    background: var(--cv-canvas);
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .previewColumnOpen .previewSheetBar {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: flex;
+    margin: -12px -12px 0;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--cv-border-soft);
+    background: rgba(247, 249, 251, 0.95);
+    backdrop-filter: blur(8px);
+  }
+
+  /* A barra da folha já diz "Pré-visualização": o título repetido do painel só
+     empurrava o CV para baixo. */
+  .previewColumnOpen .previewToolbar .panelTitle {
+    display: none;
+  }
+
+  .previewSticky {
+    gap: 10px;
+  }
+
+  .previewSticky > .panel {
+    padding: 14px;
   }
 
   .previewToolbar {
@@ -1411,12 +1633,15 @@
   }
 
   .previewToolbar .primaryButton {
+    min-height: 46px;
     width: 100%;
+    font-size: max(0.9rem, 14px);
   }
 
   .previewShell {
     max-width: 100%;
     padding: 8px;
+    border-radius: 12px;
     overflow: auto;
     overscroll-behavior-inline: contain;
     -webkit-overflow-scrolling: touch;
@@ -1434,14 +1659,24 @@
   .lockCard,
   .loadingCard,
   .errorCard {
-    padding: 20px;
+    padding: 18px;
   }
 }
 
 @media (max-width: 440px) {
+  .container {
+    padding-inline: 12px;
+  }
+
+  .wizardNav {
+    margin-inline: -12px;
+    padding-inline: 12px;
+  }
+
   .photoRow {
     align-items: center;
     flex-direction: column;
+    text-align: center;
   }
 
   .photoActions {
@@ -1462,8 +1697,33 @@
     align-self: flex-end;
   }
 
-  .navStart {
-    grid-template-columns: minmax(0, 1fr);
+  .stepper {
+    gap: 5px;
+  }
+
+  .stepItem,
+  .stepItem:last-child {
+    padding-inline: 2px;
+  }
+}
+
+@media (max-width: 360px) {
+  /* Ecrã mesmo estreito: o estado da gravação ocupa a linha toda, para os dois
+     botões grandes ficarem com meia largura cada. */
+  .wizardNav {
+    grid-template-areas:
+      'status status'
+      'save save'
+      'prev next';
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .navStart > .draftButton {
+    width: 100%;
+  }
+
+  .autoSaveStatus {
+    justify-self: center;
   }
 }
 
@@ -1474,4 +1734,56 @@
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Validação: o campo com erro fica marcado e a mensagem aparece por baixo. */
+.inputInvalid,
+.inputInvalid:focus {
+  border-color: #c8362f;
+  box-shadow: 0 0 0 3px rgba(200, 54, 47, 0.14);
+}
+
+.fieldError {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  color: #a52d27;
+  font-size: max(0.8rem, 13px);
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.fieldError::before {
+  content: '!';
+  display: inline-flex;
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  margin-top: 1px;
+  background: #c8362f;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.validationSummary {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1px solid #f0c2bf;
+  border-left: 4px solid #c8362f;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  background: #fdf3f2;
+  color: #7d221d;
+  font-size: max(0.86rem, 14px);
+  line-height: 1.5;
+}
+
+.validationSummary strong {
+  color: #a52d27;
 }

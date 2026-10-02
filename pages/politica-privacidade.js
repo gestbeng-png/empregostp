@@ -103,10 +103,10 @@ export default function PoliticaPrivacidade() {
               <h2>Fale connosco</h2>
               <p>Se tiver dúvidas sobre esta política, contacte-nos:</p>
               <a
-                href="mailto:suporte@empregos.st"
+                href="mailto:contacto@empregostp.com"
                 className={styles.contactEmail}
               >
-                suporte@empregos.st
+                contacto@empregostp.com
               </a>
             </section>
           </div>
