@@ -196,6 +196,29 @@
   cursor: not-allowed;
 }
 
+/* Ação secundária (cancelar o pedido): só tokens, sem cores novas. */
+.cancelRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.secondaryAction {
+  border: thin solid var(--border);
+  border-radius: 0.25rem;
+  padding: 0.75rem 1.1rem;
+  background: transparent;
+  color: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.secondaryAction:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
 .errorBox,
 .successBox {
   padding: 0.9rem 1rem;
@@ -227,7 +250,7 @@
   background: var(--surface, #ffffff);
   box-shadow: none;
   color: var(--text-1, #102441);
-  font-family: var(--font-instrument, "Instrument Sans"), Arial, sans-serif;
+  font-family: var(--font-instrument, 'Instrument Sans'), Arial, sans-serif;
 }
 
 .embedded {

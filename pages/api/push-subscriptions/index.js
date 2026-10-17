@@ -45,7 +45,9 @@ export default async function handler(req, res) {
 
   const authHeader = req.headers.authorization;
   const bearerMatch =
-    typeof authHeader === 'string' ? authHeader.match(/^Bearer ([^\s]+)$/) : null;
+    typeof authHeader === 'string'
+      ? authHeader.match(/^Bearer ([^\s]+)$/)
+      : null;
   if (!bearerMatch) {
     return res.status(401).json({ error: 'Token não fornecido' });
   }
@@ -88,7 +90,7 @@ export default async function handler(req, res) {
           enabled: parsedBody.permission === 'granted',
           platform: 'web',
           userAgent: parsedBody.userAgent,
-          updatedAt: now
+          updatedAt: now,
         };
         if (!existingSnapshot.exists) {
           subscriptionData.createdAt = now;
@@ -100,11 +102,13 @@ export default async function handler(req, res) {
 
       if (outcome === 'conflict') {
         return res.status(409).json({
-          error: 'Token de push já associado a outra conta'
+          error: 'Token de push já associado a outra conta',
         });
       }
 
-      return res.status(200).json({ message: 'Push web registado com sucesso' });
+      return res
+        .status(200)
+        .json({ message: 'Push web registado com sucesso' });
     }
 
     const outcome = await firestore.runTransaction(async (transaction) => {
@@ -120,7 +124,7 @@ export default async function handler(req, res) {
 
     if (outcome === 'forbidden') {
       return res.status(403).json({
-        error: 'Sem permissão para remover esta subscrição push'
+        error: 'Sem permissão para remover esta subscrição push',
       });
     }
 

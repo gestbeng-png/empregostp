@@ -51,7 +51,9 @@ export default async function handler(req, res) {
           };
         })
         // Ordena em memória para evitar índice composto (status + createdAt)
-        .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+        .sort((a, b) =>
+          String(b.createdAt || '').localeCompare(String(a.createdAt || '')),
+        );
 
       return res.status(200).json({ testimonials });
     } catch (error) {
@@ -85,29 +87,39 @@ export default async function handler(req, res) {
       if (name.length < LIMITS.name.min || name.length > LIMITS.name.max) {
         return res
           .status(400)
-          .json({ error: `O nome deve ter entre ${LIMITS.name.min} e ${LIMITS.name.max} caracteres.` });
+          .json({
+            error: `O nome deve ter entre ${LIMITS.name.min} e ${LIMITS.name.max} caracteres.`,
+          });
       }
       if (role.length > LIMITS.role.max) {
         return res
           .status(400)
-          .json({ error: `O cargo/função é demasiado longo (máx. ${LIMITS.role.max} caracteres).` });
+          .json({
+            error: `O cargo/função é demasiado longo (máx. ${LIMITS.role.max} caracteres).`,
+          });
       }
-      if (message.length < LIMITS.message.min || message.length > LIMITS.message.max) {
+      if (
+        message.length < LIMITS.message.min ||
+        message.length > LIMITS.message.max
+      ) {
         return res.status(400).json({
           error: `O testemunho deve ter entre ${LIMITS.message.min} e ${LIMITS.message.max} caracteres.`,
         });
       }
 
-      await admin.firestore().collection('testimonials').add({
-        name,
-        role: role || null,
-        message,
-        rating,
-        status: 'pending',
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        userAgent: req.headers['user-agent'] || null,
-        ip: getClientIp(req),
-      });
+      await admin
+        .firestore()
+        .collection('testimonials')
+        .add({
+          name,
+          role: role || null,
+          message,
+          rating,
+          status: 'pending',
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          userAgent: req.headers['user-agent'] || null,
+          ip: getClientIp(req),
+        });
 
       return res.status(201).json({
         message:

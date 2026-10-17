@@ -21,12 +21,18 @@ async function requireAdmin(req, res) {
   }
 
   if (!token) {
-    res.status(401).json({ message: 'Token de autorização ausente ou inválido' });
+    res
+      .status(401)
+      .json({ message: 'Token de autorização ausente ou inválido' });
     return null;
   }
 
   const decodedToken = await admin.auth().verifyIdToken(token);
-  const adminDoc = await admin.firestore().collection('users').doc(decodedToken.uid).get();
+  const adminDoc = await admin
+    .firestore()
+    .collection('users')
+    .doc(decodedToken.uid)
+    .get();
   if (!adminDoc.exists || adminDoc.data().userType !== 'admin') {
     res.status(403).json({ message: 'Acesso negado. Apenas administradores.' });
     return null;
@@ -36,7 +42,10 @@ async function requireAdmin(req, res) {
 
 function sanitize(value) {
   if (typeof value !== 'string') return '';
-  return value.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+  return value
+    .replace(/<[^>]*>/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function sanitizeMultiline(value) {
@@ -59,7 +68,11 @@ function normalizeDocuments(rawDocuments) {
     const url = sanitize(item?.url);
     if (!url) continue;
     if (!isValidUrl(url) || url.length > LIMITS.docUrl.max) {
-      return { documents: null, error: 'Cada documento de resultado deve ter um link válido (http:// ou https://).' };
+      return {
+        documents: null,
+        error:
+          'Cada documento de resultado deve ter um link válido (http:// ou https://).',
+      };
     }
     const label = sanitize(item?.label).slice(0, LIMITS.docLabel.max);
     documents.push({ label: label || 'Documento', url });
@@ -79,19 +92,22 @@ const NOTIFICATION_BY_STATUS = {
     type: 'HR_SERVICE_APPROVED',
     title: 'Pedido de serviço RH aprovado ✅',
     icon: '✅',
-    message: (r) => `O seu pedido "${r.title}" foi aprovado e está a ser tratado pela nossa equipa.`,
+    message: (r) =>
+      `O seu pedido "${r.title}" foi aprovado e está a ser tratado pela nossa equipa.`,
   },
   rejected: {
     type: 'HR_SERVICE_REJECTED',
     title: 'Pedido de serviço RH não aprovado',
     icon: '❌',
-    message: (r) => `O seu pedido "${r.title}" não foi aprovado. Consulte a resposta da equipa no seu painel.`,
+    message: (r) =>
+      `O seu pedido "${r.title}" não foi aprovado. Consulte a resposta da equipa no seu painel.`,
   },
   completed: {
     type: 'HR_SERVICE_COMPLETED',
     title: 'Serviço RH concluído 🎉',
     icon: '📎',
-    message: (r) => `O seu pedido "${r.title}" foi concluído. Consulte a resposta e os documentos no seu painel.`,
+    message: (r) =>
+      `O seu pedido "${r.title}" foi concluído. Consulte a resposta e os documentos no seu painel.`,
   },
   pending: {
     type: 'HR_SERVICE_REOPENED',
@@ -114,7 +130,9 @@ export default async function handler(req, res) {
     const docRef = admin.firestore().collection(COLLECTION).doc(id);
     const docSnap = await docRef.get();
     if (!docSnap.exists) {
-      return res.status(404).json({ message: 'Pedido de serviço RH não encontrado' });
+      return res
+        .status(404)
+        .json({ message: 'Pedido de serviço RH não encontrado' });
     }
 
     if (req.method === 'DELETE') {
@@ -128,7 +146,9 @@ export default async function handler(req, res) {
       if (!status) {
         return res
           .status(400)
-          .json({ message: 'Ação inválida. Use approve, reject, complete ou reset.' });
+          .json({
+            message: 'Ação inválida. Use approve, reject, complete ou reset.',
+          });
       }
 
       const now = admin.firestore.FieldValue.serverTimestamp();
@@ -144,12 +164,17 @@ export default async function handler(req, res) {
       if (action === 'complete' || action === 'reject') {
         const adminResponse = sanitizeMultiline(req.body?.adminResponse);
         if (action === 'complete') {
-          if (adminResponse.length < LIMITS.adminResponse.min || adminResponse.length > LIMITS.adminResponse.max) {
+          if (
+            adminResponse.length < LIMITS.adminResponse.min ||
+            adminResponse.length > LIMITS.adminResponse.max
+          ) {
             return res.status(400).json({
               message: `A resposta deve ter entre ${LIMITS.adminResponse.min} e ${LIMITS.adminResponse.max} caracteres.`,
             });
           }
-          const { documents, error } = normalizeDocuments(req.body?.resultDocuments);
+          const { documents, error } = normalizeDocuments(
+            req.body?.resultDocuments,
+          );
           if (error) {
             return res.status(400).json({ message: error });
           }
@@ -190,7 +215,12 @@ export default async function handler(req, res) {
     res.setHeader('Allow', ['POST', 'PATCH', 'DELETE']);
     return res.status(405).json({ message: 'Método não permitido' });
   } catch (error) {
-    logServerError('admin_hr_services_id.moderar_pedido_de_servico_rh_failed', error);
-    return res.status(500).json({ message: 'Erro interno do servidor', error: error.message });
+    logServerError(
+      'admin_hr_services_id.moderar_pedido_de_servico_rh_failed',
+      error,
+    );
+    return res
+      .status(500)
+      .json({ message: 'Erro interno do servidor', error: error.message });
   }
 }

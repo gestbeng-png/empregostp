@@ -56,50 +56,7 @@
   z-index: 1;
   width: min(1200px, calc(100% - 48px));
   margin: 0 auto;
-  padding: 2.25rem 0 4.5rem;
-}
-
-.signatureRail {
-  position: relative;
-  display: flex;
-  min-height: 56px;
-  margin-bottom: 3.75rem;
-  padding-bottom: 1.4rem;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
-  border-bottom: 1px solid var(--footer-border);
-}
-
-.signaturePlace,
-.signatureMessage {
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.signaturePlace {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-  color: rgba(239, 245, 250, 0.66);
-  font-weight: 700;
-  letter-spacing: 0.055em;
-  text-transform: uppercase;
-}
-
-.signaturePlace::before {
-  content: '';
-  width: 9px;
-  height: 9px;
-  flex: 0 0 9px;
-  border: 2px solid var(--footer-lime);
-  border-radius: 999px;
-  box-shadow: 0 0 0 5px rgba(217, 255, 69, 0.08);
-}
-
-.signatureMessage {
-  color: var(--footer-frost);
-  font-weight: 650;
+  padding: 4rem 0 4.5rem;
 }
 
 .grid {
@@ -403,20 +360,7 @@
 @media (max-width: 640px) {
   .inner {
     width: calc(100% - 32px);
-    padding: 1.75rem 0 3.25rem;
-  }
-
-  .signatureRail {
-    min-height: 0;
-    margin-bottom: 1rem;
-    padding-bottom: 1.25rem;
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 0.35rem;
-  }
-
-  .signaturePlace {
-    letter-spacing: 0.035em;
+    padding: 3rem 0 3.25rem;
   }
 
   .grid {
@@ -525,11 +469,6 @@
 @media (max-width: 380px) {
   .mobileBlock {
     padding: 1rem;
-  }
-
-  .signaturePlace,
-  .signatureMessage {
-    font-size: 14px;
   }
 
   .bottomLinks {

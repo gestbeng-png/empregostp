@@ -24,7 +24,11 @@ export default async function handler(req, res) {
 
     const token = authHeader.split('Bearer ')[1];
     const decodedToken = await admin.auth().verifyIdToken(token);
-    const snapshot = await admin.firestore().collection('subscription-requests').where('userId', '==', decodedToken.uid).get();
+    const snapshot = await admin
+      .firestore()
+      .collection('subscription-requests')
+      .where('userId', '==', decodedToken.uid)
+      .get();
 
     const openRequests = snapshot.docs
       .filter((doc) => {
@@ -34,7 +38,10 @@ export default async function handler(req, res) {
       .sort((a, b) => {
         const aData = a.data() || {};
         const bData = b.data() || {};
-        return Math.max(toMillis(bData.updatedAt), toMillis(bData.createdAt)) - Math.max(toMillis(aData.updatedAt), toMillis(aData.createdAt));
+        return (
+          Math.max(toMillis(bData.updatedAt), toMillis(bData.createdAt)) -
+          Math.max(toMillis(aData.updatedAt), toMillis(aData.createdAt))
+        );
       });
 
     if (openRequests.length === 0) {
@@ -45,11 +52,14 @@ export default async function handler(req, res) {
     return res.status(200).json({
       request: {
         id: latest.id,
-        ...serializeFirestoreValue(latest.data())
-      }
+        ...serializeFirestoreValue(latest.data()),
+      },
     });
   } catch (error) {
-    logServerError('subscription_requests_current.buscar_solicitacao_de_subscricao_atual_failed', error);
+    logServerError(
+      'subscription_requests_current.buscar_solicitacao_de_subscricao_atual_failed',
+      error,
+    );
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 }

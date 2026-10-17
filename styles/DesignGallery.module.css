@@ -1,0 +1,67 @@
+.root {
+  display: grid;
+  gap: var(--app-space-lg);
+  min-width: 0;
+}
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--app-space-md);
+}
+.fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--app-space-lg);
+}
+.fields > * {
+  flex: 1 1 calc(var(--app-space-3xl) * 3);
+  min-width: 0;
+}
+.swatch {
+  margin: 0;
+  flex: 1 1 calc(var(--app-space-3xl) * 2);
+}
+.swatch code {
+  overflow-wrap: anywhere;
+  font-size: var(--app-font-size-sm);
+}
+.color {
+  display: block;
+  height: var(--app-space-3xl);
+  border: thin solid var(--dash-border);
+  border-radius: var(--dash-radius);
+  margin-bottom: var(--app-space-sm);
+}
+.error {
+  color: var(--dash-danger);
+}
+.root span.warning {
+  color: var(--dash-ink);
+}
+.fieldset {
+  display: grid;
+  gap: var(--app-space-md);
+  border: thin solid var(--dash-border);
+  border-radius: var(--dash-radius);
+  padding: var(--app-space-md);
+  margin-block: var(--app-space-lg);
+}
+.fieldset label {
+  display: flex;
+  gap: var(--app-space-sm);
+  align-items: center;
+}
+.skeletons {
+  display: grid;
+  gap: var(--app-space-md);
+  align-content: center;
+  padding: var(--app-space-lg);
+}
+.skeletonLine {
+  height: var(--app-space-lg);
+}
+.table {
+  overflow-x: auto;
+  margin-top: var(--app-space-lg);
+}

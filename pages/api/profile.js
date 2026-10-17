@@ -12,16 +12,24 @@ const serializeTimestamp = (value) => {
 const serializeDeep = (value) => {
   if (value === null || value === undefined) return value;
   if (Array.isArray(value)) return value.map((item) => serializeDeep(item));
-  if (typeof value.toDate === 'function' || value instanceof Date) return serializeTimestamp(value);
+  if (typeof value.toDate === 'function' || value instanceof Date)
+    return serializeTimestamp(value);
   if (typeof value === 'object') {
     return Object.fromEntries(
-      Object.entries(value).map(([key, currentValue]) => [key, serializeDeep(currentValue)])
+      Object.entries(value).map(([key, currentValue]) => [
+        key,
+        serializeDeep(currentValue),
+      ]),
     );
   }
   return value;
 };
 
 export default async function handler(req, res) {
+  // Perfil autenticado: não permitir que ETag/304 retire o corpo JSON que o
+  // dashboard precisa para decidir o destino da sessão.
+  res.setHeader('Cache-Control', 'private, no-store, max-age=0');
+
   // A rota apenas lê o perfil; POST existe só para receber o uid no corpo.
   // Sem este guard, um DELETE ou PUT era servido como se fosse um GET.
   if (req.method !== 'GET' && req.method !== 'POST') {
@@ -34,25 +42,33 @@ export default async function handler(req, res) {
       missingTokenMessage: 'Token de autenticação obrigatório',
     });
     if (!authResult) return;
-    const { uid: authenticatedUid, userData: requesterData, userDoc: requesterDoc } = authResult;
+    const {
+      uid: authenticatedUid,
+      userData: requesterData,
+      userDoc: requesterDoc,
+    } = authResult;
     const isAdmin = requesterData.userType === 'admin';
 
     const requestedUid = req.method === 'POST' ? req.body.uid : req.query.uid;
     const uid = requestedUid || authenticatedUid;
 
     if (!uid) {
-      return res.status(401).json({ error: 'Token de autenticação obrigatório' });
+      return res
+        .status(401)
+        .json({ error: 'Token de autenticação obrigatório' });
     }
 
     if (uid !== authenticatedUid && !isAdmin) {
-      return res.status(403).json({ error: 'Sem permissão para acessar este perfil' });
+      return res
+        .status(403)
+        .json({ error: 'Sem permissão para acessar este perfil' });
     }
 
     const [profileSnap, userSnap] = await Promise.all([
       admin.firestore().collection('profiles').doc(uid).get(),
       uid === authenticatedUid
         ? Promise.resolve(requesterDoc)
-        : admin.firestore().collection('users').doc(uid).get()
+        : admin.firestore().collection('users').doc(uid).get(),
     ]);
 
     if (!profileSnap.exists && !userSnap.exists) {
@@ -64,7 +80,8 @@ export default async function handler(req, res) {
 
     const mergedProfile = {
       ...profileData,
-      fullName: userData.name || userData.fullName || profileData.fullName || '',
+      fullName:
+        userData.name || userData.fullName || profileData.fullName || '',
       email: userData.email || profileData.email || '',
       phone: userData.phone || profileData.phone || '',
       userType: userData.userType || profileData.userType || '',
@@ -81,10 +98,18 @@ export default async function handler(req, res) {
       curriculoDestacado: Boolean(userData.curriculoDestacado),
       vagasLimit: userData.vagasLimit ?? null,
       destaque: Boolean(userData.destaque),
-      verificationStatus: userData.verificationStatus || profileData.verificationStatus || 'unverified',
-      verificationSummary: serializeDeep(userData.verificationSummary || profileData.verificationSummary || null),
-      verificationItems: serializeDeep(userData.verificationItems || profileData.verificationItems || null),
-      verificationId: userData.verificationId || profileData.verificationId || null
+      verificationStatus:
+        userData.verificationStatus ||
+        profileData.verificationStatus ||
+        'unverified',
+      verificationSummary: serializeDeep(
+        userData.verificationSummary || profileData.verificationSummary || null,
+      ),
+      verificationItems: serializeDeep(
+        userData.verificationItems || profileData.verificationItems || null,
+      ),
+      verificationId:
+        userData.verificationId || profileData.verificationId || null,
     };
 
     let applications = [];
@@ -100,7 +125,7 @@ export default async function handler(req, res) {
         const timeline = Array.isArray(data.timeline)
           ? data.timeline.map((event) => ({
               ...event,
-              date: serializeTimestamp(event.date)
+              date: serializeTimestamp(event.date),
             }))
           : [];
         return {
@@ -110,16 +135,24 @@ export default async function handler(req, res) {
           interviewDetails: data.interviewDetails
             ? {
                 ...data.interviewDetails,
-                scheduledAt: serializeTimestamp(data.interviewDetails.scheduledAt),
+                scheduledAt: serializeTimestamp(
+                  data.interviewDetails.scheduledAt,
+                ),
                 updatedAt: serializeTimestamp(data.interviewDetails.updatedAt),
-                confirmedAt: serializeTimestamp(data.interviewDetails.confirmedAt),
-                rescheduleRequestedAt: serializeTimestamp(data.interviewDetails.rescheduleRequestedAt),
-                candidateRespondedAt: serializeTimestamp(data.interviewDetails.candidateRespondedAt)
+                confirmedAt: serializeTimestamp(
+                  data.interviewDetails.confirmedAt,
+                ),
+                rescheduleRequestedAt: serializeTimestamp(
+                  data.interviewDetails.rescheduleRequestedAt,
+                ),
+                candidateRespondedAt: serializeTimestamp(
+                  data.interviewDetails.candidateRespondedAt,
+                ),
               }
             : null,
           appliedAt: serializeTimestamp(data.appliedAt),
           createdAt: serializeTimestamp(data.createdAt),
-          updatedAt: serializeTimestamp(data.updatedAt)
+          updatedAt: serializeTimestamp(data.updatedAt),
         };
       });
     }
@@ -127,9 +160,9 @@ export default async function handler(req, res) {
     return res.status(200).json({
       profile: {
         id: uid,
-        data: serializeDeep(mergedProfile)
+        data: serializeDeep(mergedProfile),
       },
-      applications
+      applications,
     });
   } catch (error) {
     logServerError('profile.api_de_perfil_failed', error);

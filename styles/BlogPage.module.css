@@ -17,7 +17,11 @@
   min-height: 100vh;
   overflow: clip;
   background:
-    radial-gradient(circle at 8% 2%, rgba(37, 99, 235, 0.055), transparent 28rem),
+    radial-gradient(
+      circle at 8% 2%,
+      rgba(37, 99, 235, 0.055),
+      transparent 28rem
+    ),
     linear-gradient(180deg, #fbfcff 0%, var(--blog-surface) 36%, #f5f7fb 100%);
   color: var(--blog-ink);
   font-family: 'Instrument Sans', Arial, sans-serif;
@@ -61,7 +65,11 @@
   height: 4px;
   margin-top: 4px;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--blog-blue) 0 58%, var(--blog-lime) 58%);
+  background: linear-gradient(
+    90deg,
+    var(--blog-blue) 0 58%,
+    var(--blog-lime) 58%
+  );
 }
 
 .heroEyebrow {
@@ -173,7 +181,11 @@
     linear-gradient(90deg, rgba(255, 255, 255, 0.075) 1px, transparent 1px),
     radial-gradient(circle at 82% 16%, var(--post-accent), transparent 30%),
     linear-gradient(145deg, #173b74 0%, var(--blog-navy) 64%, #07152e 100%);
-  background-size: 34px 34px, 34px 34px, auto, auto;
+  background-size:
+    34px 34px,
+    34px 34px,
+    auto,
+    auto;
 }
 
 .mediaFallbackLogo {

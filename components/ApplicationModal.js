@@ -11,6 +11,7 @@ import {
   WORK_AUTHORIZATION_OPTIONS,
   firstStepWithErrors,
   validateApplicationForm,
+  validateApplicationFormV2,
 } from '../lib/applicationForm';
 import { validateApplicationDocuments } from '../lib/applicationDocuments';
 import styles from '../styles/ApplicationModal.module.css';
@@ -52,7 +53,11 @@ export default function ApplicationModal({
   draftStatus = null,
   coverLetterEnabled = true,
   coverLetterLockedMessage = '',
+  // 'v2' (F2.1/F2.3/H7): sem data de nascimento nem nacionalidade, carta e
+  // referências opcionais. Vem do servidor; por omissão o formulário atual.
+  policy = 'legacy',
 }) {
+  const v2 = policy === 'v2';
   const modalRef = useRef(null);
   const conteudoRef = useRef(null);
   // O pai costuma passar um `onClose` novo a cada render. Se o efeito do foco
@@ -68,17 +73,37 @@ export default function ApplicationModal({
 
   const erros = useMemo(() => {
     if (!isOpen) return {};
-    const doFormulario = validateApplicationForm(form, { coverLetterEnabled });
+    const doFormulario = v2
+      ? validateApplicationFormV2(form, {
+          requireCoverLetter: Boolean(job?.requireCoverLetter),
+        })
+      : validateApplicationForm(form, { coverLetterEnabled });
     const dosDocumentos = validateApplicationDocuments(
       documentRequirements,
       form.documents,
     );
     // Os documentos em falta contam como um único erro do passo, para o
     // contador do fim não dizer "faltam 3 campos" quando falta 1 anexo.
-    return Object.keys(dosDocumentos).length
+    // No v2 não bloqueiam (F2.3): passam a aviso, mostrado à parte.
+    return Object.keys(dosDocumentos).length && !v2
       ? { ...doFormulario, documents: Object.values(dosDocumentos).join(' ') }
       : doFormulario;
-  }, [isOpen, form, coverLetterEnabled, documentRequirements]);
+  }, [isOpen, form, coverLetterEnabled, documentRequirements, v2, job]);
+
+  const documentosEmFalta = useMemo(
+    () =>
+      v2 && isOpen
+        ? documentRequirements
+            .filter(
+              (requisito) =>
+                validateApplicationDocuments([requisito], form.documents)[
+                  requisito.id
+                ],
+            )
+            .map((requisito) => requisito.label)
+        : [],
+    [v2, isOpen, documentRequirements, form.documents],
+  );
 
   const passoAtual = APPLICATION_FORM_STEPS[passo];
   const errosDoPasso = useMemo(() => {
@@ -207,9 +232,7 @@ export default function ApplicationModal({
   const avancar = () => {
     marcarVisitado();
     if (Object.keys(errosDoPasso).length > 0) return;
-    setPasso((atual) =>
-      Math.min(atual + 1, APPLICATION_FORM_STEPS.length - 1),
-    );
+    setPasso((atual) => Math.min(atual + 1, APPLICATION_FORM_STEPS.length - 1));
   };
 
   const recuar = () => setPasso((atual) => Math.max(atual - 1, 0));
@@ -365,40 +388,45 @@ export default function ApplicationModal({
                   />
                 </Campo>
 
-                <Campo
-                  id="ap-nationality"
-                  label="Nacionalidade"
-                  obrigatorio
-                  erro={errosVisiveis.nationality}
-                >
-                  <input
-                    id="ap-nationality"
-                    className={styles.input}
-                    value={form.nationality}
-                    maxLength={APPLICATION_FORM_LIMITS.nationality}
-                    onChange={(e) => definir('nationality', e.target.value)}
-                  />
-                </Campo>
+                {/* H7/F4.5: nunca pedidos no caminho v2. */}
+                {!v2 ? (
+                  <>
+                    <Campo
+                      id="ap-nationality"
+                      label="Nacionalidade"
+                      obrigatorio
+                      erro={errosVisiveis.nationality}
+                    >
+                      <input
+                        id="ap-nationality"
+                        className={styles.input}
+                        value={form.nationality}
+                        maxLength={APPLICATION_FORM_LIMITS.nationality}
+                        onChange={(e) => definir('nationality', e.target.value)}
+                      />
+                    </Campo>
 
-                <Campo
-                  id="ap-birthDate"
-                  label="Data de nascimento"
-                  obrigatorio
-                  erro={errosVisiveis.birthDate}
-                >
-                  <input
-                    id="ap-birthDate"
-                    type="date"
-                    className={styles.input}
-                    value={form.birthDate}
-                    onChange={(e) => definir('birthDate', e.target.value)}
-                  />
-                </Campo>
+                    <Campo
+                      id="ap-birthDate"
+                      label="Data de nascimento"
+                      obrigatorio
+                      erro={errosVisiveis.birthDate}
+                    >
+                      <input
+                        id="ap-birthDate"
+                        type="date"
+                        className={styles.input}
+                        value={form.birthDate}
+                        onChange={(e) => definir('birthDate', e.target.value)}
+                      />
+                    </Campo>
+                  </>
+                ) : null}
 
                 <Campo
                   id="ap-workAuthorization"
                   label="Autorização de trabalho"
-                  obrigatorio
+                  obrigatorio={!v2}
                   erro={errosVisiveis.workAuthorization}
                   ajuda="A sua situação legal para trabalhar em São Tomé e Príncipe."
                 >
@@ -426,7 +454,7 @@ export default function ApplicationModal({
                 <fieldset className={styles.fieldset}>
                   <legend className={styles.legend}>
                     Formação académica
-                    <span className={styles.required}> *</span>
+                    {!v2 ? <span className={styles.required}> *</span> : null}
                   </legend>
                   {educacao.map((item, indice) => (
                     <div key={indice} className={styles.repeatRow}>
@@ -511,7 +539,8 @@ export default function ApplicationModal({
 
                 <fieldset className={styles.fieldset}>
                   <legend className={styles.legend}>
-                    Idiomas<span className={styles.required}> *</span>
+                    Idiomas
+                    {!v2 ? <span className={styles.required}> *</span> : null}
                   </legend>
                   {idiomas.map((item, indice) => (
                     <div key={indice} className={styles.repeatRow}>
@@ -599,49 +628,49 @@ export default function ApplicationModal({
                     </p>
                   </div>
                 ) : (
-                <Campo
-                  id="ap-coverLetter"
-                  label="Carta de motivação"
-                  obrigatorio
-                  erro={errosVisiveis.coverLetter}
-                >
-                  <textarea
+                  <Campo
                     id="ap-coverLetter"
-                    className={styles.textarea}
-                    rows={8}
-                    value={form.coverLetter}
-                    maxLength={APPLICATION_FORM_LIMITS.coverLetter}
-                    onChange={(e) => definir('coverLetter', e.target.value)}
-                    placeholder="Explique por que é a pessoa certa para esta vaga."
-                  />
-                  <div className={styles.textareaFooter}>
-                    {onGenerateCoverLetter ? (
-                      <button
-                        type="button"
-                        className={styles.ghostButton}
-                        onClick={onGenerateCoverLetter}
-                        disabled={generatingCoverLetter}
-                      >
-                        {generatingCoverLetter
-                          ? 'A gerar…'
-                          : 'Gerar sugestão'}
-                      </button>
-                    ) : (
-                      <span />
-                    )}
-                    <span className={styles.counter}>
-                      {form.coverLetter.length}/
-                      {APPLICATION_FORM_LIMITS.coverLetter}
-                    </span>
-                  </div>
-                </Campo>
+                    label="Carta de motivação"
+                    obrigatorio={!v2 || Boolean(job?.requireCoverLetter)}
+                    erro={errosVisiveis.coverLetter}
+                  >
+                    <textarea
+                      id="ap-coverLetter"
+                      className={styles.textarea}
+                      rows={8}
+                      value={form.coverLetter}
+                      maxLength={APPLICATION_FORM_LIMITS.coverLetter}
+                      onChange={(e) => definir('coverLetter', e.target.value)}
+                      placeholder="Explique por que é a pessoa certa para esta vaga."
+                    />
+                    <div className={styles.textareaFooter}>
+                      {onGenerateCoverLetter ? (
+                        <button
+                          type="button"
+                          className={styles.ghostButton}
+                          onClick={onGenerateCoverLetter}
+                          disabled={generatingCoverLetter}
+                        >
+                          {generatingCoverLetter
+                            ? 'A gerar…'
+                            : 'Gerar sugestão'}
+                        </button>
+                      ) : (
+                        <span />
+                      )}
+                      <span className={styles.counter}>
+                        {form.coverLetter.length}/
+                        {APPLICATION_FORM_LIMITS.coverLetter}
+                      </span>
+                    </div>
+                  </Campo>
                 )}
 
                 <div className={styles.grid}>
                   <Campo
                     id="ap-experienceYears"
                     label="Anos de experiência"
-                    obrigatorio
+                    obrigatorio={!v2}
                     erro={errosVisiveis.experienceYears}
                   >
                     <select
@@ -664,7 +693,7 @@ export default function ApplicationModal({
                   <Campo
                     id="ap-availability"
                     label="Disponibilidade"
-                    obrigatorio
+                    obrigatorio={!v2}
                     erro={errosVisiveis.availability}
                   >
                     <select
@@ -731,14 +760,15 @@ export default function ApplicationModal({
             {passo === 3 ? (
               <>
                 <p className={styles.sectionHint}>
-                  A primeira referência é obrigatória. A empresa só a contacta
-                  se avançar com a sua candidatura.
+                  {v2
+                    ? 'As referências são opcionais. Indique apenas pessoas que autorizaram ser contactadas; a empresa só as contacta se avançar com a sua candidatura.'
+                    : 'A primeira referência é obrigatória. A empresa só a contacta se avançar com a sua candidatura.'}
                 </p>
                 {referencias.map((item, indice) => (
                   <fieldset key={indice} className={styles.fieldset}>
                     <legend className={styles.legend}>
                       Referência {indice + 1}
-                      {indice === 0 ? (
+                      {indice === 0 && !v2 ? (
                         <span className={styles.required}> *</span>
                       ) : (
                         <span className={styles.optional}> (opcional)</span>
@@ -919,6 +949,13 @@ export default function ApplicationModal({
                     {errosVisiveis.documents ? (
                       <p className={styles.fieldError} role="alert">
                         {errosVisiveis.documents}
+                      </p>
+                    ) : null}
+                    {documentosEmFalta.length ? (
+                      <p className={styles.sectionHint} aria-live="polite">
+                        A empresa pede: {documentosEmFalta.join(', ')}. Pode
+                        candidatar-se na mesma; a empresa verá que estes
+                        documentos não foram enviados.
                       </p>
                     ) : null}
                   </fieldset>

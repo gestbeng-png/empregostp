@@ -300,7 +300,8 @@ export async function getServerSideProps(context) {
       website: canViewContactDetails
         ? normalizeExternalUrl(p.website)
         : '',
-      destaque: Boolean(u.destaque || u.curriculoDestacado),
+      // F2.1/K1: sem selo de destaque pago.
+      destaque: false,
       verified,
       // O CV nunca viaja no payload SSR: ficaria no __NEXT_DATA__ do HTML
       // como URL de leitura permanente. A página pública sinaliza apenas a

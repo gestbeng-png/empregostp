@@ -1,3 +1,5 @@
+import { assertProductionEnv } from './lib/productionEnv.mjs';
+
 /**
  * Cabeçalhos de segurança.
  *
@@ -44,6 +46,12 @@ const CSP_EM_OBSERVACAO = [
   "form-action 'self'",
 ].join('; ');
 
+// Secção 122 do fecho: um build de produção sem as variáveis críticas falha
+// aqui, com a lista do que falta, em vez de publicar uma versão partida.
+if (process.env.VERCEL_ENV === 'production') {
+  assertProductionEnv(process.env);
+}
+
 const nextConfig = {
   distDir: process.env.NEXT_DIST_DIR || '.next',
   async headers() {
@@ -61,7 +69,8 @@ const nextConfig = {
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
+            value:
+              'camera=(), microphone=(), geolocation=(), interest-cohort=()',
           },
         ],
       },

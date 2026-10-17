@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import Head from "next/head";
+import dynamic from "next/dynamic";
 import {
   FiAlertCircle,
   FiArrowLeft,
@@ -16,7 +17,10 @@ import {
   isLikelyUrl,
 } from "../../../lib/interviewClient";
 import { requireCandidateSession } from "../../../lib/serverSession";
+import { candidateStatusLabel } from "../../../domain/applications/candidateView";
 import styles from "../../../styles/CandidaturasPage.module.css";
+
+const CandidateRecruitmentActions = dynamic(() => import("../../../components/empresa/CandidateRecruitmentActions"));
 
 const ALLOWED_FILTERS = [
   "all",
@@ -159,6 +163,9 @@ export default function CandidaturasPage() {
           return {
             ...application,
             status: "withdrawn",
+            ...(typeof application.v2Status === "string"
+              ? { v2Status: "WITHDRAWN" }
+              : {}),
             timeline: timelineEvent
               ? [...(application.timeline || []), timelineEvent]
               : application.timeline,
@@ -450,7 +457,18 @@ function ApplicationDetailCard({ application, onWithdrawn }) {
     }
   };
 
-  const statusInfo = getStatusInfo(application.status);
+  // E4: candidaturas v2 mostram o rótulo do candidato (shortlist = «Em
+  // análise», fecho de vaga = «Processo encerrado»); as cores seguem o legado.
+  const isV2 = typeof application.v2Status === "string";
+  const statusInfo = isV2
+    ? {
+        ...getStatusInfo(application.status),
+        text: candidateStatusLabel(
+          application.v2Status,
+          application.closedReason,
+        ),
+      }
+    : getStatusInfo(application.status);
   const assessment = application.skillsAssessmentResult;
   const premiumBadges = [
     application.priorityApplied
@@ -524,19 +542,75 @@ function ApplicationDetailCard({ application, onWithdrawn }) {
   const [localInterview, setLocalInterview] = useState(
     application.interviewDetails || null,
   );
+  const [v2Timeline, setV2Timeline] = useState(null);
+  const [v2TimelineLoading, setV2TimelineLoading] = useState(false);
+  const [v2TimelineError, setV2TimelineError] = useState("");
+  const [v2TimelineRevision, setV2TimelineRevision] = useState(0);
 
   useEffect(() => {
     setLocalInterview(application.interviewDetails || null);
   }, [application.interviewDetails]);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!isV2 || !application.id) return undefined;
+
+    async function loadV2Timeline() {
+      setV2TimelineLoading(true);
+      setV2TimelineError("");
+      setV2Timeline(null);
+      try {
+        const { getAuth } = await import("firebase/auth");
+        const token = await getAuth().currentUser?.getIdToken();
+        if (!token) throw new Error("Não foi possível validar a sessão.");
+        const response = await fetch(
+          `/api/applications/${encodeURIComponent(application.id)}/timeline`,
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(
+            data?.error?.message ||
+              data?.error ||
+              "Não foi possível carregar o histórico.",
+          );
+        }
+        if (!cancelled) setV2Timeline(data);
+      } catch (error) {
+        if (!cancelled) {
+          setV2TimelineError(
+            error?.message || "Não foi possível carregar o histórico.",
+          );
+        }
+      } finally {
+        if (!cancelled) setV2TimelineLoading(false);
+      }
+    }
+
+    loadV2Timeline();
+    return () => {
+      cancelled = true;
+    };
+  }, [application.id, application.v2Status, isV2, v2TimelineRevision]);
 
   const interviewStatus = String(
     localInterview?.status || "scheduled",
   ).toLowerCase();
   const hasInterview = Boolean(localInterview?.scheduledAt);
   const interviewStatusLabel = getInterviewStatusLabelPt(interviewStatus);
-  const canWithdraw = ["pending", "analysis"].includes(
-    String(application.status || "pending").toLowerCase(),
-  );
+  // F2.6: no v2 qualquer estado não terminal pode ser retirado.
+  const canWithdraw = isV2
+    ? [
+        "SUBMITTED",
+        "UNDER_REVIEW",
+        "SHORTLISTED",
+        "INTERVIEW",
+        "OFFER",
+        "OFFER_DECLINED",
+      ].includes(application.v2Status)
+    : ["pending", "analysis"].includes(
+        String(application.status || "pending").toLowerCase(),
+      );
 
   const handleWithdraw = async () => {
     if (!application.id || !canWithdraw || withdrawLoading) return;
@@ -557,8 +631,14 @@ function ApplicationDetailCard({ application, onWithdrawn }) {
       );
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
+        const message =
+          typeof data?.error?.message === "string"
+            ? data.error.message
+            : typeof data?.error === "string"
+              ? data.error
+              : "";
         throw new Error(
-          data.error || "Não foi possível retirar a candidatura.",
+          message || "Não foi possível retirar a candidatura.",
         );
       }
 
@@ -819,7 +899,7 @@ function ApplicationDetailCard({ application, onWithdrawn }) {
             "--panel-bg": "rgba(59, 130, 246, 0.10)",
           }}
         >
-          <h4 className={styles.sectionTitle}>Teste de habilidades</h4>
+          <h4 className={styles.sectionTitle}>Teste de competências</h4>
           <div className={styles.sectionGrid}>
             <InfoItem label="Pontuação" value={`${assessment.score}%`} />
             <InfoItem
@@ -986,6 +1066,43 @@ function ApplicationDetailCard({ application, onWithdrawn }) {
         </section>
       ) : null}
 
+      {isV2 ? (
+        <section className={styles.timelineSection} aria-live="polite">
+          <h4 className={styles.sectionTitlePlain}>Acompanhamento do processo</h4>
+          {v2TimelineLoading ? (
+            <p className={styles.timelineDescription}>A carregar o histórico…</p>
+          ) : v2TimelineError ? (
+            <p className={styles.errorText} role="alert">{v2TimelineError}</p>
+          ) : v2Timeline?.timeline?.length ? (
+            <>
+              <div className={styles.timelineList}>
+                {v2Timeline.timeline.map((event, index) => (
+                  <div key={`${event.date}-${index}`} className={styles.timelineItem}>
+                    <span className={styles.timelineDot} />
+                    <div className={styles.timelineContent}>
+                      <div className={styles.timelineTitle}>{event.label}</div>
+                      {event.note ? (
+                        <div className={styles.timelineDescription}>{event.note}</div>
+                      ) : null}
+                      <div className={styles.timelineDate}>
+                        {event.date}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {v2Timeline.silenceNotice ? (
+                <p className={styles.timelineDescription}>{v2Timeline.silenceNotice}</p>
+              ) : null}
+            </>
+          ) : (
+            <p className={styles.timelineDescription}>Ainda não existem atualizações para mostrar.</p>
+          )}
+        </section>
+      ) : null}
+
+      {v2Timeline ? <CandidateRecruitmentActions timeline={v2Timeline} onSuccess={() => setV2TimelineRevision((value) => value + 1)} /> : null}
+
       {withdrawOpen && canWithdraw ? (
         <section
           className={styles.withdrawPanel}
@@ -1001,7 +1118,7 @@ function ApplicationDetailCard({ application, onWithdrawn }) {
             </h4>
             <p>
               A empresa deixará de considerar o seu perfil para esta vaga.
-              Esta ação não repõe o limite mensal de candidaturas.
+              Não poderá voltar a candidatar-se a esta vaga depois de a retirar.
             </p>
           </div>
           {withdrawError ? <p role="alert">{withdrawError}</p> : null}

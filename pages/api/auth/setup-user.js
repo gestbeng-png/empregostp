@@ -28,7 +28,9 @@ export default async function handler(req, res) {
 
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Token de autenticação não fornecido' });
+    return res
+      .status(401)
+      .json({ error: 'Token de autenticação não fornecido' });
   }
 
   const token = authHeader.split('Bearer ')[1];
@@ -56,7 +58,8 @@ export default async function handler(req, res) {
     } = req.body;
 
     const normalizedUserType = userType === 'empresa' ? 'empresa' : 'candidato';
-    const basicPlanId = normalizedUserType === 'empresa' ? 'basic_empresa' : 'basic_candidato';
+    const basicPlanId =
+      normalizedUserType === 'empresa' ? 'basic_empresa' : 'basic_candidato';
 
     // Verificar se documento já existe com plano configurado
     const userRef = admin.firestore().collection('users').doc(uid);
@@ -64,12 +67,20 @@ export default async function handler(req, res) {
 
     if (userDoc.exists && userDoc.data().planId) {
       // Documento já existe e tem plano — nada a fazer
-      return res.status(200).json({ message: 'Utilizador já configurado', user: userDoc.data() });
+      return res
+        .status(200)
+        .json({ message: 'Utilizador já configurado', user: userDoc.data() });
     }
 
     // Buscar plano básico do Firestore (fallback para constante se não existir)
-    const basicPlanDoc = await admin.firestore().collection('plans').doc(basicPlanId).get();
-    const basicPlan = basicPlanDoc.exists ? basicPlanDoc.data() : getDefaultBasicPlanForUserType(normalizedUserType);
+    const basicPlanDoc = await admin
+      .firestore()
+      .collection('plans')
+      .doc(basicPlanId)
+      .get();
+    const basicPlan = basicPlanDoc.exists
+      ? basicPlanDoc.data()
+      : getDefaultBasicPlanForUserType(normalizedUserType);
 
     const now = admin.firestore.FieldValue.serverTimestamp();
 
@@ -84,7 +95,7 @@ export default async function handler(req, res) {
       planEndDate: null,
       planFeatures: basicPlan.features || [],
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
     };
 
     if (fullName) userData.fullName = fullName;
@@ -96,9 +107,11 @@ export default async function handler(req, res) {
       userData.destaque = Boolean(basicPlan.destaque);
 
       // Informações adicionais recolhidas no registo da empresa.
-      if (typeof phone === 'string' && phone.trim()) userData.phone = phone.trim();
+      if (typeof phone === 'string' && phone.trim())
+        userData.phone = phone.trim();
       if (typeof nif === 'string' && nif.trim()) userData.nif = nif.trim();
-      if (typeof location === 'string' && location.trim()) userData.location = location.trim();
+      if (typeof location === 'string' && location.trim())
+        userData.location = location.trim();
       if (Array.isArray(industrySectors)) {
         const sectors = industrySectors
           .filter((s) => typeof s === 'string' && s.trim())
@@ -113,7 +126,12 @@ export default async function handler(req, res) {
     // Usar merge: true para não sobrescrever campos existentes
     await userRef.set(userData, { merge: true });
 
-    return res.status(200).json({ message: 'Utilizador configurado com sucesso', planId: basicPlanId });
+    return res
+      .status(200)
+      .json({
+        message: 'Utilizador configurado com sucesso',
+        planId: basicPlanId,
+      });
   } catch (error) {
     logServerError('auth_setup_user.em_setup_user_failed', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });

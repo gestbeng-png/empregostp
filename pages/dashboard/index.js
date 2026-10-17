@@ -1,12 +1,10 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import { doc, getDoc } from 'firebase/firestore';
 import { useAuth } from '../../context/AuthContext';
-import { db } from '../../lib/firebase';
 import RedirectGate from '../../components/auth/RedirectGate';
 import { buildLoginUrl } from '../../lib/loginRedirect';
-import { requireSession } from '../../lib/serverSession';
+import { requireSessionAccount } from '../../lib/serverSession';
 
 export default function Dashboard() {
   const router = useRouter();
@@ -20,12 +18,28 @@ export default function Dashboard() {
       }
 
       try {
-        const userRef = doc(db, 'users', user.uid);
-        const userSnap = await getDoc(userRef);
-
-        if (userSnap.exists()) {
-          const userData = userSnap.data();
-          const userType = userData.userType;
+        // O perfil é lido pela API autenticada. Além de centralizar a
+        // autorização, evita misturar instâncias/SDKs Firestore client-side
+        // nesta rota de redirecionamento.
+        // A rota exige o token no cabeçalho; sem ele respondia 401 e todas
+        // as contas acabavam na página inicial.
+        const token = await user.getIdToken();
+        const response = await fetch(
+          `/api/profile?uid=${encodeURIComponent(user.uid)}`,
+          {
+            cache: 'no-store',
+            headers: {
+              Accept: 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+        const payload = await response.json().catch(() => null);
+        if (
+          (response.ok || response.status === 304) &&
+          payload?.profile?.data
+        ) {
+          const userType = payload.profile.data.userType;
 
           if (userType === 'empresa') {
             router.replace('/dashboard/empresa');
@@ -38,7 +52,7 @@ export default function Dashboard() {
             router.replace('/');
           }
         } else {
-          console.error('Utilizador não encontrado no Firestore');
+          console.error('Utilizador não encontrado no perfil autenticado');
           router.replace('/');
         }
       } catch (error) {
@@ -68,8 +82,18 @@ export default function Dashboard() {
 // Alinha esta rota com os dashboards de empresa e admin, que já bloqueavam no
 // servidor: sem sessão, o utilizador deixa de ver a shell antes de ser
 // redirecionado, e o destino pretendido é preservado.
+// Com sessão válida, o encaminhamento acontece já no servidor (o tipo de conta
+// é lido na mesma leitura do guard); o efeito acima fica como reserva.
 export async function getServerSideProps(context) {
-  const guard = await requireSession(context);
-  if (guard) return guard;
+  const session = await requireSessionAccount(context);
+  if (session.redirect) return session;
+  if (session.accountType) {
+    return {
+      redirect: {
+        destination: `/dashboard/${session.accountType}`,
+        permanent: false,
+      },
+    };
+  }
   return { props: {} };
 }

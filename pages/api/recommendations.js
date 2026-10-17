@@ -1,3 +1,4 @@
+import { projectPublicJob } from '../../lib/publicJob';
 import { admin } from '../../lib/firebaseAdmin';
 import { getPlanSummary } from '../../lib/candidatePlanFeatures';
 import { buildCandidateSignals } from '../../lib/candidateProfileInsights';
@@ -29,29 +30,39 @@ export default async function handler(req, res) {
 
     const [profileDoc, applicationsSnap, jobsSnap] = await Promise.all([
       admin.firestore().collection('profiles').doc(uid).get(),
-      admin.firestore().collection('applications').where('candidateId', '==', uid).get(),
-      admin.firestore().collection('jobs').where('status', '==', 'active').get()
+      admin
+        .firestore()
+        .collection('applications')
+        .where('candidateId', '==', uid)
+        .get(),
+      admin
+        .firestore()
+        .collection('jobs')
+        .where('status', '==', 'active')
+        .get(),
     ]);
 
     if (userData.userType !== 'candidato') {
-      return res.status(403).json({ error: 'Apenas candidatos podem aceder a recomendacoes' });
+      return res
+        .status(403)
+        .json({ error: 'Apenas candidatos podem aceder a recomendacoes' });
     }
 
     const planSummary = getPlanSummary(userData);
     if (!planSummary.features?.canReceiveRecommendations) {
       return res.status(403).json({
-        error: 'Recomendacoes personalizadas estao disponiveis apenas nos planos Profissional e Premium.',
+        error:
+          'Recomendacoes personalizadas estao disponiveis apenas nos planos Profissional e Premium.',
         code: 'FEATURE_PRO_ONLY',
-        upgradeMessage: 'Faça upgrade para desbloquear recomendações personalizadas.',
-        upgradeUrl: '/premium/candidatos'
+        upgradeMessage:
+          'Faça upgrade para desbloquear recomendações personalizadas.',
+        upgradeUrl: '/premium/candidatos',
       });
     }
 
     const profileData = profileDoc.exists ? profileDoc.data() : {};
     const appliedJobIds = new Set(
-      applicationsSnap.docs
-        .map((doc) => doc.data()?.jobId)
-        .filter(Boolean)
+      applicationsSnap.docs.map((doc) => doc.data()?.jobId).filter(Boolean),
     );
 
     const candidateSignals = buildCandidateSignals(userData, profileData);
@@ -63,7 +74,7 @@ export default async function handler(req, res) {
           id: doc.id,
           ...data,
           createdAt: serializeTimestamp(data.createdAt),
-          updatedAt: serializeTimestamp(data.updatedAt)
+          updatedAt: serializeTimestamp(data.updatedAt),
         };
       })
       .filter((job) => !appliedJobIds.has(job.id));
@@ -76,26 +87,43 @@ export default async function handler(req, res) {
 
     const recommendations = jobs
       .map((job) => {
-        const { matchPercent, reasons, visibility, matchLabel, missingSkills, cvOptimizationTips } = analyzeCandidateJobFit(job, userData, profileData);
+        const {
+          matchPercent,
+          reasons,
+          visibility,
+          matchLabel,
+          missingSkills,
+          cvOptimizationTips,
+        } = analyzeCandidateJobFit(job, userData, profileData);
         const fallbackScore = hasEnoughSignals ? matchPercent : 18;
-        const normalizedReasons = hasEnoughSignals ? reasons : ['Vaga ativa recente para explorar novas oportunidades'];
+        const normalizedReasons = hasEnoughSignals
+          ? reasons
+          : ['Vaga ativa recente para explorar novas oportunidades'];
 
         return {
-          ...job,
+          // A análise usa o documento completo; a resposta só leva a allowlist.
+          ...projectPublicJob(job),
           score: fallbackScore,
           matchPercent: fallbackScore,
-          matchLabel: hasEnoughSignals ? matchLabel : 'Compatibilidade exploratoria',
+          matchLabel: hasEnoughSignals
+            ? matchLabel
+            : 'Compatibilidade exploratoria',
           reasons: normalizedReasons.slice(0, 3),
           missingSkills: hasEnoughSignals ? missingSkills.slice(0, 3) : [],
-          cvOptimizationTips: hasEnoughSignals ? cvOptimizationTips.slice(0, 2) : [],
+          cvOptimizationTips: hasEnoughSignals
+            ? cvOptimizationTips.slice(0, 2)
+            : [],
           candidatePriority: visibility.priorityInSearch,
-          candidateProfileComplete: visibility.isProfileComplete
+          candidateProfileComplete: visibility.isProfileComplete,
         };
       })
       .filter((job) => job.score > 0)
       .sort((a, b) => {
         if (b.score !== a.score) return b.score - a.score;
-        return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+        return (
+          new Date(b.createdAt || 0).getTime() -
+          new Date(a.createdAt || 0).getTime()
+        );
       })
       .slice(0, 6);
 

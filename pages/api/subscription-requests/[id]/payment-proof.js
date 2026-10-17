@@ -3,63 +3,83 @@ import { randomUUID } from 'crypto';
 import { serializeFirestoreValue } from '../../../../lib/empresaPlansCatalog';
 import {
   getFirebaseStorageErrorMessage,
-  isFirebaseStorageBillingDisabledError
+  isFirebaseStorageBillingDisabledError,
 } from '../../../../lib/firebaseStorageError';
 import {
   createPaymentProofFileName,
-  parsePaymentProofDataUrl
+  hashPaymentProof,
+  parsePaymentProofDataUrl,
 } from '../../../../lib/paymentProofFile';
 import { logServerError, logServerWarning } from '../../../../lib/serverLog';
 import { sendPushToUser } from '../../../../lib/serverNotifications';
-import { assertPaymentProofUploadEligible } from '../../../../lib/subscriptionLifecycle';
+import {
+  assertPaymentProofHashAvailable,
+  assertPaymentProofUploadEligible,
+} from '../../../../lib/subscriptionLifecycle';
 
 const PAYMENT_PROOF_VALIDATION_MESSAGES = new Set([
   'Formato do comprovativo inválido',
   'Formato não suportado. Envie PDF, JPG ou PNG.',
   'Ficheiro inválido',
   'O tipo do comprovativo não corresponde ao ficheiro.',
-  'O comprovativo deve ter no máximo 10MB.'
+  'O comprovativo deve ter no máximo 10MB.',
 ]);
 const PAYMENT_PROOF_DOMAIN_ERRORS = Object.freeze({
   PAYMENT_PROOF_NOT_REQUIRED: {
     error: 'Este pedido não requer comprovativo',
-    status: 400
+    status: 400,
   },
   REQUEST_FORBIDDEN: { error: 'Acesso não autorizado', status: 403 },
   REQUEST_NOT_FOUND: { error: 'Pedido não encontrado', status: 404 },
   REQUEST_NOT_UPLOAD_ELIGIBLE: {
     error: 'Este pedido já foi processado',
-    status: 409
-  }
+    status: 409,
+  },
+  PAYMENT_PROOF_DUPLICATE: {
+    error:
+      'Este comprovativo já foi enviado noutro pedido. Envie o comprovativo da transferência deste pedido.',
+    status: 409,
+  },
 });
 const PUBLIC_STORAGE_ERROR_CODES = new Set([
   'storage/canceled',
   'storage/quota-exceeded',
   'storage/unauthenticated',
-  'storage/unauthorized'
+  'storage/unauthorized',
 ]);
 
 const resolveBucketCandidates = () => {
   const appOptionsBucket = admin.app()?.options?.storageBucket || '';
-  const envBucket = process.env.FIREBASE_STORAGE_BUCKET || process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || '';
-  const projectId = process.env.FIREBASE_PROJECT_ID || admin.app()?.options?.projectId || '';
+  const envBucket =
+    process.env.FIREBASE_STORAGE_BUCKET ||
+    process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET ||
+    '';
+  const projectId =
+    process.env.FIREBASE_PROJECT_ID || admin.app()?.options?.projectId || '';
 
   const candidates = [
     String(appOptionsBucket || '').trim(),
     String(envBucket || '').trim(),
     projectId ? `${projectId}.firebasestorage.app` : '',
-    projectId ? `${projectId}.appspot.com` : ''
+    projectId ? `${projectId}.appspot.com` : '',
   ].filter(Boolean);
 
   return [...new Set(candidates)];
 };
 
-async function uploadProofServerSide({ uid, requestId, proofName, fileBase64, contentType }) {
+async function uploadProofServerSide({
+  uid,
+  requestId,
+  proofName,
+  fileBase64,
+  contentType,
+}) {
   const {
     buffer,
     contentType: finalContentType,
-    extension
+    extension,
   } = parsePaymentProofDataUrl({ fileBase64, contentType });
+  const sha256 = hashPaymentProof(buffer);
   const fileName = createPaymentProofFileName(proofName, extension);
   const storagePath = `payment-proofs/${uid}/${requestId}-${Date.now()}-${fileName}`;
 
@@ -82,7 +102,10 @@ async function uploadProofServerSide({ uid, requestId, proofName, fileBase64, co
   }
 
   if (!bucket || !file) {
-    throw lastBucketError || new Error('Não foi possível inicializar o bucket de storage');
+    throw (
+      lastBucketError ||
+      new Error('Não foi possível inicializar o bucket de storage')
+    );
   }
 
   const downloadToken = randomUUID();
@@ -97,13 +120,18 @@ async function uploadProofServerSide({ uid, requestId, proofName, fileBase64, co
         metadata: {
           firebaseStorageDownloadTokens: downloadToken,
           ownerUid: uid,
-          requestId
-        }
-      }
+          requestId,
+        },
+      },
     });
   } catch (error) {
     // Retry once with alternate bucket naming when the primary candidate is invalid.
-    if (bucketCandidates.length > 1 && String(error?.message || '').toLowerCase().includes('bucket')) {
+    if (
+      bucketCandidates.length > 1 &&
+      String(error?.message || '')
+        .toLowerCase()
+        .includes('bucket')
+    ) {
       let retried = false;
       for (const bucketName of bucketCandidates.slice(1)) {
         try {
@@ -118,9 +146,9 @@ async function uploadProofServerSide({ uid, requestId, proofName, fileBase64, co
               metadata: {
                 firebaseStorageDownloadTokens: downloadToken,
                 ownerUid: uid,
-                requestId
-              }
-            }
+                requestId,
+              },
+            },
           });
           bucket = fallbackBucket;
           file = fallbackFile;
@@ -145,8 +173,9 @@ async function uploadProofServerSide({ uid, requestId, proofName, fileBase64, co
     proofName: fileName,
     contentType: finalContentType,
     size: buffer.length,
+    sha256,
     storagePath,
-    bucketName: bucket.name
+    bucketName: bucket.name,
   };
 }
 
@@ -183,11 +212,14 @@ export default async function handler(req, res) {
     const { proofName, fileBase64, note = '', contentType = '' } = body;
     if (Object.prototype.hasOwnProperty.call(body, 'proofUrl')) {
       return res.status(400).json({
-        error: 'Envie o comprovativo como ficheiro'
+        error: 'Envie o comprovativo como ficheiro',
       });
     }
 
-    const requestRef = admin.firestore().collection('subscription-requests').doc(id);
+    const requestRef = admin
+      .firestore()
+      .collection('subscription-requests')
+      .doc(id);
     const requestDoc = await requestRef.get();
     if (!requestDoc.exists) {
       return res.status(404).json({ error: 'Pedido não encontrado' });
@@ -215,7 +247,7 @@ export default async function handler(req, res) {
       requestId: id,
       proofName,
       fileBase64,
-      contentType
+      contentType,
     });
 
     const now = admin.firestore.Timestamp.now();
@@ -225,8 +257,9 @@ export default async function handler(req, res) {
       note,
       contentType: uploadedProof.contentType,
       size: uploadedProof.size,
+      sha256: uploadedProof.sha256,
       submittedAt: now,
-      submittedBy: decodedToken.uid
+      submittedBy: decodedToken.uid,
     };
 
     try {
@@ -238,11 +271,34 @@ export default async function handler(req, res) {
 
         assertPaymentProofUploadEligible(freshRequest, decodedToken.uid);
 
+        const hashRef = admin
+          .firestore()
+          .collection('paymentProofHashes')
+          .doc(uploadedProof.sha256);
+        const hashDoc = await transaction.get(hashRef);
+        const hashRecord = hashDoc.exists ? hashDoc.data() : null;
+        let linkedRequest = null;
+        if (hashRecord?.requestId && hashRecord.requestId !== id) {
+          const linkedDoc = await transaction.get(
+            admin
+              .firestore()
+              .collection('subscription-requests')
+              .doc(hashRecord.requestId),
+          );
+          linkedRequest = linkedDoc.exists ? linkedDoc.data() : null;
+        }
+        assertPaymentProofHashAvailable(hashRecord, linkedRequest, id);
+
+        transaction.set(hashRef, {
+          requestId: id,
+          userId: decodedToken.uid,
+          claimedAt: now,
+        });
         transaction.update(requestRef, {
           paymentProof,
           paymentStatus: 'proof_submitted',
           status: 'payment_submitted',
-          updatedAt: now
+          updatedAt: now,
         });
       });
     } catch (transactionError) {
@@ -250,7 +306,8 @@ export default async function handler(req, res) {
         'REQUEST_NOT_FOUND',
         'REQUEST_FORBIDDEN',
         'REQUEST_NOT_UPLOAD_ELIGIBLE',
-        'PAYMENT_PROOF_NOT_REQUIRED'
+        'PAYMENT_PROOF_NOT_REQUIRED',
+        'PAYMENT_PROOF_DUPLICATE',
       ].includes(transactionError?.code);
 
       if (isKnownPreWriteRejection) {
@@ -259,11 +316,18 @@ export default async function handler(req, res) {
       throw transactionError;
     }
 
-    const adminSnapshot = await admin.firestore().collection('users').where('userType', '==', 'admin').get();
+    const adminSnapshot = await admin
+      .firestore()
+      .collection('users')
+      .where('userType', '==', 'admin')
+      .get();
     const batch = admin.firestore().batch();
 
     adminSnapshot.docs.forEach((doc) => {
-      const notificationRef = admin.firestore().collection('notifications').doc();
+      const notificationRef = admin
+        .firestore()
+        .collection('notifications')
+        .doc();
       batch.set(notificationRef, {
         userId: doc.id,
         type: 'SUBSCRIPTION_PAYMENT_PROOF',
@@ -273,41 +337,51 @@ export default async function handler(req, res) {
         relatedId: id,
         relatedType: 'subscription_request',
         createdAt: now,
-        actionUrl: '/dashboard/admin/subscription-requests'
+        actionUrl: '/dashboard/admin/subscription-requests',
       });
     });
 
-    const userNotificationRef = admin.firestore().collection('notifications').doc();
+    const userNotificationRef = admin
+      .firestore()
+      .collection('notifications')
+      .doc();
     batch.set(userNotificationRef, {
       userId: decodedToken.uid,
       type: 'SUBSCRIPTION_PAYMENT_PROOF_RECEIVED',
       title: 'Comprovativo enviado',
-      message: 'Recebemos o seu comprovativo de pagamento. O administrador fará a validação em breve.',
+      message:
+        'Recebemos o seu comprovativo de pagamento. O administrador fará a validação em breve.',
       read: false,
       relatedId: id,
       relatedType: 'subscription_request',
-      createdAt: now
+      createdAt: now,
     });
 
     await batch.commit();
 
     await Promise.all([
-      ...adminSnapshot.docs.map((doc) => sendPushToUser(admin, doc.id, {
-        title: 'Comprovativo recebido',
-        message: `${requestData.userName || requestData.userEmail || 'Um utilizador'} enviou o comprovativo do plano ${requestData.planName || requestData.planId}.`,
-        type: 'SUBSCRIPTION_PAYMENT_PROOF',
-        relatedId: id,
-        relatedType: 'subscription_request',
-        actionUrl: '/dashboard/admin/subscription-requests'
-      })),
+      ...adminSnapshot.docs.map((doc) =>
+        sendPushToUser(admin, doc.id, {
+          title: 'Comprovativo recebido',
+          message: `${requestData.userName || requestData.userEmail || 'Um utilizador'} enviou o comprovativo do plano ${requestData.planName || requestData.planId}.`,
+          type: 'SUBSCRIPTION_PAYMENT_PROOF',
+          relatedId: id,
+          relatedType: 'subscription_request',
+          actionUrl: '/dashboard/admin/subscription-requests',
+        }),
+      ),
       sendPushToUser(admin, decodedToken.uid, {
         title: 'Comprovativo enviado',
-        message: 'Recebemos o seu comprovativo de pagamento. O administrador fará a validação em breve.',
+        message:
+          'Recebemos o seu comprovativo de pagamento. O administrador fará a validação em breve.',
         type: 'SUBSCRIPTION_PAYMENT_PROOF_RECEIVED',
         relatedId: id,
         relatedType: 'subscription_request',
-        actionUrl: requestData.planType === 'empresa' ? '/dashboard/empresa?tab=plans' : '/dashboard/candidato?tab=plans'
-      })
+        actionUrl:
+          requestData.planType === 'empresa'
+            ? '/dashboard/empresa?tab=plans'
+            : '/dashboard/candidato?tab=plans',
+      }),
     ]);
 
     const updatedDoc = await requestRef.get();
@@ -315,8 +389,8 @@ export default async function handler(req, res) {
       message: 'Comprovativo enviado com sucesso',
       request: {
         id: updatedDoc.id,
-        ...serializeFirestoreValue(updatedDoc.data())
-      }
+        ...serializeFirestoreValue(updatedDoc.data()),
+      },
     });
   } catch (error) {
     const domainError = PAYMENT_PROOF_DOMAIN_ERRORS[error?.code];
@@ -329,18 +403,18 @@ export default async function handler(req, res) {
     if (isFirebaseStorageBillingDisabledError(error)) {
       logServerWarning('payment_proof.storage_unavailable', error);
       return res.status(503).json({
-        error: getFirebaseStorageErrorMessage(error)
+        error: getFirebaseStorageErrorMessage(error),
       });
     }
     if (PUBLIC_STORAGE_ERROR_CODES.has(error?.code)) {
       logServerWarning('payment_proof.storage_failed', error);
       return res.status(500).json({
-        error: getFirebaseStorageErrorMessage(error)
+        error: getFirebaseStorageErrorMessage(error),
       });
     }
     logServerError('payment_proof.request_failed', error);
     return res.status(500).json({
-      error: 'Erro interno do servidor'
+      error: 'Erro interno do servidor',
     });
   }
 }
@@ -348,7 +422,7 @@ export default async function handler(req, res) {
 export const config = {
   api: {
     bodyParser: {
-      sizeLimit: '20mb'
-    }
-  }
+      sizeLimit: '20mb',
+    },
+  },
 };

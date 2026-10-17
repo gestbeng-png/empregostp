@@ -29,9 +29,10 @@ export default async function handler(req, res) {
     if (!authResult) return;
     const { uid: viewerUid, userData: viewerData } = authResult;
 
-    const candidateId = typeof req.body?.candidateId === 'string'
-      ? req.body.candidateId.trim()
-      : '';
+    const candidateId =
+      typeof req.body?.candidateId === 'string'
+        ? req.body.candidateId.trim()
+        : '';
     if (!candidateId) {
       return res.status(400).json({ error: 'Candidato não indicado.' });
     }
@@ -66,9 +67,10 @@ export default async function handler(req, res) {
 
     if (!decision.allowed) {
       return res.status(403).json({
-        error: decision.reason === 'plan_required'
-          ? 'O seu plano atual não permite abrir o CV dos candidatos.'
-          : 'Não tem permissão para aceder a este CV.',
+        error:
+          decision.reason === 'plan_required'
+            ? 'O seu plano atual não permite abrir o CV dos candidatos.'
+            : 'Não tem permissão para aceder a este CV.',
         code: decision.reason,
       });
     }
@@ -89,12 +91,16 @@ export default async function handler(req, res) {
     });
 
     if (!objectPath) {
-      return res.status(404).json({ error: 'Este candidato não tem CV disponível.' });
+      return res
+        .status(404)
+        .json({ error: 'Este candidato não tem CV disponível.' });
     }
 
     const file = await findExistingStorageFile(objectPath);
     if (!file) {
-      return res.status(404).json({ error: 'Este candidato não tem CV disponível.' });
+      return res
+        .status(404)
+        .json({ error: 'Este candidato não tem CV disponível.' });
     }
 
     const expiresAt = Date.now() + SIGNED_URL_TTL_MS;

@@ -1,7 +1,11 @@
 import { admin } from '../../../lib/firebaseAdmin';
 import { getDefaultBasicPlanForUserType } from '../../../lib/defaultPlans';
 import { enforceApiRateLimit } from '../../../lib/apiRateLimit';
-import { isValidEmail, isStrongPassword, normalizeEmail } from '../../../lib/validation';
+import {
+  isValidEmail,
+  isStrongPassword,
+  normalizeEmail,
+} from '../../../lib/validation';
 import { logServerError } from '../../../lib/serverLog';
 
 const ALLOWED_USER_TYPES = new Set(['candidato', 'empresa']);
@@ -65,7 +69,8 @@ export default async function handler(req, res) {
     }
     if (!isStrongPassword(password)) {
       return res.status(400).json({
-        error: 'A senha deve ter no mínimo 8 caracteres, com maiúscula, minúscula, número e caractere especial.',
+        error:
+          'A senha deve ter no mínimo 8 caracteres, com maiúscula, minúscula, número e caractere especial.',
       });
     }
     if (!ALLOWED_USER_TYPES.has(userType)) {
@@ -78,15 +83,22 @@ export default async function handler(req, res) {
     const userRecord = await admin.auth().createUser({
       email,
       password,
-      emailVerified: false
+      emailVerified: false,
     });
 
     const normalizedUserType = userType;
-    const basicPlanId = normalizedUserType === 'empresa' ? 'basic_empresa' : 'basic_candidato';
+    const basicPlanId =
+      normalizedUserType === 'empresa' ? 'basic_empresa' : 'basic_candidato';
 
     // Buscar plano básico compatível com o tipo de usuário
-    const basicPlanDoc = await admin.firestore().collection('plans').doc(basicPlanId).get();
-    const basicPlan = basicPlanDoc.exists ? basicPlanDoc.data() : getDefaultBasicPlanForUserType(normalizedUserType);
+    const basicPlanDoc = await admin
+      .firestore()
+      .collection('plans')
+      .doc(basicPlanId)
+      .get();
+    const basicPlan = basicPlanDoc.exists
+      ? basicPlanDoc.data()
+      : getDefaultBasicPlanForUserType(normalizedUserType);
 
     // Criar documento do usuário com plano básico
     const userPayload = {
@@ -99,7 +111,7 @@ export default async function handler(req, res) {
       planId: basicPlanId,
       planName: basicPlan.name || 'Básico',
       planEndDate: null,
-      planFeatures: basicPlan.features
+      planFeatures: basicPlan.features,
     };
 
     if (normalizedUserType === 'empresa') {
@@ -110,33 +122,41 @@ export default async function handler(req, res) {
       userPayload.destaque = Boolean(basicPlan.curriculoDestacado);
     }
 
-    await admin.firestore().collection('users').doc(userRecord.uid).set(userPayload);
+    await admin
+      .firestore()
+      .collection('users')
+      .doc(userRecord.uid)
+      .set(userPayload);
 
     // Criar assinatura básica
-    await admin.firestore().collection('subscriptions').doc(userRecord.uid).set({
-      planId: basicPlanId,
-      planName: basicPlan.name || 'Básico',
-      userId: userRecord.uid,
-      startDate: admin.firestore.FieldValue.serverTimestamp(),
-      endDate: null,
-      status: 'active',
-      features: basicPlan.features,
-      ...(normalizedUserType === 'empresa'
-        ? {
-            vagasLimit: basicPlan.vagasLimit ?? 1,
-            destaque: Boolean(basicPlan.destaque)
-          }
-        : {
-            curriculoDestacado: Boolean(basicPlan.curriculoDestacado)
-          })
-    });
+    await admin
+      .firestore()
+      .collection('subscriptions')
+      .doc(userRecord.uid)
+      .set({
+        planId: basicPlanId,
+        planName: basicPlan.name || 'Básico',
+        userId: userRecord.uid,
+        startDate: admin.firestore.FieldValue.serverTimestamp(),
+        endDate: null,
+        status: 'active',
+        features: basicPlan.features,
+        ...(normalizedUserType === 'empresa'
+          ? {
+              vagasLimit: basicPlan.vagasLimit ?? 1,
+              destaque: Boolean(basicPlan.destaque),
+            }
+          : {
+              curriculoDestacado: Boolean(basicPlan.curriculoDestacado),
+            }),
+      });
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       message: 'Usuário registrado com sucesso',
-      uid: userRecord.uid 
+      uid: userRecord.uid,
     });
   } catch (error) {
     logServerError('auth_register.registrar_usuario_failed', error);
     return res.status(500).json({ error: 'Erro ao registrar usuário' });
   }
-} 
+}

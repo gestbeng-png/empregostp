@@ -1,4 +1,5 @@
 import Head from 'next/head';
+import Image from 'next/image';
 import Link from 'next/link';
 import {
   FiArrowRight,
@@ -8,7 +9,6 @@ import {
   FiFileText,
   FiGlobe,
   FiMessageCircle,
-  FiMapPin,
   FiShield,
   FiTarget,
   FiUsers,
@@ -23,6 +23,30 @@ import styles from '../../styles/CandidatosStitchPage.module.css';
 const CANDIDATE_MARKETING_PLANS = getCandidateMarketingPlans({
   includeVerification: false,
 });
+
+// Derivados WebP (50–100 KB) de `public/assets/imagens/Fotos para usar no
+// site`, cujos originais têm 8–15 MB. São fotografias diferentes das da home
+// para as duas páginas não repetirem a mesma imagem.
+const CANDIDATE_PHOTOS = {
+  national: {
+    main: '/assets/candidatos/hero-nacional.webp',
+    mainAlt: 'Profissional de fato claro, de braços cruzados, num escritório',
+    mainPosition: '50% 22%',
+    detail: '/assets/candidatos/perfil-carreira.webp',
+    detailAlt: 'Candidata ao computador, a olhar para a câmara',
+    detailPosition: '55% 30%',
+  },
+  international: {
+    main: '/assets/candidatos/hero-internacional.webp',
+    mainAlt:
+      'Profissional ao ar livre em São Tomé, a trabalhar num portátil junto a uma esplanada',
+    mainPosition: '45% 30%',
+    detail: '/assets/candidatos/documentos.webp',
+    detailAlt: 'Profissional a organizar documentos num caderno',
+    detailPosition: '50% 45%',
+  },
+  cta: '/assets/candidatos/equipa-cta.webp',
+};
 
 const NATIONAL_OFFERS = [
   {
@@ -235,7 +259,7 @@ const MARKET_CONFIGS = {
   international: {
     pageClass: 'internationalPage',
     eyebrow: 'Talento internacional para STP',
-    titleLead: 'Encontre o seu próximo emprego em',
+    titleLead: 'Descubra novas oportunidades em',
     titleAccent: 'São Tomé e Príncipe.',
     titleTail: '',
     subtitle:
@@ -349,6 +373,9 @@ export default function CandidateMarketPage({
 }) {
   const config = MARKET_CONFIGS[market] || MARKET_CONFIGS.national;
   const isNational = market === 'national';
+  const photos = isNational
+    ? CANDIDATE_PHOTOS.national
+    : CANDIDATE_PHOTOS.international;
 
   return (
     <>
@@ -368,33 +395,34 @@ export default function CandidateMarketPage({
 
       <PublicPageShell headerVariant="light">
         <div className={`${styles.page} ${styles[config.pageClass]}`}>
-          <div className={styles.marketSwitchBar}>
-            <nav
-              className={styles.marketSwitch}
-              aria-label="Catálogos de candidatos"
-            >
-              <Link
-                href="/candidatos/nacional"
-                className={`${styles.marketSwitchLink} ${isNational ? styles.marketSwitchLinkActive : ''}`}
-                aria-current={isNational ? 'page' : undefined}
-              >
-                Talento Nacional
-              </Link>
-              <Link
-                href="/candidatos/internacional"
-                className={`${styles.marketSwitchLink} ${!isNational ? styles.marketSwitchLinkActive : ''}`}
-                aria-current={!isNational ? 'page' : undefined}
-              >
-                Talento Internacional
-              </Link>
-            </nav>
-          </div>
-
           <section className={styles.hero}>
             <div className={styles.container}>
+              {/* O eyebrow e o seletor de mercado partilham a mesma linha;
+                  o seletor fica por cima da foto. */}
+              <div className={styles.heroTopRow}>
+                <span className={styles.heroEyebrow}>{config.eyebrow}</span>
+                <nav
+                  className={styles.marketSwitch}
+                  aria-label="Catálogos de candidatos"
+                >
+                  <Link
+                    href="/candidatos/nacional"
+                    className={`${styles.marketSwitchLink} ${isNational ? styles.marketSwitchLinkActive : ''}`}
+                    aria-current={isNational ? 'page' : undefined}
+                  >
+                    Talento nacional
+                  </Link>
+                  <Link
+                    href="/candidatos/internacional"
+                    className={`${styles.marketSwitchLink} ${!isNational ? styles.marketSwitchLinkActive : ''}`}
+                    aria-current={!isNational ? 'page' : undefined}
+                  >
+                    Talento internacional
+                  </Link>
+                </nav>
+              </div>
               <div className={styles.heroGrid}>
                 <div className={styles.heroCopy}>
-                  <span className={styles.heroEyebrow}>{config.eyebrow}</span>
                   <h1 className={styles.heroTitle}>
                     {config.titleLead} <span>{config.titleAccent}</span>{' '}
                     {config.titleTail}
@@ -425,38 +453,35 @@ export default function CandidateMarketPage({
                   </div>
                 </div>
 
-                <div className={styles.marketVisual} aria-hidden="true">
-                  <span className={`${styles.orbit} ${styles.orbitOuter}`} />
-                  <span className={`${styles.orbit} ${styles.orbitMiddle}`} />
-                  <span className={`${styles.orbit} ${styles.orbitInner}`} />
-                  <span
-                    className={`${styles.visualNode} ${styles.visualNodeOne}`}
-                  >
-                    CV
-                  </span>
-                  <span
-                    className={`${styles.visualNode} ${styles.visualNodeTwo}`}
-                  >
-                    RH
-                  </span>
-                  <span
-                    className={`${styles.visualNode} ${styles.visualNodeThree}`}
-                  >
-                    {isNational ? 'ST' : 'EU'}
-                  </span>
-                  <span
-                    className={`${styles.visualNode} ${styles.visualNodeFour}`}
-                  >
-                    {isNational ? 'PR' : 'AF'}
-                  </span>
-                  <div className={styles.visualCenter}>
-                    {isNational ? <FiMapPin /> : <FiGlobe />}
-                    <strong>{config.visualCode}</strong>
-                    <span>{config.visualLabel}</span>
+                <div className={styles.marketVisual}>
+                  <div className={styles.marketVisualMain}>
+                    <Image
+                      src={photos.main}
+                      alt={photos.mainAlt}
+                      fill
+                      priority
+                      sizes="(max-width: 767px) 92vw, (max-width: 1023px) 50vw, 600px"
+                      className={styles.marketVisualImage}
+                      style={{ objectPosition: photos.mainPosition }}
+                    />
+                    <div className={styles.marketVisualCaption}>
+                      <span>{config.visualLabel}</span>
+                      <strong>
+                        {isNational
+                          ? 'Talento local'
+                          : 'Experiência sem fronteiras'}
+                      </strong>
+                    </div>
                   </div>
-                  <div className={styles.visualLegend}>
-                    <span className={styles.legendPulse} />
-                    Rede profissional ativa
+                  <div className={styles.marketVisualDetail}>
+                    <Image
+                      src={photos.detail}
+                      alt={photos.detailAlt}
+                      fill
+                      sizes="(max-width: 767px) 34vw, 200px"
+                      className={styles.marketVisualImage}
+                      style={{ objectPosition: photos.detailPosition }}
+                    />
                   </div>
                 </div>
               </div>
@@ -533,8 +558,13 @@ export default function CandidateMarketPage({
                       quem contrata.
                     </p>
                   </div>
-                  <Link href="/candidatos" className={styles.talentLink}>
-                    Ver todos os perfis
+                  {/* Esta página já é /candidatos: o atalho útil aqui é
+                      verificar o próprio perfil. */}
+                  <Link
+                    href="/dashboard/candidato?tab=verification"
+                    className={styles.talentLink}
+                  >
+                    Verificar o meu perfil
                     <FiArrowRight aria-hidden="true" />
                   </Link>
                 </div>
@@ -550,15 +580,34 @@ export default function CandidateMarketPage({
           <section className={styles.ctaSection}>
             <div className={styles.container}>
               <div className={styles.ctaPanel}>
-                <div>
+                <div className={styles.ctaCopy}>
                   <span className={styles.ctaEyebrow}>{config.ctaEyebrow}</span>
                   <h2>{config.ctaTitle}</h2>
                   <p>{config.ctaText}</p>
+                  <div className={styles.ctaActions}>
+                    <Link href={config.ctaHref} className={styles.ctaButton}>
+                      {config.ctaLabel}
+                      <FiArrowRight aria-hidden="true" />
+                    </Link>
+                    <Link
+                      href="/verificados"
+                      className={`${styles.ctaButton} ${styles.verifiedButton}`}
+                    >
+                      Perfís verificados
+                      <FiArrowRight aria-hidden="true" />
+                    </Link>
+                  </div>
                 </div>
-                <Link href={config.ctaHref} className={styles.ctaButton}>
-                  {config.ctaLabel}
-                  <FiArrowRight aria-hidden="true" />
-                </Link>
+                <div className={styles.ctaMedia}>
+                  <Image
+                    src={CANDIDATE_PHOTOS.cta}
+                    alt="Dois profissionais sorridentes, lado a lado, de braços cruzados"
+                    fill
+                    sizes="(max-width: 767px) 92vw, 420px"
+                    className={styles.marketVisualImage}
+                    style={{ objectPosition: '50% 16%' }}
+                  />
+                </div>
               </div>
             </div>
           </section>

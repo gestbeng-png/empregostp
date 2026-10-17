@@ -166,13 +166,21 @@ export default function VerifiedCandidatesCarousel({
     return (
       <div className={styles.candidatesEmpty} role="status">
         <span className={styles.candidatesEmptyEyebrow}>
-          Privacidade em primeiro lugar
+          Perfis verificados
         </span>
-        <h3>Ainda não existem perfis públicos em destaque</h3>
+        <h3>O próximo perfil em destaque pode ser o seu</h3>
         <p>
-          Assim que talentos verificados escolherem tornar o perfil público,
-          poderá conhecê-los aqui.
+          Dê mais força à sua experiência profissional. Verifique o seu perfil,
+          aumente a confiança das empresas e esteja mais perto da próxima
+          oportunidade.
         </p>
+        <Link
+          href="/candidatos#planos"
+          className={styles.candidatesEmptyButton}
+        >
+          Seja verificado
+          <FiArrowRight aria-hidden="true" />
+        </Link>
       </div>
     );
   }

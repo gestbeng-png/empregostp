@@ -40,13 +40,14 @@ import {
   normalizeEmpresaPlanId,
 } from '../../../lib/empresaPlanFeatures';
 import { fetchActiveEmpresaPlans } from '../../../lib/empresaPlansCatalog';
-import { getInterviewStatusLabelPt } from '../../../lib/interviewClient';
 import {
   fetchVerifiedCandidates,
   summarizeVerifiedCandidates,
 } from '../../../lib/publicCandidates';
 import { resolveDashboardTab } from '../../../lib/dashboardNavigation';
 import { buildLoginUrl, redirectToLogin } from '../../../lib/loginRedirect';
+import { recruitmentNotificationPath } from '../../../lib/recruitmentNotificationNavigation';
+import { isRecruitmentWorkspaceEnabled } from '../../../lib/recruitmentAvailability';
 
 const EmpresaApplicationsChart = dynamic(
   () => import('../../../components/charts/EmpresaApplicationsChart'),
@@ -55,26 +56,6 @@ const EmpresaApplicationsChart = dynamic(
     loading: () => (
       <div
         className={styles.chartWrapper}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'var(--text-3)',
-        }}
-      >
-        A carregar gráfico...
-      </div>
-    ),
-  },
-);
-
-const EmpresaWeeklyViewsAppsChart = dynamic(
-  () => import('../../../components/charts/EmpresaWeeklyViewsAppsChart'),
-  {
-    ssr: false,
-    loading: () => (
-      <div
-        className={styles.analyticsChartWrapper}
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -295,748 +276,6 @@ const normalizePlan = (plan) => {
   return getEmpresaPlanFeatures(normalizedPlanId).name || 'Básico';
 };
 
-const Sidebar = ({
-  activeTab,
-  setActiveTab,
-  currentPlan,
-  profile,
-  onLogout,
-  pendingApplicationsCount = 0,
-  unreadMessages = 0,
-}) => (
-  <aside className={styles.sidebar}>
-    <div className={styles.sidebarLogo}>
-      <Link href="/" className={styles.sidebarLogoLink}>
-        <Image
-          src="/assets/Emprego STP Logo (2) 1.png"
-          alt="EmpregoSTP Logo"
-          className={styles.sidebarLogoImg}
-          width={180}
-          height={42}
-        />
-      </Link>
-    </div>
-
-    <nav className={styles.sidebarNav}>
-      <p className={styles.navSection}>Menu Principal</p>
-      {MENU_ITEMS.map((item) => (
-        <button
-          key={item.id}
-          type="button"
-          className={`${styles.navButton} ${activeTab === item.id ? styles.navActive : ''}`}
-          onClick={() => setActiveTab(item.id)}
-        >
-          <span className={styles.navIcon}>{icons[item.icon]}</span>
-          <span className={styles.navLabel}>{item.label}</span>
-          {item.id === 'applications' && pendingApplicationsCount > 0 && (
-            <span className={styles.navBadge}>{pendingApplicationsCount}</span>
-          )}
-          {item.id === 'messages' && unreadMessages > 0 && (
-            <span className={styles.navBadge}>{unreadMessages}</span>
-          )}
-        </button>
-      ))}
-    </nav>
-
-    <div className={styles.sidebarDivider} />
-
-    <div className={styles.sidebarActions}>
-      <Link
-        href="/dashboard/empresa/vaga/criar-vaga"
-        className={styles.createJobBtn}
-      >
-        <span className={styles.navIcon}>{icons.plus}</span>
-        Criar Nova Vaga
-      </Link>
-      {onLogout && (
-        <button
-          type="button"
-          className={`${styles.createJobBtn} ${styles.logoutBtn}`}
-          onClick={onLogout}
-        >
-          <span className={styles.navIcon}>{icons.logout}</span>
-          Sair
-        </button>
-      )}
-    </div>
-
-    <div className={styles.sidebarFooter}>
-      <div className={styles.sidebarPlanCard}>
-        <div className={styles.sidebarPlanCardHeader}>
-          <span className={styles.sidebarPlanCardIcon}>{icons.crown}</span>
-          <div>
-            <p className={styles.sidebarPlanCardTitle}>Plano {currentPlan}</p>
-            <p className={styles.sidebarPlanCardDesc}>
-              {currentPlan === 'Básico'
-                ? 'Recursos limitados'
-                : currentPlan === 'Profissional'
-                  ? 'Mais alcance e automação'
-                  : 'Acesso completo'}
-            </p>
-          </div>
-        </div>
-        {currentPlan === 'Básico' && (
-          <button
-            type="button"
-            className={styles.upgradeButton}
-            onClick={() => setActiveTab('plans')}
-          >
-            Fazer Upgrade
-          </button>
-        )}
-      </div>
-    </div>
-  </aside>
-);
-
-const TopBar = ({
-  profile,
-  activeLabel,
-  notificationsCount,
-  notifications = [],
-  notificationsOpen = false,
-  notificationsLoading = false,
-  notificationsError = '',
-  onToggleNotifications,
-  onNotificationClick,
-  onMarkAllNotificationsRead,
-}) => {
-  const today = new Date();
-  const formattedDate = today.toLocaleDateString('pt-PT', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  });
-
-  return (
-    <header className={styles.topBar}>
-      <div className={styles.topBarLeft}>
-        <h1 className={styles.pageTitle}>{activeLabel}</h1>
-        <p className={styles.pageDate}>{formattedDate}</p>
-      </div>
-      <div className={styles.topBarRight}>
-        <div className={styles.searchBox}>
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            className={styles.searchIcon}
-          >
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <input
-            type="text"
-            placeholder="Pesquisar..."
-            className={styles.searchInput}
-          />
-        </div>
-        <button
-          type="button"
-          className={styles.iconButton}
-          onClick={onToggleNotifications}
-          aria-expanded={notificationsOpen}
-          aria-label="Notificações"
-        >
-          {icons.bell}
-          {notificationsCount > 0 && (
-            <span className={styles.notificationDot}>{notificationsCount}</span>
-          )}
-        </button>
-        {notificationsOpen && (
-          <div
-            className={styles.notificationsPopover}
-            role="dialog"
-            aria-label="Notificações"
-          >
-            <div className={styles.notificationsHeader}>
-              <span>Notificações</span>
-              <button
-                type="button"
-                className={styles.notificationsMarkAll}
-                onClick={onMarkAllNotificationsRead}
-                disabled={notificationsLoading || notificationsCount === 0}
-              >
-                Marcar todas
-              </button>
-            </div>
-            {notificationsError ? (
-              <div className={styles.notificationsEmpty}>
-                Erro: {notificationsError}
-              </div>
-            ) : notificationsLoading ? (
-              <div className={styles.notificationsEmpty}>A carregar...</div>
-            ) : notifications.length === 0 ? (
-              <div className={styles.notificationsEmpty}>
-                Nenhuma notificação recente.
-              </div>
-            ) : (
-              <div className={styles.notificationsList}>
-                {notifications.slice(0, 10).map((notif) => (
-                  <button
-                    key={notif.id}
-                    type="button"
-                    className={`${styles.notificationItem} ${notif.read ? '' : styles.notificationItemUnread}`}
-                    onClick={() => onNotificationClick?.(notif)}
-                    title={notif.message || notif.title || 'Notificação'}
-                  >
-                    <span className={styles.notificationIcon}>
-                      {notif.icon || '🔔'}
-                    </span>
-                    <div className={styles.notificationBody}>
-                      <div className={styles.notificationTitleRow}>
-                        <strong className={styles.notificationTitle}>
-                          {notif.title || 'Notificação'}
-                        </strong>
-                        {!notif.read && (
-                          <span className={styles.notificationUnreadDot} />
-                        )}
-                      </div>
-                      {notif.message && (
-                        <p className={styles.notificationMessage}>
-                          {notif.message}
-                        </p>
-                      )}
-                      <span className={styles.notificationTime}>
-                        {notif.createdAt
-                          ? new Date(notif.createdAt).toLocaleString('pt-PT')
-                          : ''}
-                      </span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-        <Link href="/dashboard/empresa/profile" className={styles.iconButton}>
-          {icons.building}
-        </Link>
-      </div>
-    </header>
-  );
-};
-
-const StatisticCard = ({
-  label,
-  value,
-  trend,
-  icon,
-  color = 'var(--dash-info-text, #2057d7)',
-}) => (
-  <div className={styles.statCard}>
-    <div className={styles.statHeader}>
-      <div
-        className={`${styles.statIcon} ${styles.statIconAccent}`}
-        style={{
-          '--accent-bg': `color-mix(in srgb, ${color} 10%, transparent)`,
-          '--accent-color': color,
-        }}
-      >
-        {icon || icons.badge}
-      </div>
-      <span className={styles.statTrend}>{trend}</span>
-    </div>
-    <p className={styles.statValue}>{value}</p>
-    <p className={styles.statLabel}>{label}</p>
-  </div>
-);
-
-const JobCard = ({ job }) => {
-  const isActive = job.status === 'active';
-  const daysLeft = job.dataFecho
-    ? Math.ceil((new Date(job.dataFecho) - new Date()) / (1000 * 60 * 60 * 24))
-    : null;
-
-  return (
-    <article className={styles.jobCard}>
-      <div className={styles.jobCardHeader}>
-        <h3 className={styles.jobTitle}>{job.titulo}</h3>
-        <span
-          className={`${styles.jobStatus} ${isActive ? styles.jobStatusActive : styles.jobStatusClosed}`}
-        >
-          {isActive ? 'Ativa' : 'Fechada'}
-        </span>
-      </div>
-      <div className={styles.jobDetails}>
-        <span className={styles.jobMeta}>
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            className={styles.jobMetaIcon}
-          >
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
-            <circle cx="12" cy="10" r="3" />
-          </svg>
-          {job.localizacao || 'Local não informado'}
-        </span>
-        <span className={styles.jobMeta}>
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            className={styles.jobMetaIcon}
-          >
-            <rect x="2" y="7" width="20" height="14" rx="2" />
-            <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" />
-          </svg>
-          {job.tipoContrato || 'Tipo não informado'}
-        </span>
-        {job.remoto && <span className={styles.jobBadge}>Remoto</span>}
-      </div>
-      <div className={styles.jobStats}>
-        <div className={styles.jobStat}>
-          <span className={styles.jobStatValue}>
-            {job.applicationCount || 0}
-          </span>
-          <span className={styles.jobStatLabel}>Candidaturas</span>
-        </div>
-        <div className={styles.jobStat}>
-          <span className={styles.jobStatValue}>{job.views || 0}</span>
-          <span className={styles.jobStatLabel}>Visualizações</span>
-        </div>
-        {daysLeft !== null && isActive && (
-          <div className={styles.jobStat}>
-            <span
-              className={`${styles.jobStatValue} ${daysLeft <= 3 ? styles.jobStatUrgent : ''}`}
-            >
-              {daysLeft > 0 ? daysLeft : 0}
-            </span>
-            <span className={styles.jobStatLabel}>Dias restantes</span>
-          </div>
-        )}
-      </div>
-      <div className={styles.jobFooter}>
-        <Link
-          href={`/dashboard/empresa/vaga/${job.id}`}
-          className={styles.jobActions}
-        >
-          Ver detalhes
-        </Link>
-      </div>
-    </article>
-  );
-};
-
-const ApplicationCard = ({
-  application,
-  onStatusUpdate,
-  onOpenInterviewScheduler,
-}) => {
-  const [updating, setUpdating] = useState(false);
-
-  const statusColors = {
-    pending: {
-      bg: 'rgba(217, 255, 47, 0.2)',
-      text: 'var(--text-1, #1e2b4d)',
-      border: 'rgba(217, 255, 47, 0.35)',
-    },
-    analysis: {
-      bg: 'rgba(32, 87, 215, 0.15)',
-      text: 'var(--dash-info-text, #2057d7)',
-      border: 'rgba(32, 87, 215, 0.3)',
-    },
-    interview: {
-      bg: 'rgba(95, 184, 245, 0.18)',
-      text: 'var(--text-1, #1e2b4d)',
-      border: 'rgba(95, 184, 245, 0.3)',
-    },
-    approved: {
-      bg: 'rgba(217, 255, 47, 0.2)',
-      text: 'var(--text-1, #1e2b4d)',
-      border: 'rgba(217, 255, 47, 0.35)',
-    },
-    rejected: {
-      bg: 'rgba(239, 68, 68, 0.15)',
-      text: 'var(--dash-danger-text, #f87171)',
-      border: 'rgba(239, 68, 68, 0.3)',
-    },
-    withdrawn: {
-      bg: 'rgba(100, 116, 139, 0.14)',
-      text: 'var(--text-3, #64748b)',
-      border: 'rgba(100, 116, 139, 0.3)',
-    },
-  };
-
-  const statusLabels = {
-    pending: 'Pendente',
-    analysis: 'Em Analise',
-    interview: 'Entrevista',
-    approved: 'Aprovado',
-    rejected: 'Rejeitado',
-    withdrawn: 'Retirada',
-  };
-
-  const status = application.status || 'pending';
-  const colors = statusColors[status] || statusColors.pending;
-  const statusLabel = statusLabels[status] || 'Pendente';
-  const interviewStatus = String(
-    application.interviewDetails?.status || 'scheduled',
-  ).toLowerCase();
-  const interviewStatusLabel = getInterviewStatusLabelPt(interviewStatus);
-  const showRescheduleReason =
-    interviewStatus === 'reschedule_requested' &&
-    String(application.interviewDetails?.rescheduleReason || '').trim();
-  const premiumBadges = [
-    application.priorityApplied
-      ? { key: 'priority', label: 'Prioritária', tone: 'priority' }
-      : null,
-    application.applicationHighlighted
-      ? { key: 'highlight', label: 'Destaque', tone: 'highlight' }
-      : null,
-    application.premiumOnlyJob
-      ? { key: 'premium-job', label: 'Vaga premium', tone: 'premium' }
-      : null,
-    application.accessedDuringEarlyWindow
-      ? { key: 'early-access', label: 'Acesso antecipado', tone: 'early' }
-      : null,
-    application.coverLetter
-      ? { key: 'cover-letter', label: 'Carta incluída', tone: 'neutral' }
-      : null,
-  ].filter(Boolean);
-  const coverLetterPreview = application.coverLetter
-    ? `${String(application.coverLetter).trim().slice(0, 220)}${String(application.coverLetter).trim().length > 220 ? '...' : ''}`
-    : '';
-
-  const handleStatusUpdate = async (newStatus) => {
-    if (updating) return;
-    setUpdating(true);
-
-    try {
-      const { getAuth } = await import('firebase/auth');
-      const auth = getAuth();
-      const token = await auth.currentUser?.getIdToken();
-
-      if (!token) {
-        alert('A sessão expirou. Inicie sessão novamente.');
-        return;
-      }
-
-      const response = await fetch(
-        `/api/applications/${application.id}/status`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ status: newStatus }),
-        },
-      );
-
-      const data = await response.json();
-
-      if (response.ok) {
-        if (onStatusUpdate) {
-          onStatusUpdate(
-            application.id,
-            data.application || { status: newStatus },
-          );
-        }
-      } else {
-        alert(data.error || 'Erro ao atualizar status');
-      }
-    } catch (error) {
-      console.error('Erro ao atualizar status:', error);
-      alert('Erro ao atualizar status. Tente novamente.');
-    } finally {
-      setUpdating(false);
-    }
-  };
-
-  return (
-    <article className={styles.applicationCard}>
-      <div className={styles.applicationHeader}>
-        <div className={styles.applicationInfo}>
-          <Link
-            href={`/dashboard/empresa/candidato/${application.candidateId}`}
-            className={styles.applicationTitle}
-          >
-            {application.candidateName || 'Candidato'}
-          </Link>
-          <p className={styles.applicationMeta}>
-            {application.jobTitle || 'Vaga desconhecida'}
-          </p>
-          <p className={styles.applicationMeta}>
-            {application.candidateEmail || ''}
-          </p>
-          {premiumBadges.length > 0 && (
-            <div className={styles.applicationBadgeRow}>
-              {premiumBadges.map((badge) => (
-                <span
-                  key={badge.key}
-                  className={`${styles.applicationBadgePill} ${styles[`applicationBadge${badge.tone.charAt(0).toUpperCase()}${badge.tone.slice(1)}`]}`}
-                >
-                  {badge.label}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-        <div className={styles.applicationRight}>
-          <span
-            className={`${styles.applicationStatus} ${styles.applicationStatusAccent}`}
-            style={{
-              '--status-bg': colors.bg,
-              '--status-text': colors.text,
-              '--status-border': colors.border,
-            }}
-          >
-            {updating ? 'Atualizando...' : statusLabel}
-          </span>
-          <span className={styles.applicationDate}>
-            {new Date(
-              application.appliedAt || application.createdAt || Date.now(),
-            ).toLocaleDateString('pt-PT')}
-          </span>
-        </div>
-      </div>
-
-      {application.interviewDetails?.scheduledAt && (
-        <div className={styles.interviewSummaryBox}>
-          <strong>Entrevista agendada</strong>
-          <p>
-            {formatInterviewDateTime(application.interviewDetails.scheduledAt)}
-          </p>
-          <span>
-            {application.interviewDetails.mode === 'presencial'
-              ? application.interviewDetails.location || 'Local a confirmar'
-              : application.interviewDetails.link || 'Link a confirmar'}
-          </span>
-          <p className={styles.interviewSummaryResponse}>
-            Resposta do candidato:{' '}
-            <strong className={styles.interviewStatusHighlight}>
-              {interviewStatusLabel}
-            </strong>
-          </p>
-          {showRescheduleReason && (
-            <p className={styles.interviewReason}>
-              Motivo:{' '}
-              {String(
-                application.interviewDetails.rescheduleReason || '',
-              ).trim()}
-            </p>
-          )}
-        </div>
-      )}
-
-      {(typeof application.compatibilityScore === 'number' ||
-        application.compatibilityReasons?.length) && (
-        <div className={styles.applicationInsightBox}>
-          <strong>Compatibilidade com a vaga</strong>
-          {typeof application.compatibilityScore === 'number' && (
-            <p>Compatibilidade registada: {application.compatibilityScore}%</p>
-          )}
-          {application.compatibilityReasons?.length > 0 && (
-            <span>
-              {application.compatibilityReasons.slice(0, 2).join(' • ')}
-            </span>
-          )}
-        </div>
-      )}
-
-      {coverLetterPreview && (
-        <div className={styles.applicationInsightBox}>
-          <strong>Carta de apresentação</strong>
-          <p>{coverLetterPreview}</p>
-        </div>
-      )}
-
-      {/* Status Action Buttons */}
-      {status === 'withdrawn' ? (
-        <div className={styles.applicationInsightBox} role="status">
-          <strong>Processo encerrado</strong>
-          <p>O candidato retirou esta candidatura. O estado já não pode ser alterado.</p>
-        </div>
-      ) : (
-        <div className={styles.applicationStatusActions}>
-          <span className={styles.statusActionsLabel}>Alterar status:</span>
-          <div className={styles.statusButtonsGroup}>
-          <button
-            type="button"
-            className={`${styles.statusBtn} ${styles.statusBtnAnalysis} ${status === 'analysis' ? styles.statusBtnActive : ''}`}
-            onClick={() => handleStatusUpdate('analysis')}
-            disabled={updating || status === 'analysis'}
-            title="Enviar para analise"
-          >
-            {icons.eye}
-            <span>Analise</span>
-          </button>
-          <button
-            type="button"
-            className={`${styles.statusBtn} ${styles.statusBtnInterview} ${status === 'interview' ? styles.statusBtnActive : ''}`}
-            onClick={() => onOpenInterviewScheduler?.(application)}
-            disabled={updating}
-            title="Marcar entrevista"
-          >
-            {icons.users}
-            <span>{status === 'interview' ? 'Reagendar' : 'Entrevista'}</span>
-          </button>
-          <button
-            type="button"
-            className={`${styles.statusBtn} ${styles.statusBtnApproved} ${status === 'approved' ? styles.statusBtnActive : ''}`}
-            onClick={() => handleStatusUpdate('approved')}
-            disabled={updating || status === 'approved'}
-            title="Aceitar candidato"
-          >
-            {icons.check}
-            <span>Aceitar</span>
-          </button>
-          <button
-            type="button"
-            className={`${styles.statusBtn} ${styles.statusBtnRejected} ${status === 'rejected' ? styles.statusBtnActive : ''}`}
-            onClick={() => handleStatusUpdate('rejected')}
-            disabled={updating || status === 'rejected'}
-            title="Rejeitar candidato"
-          >
-            {icons.x}
-            <span>Rejeitar</span>
-          </button>
-          </div>
-        </div>
-      )}
-
-      <div className={styles.applicationActions}>
-        <Link
-          href={`/dashboard/empresa/candidato/${application.candidateId}`}
-          className={styles.applicationBtn}
-        >
-          Ver Perfil Completo
-        </Link>
-        {application.candidateId && (
-          <Link
-            href={`/dashboard/empresa?tab=messages&candidate=${application.candidateId}`}
-            className={styles.applicationBtnOutline}
-          >
-            Enviar mensagem
-          </Link>
-        )}
-        {application.jobId && (
-          <Link
-            href={`/dashboard/empresa/vaga/${application.jobId}`}
-            className={styles.applicationBtnOutline}
-          >
-            Ver Vaga
-          </Link>
-        )}
-      </div>
-    </article>
-  );
-};
-
-const TalentCard = ({ talent, locked }) => {
-  return (
-    <article
-      className={`${styles.talentCard} ${locked ? styles.talentLocked : ''}`}
-    >
-      {talent.verified && (
-        <div className={styles.talentVerifiedSeal}>
-          <VerificationBadge verified size="sm" />
-        </div>
-      )}
-      <div className={styles.talentCardHeader}>
-        <div className={styles.talentAvatar}>
-          {talent.avatar ? (
-            <Image
-              src={talent.avatar}
-              alt={talent.name}
-              width={48}
-              height={48}
-              sizes="48px"
-              unoptimized
-            />
-          ) : (
-            <div className={styles.talentAvatarFallback}>
-              {(talent.name || '?').slice(0, 1).toUpperCase()}
-            </div>
-          )}
-        </div>
-        <div className={styles.talentIdentity}>
-          <div className={styles.talentNameRow}>
-            <h4>{talent.name}</h4>
-            {talent.verified && <span className={styles.talentVerifiedDot} />}
-          </div>
-          <p className={styles.talentSubtitle}>{talent.headline}</p>
-          <div className={styles.talentBadges}>
-            <span className={styles.talentStatus}>{talent.experience}</span>
-            {talent.highlighted && (
-              <span
-                className={`${styles.talentStatus} ${styles.talentStatusHighlight}`}
-              >
-                Em destaque
-              </span>
-            )}
-            {talent.profileComplete ? (
-              <span
-                className={`${styles.talentStatus} ${styles.talentStatusComplete}`}
-              >
-                Perfil completo
-              </span>
-            ) : talent.completionScore > 0 ? (
-              <span
-                className={`${styles.talentStatus} ${styles.talentStatusMuted}`}
-              >
-                {talent.completionScore}% completo
-              </span>
-            ) : null}
-          </div>
-        </div>
-      </div>
-      <p className={styles.talentMeta}>{talent.location}</p>
-      <div className={styles.talentSkills}>
-        {talent.skills.length > 0 ? (
-          talent.skills.map((skill) => <span key={skill}>{skill}</span>)
-        ) : (
-          <span className={styles.talentSkillMuted}>
-            Perfil pronto para análise
-          </span>
-        )}
-      </div>
-      {locked ? (
-        <Link href="/premium/empresa" className={styles.talentAction}>
-          Desbloquear com o plano PRO
-        </Link>
-      ) : (
-        <Link href={talent.profileUrl || '#'} className={styles.talentAction}>
-          Ver perfil
-        </Link>
-      )}
-    </article>
-  );
-};
-
-const AnalyticsCard = ({ title, value, subtitle, color, icon, change }) => (
-  <div className={styles.analyticsCard}>
-    <div className={styles.analyticsCardHeader}>
-      <div
-        className={`${styles.analyticsCardIcon} ${styles.analyticsCardIconAccent}`}
-        style={{
-          '--accent-bg': `color-mix(in srgb, ${color} 10%, transparent)`,
-          '--accent-color': color,
-        }}
-      >
-        {icon}
-      </div>
-      {change !== undefined && (
-        <span
-          className={`${styles.analyticsChange} ${change >= 0 ? styles.analyticsChangeUp : styles.analyticsChangeDown}`}
-        >
-          {change >= 0 ? '+' : ''}
-          {change}%
-        </span>
-      )}
-    </div>
-    <p className={styles.analyticsValue}>{value}</p>
-    <p className={styles.analyticsTitle}>{title}</p>
-    <p className={styles.analyticsSubtitle}>{subtitle}</p>
-  </div>
-);
-
 const EmptyState = ({ icon, title, message, action }) => (
   <div className={styles.emptyState}>
     <div className={styles.emptyIcon}>{icon || icons.inbox}</div>
@@ -1178,11 +417,6 @@ export default function EmpresaDashboard({
       new Set(Array.isArray(verifiedCandidateIds) ? verifiedCandidateIds : []),
     [verifiedCandidateIds],
   );
-  const publicCandidateStats = useMemo(
-    () =>
-      publicCandidateSummary || summarizeVerifiedCandidates(publicCandidates),
-    [publicCandidateSummary, publicCandidates],
-  );
 
   const fetchPendingPaymentRequest = useCallback(async () => {
     if (!user) return;
@@ -1291,6 +525,12 @@ export default function EmpresaDashboard({
       if (!notif.read && notif.id) {
         await markNotificationRead(notif.id);
       }
+      const recruitmentPath = recruitmentNotificationPath(notif);
+      if (recruitmentPath) {
+        setNotificationsOpen(false);
+        await router.push(recruitmentPath);
+        return;
+      }
       // Bring the company back to applications list for interview-related notifications.
       if (notif.type === 'interview_response' || notif.type === 'application') {
         openTab('applications');
@@ -1300,7 +540,7 @@ export default function EmpresaDashboard({
       }
       setNotificationsOpen(false);
     },
-    [markNotificationRead, openTab],
+    [markNotificationRead, openTab, router],
   );
 
   useEffect(() => {
@@ -1947,63 +1187,6 @@ export default function EmpresaDashboard({
     fetchTalentPool();
   }, [activeTab, user, companyPlanFeatures.accessTalentPool]);
 
-  const statsList = useMemo(
-    () => [
-      {
-        label: 'Vagas Ativas',
-        value: activeJobs.length,
-        trend: `+${jobs.length} total`,
-        icon: icons.briefcase,
-        color: 'var(--dash-info-text, #2057d7)',
-      },
-      {
-        label: 'Candidaturas',
-        value: totalApplications,
-        trend: `${stats?.pendingApplications || 0} novas`,
-        icon: icons.inbox,
-        color: 'var(--sky, #5fb8f5)',
-      },
-      {
-        label: 'Vagas Destacadas',
-        value: highlightedJobsCount,
-        trend: !companyPlanFeatures.canHighlightJobs
-          ? 'Upgrade para destacar vagas'
-          : companyPlanFeatures.maxHighlightedJobs === null
-            ? 'Plano com destaques ilimitados'
-            : `${highlightedJobsCount}/${companyPlanFeatures.maxHighlightedJobs || 0} utilizadas`,
-        icon: icons.crown,
-        color: 'var(--sky, #5fb8f5)',
-      },
-      {
-        label: 'Taxa Conversão',
-        value: `${
-          totalApplications > 0
-            ? (
-                (totalApplications /
-                  Math.max(
-                    jobs.reduce((sum, job) => sum + (job.views || 0), 0),
-                    1,
-                  )) *
-                100
-              ).toFixed(1)
-            : 0
-        }%`,
-        trend: 'Apps/Views',
-        icon: icons.trending,
-        color: 'var(--dash-info-text, #2057d7)',
-      },
-    ],
-    [
-      activeJobs.length,
-      jobs,
-      totalApplications,
-      stats,
-      highlightedJobsCount,
-      companyPlanFeatures.canHighlightJobs,
-      companyPlanFeatures.maxHighlightedJobs,
-    ],
-  );
-
   const chartData = useMemo(() => {
     if (weeklyApplications.length === 6) {
       return weeklyApplications;
@@ -2135,9 +1318,7 @@ export default function EmpresaDashboard({
         return app.status === applicationFilter;
       })
       .sort((a, b) => {
-        const priorityDiff =
-          (Number(b.priorityLevel) || 0) - (Number(a.priorityLevel) || 0);
-        if (priorityDiff !== 0) return priorityDiff;
+        // F2.1/K1: nenhuma candidatura passa à frente por plano pago.
         const dateA = a.appliedAt
           ? new Date(a.appliedAt).getTime()
           : a.createdAt
@@ -3147,6 +2328,14 @@ export default function EmpresaDashboard({
                 </p>
               </div>
               <div className="header-actions">
+                {isRecruitmentWorkspaceEnabled() ? (
+                  <Link
+                    href="/dashboard/recrutamento"
+                    className="btn btn-primary"
+                  >
+                    Abrir recrutamento e equipa
+                  </Link>
+                ) : null}
                 <button
                   type="button"
                   className="btn btn-ghost"
@@ -3323,81 +2512,85 @@ export default function EmpresaDashboard({
                           </Link>
                           {appStatus !== 'withdrawn' ? (
                             <>
-                          <button
-                            type="button"
-                            className="btn btn-lime btn-sm"
-                            title="Aceitar candidatura"
-                            aria-label="Aceitar candidatura"
-                            disabled={isUpdating || appStatus === 'approved'}
-                            onClick={() =>
-                              handleApplicationStatusChange(
-                                application.id,
-                                'approved',
-                              )
-                            }
-                          >
-                            <FiCheck />
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-ghost btn-sm"
-                            title="Rejeitar candidatura"
-                            aria-label="Rejeitar candidatura"
-                            disabled={isUpdating || appStatus === 'rejected'}
-                            onClick={() =>
-                              handleApplicationStatusChange(
-                                application.id,
-                                'rejected',
-                              )
-                            }
-                          >
-                            <FiX />
-                          </button>
-                          {companyPlanFeatures.canScheduleInterviews ? (
-                            <button
-                              type="button"
-                              className="btn btn-primary btn-sm"
-                              title="Agendar entrevista"
-                              aria-label="Agendar entrevista"
-                              onClick={() =>
-                                openInterviewScheduler?.(application)
-                              }
-                            >
-                              <FiCalendar />
-                            </button>
-                          ) : (
-                            <button
-                              type="button"
-                              className="btn btn-ghost btn-sm"
-                              title="Agendar entrevista está disponível nos planos Profissional e PRO"
-                              aria-label="Agendar entrevista (requer plano Profissional ou PRO)"
-                              onClick={() => openTab('plans')}
-                            >
-                              <FiCalendar />
-                              <FiLock />
-                            </button>
-                          )}
-                          {companyPlanFeatures.canSendDirectMessages ? (
-                            <Link
-                              href={`/dashboard/empresa?tab=messages&candidate=${application.candidateId}`}
-                              className="btn btn-ghost btn-sm"
-                              title="Enviar mensagem"
-                              aria-label="Enviar mensagem"
-                            >
-                              <FiMail />
-                            </Link>
-                          ) : (
-                            <button
-                              type="button"
-                              className="btn btn-ghost btn-sm"
-                              title="Enviar mensagem direta está disponível no plano PRO"
-                              aria-label="Enviar mensagem (requer plano PRO)"
-                              onClick={() => openTab('plans')}
-                            >
-                              <FiMail />
-                              <FiLock />
-                            </button>
-                          )}
+                              <button
+                                type="button"
+                                className="btn btn-lime btn-sm"
+                                title="Aceitar candidatura"
+                                aria-label="Aceitar candidatura"
+                                disabled={
+                                  isUpdating || appStatus === 'approved'
+                                }
+                                onClick={() =>
+                                  handleApplicationStatusChange(
+                                    application.id,
+                                    'approved',
+                                  )
+                                }
+                              >
+                                <FiCheck />
+                              </button>
+                              <button
+                                type="button"
+                                className="btn btn-ghost btn-sm"
+                                title="Rejeitar candidatura"
+                                aria-label="Rejeitar candidatura"
+                                disabled={
+                                  isUpdating || appStatus === 'rejected'
+                                }
+                                onClick={() =>
+                                  handleApplicationStatusChange(
+                                    application.id,
+                                    'rejected',
+                                  )
+                                }
+                              >
+                                <FiX />
+                              </button>
+                              {companyPlanFeatures.canScheduleInterviews ? (
+                                <button
+                                  type="button"
+                                  className="btn btn-primary btn-sm"
+                                  title="Agendar entrevista"
+                                  aria-label="Agendar entrevista"
+                                  onClick={() =>
+                                    openInterviewScheduler?.(application)
+                                  }
+                                >
+                                  <FiCalendar />
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  className="btn btn-ghost btn-sm"
+                                  title="Agendar entrevista está disponível nos planos Profissional e PRO"
+                                  aria-label="Agendar entrevista (requer plano Profissional ou PRO)"
+                                  onClick={() => openTab('plans')}
+                                >
+                                  <FiCalendar />
+                                  <FiLock />
+                                </button>
+                              )}
+                              {companyPlanFeatures.canSendDirectMessages ? (
+                                <Link
+                                  href={`/dashboard/empresa?tab=messages&candidate=${application.candidateId}`}
+                                  className="btn btn-ghost btn-sm"
+                                  title="Enviar mensagem"
+                                  aria-label="Enviar mensagem"
+                                >
+                                  <FiMail />
+                                </Link>
+                              ) : (
+                                <button
+                                  type="button"
+                                  className="btn btn-ghost btn-sm"
+                                  title="Enviar mensagem direta está disponível no plano PRO"
+                                  aria-label="Enviar mensagem (requer plano PRO)"
+                                  onClick={() => openTab('plans')}
+                                >
+                                  <FiMail />
+                                  <FiLock />
+                                </button>
+                              )}
                             </>
                           ) : null}
                         </div>
@@ -4434,10 +3627,6 @@ export default function EmpresaDashboard({
 
   const activeLabel =
     MENU_ITEMS.find((item) => item.id === activeTab)?.label || activeTab;
-
-  const pendingApplicationsCount = applicationsData.filter(
-    (a) => a.status === 'pending',
-  ).length;
   const empresaPlanLabel =
     typeof planState === 'string'
       ? planState
@@ -4460,6 +3649,8 @@ export default function EmpresaDashboard({
     plans: 'Gestão do seu plano',
     affiliate: 'Programa de afiliados EmpregoSTP',
   };
+  // Ordem do wireframe (07_COMPANY, E01–E20) e igual à barra do shell em
+  // components/dashboard/dashboardNav.js, para a lateral não mudar entre páginas.
   const empresaNav = [
     {
       label: 'Menu Principal',
@@ -4484,6 +3675,17 @@ export default function EmpresaDashboard({
           onClick: () => openTab('applications'),
           badge: totalApplications || undefined,
         },
+        // ADR-019: só com «Recrutamento e equipa» ativo.
+        ...(isRecruitmentWorkspaceEnabled()
+          ? [
+              {
+                key: 'recruitment',
+                label: 'Recrutamento e equipa',
+                icon: 'users',
+                href: '/dashboard/recrutamento',
+              },
+            ]
+          : []),
         {
           key: 'candidates',
           label: 'Banco de talentos',
@@ -4498,6 +3700,13 @@ export default function EmpresaDashboard({
           badge: scheduledInterviewsCount || undefined,
           badgeStyle: 'lime',
         },
+        {
+          key: 'messages',
+          label: 'Mensagens',
+          icon: 'messages',
+          onClick: () => openTab('messages'),
+          badge: unreadMessages || undefined,
+        },
       ],
     },
     {
@@ -4505,9 +3714,15 @@ export default function EmpresaDashboard({
       items: [
         {
           key: 'analytics',
-          label: 'Analytics',
+          label: 'Análise',
           icon: 'chart',
           onClick: () => openTab('analytics'),
+        },
+        {
+          key: 'hr-services',
+          label: 'Serviço RH',
+          icon: 'briefcase',
+          onClick: () => openTab('hr-services'),
         },
       ],
     },
@@ -4519,24 +3734,6 @@ export default function EmpresaDashboard({
           label: 'Planos',
           icon: 'star',
           onClick: () => openTab('plans'),
-        },
-      ],
-    },
-    {
-      label: 'Mais',
-      items: [
-        {
-          key: 'messages',
-          label: 'Mensagens',
-          icon: 'messages',
-          onClick: () => openTab('messages'),
-          badge: unreadMessages || undefined,
-        },
-        {
-          key: 'hr-services',
-          label: 'Serviço RH',
-          icon: 'briefcase',
-          onClick: () => openTab('hr-services'),
         },
         {
           key: 'affiliate',

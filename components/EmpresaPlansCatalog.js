@@ -131,6 +131,13 @@ export default function EmpresaPlansCatalog({
     setProofModalOpen(false);
   };
 
+  // Pedido cancelado pelo titular: deixa de haver pedido em aberto (o pai
+  // guarda-o pelo mesmo callback).
+  const handleRequestCancelled = () => {
+    onPaymentProofSubmitted?.(null);
+    setProofModalOpen(false);
+  };
+
   return (
     <section className={styles.wrap} aria-labelledby="empresa-plans-title">
       <div className={styles.header}>
@@ -375,6 +382,7 @@ export default function EmpresaPlansCatalog({
                 description="Aceitamos ficheiros PDF, JPG ou PNG até 10 MB."
                 embedded
                 onSubmitted={handleProofSubmitted}
+                onCancelled={handleRequestCancelled}
               />
             </div>
           </div>

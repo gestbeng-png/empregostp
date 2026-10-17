@@ -1,5 +1,8 @@
 import { admin } from '../../lib/firebaseAdmin';
-import { canVerifyProfile, getPlanSummary } from '../../lib/candidatePlanFeatures';
+import {
+  canVerifyProfile,
+  getPlanSummary,
+} from '../../lib/candidatePlanFeatures';
 import {
   buildVerificationProfileSummary,
   buildVerificationRecord,
@@ -18,7 +21,11 @@ async function isAdminUser(uid) {
 }
 
 async function getLatestVerificationByUid(uid) {
-  const snapshot = await admin.firestore().collection('verifications').where('uid', '==', uid).get();
+  const snapshot = await admin
+    .firestore()
+    .collection('verifications')
+    .where('uid', '==', uid)
+    .get();
   const docs = snapshot.docs.sort((a, b) => {
     const timeA =
       a.data().updatedAt?.toDate?.()?.getTime?.() ||
@@ -74,21 +81,29 @@ async function syncVerificationState(uid, verificationId, record) {
   }
 
   await Promise.all([
-    admin.firestore().collection('users').doc(uid).set(userUpdate, { merge: true }),
-    admin.firestore().collection('profiles').doc(uid).set(
-      {
-        verificationStatus: publicState.verificationStatus,
-        verified: publicState.verified,
-        rejectionReason: publicState.rejectionReason || '',
-        verificationSummary: {
-          ...summary,
-          lastSyncedAt: nowIso,
+    admin
+      .firestore()
+      .collection('users')
+      .doc(uid)
+      .set(userUpdate, { merge: true }),
+    admin
+      .firestore()
+      .collection('profiles')
+      .doc(uid)
+      .set(
+        {
+          verificationStatus: publicState.verificationStatus,
+          verified: publicState.verified,
+          rejectionReason: publicState.rejectionReason || '',
+          verificationSummary: {
+            ...summary,
+            lastSyncedAt: nowIso,
+          },
+          verificationItems: summary.types || {},
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         },
-        verificationItems: summary.types || {},
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      },
-      { merge: true }
-    ),
+        { merge: true },
+      ),
   ]);
 }
 
@@ -114,14 +129,17 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Método não permitido' });
   } catch (error) {
     logServerError('verifications.api_de_verificacoes_failed', error);
-    return res.status(500).json({ error: 'Erro interno do servidor', details: error.message });
+    return res
+      .status(500)
+      .json({ error: 'Erro interno do servidor', details: error.message });
   }
 }
 
 async function handlePost(req, res, decodedToken) {
   try {
     const { uid, documents = {}, companyName = '' } = req.body || {};
-    const safeCompanyName = typeof companyName === 'string' ? companyName.trim() : '';
+    const safeCompanyName =
+      typeof companyName === 'string' ? companyName.trim() : '';
 
     if (!uid) {
       return res.status(400).json({ error: 'UID não fornecido' });
@@ -132,27 +150,38 @@ async function handlePost(req, res, decodedToken) {
       return res.status(403).json({ error: 'Sem permissão' });
     }
 
-    const [targetUserDoc, targetProfileDoc, latestVerificationDoc] = await Promise.all([
-      admin.firestore().collection('users').doc(uid).get(),
-      admin.firestore().collection('profiles').doc(uid).get(),
-      getLatestVerificationByUid(uid),
-    ]);
+    const [targetUserDoc, targetProfileDoc, latestVerificationDoc] =
+      await Promise.all([
+        admin.firestore().collection('users').doc(uid).get(),
+        admin.firestore().collection('profiles').doc(uid).get(),
+        getLatestVerificationByUid(uid),
+      ]);
 
     if (!targetUserDoc.exists) {
       return res.status(404).json({ error: 'Utilizador não encontrado' });
     }
 
     const targetUserData = targetUserDoc.data() || {};
-    const targetProfileData = targetProfileDoc.exists ? targetProfileDoc.data() : {};
+    const targetProfileData = targetProfileDoc.exists
+      ? targetProfileDoc.data()
+      : {};
 
     if (targetUserData.userType !== 'candidato') {
-      return res.status(403).json({ error: 'A verificação de perfil está disponível apenas para candidatos' });
+      return res
+        .status(403)
+        .json({
+          error:
+            'A verificação de perfil está disponível apenas para candidatos',
+        });
     }
 
     const targetUserRef = targetUserDoc.ref;
     const planSummary = getPlanSummary(targetUserData);
 
-    if (targetUserData.currentPlan && targetUserData.currentPlan !== planSummary.planId) {
+    if (
+      targetUserData.currentPlan &&
+      targetUserData.currentPlan !== planSummary.planId
+    ) {
       try {
         if (!planSummary.isActive) {
           await targetUserRef.update({
@@ -171,7 +200,10 @@ async function handlePost(req, res, decodedToken) {
           });
         }
       } catch (planSyncError) {
-        logServerError('verifications.sincronizar_plano_para_verificacao_failed', planSyncError);
+        logServerError(
+          'verifications.sincronizar_plano_para_verificacao_failed',
+          planSyncError,
+        );
       }
     }
 
@@ -185,7 +217,9 @@ async function handlePost(req, res, decodedToken) {
       });
     }
 
-    const previousRecord = latestVerificationDoc?.exists ? latestVerificationDoc.data() : null;
+    const previousRecord = latestVerificationDoc?.exists
+      ? latestVerificationDoc.data()
+      : null;
     const verificationRecord = buildVerificationRecord({
       uid,
       documents,
@@ -197,12 +231,18 @@ async function handlePost(req, res, decodedToken) {
     const validation = validateVerificationRecord(verificationRecord);
 
     if (!verificationRecord.summary.requestedCount) {
-      return res.status(400).json({ error: 'Selecione pelo menos um tipo de verificação para enviar.' });
+      return res
+        .status(400)
+        .json({
+          error: 'Selecione pelo menos um tipo de verificação para enviar.',
+        });
     }
 
     if (!validation.valid) {
       return res.status(400).json({
-        error: validation.issues[0]?.reason || 'Existem tipos de verificação sem dados mínimos.',
+        error:
+          validation.issues[0]?.reason ||
+          'Existem tipos de verificação sem dados mínimos.',
         issues: validation.issues,
       });
     }
@@ -210,11 +250,13 @@ async function handlePost(req, res, decodedToken) {
     const allRequestedAlreadyApproved =
       verificationRecord.summary.pendingCount === 0 &&
       verificationRecord.summary.requestedCount > 0 &&
-      verificationRecord.summary.approvedCount === verificationRecord.summary.requestedCount;
+      verificationRecord.summary.approvedCount ===
+        verificationRecord.summary.requestedCount;
 
     if (allRequestedAlreadyApproved) {
       return res.status(400).json({
-        error: 'Os tipos selecionados já estão aprovados na sua verificação atual.',
+        error:
+          'Os tipos selecionados já estão aprovados na sua verificação atual.',
         status: 'approved',
         code: 'ALREADY_APPROVED',
       });
@@ -233,7 +275,8 @@ async function handlePost(req, res, decodedToken) {
       submittedAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       createdAt: latestVerificationDoc?.exists
-        ? latestVerificationDoc.data()?.createdAt || admin.firestore.FieldValue.serverTimestamp()
+        ? latestVerificationDoc.data()?.createdAt ||
+          admin.firestore.FieldValue.serverTimestamp()
         : admin.firestore.FieldValue.serverTimestamp(),
     };
 
@@ -247,28 +290,34 @@ async function handlePost(req, res, decodedToken) {
           ...payload,
           resubmittedAt: admin.firestore.FieldValue.serverTimestamp(),
         },
-        { merge: true }
+        { merge: true },
       );
       updated = true;
     } else {
-      verificationRef = await admin.firestore().collection('verifications').add(payload);
+      verificationRef = await admin
+        .firestore()
+        .collection('verifications')
+        .add(payload);
     }
 
     const savedDoc = await verificationRef.get();
     const savedRecord = buildVerificationResponse(savedDoc);
     await syncVerificationState(uid, verificationRef.id, savedRecord);
 
-    await admin.firestore().collection('audit_logs').add({
-      action: updated ? 'VERIFICATION_UPDATED' : 'VERIFICATION_REQUESTED',
-      userId: uid,
-      initiatedBy: decodedToken.uid,
-      timestamp: admin.firestore.FieldValue.serverTimestamp(),
-      details: {
-        verificationId: verificationRef.id,
-        companyName: safeCompanyName,
-        requestedTypes: verificationRecord.requestedTypes,
-      },
-    });
+    await admin
+      .firestore()
+      .collection('audit_logs')
+      .add({
+        action: updated ? 'VERIFICATION_UPDATED' : 'VERIFICATION_REQUESTED',
+        userId: uid,
+        initiatedBy: decodedToken.uid,
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        details: {
+          verificationId: verificationRef.id,
+          companyName: safeCompanyName,
+          requestedTypes: verificationRecord.requestedTypes,
+        },
+      });
 
     return res.status(updated ? 200 : 201).json({
       id: verificationRef.id,
@@ -313,7 +362,9 @@ async function handleGet(req, res, decodedToken) {
         });
 
         const latestDoc = docs[0];
-        const verifications = latestDoc ? [buildVerificationResponse(latestDoc)] : [];
+        const verifications = latestDoc
+          ? [buildVerificationResponse(latestDoc)]
+          : [];
         return res.status(200).json({ verifications });
       }
     } else {
@@ -330,7 +381,11 @@ async function handleGet(req, res, decodedToken) {
     const snapshot = await query.get();
     const verifications = snapshot.docs
       .map((doc) => buildVerificationResponse(doc))
-      .sort((a, b) => new Date(b.updatedAt || b.submittedAt || 0).getTime() - new Date(a.updatedAt || a.submittedAt || 0).getTime());
+      .sort(
+        (a, b) =>
+          new Date(b.updatedAt || b.submittedAt || 0).getTime() -
+          new Date(a.updatedAt || a.submittedAt || 0).getTime(),
+      );
 
     return res.status(200).json({ verifications });
   } catch (error) {
@@ -356,20 +411,31 @@ async function handlePut(req, res, decodedToken) {
       return res.status(403).json({ error: 'Acesso negado - admin requerido' });
     }
 
-    const verificationRef = admin.firestore().collection('verifications').doc(id);
+    const verificationRef = admin
+      .firestore()
+      .collection('verifications')
+      .doc(id);
     const verificationDoc = await verificationRef.get();
 
     if (!verificationDoc.exists) {
       return res.status(404).json({ error: 'Verificação não encontrada' });
     }
 
-    const verificationData = serializeVerificationTimestamps(verificationDoc.data() || {});
-    const targetItem = verificationType ? verificationData.verificationItems?.[verificationType] : null;
+    const verificationData = serializeVerificationTimestamps(
+      verificationDoc.data() || {},
+    );
+    const targetItem = verificationType
+      ? verificationData.verificationItems?.[verificationType]
+      : null;
     if (verificationType && !targetItem) {
-      return res.status(404).json({ error: 'Tipo de verificação não encontrado neste pedido' });
+      return res
+        .status(404)
+        .json({ error: 'Tipo de verificação não encontrado neste pedido' });
     }
     if (verificationType && targetItem.status !== 'pending') {
-      return res.status(400).json({ error: 'Este tipo de verificação já foi analisado' });
+      return res
+        .status(400)
+        .json({ error: 'Este tipo de verificação já foi analisado' });
     }
 
     const reviewedRecord = reviewVerificationRecord(verificationData, {
@@ -390,26 +456,29 @@ async function handlePut(req, res, decodedToken) {
         reviewedAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       },
-      { merge: true }
+      { merge: true },
     );
 
     const savedDoc = await verificationRef.get();
     const savedRecord = buildVerificationResponse(savedDoc);
     await syncVerificationState(verificationData.uid, id, savedRecord);
 
-    await admin.firestore().collection('audit_logs').add({
-      action: verificationType
-        ? `VERIFICATION_ITEM_${status.toUpperCase()}`
-        : `VERIFICATION_${status.toUpperCase()}`,
-      adminId: decodedToken.uid,
-      userId: verificationData.uid,
-      timestamp: admin.firestore.FieldValue.serverTimestamp(),
-      details: {
-        verificationId: id,
-        verificationType,
-        reason,
-      },
-    });
+    await admin
+      .firestore()
+      .collection('audit_logs')
+      .add({
+        action: verificationType
+          ? `VERIFICATION_ITEM_${status.toUpperCase()}`
+          : `VERIFICATION_${status.toUpperCase()}`,
+        adminId: decodedToken.uid,
+        userId: verificationData.uid,
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        details: {
+          verificationId: id,
+          verificationType,
+          reason,
+        },
+      });
 
     return res.status(200).json({
       message: `Verificação ${status === 'approved' ? 'aprovada' : 'rejeitada'} com sucesso`,

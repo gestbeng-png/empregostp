@@ -24,6 +24,7 @@ const AUTH_ROUTES = new Set([
   '/redefinir-senha',
   '/register',
   '/verificar-email',
+  '/equipa/convite',
 ]);
 
 const LEGAL_ROUTES = new Set(['/cookies', '/politica-privacidade', '/termos']);
@@ -110,7 +111,7 @@ function MyApp({ Component, pageProps }) {
   }, []);
 
   return (
-    <AuthProvider>
+    <AuthProvider renderWhileLoading={routeKind === 'public'}>
       <div
         className={
           isHome

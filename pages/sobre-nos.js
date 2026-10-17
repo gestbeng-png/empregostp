@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -8,46 +7,71 @@ import {
   FiChevronLeft,
   FiChevronRight,
   FiSend,
-  FiX,
 } from 'react-icons/fi';
 import {
   LuBuilding2,
-  LuGlobe,
+  LuHandshake,
   LuHeartHandshake,
+  LuLightbulb,
+  LuScale,
+  LuShieldCheck,
+  LuSparkles,
   LuStar,
-  LuTreePine,
+  LuTarget,
   LuUserRound,
 } from 'react-icons/lu';
 import PublicPageShell from '../components/PublicPageShell';
+import CareerTeam from '../components/careers/CareerTeam';
+import useScrollReveal from '../lib/useScrollReveal';
 import styles from '../styles/SobreNosPage.module.css';
 
 const TESTIMONIAL_AUTOPLAY_MS = 4000;
 
-const TEAM = [
+const PHOTOS = '/assets/imagens/Fotos para usar no site';
+const HERO_PHOTOS = {
+  main: `${PHOTOS}/06092026-EmpregoSTP Sequência nº (002)-68.jpg`,
+  float: `${PHOTOS}/06092026-EmpregoSTP Sequência nº (002)-7.jpg`,
+};
+
+const HERO_WORDS = [
+  'Pessoas',
+  'focadas',
+  'em',
+  'aproximar',
+  { text: 'talento', accent: true },
+  'e',
+  { text: 'oportunidade', accent: true },
+];
+
+const VALUES = [
   {
-    name: 'Edmir dos Santos',
-    role: 'Engenheiro Físico e Programador',
-    description:
-      'Lidera a visão tecnológica do Emprego STP, unindo engenharia, produto e programação para construir uma plataforma simples, útil e preparada para crescer.',
-    image: '/assets/imagens/edmir.jpeg',
-    imagePosition: 'center 22%',
+    title: 'Igualdade de oportunidades',
+    description: 'Promovemos o acesso justo ao emprego, sem discriminação.',
+    Icon: LuScale,
   },
   {
-    name: 'Joel Almeida',
-    role: 'Gestor',
-    featured: true,
+    title: 'Transparência e confiança',
     description:
-      'Acompanha a organização operacional e a relação com parceiros, ajudando a transformar necessidades reais em processos claros para candidatos e empresas.',
-    image: '/assets/imagens/joel.jpeg',
-    imagePosition: 'center 22%',
+      'Valorizamos a honestidade, a credibilidade e a segurança de candidatos e empresas.',
+    Icon: LuShieldCheck,
   },
   {
-    name: 'Mauro Viegas',
-    role: 'Gestor',
+    title: 'Inovação',
     description:
-      'Contribui para a gestão estratégica da plataforma, com foco em crescimento, credibilidade e criação de valor para o mercado de trabalho nacional.',
-    image: '/assets/imagens/mauro.jpeg',
-    imagePosition: 'center 18%',
+      'Usamos a tecnologia para simplificar a procura de emprego e o recrutamento.',
+    Icon: LuLightbulb,
+  },
+  {
+    title: 'Valorização do talento',
+    description:
+      'Acreditamos nas competências e no potencial de cada profissional.',
+    Icon: LuSparkles,
+  },
+  {
+    title: 'Responsabilidade',
+    description:
+      'Trabalhamos com ética, rigor e compromisso com São Tomé e Príncipe.',
+    Icon: LuHandshake,
   },
 ];
 
@@ -72,13 +96,6 @@ const AUDIENCES = [
       'Partilha de conhecimento, dicas de carreira e pontes que fortalecem o mercado de trabalho local.',
     Icon: LuHeartHandshake,
     tone: 'lime',
-  },
-  {
-    title: 'Futuro',
-    description:
-      'Evolução constante, orientada pelo feedback e pelas novas formas de trabalhar no país.',
-    Icon: LuGlobe,
-    tone: 'slate',
   },
 ];
 
@@ -141,83 +158,8 @@ export default function SobreNos() {
   });
   const [testimonialStatus, setTestimonialStatus] = useState(null);
   const [submittingTestimonial, setSubmittingTestimonial] = useState(false);
-  const [joinOpen, setJoinOpen] = useState(false);
-  const [joinStatus, setJoinStatus] = useState(null);
-  const [submittingJoin, setSubmittingJoin] = useState(false);
-  const [joinForm, setJoinForm] = useState({
-    name: '',
-    email: '',
-    message: '',
-  });
-  const joinTriggerRef = useRef(null);
-  const joinDialogRef = useRef(null);
-  const joinCloseRef = useRef(null);
-
-  const handleJoinField = (field) => (event) => {
-    const { value } = event.target;
-    setJoinForm((previous) => ({ ...previous, [field]: value }));
-  };
-
-  // Antes abria o cliente de email do visitante com um mailto: para um domínio
-  // que não existe, e a candidatura perdia-se. Agora vai pelo servidor, fica
-  // registada em `contactMessages` e chega à caixa institucional.
-  const handleJoinSubmit = async (event) => {
-    event.preventDefault();
-    if (submittingJoin) return;
-
-    setJoinStatus(null);
-
-    if (joinForm.name.trim().length < 2) {
-      setJoinStatus({ type: 'error', text: 'Indique o seu nome.' });
-      return;
-    }
-    if (joinForm.message.trim().length < 10) {
-      setJoinStatus({
-        type: 'error',
-        text: 'Escreva uma mensagem com pelo menos 10 caracteres.',
-      });
-      return;
-    }
-
-    setSubmittingJoin(true);
-    try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: joinForm.name.trim(),
-          email: joinForm.email.trim(),
-          subject: 'carreira',
-          message: joinForm.message.trim(),
-          source: 'carreiras',
-        }),
-      });
-      const resultado = await response.json().catch(() => ({}));
-
-      if (!response.ok) {
-        setJoinStatus({
-          type: 'error',
-          text: resultado.error || 'Não foi possível enviar. Tente novamente.',
-        });
-        return;
-      }
-
-      setJoinStatus({
-        type: 'success',
-        text:
-          resultado.message || 'Candidatura enviada! Entraremos em contacto.',
-      });
-      setJoinForm({ name: '', email: '', message: '' });
-    } catch {
-      setJoinStatus({
-        type: 'error',
-        text: 'Falha de ligação. Verifique a internet e tente novamente.',
-      });
-    } finally {
-      setSubmittingJoin(false);
-    }
-  };
-
+  const pageRef = useRef(null);
+  useScrollReveal(pageRef);
   const handleTestimonialField = (field) => (event) => {
     const { value } = event.target;
     setTestimonialForm((previous) => ({ ...previous, [field]: value }));
@@ -376,50 +318,6 @@ export default function SobreNos() {
     );
   }, [testimonialCount]);
 
-  useEffect(() => {
-    if (!joinOpen) return undefined;
-
-    const previousActive = document.activeElement;
-    const dialog = joinDialogRef.current;
-    const animationFrame = window.requestAnimationFrame(() => {
-      joinCloseRef.current?.focus();
-    });
-
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') {
-        setJoinOpen(false);
-        return;
-      }
-
-      if (event.key !== 'Tab' || !dialog) return;
-
-      const focusableElements = [
-        ...dialog.querySelectorAll('button, input, textarea'),
-      ].filter((element) => !element.disabled);
-      const firstElement = focusableElements[0];
-      const lastElement = focusableElements[focusableElements.length - 1];
-
-      if (event.shiftKey && document.activeElement === firstElement) {
-        event.preventDefault();
-        lastElement?.focus();
-      } else if (!event.shiftKey && document.activeElement === lastElement) {
-        event.preventDefault();
-        firstElement?.focus();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    return () => {
-      window.cancelAnimationFrame(animationFrame);
-      window.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = previousOverflow;
-      if (previousActive instanceof HTMLElement) previousActive.focus();
-    };
-  }, [joinOpen]);
-
   return (
     <>
       <Head>
@@ -431,19 +329,75 @@ export default function SobreNos() {
       </Head>
 
       <PublicPageShell>
-        <div className={styles.page}>
+        <div className={styles.page} ref={pageRef}>
           <div className={styles.pageContent}>
             <section className={styles.hero} aria-labelledby="about-title">
-              <div className={styles.heroInner}>
-                <p className={styles.eyebrow}>Quem somos</p>
-                <h1 id="about-title" className={styles.heroTitle}>
-                  Pessoas focadas em aproximar talento e oportunidade
-                </h1>
-                <p className={styles.heroLead}>
-                  Uma equipa pequena e dedicada, a construir a ponte entre quem
-                  procura e quem contrata em São Tomé e Príncipe. Nascemos para
-                  simplificar, modernizar e impulsionar o mercado de trabalho.
-                </p>
+              <div className={styles.heroGlow} aria-hidden="true">
+                <span />
+                <span />
+                <span />
+              </div>
+              <div className={`${styles.container} ${styles.heroLayout}`}>
+                <div className={styles.heroInner}>
+                  <p className={styles.eyebrow}>
+                    <span className={styles.pulse} aria-hidden="true" />
+                    Quem somos
+                  </p>
+                  <h1 id="about-title" className={styles.heroTitle}>
+                    {HERO_WORDS.map((word, index) => {
+                      const text = typeof word === 'string' ? word : word.text;
+                      return (
+                        <Fragment key={text}>
+                          <span
+                            className={`${styles.word} ${
+                              word.accent ? styles.wordAccent : ''
+                            }`}
+                            style={{ '--i': index }}
+                          >
+                            {text}
+                          </span>{' '}
+                        </Fragment>
+                      );
+                    })}
+                  </h1>
+                  <p className={styles.heroLead}>
+                    Uma equipa pequena e dedicada, a construir a ponte entre
+                    quem procura e quem contrata em São Tomé e Príncipe.
+                    Nascemos para simplificar, modernizar e impulsionar o
+                    mercado de trabalho.
+                  </p>
+                  <div className={styles.heroActions}>
+                    <a href="#equipa" className={styles.heroPrimary}>
+                      Conhecer a equipa
+                      <FiArrowRight aria-hidden="true" />
+                    </a>
+                    <Link href="/vagas" className={styles.heroGhost}>
+                      Explorar vagas
+                    </Link>
+                  </div>
+                </div>
+
+                <div className={styles.heroVisual} aria-hidden="true">
+                  <div className={styles.heroPhotoMain}>
+                    <Image
+                      src={HERO_PHOTOS.main}
+                      alt=""
+                      fill
+                      priority
+                      sizes="(max-width: 64em) 90vw, 40vw"
+                    />
+                  </div>
+                  <div className={styles.heroPhotoFloat}>
+                    <Image src={HERO_PHOTOS.float} alt="" fill sizes="12rem" />
+                  </div>
+                  <div className={styles.heroChip}>
+                    <span className={styles.chipDot} />
+                    <span>
+                      <strong>Feito em São Tomé e Príncipe</strong>
+                      <small>Para quem procura e quem contrata</small>
+                    </span>
+                  </div>
+                </div>
               </div>
             </section>
 
@@ -452,82 +406,67 @@ export default function SobreNos() {
               aria-labelledby="mission-title"
             >
               <div className={styles.container}>
-                <div className={styles.missionLayout}>
-                  <div className={styles.missionCopy}>
-                    <h2 id="mission-title">Cada vaga, uma árvore</h2>
+                <div className={styles.missionCard} data-reveal>
+                  <span className={styles.missionIcon} aria-hidden="true">
+                    <LuTarget />
+                  </span>
+                  <div>
+                    <h2 id="mission-title">A nossa missão</h2>
                     <p>
-                      Acreditamos que o progresso deve criar oportunidades e
-                      cuidar do futuro. Por cada vaga publicada, assumimos o
-                      compromisso de transformar crescimento profissional em
-                      impacto positivo para as pessoas, para a comunidade e para
-                      o ambiente de São Tomé e Príncipe.
+                      Conectar talento e oportunidade, tornando o mercado de
+                      trabalho de São Tomé e Príncipe mais acessível,
+                      transparente e eficiente através da tecnologia.
                     </p>
                   </div>
-                  <span className={styles.missionIcon} aria-hidden="true">
-                    <LuTreePine />
-                  </span>
                 </div>
+
+                <h3 className={styles.valuesTitle} data-reveal>
+                  Os nossos <span>valores</span>
+                </h3>
+                <ul className={styles.valuesGrid}>
+                  {VALUES.map(({ title, description, Icon }, index) => (
+                    <li
+                      key={title}
+                      className={styles.valueCard}
+                      data-reveal
+                      style={{ '--delay': `${index * 80}ms` }}
+                    >
+                      <span className={styles.valueIcon} aria-hidden="true">
+                        <Icon />
+                      </span>
+                      <h4>{title}</h4>
+                      <p>{description}</p>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </section>
 
             <section
+              id="equipa"
               className={styles.teamSection}
               aria-labelledby="team-title"
             >
               <div className={styles.container}>
-                <header className={styles.sectionHeader}>
+                <header className={styles.sectionHeader} data-reveal>
+                  <p className={styles.kicker}>As pessoas</p>
                   <h2 id="team-title">A Nossa Equipa</h2>
                   <p>Conheça os rostos por trás da plataforma.</p>
                 </header>
 
-                <div className={styles.teamGrid}>
-                  {TEAM.map((member) => (
-                    <article
-                      key={member.name}
-                      className={`${styles.teamCard} ${
-                        member.featured ? styles.teamCardFeatured : ''
-                      }`}
-                    >
-                      {member.badge ? (
-                        <span className={styles.featuredBadge}>
-                          {member.badge}
-                        </span>
-                      ) : null}
+                <CareerTeam />
 
-                      <div className={styles.avatarFrame}>
-                        <Image
-                          src={member.image}
-                          alt={`Retrato de ${member.name}`}
-                          fill
-                          sizes="(max-width: 900px) 128px, 128px"
-                          className={styles.avatarImage}
-                          style={{ objectPosition: member.imagePosition }}
-                        />
-                      </div>
-
-                      <h3>{member.name}</h3>
-                      <span className={styles.roleBadge}>{member.role}</span>
-                      <p>{member.description}</p>
-                    </article>
-                  ))}
-                </div>
-
-                <div className={styles.joinCta}>
+                <div className={styles.joinCta} data-reveal>
                   <p>
                     Quer construir connosco o futuro do emprego em São Tomé e
                     Príncipe?
                     <br />
                     Adorávamos conhecer o seu talento.
                   </p>
-                  <button
-                    type="button"
-                    ref={joinTriggerRef}
-                    className={styles.joinButton}
-                    onClick={() => setJoinOpen(true)}
-                  >
+                  <Link href="/carreira" className={styles.joinButton}>
                     Junte-se à nossa equipa
                     <FiArrowRight aria-hidden="true" />
-                  </button>
+                  </Link>
                 </div>
               </div>
             </section>
@@ -539,7 +478,9 @@ export default function SobreNos() {
               <div className={styles.container}>
                 <header
                   className={`${styles.sectionHeader} ${styles.sectionHeaderCompact}`}
+                  data-reveal
                 >
+                  <p className={styles.kicker}>Para quem</p>
                   <h2 id="audience-title">Uma plataforma para todos</h2>
                   <p>
                     Construída para ligar pessoas, empresas e conhecimento num
@@ -548,21 +489,28 @@ export default function SobreNos() {
                 </header>
 
                 <div className={styles.audienceGrid}>
-                  {AUDIENCES.map(({ title, description, Icon, tone }) => (
-                    <article key={title} className={styles.audienceCard}>
-                      <span
-                        className={styles.audienceIcon}
-                        data-tone={tone}
-                        aria-hidden="true"
+                  {AUDIENCES.map(
+                    ({ title, description, Icon, tone }, index) => (
+                      <article
+                        key={title}
+                        className={styles.audienceCard}
+                        data-reveal
+                        style={{ '--delay': `${index * 90}ms` }}
                       >
-                        <Icon />
-                      </span>
-                      <div>
-                        <h3>{title}</h3>
-                        <p>{description}</p>
-                      </div>
-                    </article>
-                  ))}
+                        <span
+                          className={styles.audienceIcon}
+                          data-tone={tone}
+                          aria-hidden="true"
+                        >
+                          <Icon />
+                        </span>
+                        <div>
+                          <h3>{title}</h3>
+                          <p>{description}</p>
+                        </div>
+                      </article>
+                    ),
+                  )}
                 </div>
               </div>
             </section>
@@ -575,7 +523,9 @@ export default function SobreNos() {
               <div className={styles.container}>
                 <header
                   className={`${styles.sectionHeader} ${styles.sectionHeaderCompact}`}
+                  data-reveal
                 >
+                  <p className={styles.kicker}>Testemunhos</p>
                   <h2 id="testimonials-title">O que dizem de nós</h2>
                   <p>
                     Experiências de candidatos e empresas que já encontraram
@@ -703,7 +653,7 @@ export default function SobreNos() {
             >
               <div className={styles.container}>
                 <div className={styles.shareLayout}>
-                  <div className={styles.sharePitch}>
+                  <div className={styles.sharePitch} data-reveal>
                     <p className={styles.shareEyebrow}>Faça parte</p>
                     <h2 id="share-title">
                       Quer construir connosco o futuro do emprego em São Tomé e
@@ -730,6 +680,8 @@ export default function SobreNos() {
                   <form
                     className={styles.shareCard}
                     onSubmit={handleTestimonialSubmit}
+                    data-reveal
+                    style={{ '--delay': '120ms' }}
                   >
                     <div className={styles.shareCardHeader}>
                       <h3>Partilhe a sua experiência</h3>
@@ -845,109 +797,6 @@ export default function SobreNos() {
           </div>
         </div>
       </PublicPageShell>
-
-      {joinOpen
-        ? createPortal(
-            <div
-              className={styles.modalOverlay}
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="join-title"
-              aria-describedby="join-description"
-              onClick={(event) => {
-                if (event.target === event.currentTarget) setJoinOpen(false);
-              }}
-            >
-              <div ref={joinDialogRef} className={styles.modal}>
-                <button
-                  type="button"
-                  ref={joinCloseRef}
-                  className={styles.modalClose}
-                  onClick={() => setJoinOpen(false)}
-                  aria-label="Fechar formulário"
-                >
-                  <FiX aria-hidden="true" />
-                </button>
-
-                <p className={styles.modalEyebrow}>Carreiras</p>
-                <h2 id="join-title">Junte-se à nossa equipa</h2>
-                <p id="join-description" className={styles.modalDescription}>
-                  Conte-nos quem é e como gostaria de contribuir para o Emprego
-                  STP. A sua candidatura chega diretamente à nossa equipa.
-                </p>
-
-                <form className={styles.joinForm} onSubmit={handleJoinSubmit}>
-                  <div className={styles.formGrid}>
-                    <label className={styles.field} htmlFor="join-name">
-                      <span>Nome</span>
-                      <input
-                        id="join-name"
-                        type="text"
-                        value={joinForm.name}
-                        onChange={handleJoinField('name')}
-                        placeholder="O seu nome"
-                        maxLength={80}
-                        autoComplete="name"
-                        required
-                      />
-                    </label>
-
-                    <label className={styles.field} htmlFor="join-email">
-                      <span>Email</span>
-                      <input
-                        id="join-email"
-                        type="email"
-                        value={joinForm.email}
-                        onChange={handleJoinField('email')}
-                        placeholder="email@exemplo.com"
-                        maxLength={120}
-                        autoComplete="email"
-                        required
-                      />
-                    </label>
-                  </div>
-
-                  <label className={styles.field} htmlFor="join-message">
-                    <span>Mensagem</span>
-                    <textarea
-                      id="join-message"
-                      value={joinForm.message}
-                      onChange={handleJoinField('message')}
-                      placeholder="Fale-nos sobre si, a sua experiência e como gostaria de contribuir."
-                      rows={5}
-                      maxLength={1200}
-                      required
-                    />
-                    <small>{joinForm.message.length}/1200</small>
-                  </label>
-
-                  {joinStatus ? (
-                    <p
-                      className={`${styles.formStatus} ${
-                        joinStatus.type === 'success'
-                          ? styles.formStatusSuccess
-                          : styles.formStatusError
-                      }`}
-                      role="status"
-                    >
-                      {joinStatus.text}
-                    </p>
-                  ) : null}
-
-                  <button
-                    type="submit"
-                    className={styles.submitButton}
-                    disabled={submittingJoin}
-                  >
-                    {submittingJoin ? 'A enviar...' : 'Enviar candidatura'}
-                    <FiSend aria-hidden="true" />
-                  </button>
-                </form>
-              </div>
-            </div>,
-            document.body,
-          )
-        : null}
     </>
   );
 }

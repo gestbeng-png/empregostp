@@ -14,6 +14,12 @@ async function syncVerificationState(uid, verificationId, record) {
   const publicState = derivePublicVerificationState(record);
   const summary = buildVerificationProfileSummary(record);
   const nowIso = new Date().toISOString();
+  // O selo público também é lido de campos antigos (`verificado`,
+  // `isVerified`); ao perder a verificação têm de cair todos, senão o perfil
+  // continua a aparecer como verificado no carrossel e na página pública.
+  const legacyBadgeReset = publicState.verified
+    ? {}
+    : { verificado: false, isVerified: false, verifiedAt: null };
 
   const baseUpdate = {
     verificationId,
@@ -29,29 +35,42 @@ async function syncVerificationState(uid, verificationId, record) {
   };
 
   await Promise.all([
-    admin.firestore().collection('users').doc(uid).set(
-      {
-        ...baseUpdate,
-        verificationReviewedAt:
-          summary.pendingCount === 0 && summary.requestedCount > 0 ? nowIso : null,
-        ...(publicState.verified ? { verifiedAt: admin.firestore.FieldValue.serverTimestamp() } : {}),
-      },
-      { merge: true }
-    ),
-    admin.firestore().collection('profiles').doc(uid).set(
-      {
-        verificationStatus: publicState.verificationStatus,
-        verified: publicState.verified,
-        rejectionReason: publicState.rejectionReason || '',
-        verificationSummary: {
-          ...summary,
-          lastSyncedAt: nowIso,
+    admin
+      .firestore()
+      .collection('users')
+      .doc(uid)
+      .set(
+        {
+          ...baseUpdate,
+          verificationReviewedAt:
+            summary.pendingCount === 0 && summary.requestedCount > 0
+              ? nowIso
+              : null,
+          ...(publicState.verified
+            ? { verifiedAt: admin.firestore.FieldValue.serverTimestamp() }
+            : legacyBadgeReset),
         },
-        verificationItems: summary.types || {},
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      },
-      { merge: true }
-    ),
+        { merge: true },
+      ),
+    admin
+      .firestore()
+      .collection('profiles')
+      .doc(uid)
+      .set(
+        {
+          verificationStatus: publicState.verificationStatus,
+          verified: publicState.verified,
+          rejectionReason: publicState.rejectionReason || '',
+          verificationSummary: {
+            ...summary,
+            lastSyncedAt: nowIso,
+          },
+          verificationItems: summary.types || {},
+          ...legacyBadgeReset,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true },
+      ),
   ]);
 }
 
@@ -62,14 +81,22 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { verificationId, uid, action, reason = '', verificationType = null } = req.body || {};
+    const {
+      verificationId,
+      uid,
+      action,
+      reason = '',
+      verificationType = null,
+    } = req.body || {};
 
     if (!verificationId || !uid || !action) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    if (!['approve', 'reject'].includes(action)) {
-      return res.status(400).json({ error: 'Invalid action. Must be "approve" or "reject"' });
+    if (!['approve', 'reject', 'revoke'].includes(action)) {
+      return res.status(400).json({
+        error: 'Invalid action. Must be "approve", "reject" or "revoke"',
+      });
     }
 
     const token = req.headers.authorization?.split('Bearer ')[1];
@@ -80,19 +107,30 @@ export default async function handler(req, res) {
     const decodedToken = await admin.auth().verifyIdToken(token);
     const adminUid = decodedToken.uid;
 
-    const adminDoc = await admin.firestore().collection('users').doc(adminUid).get();
+    const adminDoc = await admin
+      .firestore()
+      .collection('users')
+      .doc(adminUid)
+      .get();
     if (!adminDoc.exists || adminDoc.data().userType !== 'admin') {
-      return res.status(403).json({ error: 'Forbidden - Admin access required' });
+      return res
+        .status(403)
+        .json({ error: 'Forbidden - Admin access required' });
     }
 
-    const verificationRef = admin.firestore().collection('verifications').doc(verificationId);
+    const verificationRef = admin
+      .firestore()
+      .collection('verifications')
+      .doc(verificationId);
     const verificationDoc = await verificationRef.get();
 
     if (!verificationDoc.exists) {
       return res.status(404).json({ error: 'Verification request not found' });
     }
 
-    const verificationData = serializeVerificationTimestamps(verificationDoc.data() || {});
+    const verificationData = serializeVerificationTimestamps(
+      verificationDoc.data() || {},
+    );
 
     // O `uid` vem do cliente, mas a elegibilidade é avaliada sobre o dono do
     // pedido. Sem esta igualdade era possível aprovar a verificação de A — que
@@ -101,25 +139,52 @@ export default async function handler(req, res) {
     // recebido em vez do que consta no pedido.
     if (String(uid) !== String(verificationData.uid || '')) {
       return res.status(400).json({
-        error: 'O utilizador indicado não corresponde ao do pedido de verificação.',
+        error:
+          'O utilizador indicado não corresponde ao do pedido de verificação.',
         code: 'VERIFICATION_UID_MISMATCH',
       });
     }
 
-    const targetItem = verificationType ? verificationData.verificationItems?.[verificationType] : null;
+    const targetItem = verificationType
+      ? verificationData.verificationItems?.[verificationType]
+      : null;
     if (verificationType && !targetItem) {
-      return res.status(404).json({ error: 'Verification type not found in this request' });
+      return res
+        .status(404)
+        .json({ error: 'Verification type not found in this request' });
     }
-    if (verificationType && targetItem.status !== 'pending') {
-      return res.status(400).json({ error: 'Verification type already reviewed' });
-    }
-    if (!verificationType && verificationData.status !== 'pending') {
-      return res.status(400).json({ error: 'Verification already reviewed' });
+    if (action === 'revoke') {
+      // Só se revoga o que está aprovado; sem tipo, revoga todos os aprovados.
+      const hasApprovedItem = verificationType
+        ? targetItem.status === 'approved'
+        : Object.values(verificationData.verificationItems || {}).some(
+            (item) => item?.status === 'approved',
+          );
+      if (!hasApprovedItem) {
+        return res.status(400).json({
+          error: 'Não há nenhuma verificação aprovada para desativar.',
+        });
+      }
+    } else {
+      if (verificationType && targetItem.status !== 'pending') {
+        return res
+          .status(400)
+          .json({ error: 'Verification type already reviewed' });
+      }
+      if (!verificationType && verificationData.status !== 'pending') {
+        return res.status(400).json({ error: 'Verification already reviewed' });
+      }
     }
 
     if (action === 'approve') {
-      const targetUserDoc = await admin.firestore().collection('users').doc(verificationData.uid).get();
-      const targetUserData = targetUserDoc.exists ? targetUserDoc.data() || {} : {};
+      const targetUserDoc = await admin
+        .firestore()
+        .collection('users')
+        .doc(verificationData.uid)
+        .get();
+      const targetUserData = targetUserDoc.exists
+        ? targetUserDoc.data() || {}
+        : {};
 
       // O CV visível ao candidato (perfil) é o que realmente importa aqui — pode
       // não ter sido re-anexado neste pedido específico se só outro tipo (ex.
@@ -127,7 +192,8 @@ export default async function handler(req, res) {
       const hasCv = Boolean(String(targetUserData.cvUrl || '').trim());
       if (!hasCv) {
         return res.status(400).json({
-          error: 'Não é possível aprovar: o candidato ainda não anexou um currículo (CV) ao perfil.',
+          error:
+            'Não é possível aprovar: o candidato ainda não anexou um currículo (CV) ao perfil.',
           code: 'VERIFICATION_MISSING_CV',
         });
       }
@@ -137,7 +203,8 @@ export default async function handler(req, res) {
       const paymentAccess = canVerifyProfile(targetUserData.currentPlan);
       if (!paymentAccess.allowed) {
         return res.status(400).json({
-          error: 'Não é possível aprovar: o plano atual do candidato já não inclui verificação de perfil (pagamento não confirmado).',
+          error:
+            'Não é possível aprovar: o plano atual do candidato já não inclui verificação de perfil (pagamento não confirmado).',
           code: 'VERIFICATION_PLAN_NOT_ELIGIBLE',
         });
       }
@@ -161,55 +228,83 @@ export default async function handler(req, res) {
         reviewedBy: adminUid,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       },
-      { merge: true }
+      { merge: true },
     );
 
     const savedDoc = await verificationRef.get();
     const savedRecord = serializeVerificationTimestamps(savedDoc.data() || {});
     await syncVerificationState(uid, verificationId, savedRecord);
 
-    await admin.firestore().collection('activities').add({
-      type:
-        action === 'approve'
-          ? verificationType
-            ? 'verification_item_approved'
-            : 'verification_approved'
-          : verificationType
-            ? 'verification_item_rejected'
-            : 'verification_rejected',
-      description: verificationType
-        ? `${VERIFICATION_TYPE_CONFIG[verificationType]?.label || verificationType} do utilizador ${uid} foi ${action === 'approve' ? 'aprovada' : 'rejeitada'}`
-        : `Verificação do utilizador ${uid} foi ${action === 'approve' ? 'aprovada' : 'rejeitada'} por um administrador`,
-      userId: uid,
-      verificationId,
-      verificationType,
-      adminId: adminUid,
-      createdAt: new Date().toISOString(),
-    });
+    const actionVerb = {
+      approve: 'aprovada',
+      reject: 'rejeitada',
+      revoke: 'desativada',
+    }[action];
+    const actionSuffix = {
+      approve: 'approved',
+      reject: 'rejected',
+      revoke: 'revoked',
+    }[action];
+
+    await admin
+      .firestore()
+      .collection('activities')
+      .add({
+        type: verificationType
+          ? `verification_item_${actionSuffix}`
+          : `verification_${actionSuffix}`,
+        description: verificationType
+          ? `${VERIFICATION_TYPE_CONFIG[verificationType]?.label || verificationType} do utilizador ${uid} foi ${actionVerb}`
+          : `Verificação do utilizador ${uid} foi ${actionVerb} por um administrador`,
+        userId: uid,
+        verificationId,
+        verificationType,
+        adminId: adminUid,
+        createdAt: new Date().toISOString(),
+      });
 
     try {
-      const targetLabel = verificationType ? VERIFICATION_TYPE_CONFIG[verificationType]?.label || verificationType : 'verificação de perfil';
+      const targetLabel = verificationType
+        ? VERIFICATION_TYPE_CONFIG[verificationType]?.label || verificationType
+        : 'verificação de perfil';
       await createServerNotification(admin, {
         userId: uid,
-        type: action === 'approve' ? 'verification_approved' : 'verification_rejected',
-        title: action === 'approve' ? '✅ Verificação atualizada' : '❌ Verificação atualizada',
-        message: action === 'approve'
-          ? `${targetLabel} foi aprovada. Consulte o painel de verificação para ver o progresso atual.`
-          : `${targetLabel} foi rejeitada. ${reason || 'Consulte o painel de verificação para rever o motivo.'}`,
+        type:
+          action === 'approve'
+            ? 'verification_approved'
+            : 'verification_rejected',
+        title:
+          action === 'approve'
+            ? '✅ Verificação atualizada'
+            : '❌ Verificação atualizada',
+        message:
+          action === 'approve'
+            ? `${targetLabel} foi aprovada. Consulte o painel de verificação para ver o progresso atual.`
+            : action === 'revoke'
+              ? `${targetLabel} foi desativada por um administrador. ${reason || 'Pode voltar a submeter no painel de verificação.'}`
+              : `${targetLabel} foi rejeitada. ${reason || 'Consulte o painel de verificação para rever o motivo.'}`,
         actionUrl: '/dashboard/candidato?tab=verification',
       });
     } catch (notifError) {
-      logServerError('admin_verify_action.creating_notification_failed', notifError);
+      logServerError(
+        'admin_verify_action.creating_notification_failed',
+        notifError,
+      );
     }
 
     return res.status(200).json({
       success: true,
-      message: `Verification ${action === 'approve' ? 'approved' : 'rejected'} successfully`,
+      message: `Verification ${actionSuffix} successfully`,
       newStatus: reviewedRecord.status,
       verification: savedRecord,
     });
   } catch (error) {
-    logServerError('admin_verify_action.processing_verification_action_failed', error);
-    return res.status(500).json({ error: 'Internal server error', details: error.message });
+    logServerError(
+      'admin_verify_action.processing_verification_action_failed',
+      error,
+    );
+    return res
+      .status(500)
+      .json({ error: 'Internal server error', details: error.message });
   }
 }

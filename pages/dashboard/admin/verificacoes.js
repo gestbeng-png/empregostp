@@ -4,48 +4,11 @@ import Link from 'next/link';
 import { getAuth } from 'firebase/auth';
 import { requireAdminPageAuth } from '../../../lib/adminPageGuard';
 import { VERIFICATION_TYPE_CONFIG } from '../../../lib/candidateVerification';
+import VerificationReviewModal, {
+  getOrderedItems,
+  StatusBadge,
+} from '../../../components/admin/VerificationReviewModal';
 import styles from '../../../styles/AdminPanel.module.css';
-
-const STATUS_CONFIG = {
-  pending: {
-    label: 'Pendente',
-    color: '#8a5a00',
-    background: 'rgba(245, 158, 11, 0.18)',
-    border: '1px solid rgba(245, 158, 11, 0.3)',
-  },
-  approved: {
-    label: 'Aprovado',
-    color: '#116e4b',
-    background: 'rgba(16, 185, 129, 0.18)',
-    border: '1px solid rgba(16, 185, 129, 0.3)',
-  },
-  rejected: {
-    label: 'Rejeitado',
-    color: '#f87171',
-    background: 'rgba(239, 68, 68, 0.18)',
-    border: '1px solid rgba(239, 68, 68, 0.3)',
-  },
-  partial: {
-    label: 'Parcial',
-    color: '#60a5fa',
-    background: 'rgba(59, 130, 246, 0.18)',
-    border: '1px solid rgba(59, 130, 246, 0.3)',
-  },
-  draft: {
-    label: 'Rascunho',
-    color: '#4a5568',
-    background: 'rgba(148, 163, 184, 0.18)',
-    border: '1px solid rgba(148, 163, 184, 0.3)',
-  },
-};
-
-const TYPE_ORDER = [
-  'identity',
-  'certificates',
-  'academic',
-  'experience',
-  'competencies',
-];
 
 function formatDate(dateStr) {
   if (!dateStr) return '—';
@@ -68,13 +31,6 @@ function StatCard({ title, value, color }) {
       <p className={styles.statValue}>{value}</p>
       <p className={styles.statLabel}>{title}</p>
     </div>
-  );
-}
-
-function getOrderedItems(verification) {
-  const itemMap = verification?.verificationItems || {};
-  return TYPE_ORDER.map((type) => itemMap[type]).filter(
-    (item) => item && item.requested,
   );
 }
 
@@ -182,12 +138,16 @@ export default function AdminVerificacoes() {
         ? VERIFICATION_TYPE_CONFIG[verificationType]?.label || verificationType
         : 'pedido';
 
+      const outcome = {
+        approve: 'aprovado com sucesso',
+        reject: 'rejeitado',
+        revoke: 'desativado',
+      }[action];
       setMessage({
-        text:
-          action === 'approve'
-            ? `${typeLabel} de ${verification.candidateName} aprovado com sucesso.`
-            : `${typeLabel} de ${verification.candidateName} rejeitado.`,
-        ok: action === 'approve',
+        text: verificationType
+          ? `${typeLabel} de ${verification.candidateName} ${outcome}.`
+          : `Verificação de ${verification.candidateName} ${outcome}.`,
+        ok: action !== 'reject',
       });
 
       setReviewReason('');
@@ -228,12 +188,7 @@ export default function AdminVerificacoes() {
           <div className={styles.headerCopy}>
             <Link
               href="/dashboard/admin"
-              className={`${styles.linkButton} ${styles.buttonAccent} ${styles.buttonSmall}`}
-              style={{
-                '--button-bg': 'rgba(255, 255, 255, 0.05)',
-                '--button-border': 'rgba(255, 255, 255, 0.1)',
-                '--button-color': '#93c5fd',
-              }}
+              className={`${styles.linkButton} ${styles.buttonGhost} ${styles.buttonSmall}`}
             >
               ← Voltar ao Dashboard
             </Link>
@@ -248,12 +203,7 @@ export default function AdminVerificacoes() {
               type="button"
               onClick={fetchVerifications}
               disabled={loading}
-              className={`${styles.buttonBase} ${styles.buttonAccent}`}
-              style={{
-                '--button-bg': 'rgba(255, 255, 255, 0.08)',
-                '--button-border': 'rgba(255, 255, 255, 0.12)',
-                '--button-color': 'rgba(255, 255, 255, 0.85)',
-              }}
+              className={`${styles.buttonBase} ${styles.buttonGhost}`}
             >
               Atualizar
             </button>
@@ -329,9 +279,6 @@ export default function AdminVerificacoes() {
                   </thead>
                   <tbody>
                     {verifications.map((verification) => {
-                      const status =
-                        STATUS_CONFIG[verification.status] ||
-                        STATUS_CONFIG.draft;
                       return (
                         <tr key={verification.id} className={styles.tableRow}>
                           <td className={styles.tableCell}>
@@ -377,16 +324,7 @@ export default function AdminVerificacoes() {
                               : '—'}
                           </td>
                           <td className={styles.tableCell}>
-                            <span
-                              className={styles.badge}
-                              style={{
-                                '--badge-bg': status.background,
-                                '--badge-color': status.color,
-                                '--badge-border': status.border,
-                              }}
-                            >
-                              {status.label}
-                            </span>
+                            <StatusBadge status={verification.status} />
                           </td>
                           <td
                             className={`${styles.tableCell} ${styles.alignRight}`}
@@ -397,11 +335,6 @@ export default function AdminVerificacoes() {
                                 setSelectedVerification(verification)
                               }
                               className={`${styles.buttonBase} ${styles.buttonAccent} ${styles.buttonSmall}`}
-                              style={{
-                                '--button-bg': 'rgba(59, 130, 246, 0.2)',
-                                '--button-border': 'rgba(59, 130, 246, 0.3)',
-                                '--button-color': '#60a5fa',
-                              }}
                             >
                               Ver detalhes
                             </button>
@@ -428,314 +361,6 @@ export default function AdminVerificacoes() {
         />
       ) : null}
     </>
-  );
-}
-
-function VerificationReviewModal({
-  selectedVerification,
-  closeModal,
-  reviewReason,
-  setReviewReason,
-  processAction,
-  processingKey,
-}) {
-  const approvalEligibility = selectedVerification.approvalEligibility || {
-    allowed: true,
-  };
-
-  return (
-        <div className={styles.modalOverlay} onClick={closeModal}>
-          <div
-            className={`${styles.modalCard} ${styles.modalCardLarge}`}
-            onClick={(event) => event.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="verification-review-title"
-          >
-            <div className={styles.modalHeader}>
-              <h2 id="verification-review-title" className={styles.modalTitle}>
-                Painel de revisão
-              </h2>
-              <p className={styles.modalSubtitle}>
-                {selectedVerification.candidateName} •{' '}
-                {selectedVerification.candidateEmail}
-              </p>
-            </div>
-
-            <div className={styles.modalBodyStack}>
-              <div className={styles.modalInfoCard}>
-                <h3 className={styles.modalInfoTitle}>Resumo</h3>
-                <div className={styles.buttonGroup}>
-                  <span
-                    className={styles.badge}
-                    style={{
-                      '--badge-bg': 'rgba(59, 130, 246, 0.14)',
-                      '--badge-color': '#93c5fd',
-                      '--badge-border': '1px solid rgba(59, 130, 246, 0.2)',
-                    }}
-                  >
-                    {selectedVerification.summary?.approvedCount || 0} aprovados
-                  </span>
-                  <span
-                    className={styles.badge}
-                    style={{
-                      '--badge-bg': 'rgba(245, 158, 11, 0.14)',
-                      '--badge-color': '#8a5a00',
-                      '--badge-border': '1px solid rgba(245, 158, 11, 0.2)',
-                    }}
-                  >
-                    {selectedVerification.summary?.pendingCount || 0} pendentes
-                  </span>
-                  <span
-                    className={styles.badge}
-                    style={{
-                      '--badge-bg': 'rgba(239, 68, 68, 0.14)',
-                      '--badge-color': '#f87171',
-                      '--badge-border': '1px solid rgba(239, 68, 68, 0.2)',
-                    }}
-                  >
-                    {selectedVerification.summary?.rejectedCount || 0}{' '}
-                    rejeitados
-                  </span>
-                </div>
-              </div>
-
-              <div className={styles.modalInfoCard}>
-                <h3 className={styles.modalInfoTitle}>
-                  Pré-requisitos para aprovar
-                </h3>
-                <div className={styles.buttonGroup}>
-                  {selectedVerification.cvUrl ? (
-                    <a
-                      href={selectedVerification.cvUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className={styles.proofLink}
-                    >
-                      Abrir CV do candidato
-                    </a>
-                  ) : (
-                    <span
-                      className={styles.badge}
-                      style={{
-                        '--badge-bg': 'rgba(239, 68, 68, 0.14)',
-                        '--badge-color': '#f87171',
-                        '--badge-border': '1px solid rgba(239, 68, 68, 0.2)',
-                      }}
-                    >
-                      Sem CV anexado ao perfil
-                    </span>
-                  )}
-                  <span
-                    className={styles.badge}
-                    style={{
-                      '--badge-bg': approvalEligibility.allowed
-                        ? 'rgba(16, 185, 129, 0.14)'
-                        : 'rgba(239, 68, 68, 0.14)',
-                      '--badge-color': approvalEligibility.allowed
-                        ? '#116e4b'
-                        : '#f87171',
-                      '--badge-border': approvalEligibility.allowed
-                        ? '1px solid rgba(16,185,129,0.2)'
-                        : '1px solid rgba(239, 68, 68, 0.2)',
-                    }}
-                  >
-                    Plano: {selectedVerification.currentPlan || 'basic_candidato'}
-                    {approvalEligibility.allowed
-                      ? ' • pagamento confirmado'
-                      : ' • pagamento não confirmado'}
-                  </span>
-                </div>
-                {!approvalEligibility.allowed ? (
-                  <p className={styles.proofNote}>
-                    {approvalEligibility.reason} Não é possível aprovar
-                    nenhum tipo deste pedido enquanto isto não for resolvido.
-                  </p>
-                ) : null}
-              </div>
-
-              <div className={styles.formField}>
-                <label htmlFor="review-reason" className={styles.formLabel}>
-                  Nota de revisão
-                </label>
-                <textarea
-                  id="review-reason"
-                  value={reviewReason}
-                  onChange={(event) => setReviewReason(event.target.value)}
-                  rows={3}
-                  placeholder="Opcional. Pode justificar aprovação/rejeição por tipo."
-                  className={styles.textareaControl}
-                />
-              </div>
-
-              <div className={styles.verificationReviewGrid}>
-                {getOrderedItems(selectedVerification).map((item) => {
-                  const itemStatus =
-                    STATUS_CONFIG[item.status] || STATUS_CONFIG.draft;
-                  return (
-                    <article
-                      key={item.type}
-                      className={styles.verificationReviewCard}
-                    >
-                      <div className={styles.verificationReviewHeader}>
-                        <div>
-                          <h3 className={styles.verificationReviewTitle}>
-                            {item.label}
-                          </h3>
-                          <p className={styles.verificationReviewText}>
-                            {item.description}
-                          </p>
-                        </div>
-                        <span
-                          className={styles.badge}
-                          style={{
-                            '--badge-bg': itemStatus.background,
-                            '--badge-color': itemStatus.color,
-                            '--badge-border': itemStatus.border,
-                          }}
-                        >
-                          {itemStatus.label}
-                        </span>
-                      </div>
-
-                      <div className={styles.verificationChecklistAdmin}>
-                        {item.checklist?.map((check) => (
-                          <div
-                            key={`${item.type}-${check.id}`}
-                            className={styles.verificationChecklistAdminItem}
-                          >
-                            <span
-                              className={
-                                check.completed
-                                  ? styles.verificationCheckDone
-                                  : styles.verificationCheckPending
-                              }
-                            >
-                              {check.completed ? '✓' : '•'}
-                            </span>
-                            <div>
-                              <strong>{check.label}</strong>
-                              {check.hint ? <p>{check.hint}</p> : null}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-
-                      {item.evidence?.length ? (
-                        <div className={styles.verificationEvidenceList}>
-                          {item.evidence.map((evidence) => (
-                            <div
-                              key={evidence.id}
-                              className={styles.verificationEvidenceItem}
-                            >
-                              <strong>{evidence.label}</strong>
-                              {evidence.url ? (
-                                <a
-                                  href={evidence.url}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className={styles.proofLink}
-                                >
-                                  Abrir evidência
-                                </a>
-                              ) : (
-                                <p>{evidence.text || 'Sem detalhe textual.'}</p>
-                              )}
-                              <span>
-                                {evidence.source === 'submission'
-                                  ? 'Submetido no pedido'
-                                  : 'Puxado do perfil atual'}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className={styles.proofNote}>
-                          Sem evidências anexadas neste tipo.
-                        </p>
-                      )}
-
-                      {item.status === 'pending' ? (
-                        <div
-                          className={styles.buttonGroup}
-                          style={{ justifyContent: 'flex-end' }}
-                        >
-                          <button
-                            type="button"
-                            disabled={
-                              !approvalEligibility.allowed ||
-                              processingKey ===
-                                `${selectedVerification.id}:${item.type}:approve`
-                            }
-                            title={
-                              approvalEligibility.allowed
-                                ? undefined
-                                : approvalEligibility.reason
-                            }
-                            onClick={() =>
-                              processAction(
-                                selectedVerification,
-                                'approve',
-                                item.type,
-                              )
-                            }
-                            className={`${styles.buttonBase} ${styles.buttonAccent} ${styles.buttonSmall}`}
-                            style={{
-                              '--button-bg': 'rgba(16, 185, 129, 0.15)',
-                              '--button-border': 'rgba(16,185,129,0.3)',
-                              '--button-color': '#116e4b',
-                            }}
-                          >
-                            Aprovar tipo
-                          </button>
-                          <button
-                            type="button"
-                            disabled={
-                              processingKey ===
-                              `${selectedVerification.id}:${item.type}:reject`
-                            }
-                            onClick={() =>
-                              processAction(
-                                selectedVerification,
-                                'reject',
-                                item.type,
-                              )
-                            }
-                            className={`${styles.buttonBase} ${styles.buttonAccent} ${styles.buttonSmall}`}
-                            style={{
-                              '--button-bg': 'rgba(239, 68, 68, 0.12)',
-                              '--button-border': 'rgba(239,68,68,0.3)',
-                              '--button-color': '#f87171',
-                            }}
-                          >
-                            Rejeitar tipo
-                          </button>
-                        </div>
-                      ) : item.reviewReason ? (
-                        <p className={styles.proofNote}>
-                          Motivo: {item.reviewReason}
-                        </p>
-                      ) : null}
-                    </article>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div
-              className={styles.buttonGroupEnd}
-              style={{ marginTop: '2rem' }}
-            >
-              <button
-                type="button"
-                onClick={closeModal}
-                className={`${styles.buttonBase} ${styles.buttonGhost}`}
-              >
-                Fechar
-              </button>
-            </div>
-          </div>
-        </div>
   );
 }
 

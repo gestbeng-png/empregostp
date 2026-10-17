@@ -18,30 +18,46 @@ export default async function handler(req, res) {
     }
 
     if (!token) {
-      return res.status(401).json({ message: 'Token de autorização ausente ou inválido' });
+      return res
+        .status(401)
+        .json({ message: 'Token de autorização ausente ou inválido' });
     }
 
     const decodedToken = await admin.auth().verifyIdToken(token);
     const adminUid = decodedToken.uid;
 
     // Verificar se o usuário é um administrador
-    const adminDoc = await admin.firestore().collection('users').doc(adminUid).get();
+    const adminDoc = await admin
+      .firestore()
+      .collection('users')
+      .doc(adminUid)
+      .get();
     if (!adminDoc.exists) {
-      return res.status(404).json({ message: 'Usuário administrador não encontrado' });
+      return res
+        .status(404)
+        .json({ message: 'Usuário administrador não encontrado' });
     }
 
     const adminData = adminDoc.data();
     if (adminData.userType !== 'admin') {
-      return res.status(403).json({ message: 'Acesso negado. Apenas administradores podem acessar esta API' });
+      return res
+        .status(403)
+        .json({
+          message:
+            'Acesso negado. Apenas administradores podem acessar esta API',
+        });
     }
 
     // Métodos permitidos
     if (req.method === 'GET') {
       // Buscar todos os serviços
-      const servicesSnapshot = await admin.firestore().collection('services').get();
-      const services = servicesSnapshot.docs.map(doc => ({
+      const servicesSnapshot = await admin
+        .firestore()
+        .collection('services')
+        .get();
+      const services = servicesSnapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data()
+        ...doc.data(),
       }));
 
       return res.status(200).json({ services });
@@ -51,10 +67,16 @@ export default async function handler(req, res) {
 
       // Validar dados
       if (!title || !description) {
-        return res.status(400).json({ message: 'Título e descrição são obrigatórios' });
+        return res
+          .status(400)
+          .json({ message: 'Título e descrição são obrigatórios' });
       }
 
-      if (!['formacao', 'consultoria', 'mentoria', 'workshop', 'curso'].includes(category)) {
+      if (
+        !['formacao', 'consultoria', 'mentoria', 'workshop', 'curso'].includes(
+          category,
+        )
+      ) {
         return res.status(400).json({ message: 'Categoria inválida' });
       }
 
@@ -71,24 +93,30 @@ export default async function handler(req, res) {
         createdAt: new Date().toISOString(),
         createdBy: adminUid,
         updatedAt: new Date().toISOString(),
-        updatedBy: adminUid
+        updatedBy: adminUid,
       };
 
-      const serviceRef = await admin.firestore().collection('services').add(serviceData);
+      const serviceRef = await admin
+        .firestore()
+        .collection('services')
+        .add(serviceData);
 
       // Registrar atividade
-      await admin.firestore().collection('activities').add({
-        type: 'service_created',
-        description: `Serviço "${title}" foi criado por um administrador`,
-        serviceId: serviceRef.id,
-        adminId: adminUid,
-        createdAt: new Date().toISOString()
-      });
+      await admin
+        .firestore()
+        .collection('activities')
+        .add({
+          type: 'service_created',
+          description: `Serviço "${title}" foi criado por um administrador`,
+          serviceId: serviceRef.id,
+          adminId: adminUid,
+          createdAt: new Date().toISOString(),
+        });
 
-      return res.status(201).json({ 
+      return res.status(201).json({
         message: 'Serviço criado com sucesso',
         id: serviceRef.id,
-        ...serviceData
+        ...serviceData,
       });
     } else {
       res.setHeader('Allow', ['GET', 'POST']);
@@ -96,6 +124,8 @@ export default async function handler(req, res) {
     }
   } catch (error) {
     logServerError('admin_services.gerenciar_servicos_failed', error);
-    return res.status(500).json({ message: 'Erro interno do servidor', error: error.message });
+    return res
+      .status(500)
+      .json({ message: 'Erro interno do servidor', error: error.message });
   }
-} 
+}

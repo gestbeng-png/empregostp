@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -8,20 +8,22 @@ import {
   FiBriefcase,
   FiCheckCircle,
   FiChevronDown,
-  FiChevronUp,
+  FiChevronLeft,
+  FiChevronRight,
   FiClock,
-  FiDollarSign,
-  FiInfo,
   FiMapPin,
   FiSearch,
   FiSliders,
+  FiStar,
   FiX,
 } from 'react-icons/fi';
+import CoinsIcon from '../../components/icons/CoinsIcon';
 import PublicPageShell from '../../components/PublicPageShell';
 import {
   filterPublicJobsByCompany,
   projectPublicJob,
 } from '../../lib/publicJob';
+import useScrollReveal from '../../lib/useScrollReveal';
 import styles from '../../styles/VagasPage.module.css';
 
 function normalizeSearchValue(value) {
@@ -33,28 +35,88 @@ function getRouteQueryValue(value) {
   return typeof value === 'string' ? value : '';
 }
 
-function filterJobsByRouteQuery(jobs, query = {}) {
-  let result = [...jobs];
-  const search = getRouteQueryValue(query.search).toLowerCase().trim();
-  const category = getRouteQueryValue(query.categoria).toLowerCase().trim();
-  const company = getRouteQueryValue(query.empresa);
+const SORT_OPTIONS = ['recentes', 'prazo', 'salario'];
 
-  if (search) {
-    result = result.filter((job) => matchesSearch(job, search));
-  }
-  if (category) {
-    result = result.filter(
-      (job) =>
-        String(job.categoria || '')
-          .toLowerCase()
-          .trim() === category,
-    );
-  }
-  if (company) {
-    result = filterPublicJobsByCompany(result, company);
-  }
+// Patamares do filtro de salário mínimo; só aparecem os abaixo do maior
+// salário publicado.
+const HERO_WORDS = [
+  'Encontre',
+  'a',
+  'vaga',
+  'certa',
+  'para',
+  'o',
+  'seu',
+  { text: 'próximo', accent: true },
+  { text: 'passo.', accent: true },
+];
 
-  return result;
+const SALARY_STEPS = [2000, 5000, 10000, 15000, 20000, 30000, 50000, 100000];
+
+const EMPTY_FILTERS = {
+  empresa: '',
+  localizacao: '',
+  tipoContrato: '',
+  status: '',
+  categoria: '',
+  modalidade: '',
+  experiencia: '',
+  showFeatured: false,
+};
+
+// O estado dos filtros vive no URL: o botão "voltar" a partir de uma vaga
+// devolve a mesma pesquisa, e um link filtrado pode ser partilhado.
+function readStateFromQuery(query = {}) {
+  const value = (key) => getRouteQueryValue(query[key]);
+  const salary = Number.parseInt(value('salario'), 10);
+  const sort = value('ordem');
+  const page = Number(value('page'));
+
+  return {
+    searchTerm: value('search') || value('q'),
+    filters: {
+      ...EMPTY_FILTERS,
+      empresa: value('empresa'),
+      localizacao: value('local') || value('loc'),
+      tipoContrato: value('contrato'),
+      categoria: value('categoria') || value('cat'),
+      modalidade: value('modalidade'),
+      experiencia: value('experiencia'),
+      showFeatured: value('destaque') === '1',
+    },
+    minSalary: Number.isFinite(salary) && salary > 0 ? salary : 0,
+    sortBy: SORT_OPTIONS.includes(sort) ? sort : 'recentes',
+    page: Number.isSafeInteger(page) && page > 0 ? page : 1,
+  };
+}
+
+function buildQueryFromState({
+  searchTerm,
+  filters,
+  minSalary,
+  sortBy,
+  page = 1,
+}) {
+  const entries = {
+    search: searchTerm.trim(),
+    empresa: filters.empresa,
+    categoria: filters.categoria,
+    contrato: filters.tipoContrato,
+    modalidade: filters.modalidade,
+    experiencia: filters.experiencia,
+    local: filters.localizacao.trim(),
+    salario: minSalary > 0 ? String(minSalary) : '',
+    destaque: filters.showFeatured ? '1' : '',
+    ordem: sortBy !== 'recentes' ? sortBy : '',
+    page: page > 1 ? String(page) : '',
+  };
+  return Object.fromEntries(Object.entries(entries).filter(([, v]) => v));
+}
+
+function serializeQuery(query) {
+  return new URLSearchParams(
+    Object.entries(query).sort(([a], [b]) => a.localeCompare(b)),
+  ).toString();
 }
 
 function matchesSearch(job, term) {
@@ -107,11 +169,13 @@ function compareRecentJobs(a, b) {
 function normalizeContractType(value = '') {
   const normalized = String(value || '').toLowerCase();
   const types = {
-    'full-time': 'Tempo integral',
-    'tempo integral': 'Tempo integral',
-    'part-time': 'Meio período',
-    'meio período': 'Meio período',
-    'meio periodo': 'Meio período',
+    'full-time': 'Tempo inteiro',
+    'tempo inteiro': 'Tempo inteiro',
+    'tempo integral': 'Tempo inteiro',
+    'part-time': 'Tempo parcial',
+    'tempo parcial': 'Tempo parcial',
+    'meio período': 'Tempo parcial',
+    'meio periodo': 'Tempo parcial',
     contract: 'Contrato',
     contrato: 'Contrato',
     internship: 'Estágio',
@@ -274,6 +338,99 @@ function getPaginationItems(currentPage, totalPages) {
   return items;
 }
 
+function isFeaturedJob(job) {
+  return (
+    job.destaque === true || job.featured === true || job.isFeatured === true
+  );
+}
+
+const MODALITY_PREDICATES = {
+  presencial: isOnSiteJob,
+  hibrido: isHybridJob,
+  remoto: isRemoteJob,
+};
+
+// `skip` ignora um grupo de filtros: assim cada grupo conta as vagas que
+// ficariam visíveis se a opção fosse escolhida, em vez do total global.
+function applyJobFilters(jobs, { searchTerm, filters, minSalary }, skip = '') {
+  let result = jobs;
+  const search = searchTerm.toLowerCase().trim();
+
+  if (search) {
+    result = result.filter((job) => matchesSearch(job, search));
+  }
+  if (filters.empresa) {
+    result = filterPublicJobsByCompany(result, filters.empresa);
+  }
+  if (filters.localizacao && skip !== 'localizacao') {
+    const location = filters.localizacao.toLowerCase().trim();
+    result = result.filter((job) =>
+      String(job.localizacao || '')
+        .toLowerCase()
+        .includes(location),
+    );
+  }
+  if (filters.tipoContrato && skip !== 'tipoContrato') {
+    result = result.filter((job) => job.tipoContrato === filters.tipoContrato);
+  }
+  if (filters.status) {
+    result = result.filter((job) => job.status === filters.status);
+  }
+  if (filters.categoria && skip !== 'categoria') {
+    const category = String(filters.categoria).toLowerCase();
+    result = result.filter(
+      (job) => String(job.categoria || '').toLowerCase() === category,
+    );
+  }
+  if (filters.experiencia && skip !== 'experiencia') {
+    result = result.filter(
+      (job) => getExperienceBucket(job) === filters.experiencia,
+    );
+  }
+  const modalityPredicate = MODALITY_PREDICATES[filters.modalidade];
+  if (modalityPredicate && skip !== 'modalidade') {
+    result = result.filter(modalityPredicate);
+  }
+  if (filters.showFeatured) {
+    result = result.filter(isFeaturedJob);
+  }
+  if (minSalary > 0) {
+    result = result.filter((job) => {
+      const salary =
+        parseMoney(job.salarioAte) || parseMoney(job.salarioDe) || 0;
+      return salary >= minSalary;
+    });
+  }
+
+  return result;
+}
+
+function featuredFirst(a, b) {
+  if (a.destaque && !b.destaque) return -1;
+  if (!a.destaque && b.destaque) return 1;
+  return 0;
+}
+
+function sortJobs(jobs, sortBy) {
+  const sorted = [...jobs];
+  if (sortBy === 'prazo') {
+    return sorted.sort(
+      (a, b) =>
+        featuredFirst(a, b) ||
+        new Date(a.dataFecho || '9999-12-31') -
+          new Date(b.dataFecho || '9999-12-31'),
+    );
+  }
+  if (sortBy === 'salario') {
+    return sorted.sort(
+      (a, b) =>
+        featuredFirst(a, b) ||
+        (parseMoney(b.salarioDe) || 0) - (parseMoney(a.salarioDe) || 0),
+    );
+  }
+  return sorted.sort(compareRecentJobs);
+}
+
 const JOBS_PER_PAGE = 6;
 const MOBILE_JOBS_BATCH = 3;
 
@@ -288,14 +445,14 @@ function getCompanyInitials(value = '') {
   );
 }
 
-function JobCard({ job, referenceNow }) {
-  const companyName = job.empresaNome || job.companyName || 'Empresa';
+function JobCard({ job, referenceNow, sponsored = false }) {
+  const companyName =
+    job.empresaNome || job.companyName || 'Empresa não indicada';
   const salary = formatSalary(job.salarioDe, job.salarioAte);
   const currency = job.currency || 'STD';
   const salaryLabel =
     salary === 'A combinar' ? salary : `${salary} ${currency}`;
-  const featured =
-    job.destaque === true || job.featured === true || job.isFeatured === true;
+  const featured = isFeaturedJob(job);
   const closed = isClosedJob(job);
   const publishedAt = job.publicadoEm || job.publishedAt || job.createdAt;
   const companyLogo = job.empresaLogo || job.companyLogo;
@@ -305,12 +462,16 @@ function JobCard({ job, referenceNow }) {
     styles.jobCard,
     closed ? styles.jobCardClosed : '',
     featured ? styles.jobCardFeatured : '',
+    sponsored ? styles.jobCardSponsored : '',
   ]
     .filter(Boolean)
     .join(' ');
 
   return (
     <article className={cardClassName}>
+      {sponsored ? (
+        <span className={styles.sponsoredGlow} aria-hidden="true" />
+      ) : null}
       <div className={styles.jobCardIdentity}>
         <div className={styles.companyLogo}>
           {companyLogo ? (
@@ -328,53 +489,57 @@ function JobCard({ job, referenceNow }) {
       </div>
 
       <div className={styles.jobCardContent}>
+        {/* Linha de cima: selo e empresa; depois o título; depois todos os
+            dados da vaga numa só fila de pílulas, com o salário no fim. */}
+        <div className={styles.jobCardTop}>
+          {featured ? (
+            <span className={styles.featuredBadge}>
+              <FiStar aria-hidden="true" />
+              {sponsored ? 'Patrocinada' : 'Em destaque'}
+            </span>
+          ) : null}
+          <p className={styles.companyName}>
+            {companyName}
+            {/* `role="img"` é obrigatório: um <span> sem role não pode ter
+                `aria-label`, e os leitores de ecrã ignoravam o selo. */}
+            {job.companyVerified ? (
+              <span
+                role="img"
+                title="Empresa verificada"
+                aria-label="Empresa verificada"
+              >
+                <FiCheckCircle aria-hidden="true" />
+              </span>
+            ) : null}
+          </p>
+        </div>
         <Link href={`/vaga/${job.id}`} className={styles.jobTitleLink}>
           <h3>{job.titulo}</h3>
         </Link>
-        <p className={styles.companyName}>
-          {companyName}
-          {/* `role="img"` é obrigatório: um <span> sem role não pode ter
-              `aria-label`, e os leitores de ecrã ignoravam o selo. */}
-          {job.companyVerified ? (
-            <span
-              role="img"
-              title="Empresa verificada"
-              aria-label="Empresa verificada"
-            >
-              <FiCheckCircle aria-hidden="true" />
-            </span>
-          ) : null}
-        </p>
-
-        <div className={styles.jobPrimaryMeta}>
-          <span>
-            <FiMapPin aria-hidden="true" />
-            {job.localizacao || 'São Tomé e Príncipe'}
-          </span>
-          <span className={styles.statusMeta}>
-            <FiInfo aria-hidden="true" />
-            <span
-              className={closed ? styles.statusBadgeClosed : styles.statusBadge}
-            >
-              {closed ? 'Encerrada' : 'Aberta'}
-            </span>
-          </span>
-          <span>
-            <FiClock aria-hidden="true" />
-            Publicada {formatPublishedAgo(publishedAt, referenceNow)}
-          </span>
-        </div>
 
         <div className={styles.jobTags} aria-label="Características da vaga">
-          <span className={styles.salaryTag}>
-            <FiDollarSign aria-hidden="true" />
-            {salaryLabel}
+          <span className={styles.metaTag}>
+            <FiMapPin aria-hidden="true" />
+            {job.localizacao || 'Localização não indicada'}
+          </span>
+          <span
+            className={closed ? styles.statusBadgeClosed : styles.statusBadge}
+          >
+            {closed ? 'Encerrada' : 'Aberta'}
+          </span>
+          <span className={styles.metaTag}>
+            <FiClock aria-hidden="true" />
+            Publicada {formatPublishedAgo(publishedAt, referenceNow)}
           </span>
           <span className={styles.contractTag}>
             <FiBriefcase aria-hidden="true" />
             {contract}
           </span>
           <span className={styles.modalityTag}>{modality}</span>
+          <span className={styles.salaryTag}>
+            <CoinsIcon aria-hidden="true" />
+            {salaryLabel}
+          </span>
         </div>
 
         {job.descricao ? (
@@ -402,221 +567,225 @@ function JobCard({ job, referenceNow }) {
   );
 }
 
-export default function VagasPage({ initialJobs = [], referenceNow = 0 }) {
+const SPONSORED_LIMIT = 6;
+
+const SPONSORED_AUTOPLAY_MS = 6000;
+
+// Vagas patrocinadas (as marcadas como destaque) no mesmo formato de lista das
+// restantes; com mais de uma, passam em carrossel. O avanço automático pára
+// com o rato ou o foco por cima e com movimento reduzido.
+function SponsoredJobsCarousel({ jobs, referenceNow }) {
+  const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const count = jobs.length;
+  const isCarousel = count > 1;
+
+  useEffect(() => {
+    setActive((current) => (current >= count ? 0 : current));
+  }, [count]);
+
+  useEffect(() => {
+    if (
+      !isCarousel ||
+      paused ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    )
+      return undefined;
+    const timer = window.setInterval(
+      () => setActive((current) => (current + 1) % count),
+      SPONSORED_AUTOPLAY_MS,
+    );
+    return () => window.clearInterval(timer);
+  }, [count, isCarousel, paused]);
+
+  const goTo = (index) => setActive(((index % count) + count) % count);
+
+  if (!isCarousel) {
+    return <JobCard job={jobs[0]} referenceNow={referenceNow} sponsored />;
+  }
+
+  return (
+    <div
+      className={styles.sponsoredCarousel}
+      role="region"
+      aria-roledescription="carrossel"
+      aria-label="Vagas patrocinadas"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocusCapture={() => setPaused(true)}
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) {
+          setPaused(false);
+        }
+      }}
+    >
+      <div className={styles.sponsoredViewport}>
+        <div
+          className={styles.sponsoredTrack}
+          style={{ transform: `translateX(-${active * 100}%)` }}
+        >
+          {jobs.map((job, index) => (
+            <div
+              key={job.id}
+              className={styles.sponsoredSlide}
+              role="group"
+              aria-roledescription="vaga"
+              aria-label={`${index + 1} de ${count}`}
+              aria-hidden={index !== active}
+              inert={index !== active}
+            >
+              <JobCard job={job} referenceNow={referenceNow} sponsored />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className={styles.sponsoredControls}>
+        <button
+          type="button"
+          className={styles.sponsoredArrow}
+          onClick={() => goTo(active - 1)}
+          aria-label="Vaga patrocinada anterior"
+        >
+          <FiChevronLeft aria-hidden="true" />
+        </button>
+        <div
+          className={styles.sponsoredDots}
+          role="group"
+          aria-label="Escolher vaga patrocinada"
+        >
+          {jobs.map((job, index) => (
+            <button
+              key={job.id}
+              type="button"
+              className={`${styles.sponsoredDot} ${
+                index === active ? styles.sponsoredDotActive : ''
+              }`}
+              onClick={() => goTo(index)}
+              aria-label={`Ver vaga patrocinada ${index + 1}`}
+              aria-current={index === active ? 'true' : undefined}
+            />
+          ))}
+        </div>
+        <button
+          type="button"
+          className={styles.sponsoredArrow}
+          onClick={() => goTo(active + 1)}
+          aria-label="Vaga patrocinada seguinte"
+        >
+          <FiChevronRight aria-hidden="true" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default function VagasPage({
+  initialJobs = [],
+  referenceNow = 0,
+  loadFailed = false,
+}) {
   const router = useRouter();
   const jobs = initialJobs;
-  const [filteredJobs, setFilteredJobs] = useState(() =>
-    filterJobsByRouteQuery(initialJobs, router.query),
+  const [searchState, setSearchState] = useState(() =>
+    readStateFromQuery(router.query),
   );
-  const [searchTerm, setSearchTerm] = useState(() =>
-    getRouteQueryValue(router.query.search),
+  const { searchTerm, filters, minSalary, sortBy } = searchState;
+  // Filtros e página mudam juntos: voltar pelo histórico não deve repor a
+  // página 1 num efeito posterior à leitura do URL.
+  const setSearchField = (key, value) =>
+    setSearchState((current) => ({
+      ...current,
+      [key]: typeof value === 'function' ? value(current[key]) : value,
+      page: 1,
+    }));
+  const setSearchTerm = (value) => setSearchField('searchTerm', value);
+  const setFilters = (value) => setSearchField('filters', value);
+  const setMinSalary = (value) => setSearchField('minSalary', value);
+  const setSortBy = (value) => setSearchField('sortBy', value);
+  const setCurrentPage = (page) =>
+    setSearchState((current) => ({ ...current, page }));
+  const sponsoredJobs = useMemo(
+    () =>
+      jobs
+        .filter((job) => isFeaturedJob(job) && !isClosedJob(job))
+        .sort(compareRecentJobs)
+        .slice(0, SPONSORED_LIMIT),
+    [jobs],
   );
-  const [filters, setFilters] = useState({
-    empresa: getRouteQueryValue(router.query.empresa),
-    localizacao: '',
-    tipoContrato: '',
-    status: '',
-    categoria: getRouteQueryValue(router.query.categoria),
-    modalidade: '',
-    experiencia: '',
-    showFeatured: false,
-  });
-  const [minSalary, setMinSalary] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
-  const [sortBy, setSortBy] = useState('recentes');
-  const [currentPage, setCurrentPage] = useState(1);
+
+  const filteredJobs = useMemo(
+    () =>
+      sortJobs(
+        applyJobFilters(jobs, { searchTerm, filters, minSalary }),
+        sortBy,
+      ),
+    [filters, jobs, minSalary, searchTerm, sortBy],
+  );
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredJobs.length / JOBS_PER_PAGE),
+  );
+  const currentPage = Math.min(searchState.page, totalPages);
   const [mobileVisibleCount, setMobileVisibleCount] =
     useState(MOBILE_JOBS_BATCH);
   const [isMobileView, setIsMobileView] = useState(false);
-  const [filtersOpen, setFiltersOpen] = useState(false);
   const [alertEmail, setAlertEmail] = useState('');
   const [alertState, setAlertState] = useState({ status: 'idle', message: '' });
-  const [collapsedSections, setCollapsedSections] = useState({});
-  const filtersPanelRef = useRef(null);
-
-  const toggleSection = (key) =>
-    setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }));
-
-  const renderFilterHeader = (key, title) => (
-    <button
-      type="button"
-      className={styles.filterSectionHeader}
-      aria-expanded={!collapsedSections[key]}
-      onClick={() => toggleSection(key)}
-    >
-      <h3>{title}</h3>
-      {collapsedSections[key] ? (
-        <FiChevronDown size={18} />
-      ) : (
-        <FiChevronUp size={18} />
-      )}
-    </button>
+  const resultsRef = useRef(null);
+  const pageRef = useRef(null);
+  const syncedQueryRef = useRef(
+    serializeQuery(buildQueryFromState(searchState)),
   );
 
+  const setFilterValue = (key, value) =>
+    setFilters((prev) => ({ ...prev, [key]: value }));
+
+  const scrollToResults = () => {
+    const reduceMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)',
+    ).matches;
+    resultsRef.current?.scrollIntoView({
+      behavior: reduceMotion ? 'auto' : 'smooth',
+      block: 'start',
+    });
+  };
+
+  // URL -> estado, só quando a mudança não foi escrita por esta página
+  // (links da home, histórico). Sem esta guarda, a escrita atrasada do URL
+  // apagaria o que a pessoa continuou a escrever na pesquisa.
   useEffect(() => {
-    setSearchTerm(
-      typeof router.query.search === 'string' ? router.query.search : '',
-    );
-    setFilters((prev) => ({
-      ...prev,
-      categoria:
-        typeof router.query.categoria === 'string'
-          ? router.query.categoria
-          : '',
-      empresa:
-        typeof router.query.empresa === 'string' ? router.query.empresa : '',
-    }));
-  }, [router.query.search, router.query.categoria, router.query.empresa]);
+    if (router.isReady === false) return;
+    const next = readStateFromQuery(router.query);
+    const key = serializeQuery(buildQueryFromState(next));
+    if (key === syncedQueryRef.current) return;
+    syncedQueryRef.current = key;
+    setSearchState(next);
+  }, [router.isReady, router.query]);
 
+  // Estado -> URL, com atraso para não reescrever o histórico a cada tecla.
   useEffect(() => {
-    if (!filtersOpen || !isMobileView) return undefined;
-
-    const previousFocus = document.activeElement;
-    const previousOverflow = document.body.style.overflow;
-    const panel = filtersPanelRef.current;
-    const focusableSelector =
-      'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href]';
-
-    document.body.style.overflow = 'hidden';
-    panel
-      ?.querySelector('button[aria-label="Fechar filtros"]')
-      ?.focus({ preventScroll: true });
-
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        setFiltersOpen(false);
-        return;
-      }
-      if (event.key !== 'Tab' || !panel) return;
-
-      const focusable = [...panel.querySelectorAll(focusableSelector)].filter(
-        (element) => element.getClientRects().length > 0,
-      );
-      if (!focusable.length) return;
-
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = previousOverflow;
-      previousFocus?.focus?.({ preventScroll: true });
-    };
-  }, [filtersOpen, isMobileView]);
-
-  useEffect(() => {
-    setIsLoading(true);
-
+    if (router.isReady === false) return undefined;
     const timeoutId = setTimeout(() => {
-      let result = [...jobs];
-      const normalizedSearch = searchTerm.toLowerCase().trim();
-
-      if (normalizedSearch) {
-        result = result.filter((job) => matchesSearch(job, normalizedSearch));
-      }
-
-      if (filters.empresa) {
-        result = filterPublicJobsByCompany(result, filters.empresa);
-      }
-
-      if (filters.localizacao) {
-        const normalizedLocation = filters.localizacao.toLowerCase().trim();
-        result = result.filter((job) =>
-          String(job.localizacao || '')
-            .toLowerCase()
-            .includes(normalizedLocation),
-        );
-      }
-
-      if (filters.tipoContrato) {
-        result = result.filter(
-          (job) => job.tipoContrato === filters.tipoContrato,
-        );
-      }
-
-      if (filters.status) {
-        result = result.filter((job) => job.status === filters.status);
-      }
-
-      if (filters.categoria) {
-        result = result.filter(
-          (job) =>
-            String(job.categoria || '').toLowerCase() ===
-            String(filters.categoria).toLowerCase(),
-        );
-      }
-
-      if (filters.experiencia) {
-        result = result.filter(
-          (job) => getExperienceBucket(job) === filters.experiencia,
-        );
-      }
-
-      if (filters.modalidade === 'remoto') {
-        result = result.filter((job) => isRemoteJob(job));
-      } else if (filters.modalidade === 'hibrido') {
-        result = result.filter((job) => isHybridJob(job));
-      } else if (filters.modalidade === 'presencial') {
-        result = result.filter(isOnSiteJob);
-      }
-
-      if (filters.showFeatured) {
-        result = result.filter(
-          (job) =>
-            job.destaque === true ||
-            job.featured === true ||
-            job.isFeatured === true,
-        );
-      }
-
-      if (minSalary > 0) {
-        result = result.filter((job) => {
-          const salary =
-            parseMoney(job.salarioAte) || parseMoney(job.salarioDe) || 0;
-          return salary >= minSalary;
-        });
-      }
-
-      if (sortBy === 'recentes') {
-        result.sort(compareRecentJobs);
-      } else if (sortBy === 'prazo') {
-        result.sort((a, b) => {
-          if (a.destaque && !b.destaque) return -1;
-          if (!a.destaque && b.destaque) return 1;
-          return (
-            new Date(a.dataFecho || '9999-12-31') -
-            new Date(b.dataFecho || '9999-12-31')
-          );
-        });
-      } else if (sortBy === 'salario') {
-        result.sort((a, b) => {
-          if (a.destaque && !b.destaque) return -1;
-          if (!a.destaque && b.destaque) return 1;
-          return (
-            (parseMoney(b.salarioDe) || 0) - (parseMoney(a.salarioDe) || 0)
-          );
-        });
-      }
-
-      setFilteredJobs(result);
-      setIsLoading(false);
-    }, 180);
-
+      const query = buildQueryFromState({
+        searchTerm,
+        filters,
+        minSalary,
+        sortBy,
+        page: currentPage,
+      });
+      const key = serializeQuery(query);
+      if (key === syncedQueryRef.current) return;
+      syncedQueryRef.current = key;
+      router.replace({ pathname: router.pathname, query }, undefined, {
+        shallow: true,
+        scroll: false,
+      });
+    }, 350);
     return () => clearTimeout(timeoutId);
-  }, [filters, jobs, minSalary, searchTerm, sortBy]);
+  }, [currentPage, filters, minSalary, router, searchTerm, sortBy]);
 
   useEffect(() => {
-    setCurrentPage(1);
     setMobileVisibleCount(MOBILE_JOBS_BATCH);
   }, [filters, minSalary, searchTerm, sortBy]);
 
@@ -640,10 +809,6 @@ export default function VagasPage({ initialJobs = [], referenceNow = 0 }) {
     () => [...new Set(jobs.map((job) => job.tipoContrato).filter(Boolean))],
     [jobs],
   );
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredJobs.length / JOBS_PER_PAGE),
-  );
   const visibleJobs = useMemo(() => {
     if (isMobileView) {
       return filteredJobs.slice(0, mobileVisibleCount);
@@ -651,20 +816,112 @@ export default function VagasPage({ initialJobs = [], referenceNow = 0 }) {
     const offset = (currentPage - 1) * JOBS_PER_PAGE;
     return filteredJobs.slice(offset, offset + JOBS_PER_PAGE);
   }, [currentPage, filteredJobs, isMobileView, mobileVisibleCount]);
+  useScrollReveal(pageRef, [visibleJobs, sponsoredJobs.length, loadFailed]);
   const paginationItems = useMemo(
     () => getPaginationItems(currentPage, totalPages),
     [currentPage, totalPages],
   );
-  const maxSalary = useMemo(() => {
-    const highest = jobs.reduce((max, job) => {
-      const salary =
-        parseMoney(job.salarioAte) || parseMoney(job.salarioDe) || 0;
-      return Math.max(max, salary);
-    }, 0);
-    return Math.max(30000, Math.ceil(highest / 5000) * 5000 || 30000);
-  }, [jobs]);
   const salaryCurrency = jobs[0]?.currency || 'STD';
+  const highestSalary = useMemo(
+    () =>
+      jobs.reduce(
+        (max, job) =>
+          Math.max(
+            max,
+            parseMoney(job.salarioAte) || parseMoney(job.salarioDe) || 0,
+          ),
+        0,
+      ),
+    [jobs],
+  );
+  const salarySteps = SALARY_STEPS.filter(
+    (value) => value < highestSalary || value === minSalary,
+  );
   const experienceBuckets = ['sem', '1-3', '3-5', '5+'];
+  const facetPools = useMemo(() => {
+    const state = { searchTerm, filters, minSalary };
+    return Object.fromEntries(
+      [
+        'categoria',
+        'tipoContrato',
+        'modalidade',
+        'localizacao',
+        'experiencia',
+      ].map((key) => [key, applyJobFilters(jobs, state, key)]),
+    );
+  }, [filters, jobs, minSalary, searchTerm]);
+  // Opções que levariam a zero resultados ficam escondidas (salvo se já
+  // estiverem escolhidas), para não convidar a cliques sem saída.
+  const filterGroups = [
+    {
+      key: 'categoria',
+      title: 'Categoria',
+      options: categorias.map((value) => ({
+        value,
+        label: value,
+        count: countBy(facetPools.categoria, (job) => job.categoria === value),
+      })),
+    },
+    {
+      key: 'tipoContrato',
+      title: 'Tipo de contrato',
+      options: tiposContrato.map((value) => ({
+        value,
+        label: normalizeContractType(value),
+        count: countBy(
+          facetPools.tipoContrato,
+          (job) => job.tipoContrato === value,
+        ),
+      })),
+    },
+    {
+      key: 'modalidade',
+      title: 'Modalidade',
+      options: [
+        ['presencial', 'Presencial'],
+        ['hibrido', 'Híbrido'],
+        ['remoto', 'Remoto'],
+      ].map(([value, label]) => ({
+        value,
+        label,
+        count: countBy(facetPools.modalidade, MODALITY_PREDICATES[value]),
+      })),
+    },
+    {
+      key: 'localizacao',
+      title: 'Localização',
+      options: localizacoes.map((value) => ({
+        value,
+        label: value,
+        count: countBy(
+          facetPools.localizacao,
+          (job) => job.localizacao === value,
+        ),
+      })),
+    },
+    {
+      key: 'experiencia',
+      title: 'Experiência',
+      options: experienceBuckets.map((value) => ({
+        value,
+        label: getExperienceLabel(value),
+        count: countBy(
+          facetPools.experiencia,
+          (job) => getExperienceBucket(job) === value,
+        ),
+      })),
+    },
+  ]
+    .map((group) => ({
+      ...group,
+      options: group.options
+        .filter(
+          (option) => option.count > 0 || filters[group.key] === option.value,
+        )
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 8),
+    }))
+    .filter((group) => group.options.length > 0);
   const filteredCompanyName =
     jobs.find((job) => job.companyId === filters.empresa)?.empresaNome ||
     jobs.find((job) => job.companyId === filters.empresa)?.companyName ||
@@ -690,7 +947,9 @@ export default function VagasPage({ initialJobs = [], referenceNow = 0 }) {
       ? {
           key: 'modalidade',
           label:
-            filters.modalidade === 'hibrido' ? 'Híbrido' : filters.modalidade,
+            { presencial: 'Presencial', hibrido: 'Híbrido', remoto: 'Remoto' }[
+              filters.modalidade
+            ] || filters.modalidade,
         }
       : null,
     filters.experiencia
@@ -708,39 +967,24 @@ export default function VagasPage({ initialJobs = [], referenceNow = 0 }) {
     filters.showFeatured ? { key: 'showFeatured', label: 'Destaque' } : null,
   ].filter(Boolean);
 
-  const clearFilter = (key) => {
-    if (key === 'search') {
-      setSearchTerm('');
-      return;
-    }
-    if (key === 'minSalary') {
-      setMinSalary(0);
-      return;
-    }
-    setFilters((prev) => ({
-      ...prev,
-      [key]: key === 'showFeatured' ? false : '',
-    }));
-  };
-
   const clearFilters = () => {
     setSearchTerm('');
-    setFilters({
-      empresa: '',
-      localizacao: '',
-      tipoContrato: '',
-      status: '',
-      categoria: '',
-      modalidade: '',
-      experiencia: '',
-      showFeatured: false,
-    });
+    setFilters(EMPTY_FILTERS);
     setMinSalary(0);
     setSortBy('recentes');
   };
 
+  // A lista já filtra enquanto se escreve; o botão leva aos resultados e
+  // fecha o teclado no telemóvel.
   const handleSearchSubmit = (event) => {
     event.preventDefault();
+    document.activeElement?.blur?.();
+    scrollToResults();
+  };
+
+  const goToPage = (page) => {
+    setCurrentPage(page);
+    scrollToResults();
   };
 
   const handleActivateAlert = async () => {
@@ -804,13 +1048,35 @@ export default function VagasPage({ initialJobs = [], referenceNow = 0 }) {
       </Head>
 
       <PublicPageShell headerVariant="light" showFooter={!isMobileView}>
-        <div className={styles.page}>
+        <div className={styles.page} ref={pageRef}>
           <section className={styles.searchSection}>
+            <div className={styles.heroGlow} aria-hidden="true">
+              <span />
+              <span />
+              <span />
+            </div>
             <div className={styles.heroCopy}>
               <span className={styles.heroEyebrow}>
-                Oportunidades em destaque
+                <span className={styles.heroPulse} aria-hidden="true" />
+                Oportunidades de trabalho
               </span>
-              <h1>Encontre a vaga certa para o seu próximo passo.</h1>
+              <h1>
+                {HERO_WORDS.map((word, index) => {
+                  const text = typeof word === 'string' ? word : word.text;
+                  return (
+                    <Fragment key={text}>
+                      <span
+                        className={`${styles.heroWord} ${
+                          word.accent ? styles.heroWordAccent : ''
+                        }`}
+                        style={{ '--i': index }}
+                      >
+                        {text}
+                      </span>{' '}
+                    </Fragment>
+                  );
+                })}
+              </h1>
               <p>
                 Explore oportunidades em São Tomé e Príncipe e candidate-se
                 diretamente às vagas que combinam com o seu perfil.
@@ -859,307 +1125,153 @@ export default function VagasPage({ initialJobs = [], referenceNow = 0 }) {
               </label>
 
               <button type="submit" className={styles.searchSubmit}>
-                <FiSearch size={18} aria-hidden="true" />
                 Procurar vagas
+                <FiArrowRight size={18} aria-hidden="true" />
               </button>
             </form>
-
-            <div
-              className={styles.mobileQuickFilters}
-              aria-label="Filtros rápidos"
-            >
-              <button
-                type="button"
-                onClick={() => setFiltersOpen(true)}
-                aria-expanded={filtersOpen}
-                aria-controls="job-filters-panel"
-              >
-                <span>{filters.categoria || 'Categoria'}</span>
-                <FiChevronDown aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setFiltersOpen(true)}
-                aria-expanded={filtersOpen}
-                aria-controls="job-filters-panel"
-              >
-                <span>
-                  {filters.tipoContrato
-                    ? normalizeContractType(filters.tipoContrato)
-                    : 'Tipo de contrato'}
-                </span>
-                <FiChevronDown aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setFiltersOpen(true)}
-                aria-expanded={filtersOpen}
-                aria-controls="job-filters-panel"
-              >
-                <span>
-                  {minSalary
-                    ? `+${formatCompactMoney(minSalary)} ${salaryCurrency}`
-                    : 'Faixa salarial'}
-                </span>
-                <FiChevronDown aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                className={
-                  filters.modalidade === 'remoto'
-                    ? styles.quickFilterActive
-                    : ''
-                }
-                onClick={() =>
-                  setFilters((current) => ({
-                    ...current,
-                    modalidade: current.modalidade === 'remoto' ? '' : 'remoto',
-                  }))
-                }
-              >
-                Remoto
-              </button>
-            </div>
           </section>
 
-          <section className={styles.discoverySection}>
-            <form
-              ref={filtersPanelRef}
-              id="job-filters-panel"
-              className={`${styles.filtersPanel} ${
-                filtersOpen ? styles.filtersPanelOpen : ''
-              }`}
-              onSubmit={handleSearchSubmit}
-              role={filtersOpen && isMobileView ? 'dialog' : undefined}
-              aria-modal={filtersOpen && isMobileView ? 'true' : undefined}
-              aria-label="Filtros de vagas"
+          {sponsoredJobs.length ? (
+            <section
+              className={styles.sponsoredSection}
+              aria-labelledby="sponsored-title"
             >
-              <div className={styles.filtersTop}>
-                <h2>Filtros</h2>
-                <div className={styles.filterActions}>
-                  <button type="button" onClick={clearFilters}>
-                    Limpar
-                  </button>
+              <header className={styles.sponsoredHeader} data-reveal>
+                <h2 id="sponsored-title">Vagas patrocinadas</h2>
+                <p>
+                  Oportunidades destacadas pelas empresas que as publicaram.
+                </p>
+              </header>
+              <SponsoredJobsCarousel
+                jobs={sponsoredJobs}
+                referenceNow={referenceNow}
+              />
+            </section>
+          ) : null}
+
+          <section
+            className={`${styles.discoverySection} ${styles.discoverySectionFull}`}
+          >
+            <div ref={resultsRef} className={styles.resultsPanel}>
+              <div
+                className={styles.filterBar}
+                data-reveal
+                role="group"
+                aria-label="Filtros de vagas"
+              >
+                <span className={styles.filterBarLabel}>
+                  <FiSliders aria-hidden="true" />
+                  Filtrar
+                </span>
+                {filterGroups.map((group) => (
+                  <label
+                    key={group.key}
+                    className={`${styles.filterPill} ${
+                      filters[group.key] ? styles.filterPillActive : ''
+                    }`}
+                  >
+                    <span className={styles.srOnly}>{group.title}</span>
+                    <select
+                      value={filters[group.key] || ''}
+                      onChange={(event) =>
+                        setFilterValue(group.key, event.target.value)
+                      }
+                    >
+                      <option value="">{group.title}</option>
+                      {group.options.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label} ({option.count})
+                        </option>
+                      ))}
+                    </select>
+                    <FiChevronDown aria-hidden="true" />
+                  </label>
+                ))}
+                {salarySteps.length ? (
+                  <label
+                    className={`${styles.filterPill} ${
+                      minSalary > 0 ? styles.filterPillActive : ''
+                    }`}
+                  >
+                    <span className={styles.srOnly}>Salário mínimo</span>
+                    <select
+                      value={minSalary}
+                      onChange={(event) =>
+                        setMinSalary(Number(event.target.value))
+                      }
+                    >
+                      <option value={0}>Salário</option>
+                      {salarySteps.map((value) => (
+                        <option key={value} value={value}>
+                          +{formatCompactMoney(value)} {salaryCurrency}
+                        </option>
+                      ))}
+                    </select>
+                    <FiChevronDown aria-hidden="true" />
+                  </label>
+                ) : null}
+                {activeFilterChips.length > 0 ? (
                   <button
                     type="button"
-                    className={styles.mobileFiltersClose}
-                    onClick={() => setFiltersOpen(false)}
-                    aria-label="Fechar filtros"
+                    className={styles.filterClear}
+                    onClick={clearFilters}
                   >
-                    <FiX size={20} />
+                    <FiX aria-hidden="true" />
+                    Limpar
+                  </button>
+                ) : null}
+              </div>
+
+              <form
+                className={styles.alertStrip}
+                data-reveal
+                style={{ '--delay': '80ms' }}
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  handleActivateAlert();
+                }}
+              >
+                <span className={styles.alertStripIcon} aria-hidden="true">
+                  <FiBell />
+                </span>
+                <p className={styles.alertStripText}>
+                  <strong>Alerta de vagas</strong>
+                  <span>
+                    {activeFilterChips.length > 0
+                      ? 'Receba por email as novas vagas com estes filtros.'
+                      : 'Receba por email as novas vagas publicadas.'}
+                  </span>
+                </p>
+                <div className={styles.alertStripField}>
+                  <input
+                    type="email"
+                    placeholder="o.seu@email.com"
+                    value={alertEmail}
+                    onChange={(event) => {
+                      setAlertEmail(event.target.value);
+                      if (alertState.status !== 'idle') {
+                        setAlertState({ status: 'idle', message: '' });
+                      }
+                    }}
+                    aria-label="Email para receber o alerta de vagas"
+                    autoComplete="email"
+                    disabled={alertState.status === 'loading'}
+                  />
+                  <button
+                    type="submit"
+                    disabled={alertState.status === 'loading'}
+                  >
+                    {alertState.status === 'loading'
+                      ? 'A ativar…'
+                      : 'Ativar alerta'}
                   </button>
                 </div>
-              </div>
-
-              {activeFilterChips.length > 0 ? (
-                <div className={styles.activeFilters}>
-                  {activeFilterChips.map((chip) => (
-                    <button
-                      key={chip.key}
-                      type="button"
-                      onClick={() => clearFilter(chip.key)}
-                    >
-                      {chip.label} <FiX size={16} />
-                    </button>
-                  ))}
-                </div>
-              ) : null}
-
-              <div className={styles.filterSection}>
-                {renderFilterHeader('categoria', 'Categoria')}
-                {!collapsedSections.categoria &&
-                  categorias.slice(0, 6).map((categoria) => (
-                    <label key={categoria} className={styles.checkRow}>
-                      <input
-                        type="checkbox"
-                        checked={filters.categoria === categoria}
-                        onChange={() =>
-                          setFilters((prev) => ({
-                            ...prev,
-                            categoria:
-                              prev.categoria === categoria ? '' : categoria,
-                          }))
-                        }
-                      />
-                      <span>{categoria}</span>
-                      <strong>
-                        {countBy(jobs, (job) => job.categoria === categoria)}
-                      </strong>
-                    </label>
-                  ))}
-              </div>
-
-              <div className={styles.filterSection}>
-                {renderFilterHeader('tipoContrato', 'Tipo de contrato')}
-                {!collapsedSections.tipoContrato &&
-                  tiposContrato.slice(0, 6).map((tipo) => (
-                    <label key={tipo} className={styles.checkRow}>
-                      <input
-                        type="checkbox"
-                        checked={filters.tipoContrato === tipo}
-                        onChange={() =>
-                          setFilters((prev) => ({
-                            ...prev,
-                            tipoContrato:
-                              prev.tipoContrato === tipo ? '' : tipo,
-                          }))
-                        }
-                      />
-                      <span>{normalizeContractType(tipo)}</span>
-                      <strong>
-                        {countBy(jobs, (job) => job.tipoContrato === tipo)}
-                      </strong>
-                    </label>
-                  ))}
-              </div>
-
-              <div className={styles.filterSection}>
-                {renderFilterHeader('modalidade', 'Modalidade')}
-                {!collapsedSections.modalidade &&
-                  [
-                    ['presencial', 'Presencial', countBy(jobs, isOnSiteJob)],
-                    ['hibrido', 'Híbrido', countBy(jobs, isHybridJob)],
-                    ['remoto', 'Remoto', countBy(jobs, isRemoteJob)],
-                  ].map(([value, label, count]) => (
-                    <label key={value} className={styles.checkRow}>
-                      <input
-                        type="checkbox"
-                        checked={filters.modalidade === value}
-                        onChange={() =>
-                          setFilters((prev) => ({
-                            ...prev,
-                            modalidade: prev.modalidade === value ? '' : value,
-                          }))
-                        }
-                      />
-                      <span>{label}</span>
-                      <strong>{count}</strong>
-                    </label>
-                  ))}
-              </div>
-
-              <div className={styles.filterSection}>
-                {renderFilterHeader('localizacao', 'Localização')}
-                {!collapsedSections.localizacao &&
-                  localizacoes.slice(0, 6).map((localizacao) => (
-                    <label key={localizacao} className={styles.checkRow}>
-                      <input
-                        type="checkbox"
-                        checked={filters.localizacao === localizacao}
-                        onChange={() =>
-                          setFilters((prev) => ({
-                            ...prev,
-                            localizacao:
-                              prev.localizacao === localizacao
-                                ? ''
-                                : localizacao,
-                          }))
-                        }
-                      />
-                      <span>{localizacao}</span>
-                      <strong>
-                        {countBy(
-                          jobs,
-                          (job) => job.localizacao === localizacao,
-                        )}
-                      </strong>
-                    </label>
-                  ))}
-              </div>
-
-              <div className={styles.filterSection}>
-                {renderFilterHeader('experiencia', 'Experiência')}
-                {!collapsedSections.experiencia &&
-                  experienceBuckets.map((bucket) => (
-                    <label key={bucket} className={styles.checkRow}>
-                      <input
-                        type="checkbox"
-                        checked={filters.experiencia === bucket}
-                        onChange={() =>
-                          setFilters((prev) => ({
-                            ...prev,
-                            experiencia:
-                              prev.experiencia === bucket ? '' : bucket,
-                          }))
-                        }
-                      />
-                      <span>{getExperienceLabel(bucket)}</span>
-                      <strong>
-                        {countBy(
-                          jobs,
-                          (job) => getExperienceBucket(job) === bucket,
-                        )}
-                      </strong>
-                    </label>
-                  ))}
-              </div>
-
-              <div className={styles.filterSection}>
-                <div className={styles.filterSectionHeader}>
-                  <h3>Salário mínimo</h3>
-                </div>
-                <input
-                  className={styles.salaryRange}
-                  type="range"
-                  min="0"
-                  max={maxSalary}
-                  step="1000"
-                  value={minSalary}
-                  onChange={(event) => setMinSalary(Number(event.target.value))}
-                  aria-label="Salário mínimo"
-                />
-                <div className={styles.salaryRangeLabels}>
-                  <span>0</span>
-                  <strong>
-                    {formatCompactMoney(minSalary || maxSalary)}{' '}
-                    {salaryCurrency}
-                  </strong>
-                </div>
-              </div>
-
-              <div className={styles.alertCard}>
-                <span className={styles.alertIcon}>
-                  <FiBell size={26} />
-                </span>
-                <strong>Cria um alerta</strong>
-                <p>
-                  Recebe já por email as vagas publicadas com estes filtros.
-                </p>
-                <input
-                  type="email"
-                  className={styles.alertInput}
-                  placeholder="o.teu@email.com"
-                  value={alertEmail}
-                  onChange={(event) => {
-                    setAlertEmail(event.target.value);
-                    if (alertState.status !== 'idle') {
-                      setAlertState({ status: 'idle', message: '' });
-                    }
-                  }}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter') {
-                      event.preventDefault();
-                      handleActivateAlert();
-                    }
-                  }}
-                  aria-label="Email para receber o alerta de vagas"
-                  disabled={alertState.status === 'loading'}
-                />
-                <button
-                  type="button"
-                  onClick={handleActivateAlert}
-                  disabled={alertState.status === 'loading'}
-                >
-                  {alertState.status === 'loading'
-                    ? 'A ativar…'
-                    : 'Ativar alerta'}
-                </button>
                 {alertState.message ? (
                   <p
-                    className={`${styles.alertFeedback} ${
+                    className={`${styles.alertStripFeedback} ${
                       alertState.status === 'error'
-                        ? styles.alertFeedbackError
-                        : styles.alertFeedbackSuccess
+                        ? styles.alertStripError
+                        : styles.alertStripSuccess
                     }`}
                     role="status"
                     aria-live="polite"
@@ -1167,31 +1279,21 @@ export default function VagasPage({ initialJobs = [], referenceNow = 0 }) {
                     {alertState.message}
                   </p>
                 ) : null}
-              </div>
-            </form>
+              </form>
 
-            <div className={styles.resultsPanel}>
               <div className={styles.resultsHeader}>
                 <div className={styles.resultsSummary}>
                   <h2>
                     <span className={styles.desktopResultsLabel}>
-                      A mostrar <strong>{filteredJobs.length}</strong>{' '}
-                      {filteredJobs.length === 1 ? 'vaga' : 'vagas'}
+                      <strong>{filteredJobs.length}</strong>{' '}
+                      {filteredJobs.length === 1
+                        ? 'vaga encontrada'
+                        : 'vagas encontradas'}
                     </span>
                     <span className={styles.mobileResultsLabel}>
-                      Vagas recentes <strong>({filteredJobs.length})</strong>
+                      Vagas <strong>({filteredJobs.length})</strong>
                     </span>
                   </h2>
-                  <button
-                    type="button"
-                    className={styles.mobileFiltersButton}
-                    onClick={() => setFiltersOpen(true)}
-                    aria-expanded={filtersOpen}
-                    aria-controls="job-filters-panel"
-                  >
-                    <FiSliders size={18} />
-                    Filtros
-                  </button>
                 </div>
                 <div className={styles.resultsTools}>
                   <span>Ordenar por:</span>
@@ -1207,10 +1309,13 @@ export default function VagasPage({ initialJobs = [], referenceNow = 0 }) {
                 </div>
               </div>
 
-              {isLoading ? (
-                <div className={styles.loadingState}>
-                  <div className={styles.loadingSpinner} />
-                  <p>A atualizar resultados…</p>
+              {loadFailed ? (
+                <div className={styles.emptyState} role="alert">
+                  <h3>Não foi possível carregar as vagas.</h3>
+                  <p>Verifique a ligação e tente novamente.</p>
+                  <button type="button" onClick={() => router.reload()}>
+                    Tentar novamente
+                  </button>
                 </div>
               ) : filteredJobs.length === 0 ? (
                 <div className={styles.emptyState}>
@@ -1226,12 +1331,15 @@ export default function VagasPage({ initialJobs = [], referenceNow = 0 }) {
               ) : (
                 <>
                   <div className={styles.jobsGrid}>
-                    {visibleJobs.map((job) => (
-                      <JobCard
+                    {visibleJobs.map((job, index) => (
+                      <div
                         key={job.id}
-                        job={job}
-                        referenceNow={referenceNow}
-                      />
+                        className={styles.jobReveal}
+                        data-reveal
+                        style={{ '--delay': `${Math.min(index, 5) * 70}ms` }}
+                      >
+                        <JobCard job={job} referenceNow={referenceNow} />
+                      </div>
                     ))}
                   </div>
 
@@ -1242,9 +1350,7 @@ export default function VagasPage({ initialJobs = [], referenceNow = 0 }) {
                     >
                       <button
                         type="button"
-                        onClick={() =>
-                          setCurrentPage((page) => Math.max(1, page - 1))
-                        }
+                        onClick={() => goToPage(Math.max(1, currentPage - 1))}
                         disabled={currentPage === 1}
                         aria-label="Página anterior"
                       >
@@ -1266,7 +1372,7 @@ export default function VagasPage({ initialJobs = [], referenceNow = 0 }) {
                             className={
                               currentPage === page ? styles.pageActive : ''
                             }
-                            onClick={() => setCurrentPage(page)}
+                            onClick={() => goToPage(page)}
                             aria-current={
                               currentPage === page ? 'page' : undefined
                             }
@@ -1278,9 +1384,7 @@ export default function VagasPage({ initialJobs = [], referenceNow = 0 }) {
                       <button
                         type="button"
                         onClick={() =>
-                          setCurrentPage((page) =>
-                            Math.min(totalPages, page + 1),
-                          )
+                          goToPage(Math.min(totalPages, currentPage + 1))
                         }
                         disabled={currentPage === totalPages}
                         aria-label="Página seguinte"
@@ -1439,8 +1543,12 @@ export async function getServerSideProps(context) {
     };
   } catch (error) {
     console.error('Erro ao buscar vagas:', error);
+    if (context?.res) {
+      context.res.statusCode = 503;
+      context.res.setHeader('Cache-Control', 'no-store');
+    }
     return {
-      props: { initialJobs: [], referenceNow: Date.now() },
+      props: { initialJobs: [], referenceNow: Date.now(), loadFailed: true },
     };
   }
 }

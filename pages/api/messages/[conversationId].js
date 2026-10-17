@@ -1,5 +1,8 @@
 import { admin } from '../../../lib/firebaseAdmin';
-import { canSendDirectMessage, getEmpresaPlanSummary } from '../../../lib/empresaPlanFeatures';
+import {
+  canSendDirectMessage,
+  getEmpresaPlanSummary,
+} from '../../../lib/empresaPlanFeatures';
 import { canUsersContinueConversation } from '../../../lib/conversationPolicy';
 import { logServerError } from '../../../lib/serverLog';
 import { requireActiveApiUser } from '../../../lib/apiUserAuth';
@@ -19,7 +22,10 @@ export default async function handler(req, res) {
   const { conversationId } = req.query;
 
   // Verificar que o utilizador é participante desta conversa
-  const convRef = admin.firestore().collection('conversations').doc(conversationId);
+  const convRef = admin
+    .firestore()
+    .collection('conversations')
+    .doc(conversationId);
   const convDoc = await convRef.get();
   if (!convDoc.exists) {
     return res.status(404).json({ error: 'Conversa não encontrada' });
@@ -31,7 +37,8 @@ export default async function handler(req, res) {
 
   if (req.method === 'GET') {
     try {
-      const messagesSnapshot = await admin.firestore()
+      const messagesSnapshot = await admin
+        .firestore()
         .collection('conversations')
         .doc(conversationId)
         .collection('messages')
@@ -42,12 +49,12 @@ export default async function handler(req, res) {
       const messages = [...messagesSnapshot.docs].reverse().map((doc) => ({
         id: doc.id,
         ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate?.()?.toISOString() || null
+        createdAt: doc.data().createdAt?.toDate?.()?.toISOString() || null,
       }));
 
       // Marcar mensagens do outro participante como lidas
       await convRef.update({
-        [`unreadCounts.${uid}`]: 0
+        [`unreadCounts.${uid}`]: 0,
       });
 
       return res.status(200).json({ messages });
@@ -63,7 +70,9 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Mensagem vazia' });
     }
     if (text.length > 2000) {
-      return res.status(400).json({ error: 'Mensagem demasiado longa (máx. 2000 caracteres)' });
+      return res
+        .status(400)
+        .json({ error: 'Mensagem demasiado longa (máx. 2000 caracteres)' });
     }
 
     if (requesterData.userType === 'empresa') {
@@ -74,7 +83,7 @@ export default async function handler(req, res) {
           error: messageAccess.reason,
           code: messageAccess.code,
           upgradeMessage: messageAccess.upgradeMessage,
-          upgradeUrl: messageAccess.upgradeUrl
+          upgradeUrl: messageAccess.upgradeUrl,
         });
       }
     }
@@ -83,7 +92,9 @@ export default async function handler(req, res) {
       const now = admin.firestore.FieldValue.serverTimestamp();
       const otherParticipantId = convData.participants.find((p) => p !== uid);
       if (!otherParticipantId) {
-        return res.status(409).json({ error: 'A conversa não tem um destinatário válido' });
+        return res
+          .status(409)
+          .json({ error: 'A conversa não tem um destinatário válido' });
       }
 
       const participantDoc = await admin
@@ -112,15 +123,16 @@ export default async function handler(req, res) {
       batch.set(msgRef, {
         senderId: uid,
         text: text.trim(),
-        createdAt: now
+        createdAt: now,
       });
 
       const updateData = {
         lastMessage: text.trim().substring(0, 100),
-        updatedAt: now
+        updatedAt: now,
       };
       if (otherParticipantId) {
-        updateData[`unreadCounts.${otherParticipantId}`] = admin.firestore.FieldValue.increment(1);
+        updateData[`unreadCounts.${otherParticipantId}`] =
+          admin.firestore.FieldValue.increment(1);
       }
       batch.update(convRef, updateData);
       await batch.commit();

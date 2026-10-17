@@ -65,8 +65,12 @@
   right: 0;
   width: 5px;
   height: 100%;
-  background: linear-gradient(180deg, var(--blue, #2057d7), var(--lime, #d9ff2f));
-  content: "";
+  background: linear-gradient(
+    180deg,
+    var(--blue, #2057d7),
+    var(--lime, #d9ff2f)
+  );
+  content: '';
 }
 
 .avatarImage,
@@ -75,10 +79,14 @@
   height: 92px;
   border: 3px solid var(--surface, #fff);
   border-radius: 24px;
-  box-shadow: 0 0 0 1px rgba(32, 87, 215, 0.2), 0 8px 20px rgba(15, 23, 42, 0.08);
+  box-shadow:
+    0 0 0 1px rgba(32, 87, 215, 0.2),
+    0 8px 20px rgba(15, 23, 42, 0.08);
 }
 
-.avatarImage { object-fit: cover; }
+.avatarImage {
+  object-fit: cover;
+}
 
 .avatarFallback {
   display: grid;
@@ -121,9 +129,14 @@
   line-height: 1.45;
 }
 
-.subtitle { font-size: 0.88rem; font-weight: 650; }
+.subtitle {
+  font-size: 0.88rem;
+  font-weight: 650;
+}
 .metaText,
-.metaSmall { font-size: 0.77rem; }
+.metaSmall {
+  font-size: 0.77rem;
+}
 
 .actions {
   display: grid;
@@ -146,7 +159,10 @@
   text-align: center;
   text-decoration: none;
   cursor: pointer;
-  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .actionPrimary {
@@ -236,9 +252,15 @@
   gap: 12px;
 }
 
-.infoGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.infoGridCompact { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-.twoColumnGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.infoGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.infoGridCompact {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.twoColumnGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
 
 .infoCard {
   display: grid;
@@ -325,9 +347,15 @@
   background: var(--surface-2, #f7fbff);
 }
 
-.recordBlue { --record-accent: #2057d7; }
-.recordGreen { --record-accent: #3dbb7a; }
-.recordGold { --record-accent: #b6db21; }
+.recordBlue {
+  --record-accent: #2057d7;
+}
+.recordGreen {
+  --record-accent: #3dbb7a;
+}
+.recordGold {
+  --record-accent: #b6db21;
+}
 
 .recordTitle {
   color: var(--text-1, #17233b);
@@ -456,7 +484,9 @@
 }
 
 .actionButton:hover,
-.fileCard:hover { transform: translateY(-1px); }
+.fileCard:hover {
+  transform: translateY(-1px);
+}
 
 .actionButton:focus-visible,
 .fileCard:focus-visible,
@@ -468,36 +498,66 @@
 }
 
 @media (max-width: 980px) {
-  .hero { grid-template-columns: auto minmax(0, 1fr); }
-  .actions { grid-column: 1 / -1; grid-template-columns: repeat(4, minmax(0, 1fr)); width: 100%; }
-  .infoGridCompact { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hero {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .actions {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    width: 100%;
+  }
+  .infoGridCompact {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 680px) {
-  .hero { grid-template-columns: 1fr; justify-items: start; }
+  .hero {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
   .avatarImage,
-  .avatarFallback { width: 78px; height: 78px; border-radius: 20px; }
-  .actions { grid-column: auto; grid-template-columns: 1fr 1fr; min-width: 0; }
+  .avatarFallback {
+    width: 78px;
+    height: 78px;
+    border-radius: 20px;
+  }
+  .actions {
+    grid-column: auto;
+    grid-template-columns: 1fr 1fr;
+    min-width: 0;
+  }
   .infoGrid,
   .infoGridCompact,
-  .twoColumnGrid { grid-template-columns: 1fr; }
-  .applicationCard { align-items: flex-start; flex-direction: column; }
+  .twoColumnGrid {
+    grid-template-columns: 1fr;
+  }
+  .applicationCard {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 
 @media (max-width: 420px) {
-  .actions { grid-template-columns: 1fr; }
-  .actionButton { width: 100%; }
+  .actions {
+    grid-template-columns: 1fr;
+  }
+  .actionButton {
+    width: 100%;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .actionButton,
-  .fileCard { transition: none; }
+  .fileCard {
+    transition: none;
+  }
 }
 
 /* Workbridge fidelity layer. */
 .page {
   color: var(--text-1, #102441);
-  font-family: var(--font-instrument, "Instrument Sans"), Arial, sans-serif;
+  font-family: var(--font-instrument, 'Instrument Sans'), Arial, sans-serif;
 }
 
 .hero,

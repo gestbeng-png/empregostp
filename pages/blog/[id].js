@@ -28,8 +28,8 @@ import styles from '../../styles/BlogPostPage.module.css';
 
 const RELATED_POST_LIMIT = 3;
 const RELATED_FALLBACK_IMAGES = [
-  '/assets/home/cta-candidate.webp',
-  '/assets/home/cta-employer.webp',
+  '/assets/people/candidate-working.webp',
+  '/assets/people/team-working.webp',
 ];
 
 function hasHtmlMarkup(content) {

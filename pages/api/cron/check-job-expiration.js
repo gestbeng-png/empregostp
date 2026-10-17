@@ -1,5 +1,10 @@
 import { admin } from '../../../lib/firebaseAdmin';
-import { buildExpiredJobUpdate, isJobExpired } from '../../../lib/jobExpiration';
+import {
+  buildExpiredJobUpdate,
+  buildExpiryHistory,
+  isJobExpired,
+} from '../../../lib/jobExpiration';
+import { closeEndedJobApplications } from '../../../infrastructure/firebase/jobs/closeEndedJobApplications';
 import { createServerNotification } from '../../../lib/serverNotifications';
 import { logServerError } from '../../../lib/serverLog';
 
@@ -10,7 +15,7 @@ export default async function handler(req, res) {
   if (!cronSecret || providedSecret !== cronSecret) {
     return res.status(401).json({
       error: 'Unauthorized - Invalid cron secret',
-      message: 'Set CRON_SECRET environment variable'
+      message: 'Set CRON_SECRET environment variable',
     });
   }
 
@@ -21,19 +26,30 @@ export default async function handler(req, res) {
 
   try {
     const now = new Date();
-    const snapshot = await admin.firestore()
+    const snapshot = await admin
+      .firestore()
       .collection('jobs')
       .where('status', '==', 'active')
       .get();
 
-    const expiredDocs = snapshot.docs.filter((doc) => isJobExpired(doc.data(), now));
+    const expiredDocs = snapshot.docs.filter((doc) =>
+      isJobExpired(doc.data(), now),
+    );
     let updated = 0;
     let notificationErrors = 0;
 
     if (expiredDocs.length > 0) {
       const batch = admin.firestore().batch();
       expiredDocs.forEach((doc) => {
-        batch.update(doc.ref, buildExpiredJobUpdate(admin, now));
+        const update = buildExpiredJobUpdate(admin, now, doc.data());
+        batch.update(doc.ref, update);
+        const history = buildExpiryHistory(doc.id, doc.data(), update, now);
+        if (history) {
+          batch.create(
+            admin.firestore().collection('jobsStatusHistory').doc(),
+            history,
+          );
+        }
       });
       await batch.commit();
       updated = expiredDocs.length;
@@ -49,12 +65,28 @@ export default async function handler(req, res) {
           type: 'job_expired',
           title: 'Vaga fechada automaticamente',
           message: `A vaga "${job.titulo || 'Sem titulo'}" foi fechada automaticamente porque a data de fecho expirou.`,
-          actionUrl: `/dashboard/empresa/vaga/${doc.id}`
+          actionUrl: `/dashboard/empresa/vaga/${doc.id}`,
         });
       } catch (error) {
         notificationErrors += 1;
-        logServerError('cron_check_job_expiration.criar_notificacao_de_vaga_expirada_failed', error);
+        logServerError(
+          'cron_check_job_expiration.criar_notificacao_de_vaga_expirada_failed',
+          error,
+        );
       }
+    }
+
+    // F2.8: candidaturas que ficaram abertas em vagas terminadas há ≥ 7 dias
+    // (atrás de V2_JOB_LIFECYCLE por organização). Falhar aqui não desfaz o
+    // fecho das vagas.
+    let jobEnd = null;
+    try {
+      jobEnd = await closeEndedJobApplications(admin.firestore(), now);
+    } catch (error) {
+      logServerError(
+        'cron_check_job_expiration.fechar_candidaturas_failed',
+        error,
+      );
     }
 
     return res.status(200).json({
@@ -64,16 +96,20 @@ export default async function handler(req, res) {
         scanned: snapshot.size,
         expired: expiredDocs.length,
         updated,
-        notificationErrors
+        notificationErrors,
+        jobEnd,
       },
-      timestamp: now.toISOString()
+      timestamp: now.toISOString(),
     });
   } catch (error) {
-    logServerError('cron_check_job_expiration.job_expiration_check_failed', error);
+    logServerError(
+      'cron_check_job_expiration.job_expiration_check_failed',
+      error,
+    );
     return res.status(500).json({
       error: 'Internal server error',
       message: error.message,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 }

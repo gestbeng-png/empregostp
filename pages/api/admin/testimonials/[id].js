@@ -11,12 +11,18 @@ async function requireAdmin(req, res) {
   }
 
   if (!token) {
-    res.status(401).json({ message: 'Token de autorização ausente ou inválido' });
+    res
+      .status(401)
+      .json({ message: 'Token de autorização ausente ou inválido' });
     return null;
   }
 
   const decodedToken = await admin.auth().verifyIdToken(token);
-  const adminDoc = await admin.firestore().collection('users').doc(decodedToken.uid).get();
+  const adminDoc = await admin
+    .firestore()
+    .collection('users')
+    .doc(decodedToken.uid)
+    .get();
   if (!adminDoc.exists || adminDoc.data().userType !== 'admin') {
     res.status(403).json({ message: 'Acesso negado. Apenas administradores.' });
     return null;
@@ -48,7 +54,9 @@ export default async function handler(req, res) {
     if (req.method === 'PATCH' || req.method === 'POST') {
       const action = req.body?.action;
       if (!['approve', 'reject'].includes(action)) {
-        return res.status(400).json({ message: 'Ação inválida. Use approve ou reject.' });
+        return res
+          .status(400)
+          .json({ message: 'Ação inválida. Use approve ou reject.' });
       }
 
       const status = action === 'approve' ? 'approved' : 'rejected';
@@ -62,13 +70,20 @@ export default async function handler(req, res) {
       }
 
       await docRef.update(update);
-      return res.status(200).json({ message: `Testemunho ${status === 'approved' ? 'aprovado' : 'rejeitado'}`, status });
+      return res
+        .status(200)
+        .json({
+          message: `Testemunho ${status === 'approved' ? 'aprovado' : 'rejeitado'}`,
+          status,
+        });
     }
 
     res.setHeader('Allow', ['POST', 'PATCH', 'DELETE']);
     return res.status(405).json({ message: 'Método não permitido' });
   } catch (error) {
     logServerError('admin_testimonials_id.moderar_testemunho_failed', error);
-    return res.status(500).json({ message: 'Erro interno do servidor', error: error.message });
+    return res
+      .status(500)
+      .json({ message: 'Erro interno do servidor', error: error.message });
   }
 }

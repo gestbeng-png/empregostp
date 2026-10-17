@@ -2007,7 +2007,7 @@
   background-color: #064bb5;
   background-image:
     linear-gradient(rgba(6, 75, 181, 0.84), rgba(6, 75, 181, 0.84)),
-    url('/assets/home/cta-candidate.webp');
+    url('/assets/candidatos/perfil-carreira.webp');
   background-position:
     0 0,
     55% 50%;
@@ -2021,10 +2021,10 @@
   background-color: #daff45;
   background-image:
     linear-gradient(rgba(218, 255, 69, 0.82), rgba(218, 255, 69, 0.82)),
-    url('/assets/home/cta-employer.webp');
+    url('/assets/candidatos/equipa-cta.webp');
   background-position:
     0 0,
-    50% 50%;
+    50% 20%;
   background-repeat: no-repeat;
   background-size: cover;
 }
@@ -2335,13 +2335,13 @@
   .page.page.page .dualCardCandidate {
     background-image:
       linear-gradient(rgba(6, 75, 181, 0.88), rgba(6, 75, 181, 0.88)),
-      url('/assets/home/cta-candidate.webp');
+      url('/assets/candidatos/perfil-carreira.webp');
   }
 
   .page.page.page .dualCardEmployer {
     background-image:
       linear-gradient(rgba(218, 255, 69, 0.88), rgba(218, 255, 69, 0.88)),
-      url('/assets/home/cta-employer.webp');
+      url('/assets/candidatos/equipa-cta.webp');
   }
 
   .page.page.page .dualTitle {
@@ -3035,6 +3035,24 @@
   margin-top: 0.45rem;
   color: var(--home-blue-deep);
   font-weight: 800;
+}
+
+.candidatesEmpty .candidatesEmptyButton {
+  padding: 0.75rem 1.3rem;
+  border-radius: 0.375rem;
+  background: var(--app-brand-primary);
+  color: var(--color-surface);
+  text-decoration: none;
+  transition: filter 160ms ease;
+}
+
+.candidatesEmpty .candidatesEmptyButton:hover {
+  filter: brightness(0.88);
+}
+
+.candidatesEmpty .candidatesEmptyButton:focus-visible {
+  outline: 0.1875rem solid var(--app-brand-lime);
+  outline-offset: 0.1875rem;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -5026,13 +5044,7 @@
 
 .page.page.page .processSection {
   padding: 0;
-  background: linear-gradient(
-    90deg,
-    #ffffff 0%,
-    #ffffff 50%,
-    #69c8ff 50%,
-    #69c8ff 100%
-  );
+  background: #ffffff;
 }
 
 .processSection > .sectionContainer {

@@ -1,5 +1,6 @@
+import { projectPublicJob } from '../../lib/publicJob';
 import { admin } from '../../lib/firebaseAdmin';
-import { canSaveJob, isPlanActive, getPlanSummary } from '../../lib/candidatePlanFeatures';
+import { canSaveJob, getPlanSummary } from '../../lib/candidatePlanFeatures';
 import { logServerError } from '../../lib/serverLog';
 import { requireActiveApiUser } from '../../lib/apiUserAuth';
 
@@ -52,7 +53,8 @@ export async function fetchSavedJobDetails(adminInstance, savedJobDocs = []) {
     const job = jobsById.get(jobId);
     if (!job) return [];
     emittedJobIds.add(jobId);
-    return [{ ...job, savedAt }];
+    // Allowlist: campos internos do documento da vaga nunca chegam ao browser.
+    return [{ ...projectPublicJob(job), savedAt }];
   });
 }
 
@@ -67,12 +69,15 @@ export default async function handler(req, res) {
     const { uid, userData } = authResult;
 
     if (userData.userType !== 'candidato') {
-      return res.status(403).json({ error: 'Apenas candidatos podem gerenciar vagas salvas' });
+      return res
+        .status(403)
+        .json({ error: 'Apenas candidatos podem gerenciar vagas salvas' });
     }
 
     if (method === 'GET') {
       // Buscar vagas salvas do usuário
-      const savedJobsSnapshot = await admin.firestore()
+      const savedJobsSnapshot = await admin
+        .firestore()
         .collection('savedJobs')
         .where('candidateId', '==', uid)
         .get();
@@ -81,7 +86,10 @@ export default async function handler(req, res) {
         return res.status(200).json({ savedJobs: [] });
       }
 
-      const savedJobs = await fetchSavedJobDetails(admin, savedJobsSnapshot.docs);
+      const savedJobs = await fetchSavedJobDetails(
+        admin,
+        savedJobsSnapshot.docs,
+      );
 
       return res.status(200).json({ savedJobs });
     }
@@ -95,7 +103,8 @@ export default async function handler(req, res) {
       }
 
       // Verificar se já existe
-      const existingSnapshot = await admin.firestore()
+      const existingSnapshot = await admin
+        .firestore()
         .collection('savedJobs')
         .where('candidateId', '==', uid)
         .where('jobId', '==', jobId)
@@ -108,32 +117,39 @@ export default async function handler(req, res) {
       // Obter plano do candidato (já trata plano expirado ou inexistente)
       const planSummary = getPlanSummary(userData);
       const planId = planSummary.planId; // Pode ser básico se expirou
-      
+
       // Se o plano expirou, atualizar no banco de dados para básico
-      if (userData.currentPlan && userData.currentPlan !== 'basic_candidato' && !planSummary.isActive) {
+      if (
+        userData.currentPlan &&
+        userData.currentPlan !== 'basic_candidato' &&
+        !planSummary.isActive
+      ) {
         try {
           await admin.firestore().collection('users').doc(uid).update({
             currentPlan: 'basic_candidato',
             planId: 'basic_candidato',
             planName: 'Básico',
             planEndDate: null,
-            updatedAt: admin.firestore.FieldValue.serverTimestamp()
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
           });
         } catch (updateError) {
-          logServerError('saved_jobs.atualizar_plano_expirado_failed', updateError);
+          logServerError(
+            'saved_jobs.atualizar_plano_expirado_failed',
+            updateError,
+          );
         }
       }
 
       // Verificar limite de vagas salvas
       const saveCheck = await canSaveJob(uid, planId, admin);
       if (!saveCheck.allowed) {
-        return res.status(403).json({ 
+        return res.status(403).json({
           error: saveCheck.reason,
           code: saveCheck.code || 'SAVED_JOBS_LIMIT_REACHED',
           current: saveCheck.current,
           limit: saveCheck.limit,
           upgradeMessage: saveCheck.upgradeMessage,
-          upgradeUrl: saveCheck.upgradeUrl || '/premium/candidatos'
+          upgradeUrl: saveCheck.upgradeUrl || '/premium/candidatos',
         });
       }
 
@@ -141,13 +157,13 @@ export default async function handler(req, res) {
       await admin.firestore().collection('savedJobs').add({
         candidateId: uid,
         jobId,
-        savedAt: admin.firestore.FieldValue.serverTimestamp()
+        savedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      return res.status(201).json({ 
+      return res.status(201).json({
         message: 'Vaga salva com sucesso',
         remaining: saveCheck.remaining,
-        limit: saveCheck.limit
+        limit: saveCheck.limit,
       });
     }
 
@@ -159,14 +175,15 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'jobId é obrigatório' });
       }
 
-      const snapshot = await admin.firestore()
+      const snapshot = await admin
+        .firestore()
         .collection('savedJobs')
         .where('candidateId', '==', uid)
         .where('jobId', '==', jobId)
         .get();
 
       const batch = admin.firestore().batch();
-      snapshot.docs.forEach(doc => {
+      snapshot.docs.forEach((doc) => {
         batch.delete(doc.ref);
       });
       await batch.commit();
@@ -176,7 +193,6 @@ export default async function handler(req, res) {
 
     res.setHeader('Allow', ['GET', 'POST', 'DELETE']);
     return res.status(405).json({ error: 'Método não permitido' });
-
   } catch (error) {
     logServerError('saved_jobs.api_de_vagas_salvas_failed', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });

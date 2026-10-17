@@ -1,0 +1,112 @@
+/* Grelha da equipa partilhada por /carreira e /sobre-nos. Usa só tokens
+   globais para não depender das variáveis de nenhuma das páginas. */
+.teamGrid {
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+.teamCard {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+  border-radius: 1.5rem;
+  background: var(--app-brand-dark);
+}
+.teamCard img {
+  object-fit: cover;
+  transition:
+    transform 0.9s var(--ease-out),
+    filter 0.6s ease;
+  filter: saturate(0.9);
+}
+.teamCard:hover img {
+  transform: scale(1.06);
+  filter: saturate(1.05);
+}
+.teamCard::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    transparent 60%,
+    color-mix(in srgb, var(--app-brand-dark) 75%, transparent)
+  );
+  pointer-events: none;
+  content: '';
+}
+.teamSocial {
+  position: absolute;
+  right: 0;
+  bottom: 1.25rem;
+  left: 0;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.teamSocial li {
+  transition:
+    transform 0.5s var(--ease-out),
+    opacity 0.5s var(--ease-out);
+}
+.teamSocial a {
+  display: grid;
+  width: 2.9rem;
+  height: 2.9rem;
+  place-items: center;
+  border: 0.0625rem solid color-mix(in srgb, var(--color-surface) 35%, transparent);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--app-brand-dark) 45%, transparent);
+  color: var(--color-surface);
+  font-size: 1.05rem;
+  backdrop-filter: blur(0.5rem);
+  transition:
+    background 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease,
+    transform 0.25s var(--ease-out);
+}
+.teamSocial a:hover {
+  border-color: var(--app-brand-lime);
+  background: var(--app-brand-lime);
+  color: var(--app-brand-dark);
+  transform: translateY(-0.2rem);
+}
+/* Com rato, os ícones sobem em cascata ao passar na foto; em ecrãs tácteis
+   ficam sempre visíveis. */
+@media (hover: hover) {
+  .teamSocial li {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+  .teamSocial li:nth-child(2) {
+    transition-delay: 60ms;
+  }
+  .teamSocial li:nth-child(3) {
+    transition-delay: 120ms;
+  }
+  .teamCard:hover .teamSocial li,
+  .teamCard:focus-within .teamSocial li {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (max-width: 48em) {
+  .teamGrid {
+    grid-template-columns: 1fr;
+  }
+  .teamCard {
+    aspect-ratio: 4 / 4.2;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .teamCard img,
+  .teamSocial li,
+  .teamSocial a {
+    transition: none;
+  }
+}

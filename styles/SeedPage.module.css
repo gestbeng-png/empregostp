@@ -201,7 +201,8 @@
 
 /* Workbridge visual contract */
 .page {
-  padding: clamp(2rem, 5vw, 3.75rem) var(--app-page-inline) clamp(4rem, 8vw, 7.5rem);
+  padding: clamp(2rem, 5vw, 3.75rem) var(--app-page-inline)
+    clamp(4rem, 8vw, 7.5rem);
   color: #383750;
   background: #eef4f8;
 }

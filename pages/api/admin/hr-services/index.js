@@ -13,12 +13,18 @@ async function requireAdmin(req, res) {
   }
 
   if (!token) {
-    res.status(401).json({ message: 'Token de autorização ausente ou inválido' });
+    res
+      .status(401)
+      .json({ message: 'Token de autorização ausente ou inválido' });
     return null;
   }
 
   const decodedToken = await admin.auth().verifyIdToken(token);
-  const adminDoc = await admin.firestore().collection('users').doc(decodedToken.uid).get();
+  const adminDoc = await admin
+    .firestore()
+    .collection('users')
+    .doc(decodedToken.uid)
+    .get();
   if (!adminDoc.exists || adminDoc.data().userType !== 'admin') {
     res.status(403).json({ message: 'Acesso negado. Apenas administradores.' });
     return null;
@@ -45,7 +51,11 @@ export default async function handler(req, res) {
     }
 
     const { status } = req.query;
-    const snapshot = await admin.firestore().collection(COLLECTION).limit(500).get();
+    const snapshot = await admin
+      .firestore()
+      .collection(COLLECTION)
+      .limit(500)
+      .get();
 
     let requests = snapshot.docs.map((doc) => {
       const data = doc.data();
@@ -60,7 +70,9 @@ export default async function handler(req, res) {
         documents: Array.isArray(data.documents) ? data.documents : [],
         status: data.status || 'pending',
         adminResponse: data.adminResponse || '',
-        resultDocuments: Array.isArray(data.resultDocuments) ? data.resultDocuments : [],
+        resultDocuments: Array.isArray(data.resultDocuments)
+          ? data.resultDocuments
+          : [],
         createdAt: toIso(data.createdAt),
         updatedAt: toIso(data.updatedAt),
         processedAt: toIso(data.processedAt),
@@ -87,6 +99,8 @@ export default async function handler(req, res) {
     return res.status(200).json({ requests, stats });
   } catch (error) {
     logServerError('admin_hr_services.api_de_servicos_rh_admin_failed', error);
-    return res.status(500).json({ message: 'Erro interno do servidor', error: error.message });
+    return res
+      .status(500)
+      .json({ message: 'Erro interno do servidor', error: error.message });
   }
 }

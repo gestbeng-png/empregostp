@@ -1,5 +1,8 @@
 import { admin } from '../../../../lib/firebaseAdmin';
-import { DEFAULT_EMPRESA_PLANS, DEFAULT_CANDIDATO_PLANS } from '../../../../lib/defaultPlans';
+import {
+  DEFAULT_EMPRESA_PLANS,
+  DEFAULT_CANDIDATO_PLANS,
+} from '../../../../lib/defaultPlans';
 import { logServerError } from '../../../../lib/serverLog';
 
 export default async function handler(req, res) {
@@ -16,7 +19,11 @@ export default async function handler(req, res) {
 
     const token = authHeader.split('Bearer ')[1];
     const decodedToken = await admin.auth().verifyIdToken(token);
-    const userDoc = await admin.firestore().collection('users').doc(decodedToken.uid).get();
+    const userDoc = await admin
+      .firestore()
+      .collection('users')
+      .doc(decodedToken.uid)
+      .get();
     if (!userDoc.exists || userDoc.data().userType !== 'admin') {
       return res.status(403).json({ error: 'Acesso não autorizado' });
     }
@@ -34,4 +41,4 @@ export default async function handler(req, res) {
     logServerError('admin_plans_setup.configurar_planos_failed', error);
     return res.status(500).json({ error: 'Erro ao configurar planos' });
   }
-} 
+}

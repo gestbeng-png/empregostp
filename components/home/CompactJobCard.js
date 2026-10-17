@@ -7,10 +7,10 @@ import {
   FiCalendar,
   FiCheckCircle,
   FiClock,
-  FiDollarSign,
   FiMapPin,
   FiUsers,
 } from 'react-icons/fi';
+import CoinsIcon from '../icons/CoinsIcon';
 import styles from '../../styles/CompactJobCard.module.css';
 
 function getInitials(value = '') {
@@ -218,7 +218,7 @@ export default function CompactJobCard({
             <span>{locationItem?.text || 'Localização não indicada'}</span>
           </span>
           <span className={styles.listingMetaItem}>
-            <FiDollarSign aria-hidden="true" />
+            <CoinsIcon aria-hidden="true" />
             <span>{salary || 'A combinar'}</span>
           </span>
         </div>

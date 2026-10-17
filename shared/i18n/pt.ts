@@ -14,13 +14,35 @@ export const pt = {
         'Não foi possível concluir o pedido. Tente novamente em instantes.',
     },
     deleteAccount: {
-      action: 'Contactar suporte',
+      action: 'Pedir eliminação',
+      cancel: 'Cancelar o pedido',
+      cancelled: 'Pedido cancelado. A sua conta mantém-se.',
+      confirmLabel: 'Escreva ELIMINAR para confirmar',
       description:
         'A eliminação remove o acesso ao perfil e aos dados associados.',
+      kept:
+        'As candidaturas ficam anonimizadas — as empresas veem «Candidato removido», sem contactos nem ficheiros — e as em curso são retiradas. Os comprovativos de pagamento mantêm-se pelo prazo fiscal.',
+      loading: 'A verificar o estado da conta…',
       notice:
-        'Fale com a equipa de suporte para confirmar a identidade e iniciar o pedido.',
-      noticeTitle: 'Esta ação requer validação',
+        'Durante 7 dias pode cancelar o pedido. Depois, o perfil, o CV, os documentos, os alertas, as vagas guardadas e as notificações são apagados e o acesso termina.',
+      noticeTitle: 'Esta ação não pode ser desfeita depois do prazo',
+      pendingDescription:
+        'O perfil já não aparece em pesquisas. A conta é eliminada a partir de {date}.',
+      pendingTitle: 'Eliminação pedida',
+      reauthHint:
+        'Por segurança, só é aceite nos 5 minutos seguintes a iniciar sessão.',
+      requested: 'Pedido registado. Enviámos a confirmação para o seu email.',
+      sending: 'A enviar…',
+      support: 'Falar com o suporte',
       title: 'Eliminar conta',
+    },
+    exportData: {
+      action: 'Descarregar os meus dados',
+      description:
+        'Um ficheiro com o perfil, as candidaturas, os alertas, as notificações e links para os seus ficheiros (válidos 48 horas).',
+      done: 'Ficheiro descarregado.',
+      preparing: 'A preparar…',
+      title: 'Exportar dados',
     },
     emptySearch: {
       description: 'Tente pesquisar por conta, alertas, privacidade ou idioma.',
@@ -153,6 +175,33 @@ export const pt = {
         public: 'Público',
         recruiters: 'Empresas registadas',
       },
+    },
+  },
+  jobSafety: {
+    notice: 'O EmpregoSTP nunca pede pagamentos para se candidatar.',
+    noticeAction: 'Se lhe pedirem dinheiro, denuncie.',
+    askedForMoney: 'Pediram-me dinheiro',
+    reportTitle: 'Denunciar esta vaga',
+    reasonLabel: 'Motivo',
+    detailsLabel: 'O que aconteceu? (opcional)',
+    detailsHint:
+      'Não escreva palavras-passe nem dados bancários. A empresa nunca sabe quem denunciou.',
+    submit: 'Enviar denúncia',
+    sending: 'A enviar…',
+    cancel: 'Cancelar',
+    loginRequired: 'Inicie sessão para denunciar esta vaga.',
+    login: 'Iniciar sessão',
+    failed: 'Não foi possível enviar a denúncia. Tente novamente.',
+    reasons: {
+      ASKED_FOR_MONEY: 'Pediram-me dinheiro',
+      FAKE_JOB: 'A vaga parece falsa',
+      PHISHING: 'Pediram dados pessoais ou bancários suspeitos',
+      DISCRIMINATION: 'Conteúdo discriminatório',
+      INAPPROPRIATE: 'Conteúdo impróprio',
+      SPAM: 'Spam ou publicidade',
+      DUPLICATE: 'Vaga repetida',
+      EXPIRED_STILL_LISTED: 'A vaga já foi preenchida ou encerrou',
+      OTHER: 'Outro motivo',
     },
   },
 } as const;

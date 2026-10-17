@@ -776,3 +776,9 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Enquanto a sessão carrega, a área de login guarda o espaço mas não aparece:
+   evita mostrar "Iniciar sessão" a quem já tem sessão e o salto de layout. */
+.authPending {
+  visibility: hidden;
+}

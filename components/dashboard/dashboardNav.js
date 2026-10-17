@@ -1,3 +1,9 @@
+import { isRecruitmentWorkspaceEnabled } from '../../lib/recruitmentAvailability';
+
+// ADR-019: itens de «Recrutamento e equipa» só com a área ativa.
+const recruitmentItem = (item) =>
+  isRecruitmentWorkspaceEnabled() ? [item] : [];
+
 /**
  * Navigation config for the dashboard shell, per role.
  * `icon` values are keys resolved to react-icons inside DashboardShell.
@@ -27,6 +33,12 @@ export const DASHBOARD_NAV = {
           href: '/dashboard/admin/jobs',
           icon: 'briefcase',
         },
+        ...recruitmentItem({
+          key: 'operations',
+          label: 'Operações de recrutamento',
+          href: '/dashboard/admin/operations',
+          icon: 'chart',
+        }),
         {
           key: 'verificacoes',
           label: 'Verificações',
@@ -54,6 +66,12 @@ export const DASHBOARD_NAV = {
           key: 'resources',
           label: 'Recursos',
           href: '/dashboard/admin/resources',
+          icon: 'folder',
+        },
+        {
+          key: 'product-ads',
+          label: 'Anúncios de produtos',
+          href: '/dashboard/admin/product-ads',
           icon: 'folder',
         },
         {
@@ -123,9 +141,11 @@ export const DASHBOARD_NAV = {
       ],
     },
   ],
+  // Mesma ordem e grupos da barra da página /dashboard/candidato (wireframe
+  // 05_CANDIDATE): a lateral não muda ao passar para as subpáginas.
   candidato: [
     {
-      label: 'Painel',
+      label: 'Menu principal',
       items: [
         {
           key: 'overview',
@@ -166,21 +186,8 @@ export const DASHBOARD_NAV = {
       ],
     },
     {
-      label: 'Explorar',
+      label: 'Conta',
       items: [
-        {
-          key: 'vagas',
-          label: 'Procurar vagas',
-          href: '/vagas',
-          icon: 'search',
-        },
-        { key: 'recursos', label: 'Recursos', href: '/recursos', icon: 'tool' },
-        {
-          key: 'settings',
-          label: 'Configurações',
-          href: '/dashboard/candidato?tab=settings',
-          icon: 'settings',
-        },
         {
           key: 'verification',
           label: 'Verificação',
@@ -193,6 +200,42 @@ export const DASHBOARD_NAV = {
           href: '/dashboard/candidato?tab=plans',
           icon: 'star',
         },
+        {
+          key: 'settings',
+          label: 'Configurações',
+          href: '/dashboard/candidato?tab=settings',
+          icon: 'settings',
+        },
+        {
+          key: 'affiliate',
+          label: 'Ser afiliado',
+          href: '/dashboard/candidato?tab=affiliate',
+          icon: 'dollar',
+        },
+      ],
+    },
+    {
+      label: 'Explorar',
+      items: [
+        ...recruitmentItem({
+          key: 'recruitment',
+          label: 'As minhas organizações',
+          href: '/dashboard/recrutamento',
+          icon: 'users',
+        }),
+        {
+          key: 'vagas',
+          label: 'Procurar vagas',
+          href: '/vagas',
+          icon: 'search',
+        },
+        {
+          key: 'cv-generator',
+          label: 'Gerador de CV',
+          href: '/recursos/gerador-cv',
+          icon: 'fileText',
+        },
+        { key: 'recursos', label: 'Recursos', href: '/recursos', icon: 'tool' },
       ],
     },
   ],
@@ -218,6 +261,12 @@ export const DASHBOARD_NAV = {
           href: '/dashboard/empresa?tab=applications',
           icon: 'inbox',
         },
+        ...recruitmentItem({
+          key: 'recruitment',
+          label: 'Recrutamento e equipa',
+          href: '/dashboard/recrutamento',
+          icon: 'users',
+        }),
         {
           key: 'candidates',
           label: 'Banco de talentos',

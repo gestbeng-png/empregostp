@@ -49,7 +49,12 @@ function Modal({ title, subtitle, onClose, children, wide = false }) {
             <h2 className={styles.modalTitle}>{title}</h2>
             {subtitle && <p className={styles.modalSubtitle}>{subtitle}</p>}
           </div>
-          <button type="button" className={styles.modalClose} onClick={onClose} aria-label="Fechar">
+          <button
+            type="button"
+            className={styles.modalClose}
+            onClick={onClose}
+            aria-label="Fechar"
+          >
             ×
           </button>
         </div>
@@ -59,7 +64,13 @@ function Modal({ title, subtitle, onClose, children, wide = false }) {
   );
 }
 
-function ConfirmPaymentModal({ plan, paymentSettings, onConfirm, onCancel, loading }) {
+function ConfirmPaymentModal({
+  plan,
+  paymentSettings,
+  onConfirm,
+  onCancel,
+  loading,
+}) {
   if (!plan || Number(plan.price) === 0) return null;
 
   const bankRows = [
@@ -120,7 +131,7 @@ function ConfirmPaymentModal({ plan, paymentSettings, onConfirm, onCancel, loadi
 
 export default function CandidatePremiumPlansExperience({
   embedded = false,
-  onPlanApproved
+  onPlanApproved,
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -148,16 +159,25 @@ export default function CandidatePremiumPlansExperience({
         }
 
         const token = await user.getIdToken();
-        const [profileRes, paymentRes, pendingRes, plansRes] = await Promise.all([
-          fetch('/api/profile', { headers: { Authorization: `Bearer ${token}` } }),
-          fetch('/api/admin/payment-settings'),
-          fetch('/api/subscription-requests/current', { headers: { Authorization: `Bearer ${token}` } }),
-          fetch('/api/candidate/plans', { headers: { Authorization: `Bearer ${token}` } })
-        ]);
+        const [profileRes, paymentRes, pendingRes, plansRes] =
+          await Promise.all([
+            fetch('/api/profile', {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+            fetch('/api/admin/payment-settings'),
+            fetch('/api/subscription-requests/current', {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+            fetch('/api/candidate/plans', {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+          ]);
 
         if (plansRes.ok) {
           const plansJson = await plansRes.json();
-          const apiPlans = Array.isArray(plansJson.plans) ? plansJson.plans : [];
+          const apiPlans = Array.isArray(plansJson.plans)
+            ? plansJson.plans
+            : [];
           if (apiPlans.length) {
             setPlans(mergeAdminPlansWithPresentation(apiPlans));
           }
@@ -178,7 +198,7 @@ export default function CandidatePremiumPlansExperience({
             accountName: '',
             bankName: '',
             email: '',
-            instructions: ''
+            instructions: '',
           });
         }
 
@@ -212,23 +232,27 @@ export default function CandidatePremiumPlansExperience({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ planId })
+        body: JSON.stringify({ planId }),
       });
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
         if (data.code === 'OPEN_SUBSCRIPTION_REQUEST') {
           const pendingRes = await fetch('/api/subscription-requests/current', {
-            headers: { Authorization: `Bearer ${token}` }
+            headers: { Authorization: `Bearer ${token}` },
           });
           if (pendingRes.ok) {
             const pendingData = await pendingRes.json();
             setPendingPaymentRequest(pendingData.request || null);
           }
         }
-        throw new Error(data.message || data.error || 'Não foi possível processar a solicitação.');
+        throw new Error(
+          data.message ||
+            data.error ||
+            'Não foi possível processar a solicitação.',
+        );
       }
 
       if (data.status === 'approved') {
@@ -240,14 +264,16 @@ export default function CandidatePremiumPlansExperience({
           setTimeout(() => router.push('/dashboard/candidato'), 1200);
         }
       } else if (data.status === 'awaiting_payment') {
-        setSuccess('Solicitação criada. Faça a transferência e envie o comprovativo.');
+        setSuccess(
+          'Solicitação criada. Faça a transferência e envie o comprovativo.',
+        );
         setPendingPaymentRequest({
           id: data.requestId,
           planId,
           planName: plans.find((p) => p.id === planId)?.name || planId,
           price: plans.find((p) => p.id === planId)?.price || 0,
           status: 'pending',
-          paymentInstructions: data.paymentInstructions || null
+          paymentInstructions: data.paymentInstructions || null,
         });
         setShowProofModal(true);
       } else {
@@ -283,23 +309,36 @@ export default function CandidatePremiumPlansExperience({
       <div className={styles.header}>
         <h1 className={styles.title}>Escolha o seu plano</h1>
         <p className={styles.subtitle}>
-          Destaque o seu currículo e aumente as suas chances de conseguir emprego.
+          Destaque o seu currículo e aumente as suas chances de conseguir
+          emprego.
         </p>
       </div>
 
-      {error && <div className={`${styles.alert} ${styles.alertError}`}>{error}</div>}
-      {success && <div className={`${styles.alert} ${styles.alertSuccess}`}>{success}</div>}
+      {error && (
+        <div className={`${styles.alert} ${styles.alertError}`}>{error}</div>
+      )}
+      {success && (
+        <div className={`${styles.alert} ${styles.alertSuccess}`}>
+          {success}
+        </div>
+      )}
 
       {pendingPaymentRequest?.id && (
         <div className={styles.pendingBanner}>
           <div className={styles.pendingInfo}>
-            <span className={styles.pendingIcon} aria-hidden="true">🧾</span>
+            <span className={styles.pendingIcon} aria-hidden="true">
+              🧾
+            </span>
             <div className={styles.pendingTexts}>
               <strong>
                 Pagamento pendente
-                {pendingPaymentRequest.planName ? ` — ${pendingPaymentRequest.planName}` : ''}
+                {pendingPaymentRequest.planName
+                  ? ` — ${pendingPaymentRequest.planName}`
+                  : ''}
               </strong>
-              <span>Depois da transferência, envie o comprovativo para aprovação.</span>
+              <span>
+                Depois da transferência, envie o comprovativo para aprovação.
+              </span>
             </div>
           </div>
           <button
@@ -337,13 +376,18 @@ export default function CandidatePremiumPlansExperience({
             title="Comprovativo de pagamento"
             description="Anexe o comprovativo da transferência (PDF, JPG ou PNG)."
             onSubmitted={(updated) => setPendingPaymentRequest(updated)}
+            onCancelled={() => {
+              setPendingPaymentRequest(null);
+              setShowProofModal(false);
+            }}
           />
         </Modal>
       )}
 
       <div className={styles.grid}>
         {plans.map((plan) => {
-          const isCurrent = currentPlan === plan.id || currentPlan === plan.tierId;
+          const isCurrent =
+            currentPlan === plan.id || currentPlan === plan.tierId;
           const isSelected = selectedPlan === plan.id && loading;
           const isPopular = Boolean(plan.popular);
           return (
@@ -356,7 +400,9 @@ export default function CandidatePremiumPlansExperience({
               <h3 className={styles.planName}>{plan.name}</h3>
               <div className={styles.priceRow}>
                 <span className={styles.price}>{plan.priceLabel}</span>
-                {Number(plan.price) > 0 && <span className={styles.pricePeriod}>/ mês</span>}
+                {Number(plan.price) > 0 && (
+                  <span className={styles.pricePeriod}>/ mês</span>
+                )}
               </div>
               {plan.summary && <p className={styles.summary}>{plan.summary}</p>}
 
@@ -365,7 +411,9 @@ export default function CandidatePremiumPlansExperience({
               <ul className={styles.features}>
                 {(plan.features || []).slice(0, 8).map((feature) => (
                   <li key={feature} className={styles.feature}>
-                    <span className={styles.checkIcon} aria-hidden="true">✓</span>
+                    <span className={styles.checkIcon} aria-hidden="true">
+                      ✓
+                    </span>
                     {feature}
                   </li>
                 ))}
@@ -377,7 +425,11 @@ export default function CandidatePremiumPlansExperience({
                 disabled={loading || isCurrent}
                 className={`${styles.subscribeBtn} ${isPopular ? styles.subscribeBtnPopular : ''} ${isCurrent ? styles.subscribeBtnCurrent : ''}`}
               >
-                {isSelected ? 'A processar...' : isCurrent ? 'Plano atual' : 'Assinar plano'}
+                {isSelected
+                  ? 'A processar...'
+                  : isCurrent
+                    ? 'Plano atual'
+                    : 'Assinar plano'}
               </button>
             </div>
           );

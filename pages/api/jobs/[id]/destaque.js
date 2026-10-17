@@ -1,6 +1,12 @@
 import { admin } from '../../../../lib/firebaseAdmin';
-import { canHighlightJob, getEmpresaPlanSummary } from '../../../../lib/empresaPlanFeatures';
-import { getEffectiveJobStatus, syncExpiredJobStatus } from '../../../../lib/jobExpiration';
+import {
+  canHighlightJob,
+  getEmpresaPlanSummary,
+} from '../../../../lib/empresaPlanFeatures';
+import {
+  getEffectiveJobStatus,
+  syncExpiredJobStatus,
+} from '../../../../lib/jobExpiration';
 import { logServerError } from '../../../../lib/serverLog';
 
 /**
@@ -26,7 +32,11 @@ export default async function handler(req, res) {
     const userId = decodedToken.uid;
 
     // Verify user is empresa
-    const userDoc = await admin.firestore().collection('users').doc(userId).get();
+    const userDoc = await admin
+      .firestore()
+      .collection('users')
+      .doc(userId)
+      .get();
     if (!userDoc.exists || userDoc.data().userType !== 'empresa') {
       return res.status(403).json({ error: 'Only companies can update jobs' });
     }
@@ -43,17 +53,25 @@ export default async function handler(req, res) {
 
     // Verify ownership
     if (job.companyId !== userId) {
-      return res.status(403).json({ error: 'Unauthorized - Job belongs to another company' });
+      return res
+        .status(403)
+        .json({ error: 'Unauthorized - Job belongs to another company' });
     }
 
     const highlightRequested = req.body?.destaque === true;
     if (highlightRequested && getEffectiveJobStatus(job) !== 'active') {
-      return res.status(400).json({ error: 'Apenas vagas ativas podem ficar em destaque' });
+      return res
+        .status(400)
+        .json({ error: 'Apenas vagas ativas podem ficar em destaque' });
     }
 
     const planSummary = getEmpresaPlanSummary(userDoc.data());
     if (highlightRequested && !job.destaque) {
-      const highlightCheck = await canHighlightJob(userId, planSummary.planId, admin);
+      const highlightCheck = await canHighlightJob(
+        userId,
+        planSummary.planId,
+        admin,
+      );
       if (!highlightCheck.allowed) {
         return res.status(403).json(highlightCheck);
       }
@@ -62,11 +80,14 @@ export default async function handler(req, res) {
     // Update job destaque status
     await jobRef.update({
       destaque: highlightRequested,
-      destaqueActivatedAt: highlightRequested ? admin.firestore.FieldValue.serverTimestamp() : null,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      destaqueActivatedAt: highlightRequested
+        ? admin.firestore.FieldValue.serverTimestamp()
+        : null,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    const highlightedSnapshot = await admin.firestore()
+    const highlightedSnapshot = await admin
+      .firestore()
       .collection('jobs')
       .where('companyId', '==', userId)
       .where('status', '==', 'active')
@@ -79,7 +100,7 @@ export default async function handler(req, res) {
       userId: userId,
       jobId: id,
       destaque: req.body.destaque,
-      timestamp: admin.firestore.FieldValue.serverTimestamp()
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
     });
 
     return res.status(200).json({
@@ -88,14 +109,14 @@ export default async function handler(req, res) {
       destaque: highlightRequested,
       destaques: {
         current: highlightedSnapshot.size,
-        max: planSummary.features.maxHighlightedJobs ?? null
-      }
+        max: planSummary.features.maxHighlightedJobs ?? null,
+      },
     });
   } catch (error) {
     logServerError('jobs_id_destaque.updating_job_destaque_failed', error);
     return res.status(500).json({
       error: 'Internal server error',
-      message: error.message
+      message: error.message,
     });
   }
 }

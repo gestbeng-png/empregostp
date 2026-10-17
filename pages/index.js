@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import Head from 'next/head';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
@@ -6,6 +8,7 @@ import { useRouter } from 'next/router';
 import { FiArrowRight } from 'react-icons/fi';
 import PublicPageShell from '../components/PublicPageShell';
 import CompactJobCard from '../components/home/CompactJobCard';
+import ProductAdsCarousel from '../components/home/ProductAdsCarousel';
 import VerifiedCandidatesCarousel from '../components/home/VerifiedCandidatesCarousel';
 import { admin } from '../lib/firebaseAdmin';
 import { getEmpresaPlanSummary } from '../lib/empresaPlanFeatures';
@@ -23,6 +26,7 @@ import {
   getInitials,
 } from '../lib/spotlightCandidates';
 import { isJobPubliclyVisible } from '../lib/jobExpiration';
+import { fetchPublicProductAds } from '../lib/productAds';
 import styles from '../styles/HomePage.module.css';
 
 function serializeDateValue(value) {
@@ -45,11 +49,13 @@ function compareRecentJobs(a, b) {
 function normalizeContractType(value = '') {
   const normalized = String(value || '').toLowerCase();
   const types = {
-    'full-time': 'Tempo integral',
-    'tempo integral': 'Tempo integral',
-    'part-time': 'Meio período',
-    'meio período': 'Meio período',
-    'meio periodo': 'Meio período',
+    'full-time': 'Tempo inteiro',
+    'tempo inteiro': 'Tempo inteiro',
+    'tempo integral': 'Tempo inteiro',
+    'part-time': 'Tempo parcial',
+    'tempo parcial': 'Tempo parcial',
+    'meio período': 'Tempo parcial',
+    'meio periodo': 'Tempo parcial',
     contract: 'Contrato',
     contrato: 'Contrato',
     internship: 'Estágio',
@@ -206,6 +212,13 @@ async function fetchCollectionWithFallback(collectionName) {
 }
 
 export async function getServerSideProps(context) {
+  const previewCreativePath = '/assets/product-ads/carro-preview.png';
+  const previewCreativeSrc =
+    process.env.NODE_ENV === 'development' &&
+    fs.existsSync(path.join(process.cwd(), 'public', previewCreativePath))
+      ? previewCreativePath
+      : '';
+
   try {
     context?.res?.setHeader?.(
       'Cache-Control',
@@ -218,6 +231,7 @@ export async function getServerSideProps(context) {
       candidatesSnapshot,
       postsSnapshot,
       testimonialsSnapshot,
+      productAds,
     ] = await Promise.all([
       admin
         .firestore()
@@ -240,6 +254,7 @@ export async function getServerSideProps(context) {
         .collection('testimonials')
         .where('status', '==', 'approved')
         .get(),
+      fetchPublicProductAds(admin.firestore()),
     ]);
 
     const activeJobsData = activeJobsSnapshot.docs
@@ -408,6 +423,8 @@ export async function getServerSideProps(context) {
         spotlightCandidates: JSON.parse(JSON.stringify(spotlightCandidates)),
         latestPosts: JSON.parse(JSON.stringify(latestPosts)),
         testimonials: JSON.parse(JSON.stringify(approvedTestimonials)),
+        productAds,
+        previewCreativeSrc,
       },
     };
   } catch (error) {
@@ -424,6 +441,8 @@ export async function getServerSideProps(context) {
         spotlightCandidates: [],
         latestPosts: [],
         testimonials: [],
+        productAds: [],
+        previewCreativeSrc,
       },
     };
   }
@@ -440,6 +459,8 @@ export default function HomePage({
   spotlightCandidates = [],
   latestPosts = [],
   testimonials = [],
+  productAds = [],
+  previewCreativeSrc = '',
 }) {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
@@ -562,7 +583,6 @@ export default function HomePage({
   const jobsPreview = filteredJobs.slice(0, 9);
   const verifiedCandidates = spotlightCandidates;
   const testimonialAvatars = testimonials.slice(0, 3);
-  const networkCandidates = spotlightCandidates.slice(0, 5);
   const newsPosts =
     latestPosts.length > 0
       ? latestPosts.slice(0, 2)
@@ -588,10 +608,12 @@ export default function HomePage({
           },
         ];
 
+  // F9.2: só números calculados, sem «+» (que sugeria mais do que existe).
+  // `activeCompanies` conta todas as contas de empresa, não só as ativas.
   const metrics = [
-    { label: 'Vagas ativas', value: `${stats.activeJobs}+` },
-    { label: 'Empresas ativas', value: `${stats.activeCompanies}+` },
-    { label: 'Talentos registados', value: `${stats.activeCandidates}+` },
+    { label: 'Vagas ativas', value: String(stats.activeJobs) },
+    { label: 'Empresas registadas', value: String(stats.activeCompanies) },
+    { label: 'Talentos registados', value: String(stats.activeCandidates) },
   ];
   const candidateFeatures = [
     'Criar perfil profissional',
@@ -821,28 +843,16 @@ export default function HomePage({
                   <h2 className={styles.testimonialTitle}>Testemunhos</h2>
                   <div className={styles.testimonialTopRow}>
                     <div className={styles.testimonialAvatarStack}>
-                      {testimonialAvatars.length ? (
-                        testimonialAvatars.map((testimonial) => (
-                          <span
-                            key={testimonial.id}
-                            className={styles.testimonialAvatarPill}
-                          >
-                            {testimonial.initials}
-                          </span>
-                        ))
-                      ) : (
-                        <>
-                          <span className={styles.testimonialAvatarPill}>
-                            ES
-                          </span>
-                          <span className={styles.testimonialAvatarPill}>
-                            ST
-                          </span>
-                          <span className={styles.testimonialAvatarPill}>
-                            JP
-                          </span>
-                        </>
-                      )}
+                      {/* F9.2: sem testemunhos aprovados não se mostram
+                          iniciais de pessoas que não existem. */}
+                      {testimonialAvatars.map((testimonial) => (
+                        <span
+                          key={testimonial.id}
+                          className={styles.testimonialAvatarPill}
+                        >
+                          {testimonial.initials}
+                        </span>
+                      ))}
                     </div>
                     <span className={styles.testimonialViewAll}>
                       Veja todos
@@ -862,74 +872,25 @@ export default function HomePage({
             <div className={styles.sectionContainer}>
               <div className={styles.aboutGrid}>
                 <div className={styles.aboutContent}>
-                  <p className={styles.aboutEyebrow}>Sobre nós</p>
+                  <p className={styles.aboutEyebrow}>Vitrine de empresas</p>
                   <h2 className={styles.aboutTitle}>
-                    Uma plataforma feita para aproximar candidatos e empresas
+                    Anúncios de empresas em destaque
                   </h2>
                   <p className={styles.aboutText}>
-                    Facilitar o acesso ao emprego em São Tomé e Príncipe,
-                    tornando a procura e a divulgação de vagas mais rápidas,
-                    transparentes e humanas.
+                    Apresente os seus produtos e serviços a candidatos e
+                    empresas que já fazem parte da comunidade Empregos STP.
                   </p>
                   <div className={styles.aboutActions}>
-                    <Link href="/vagas" className={styles.aboutPrimary}>
-                      Pesquisar vagas
-                    </Link>
-                    <Link
-                      href="/register?type=candidato"
-                      className={styles.aboutSecondary}
-                    >
-                      Criar perfil
+                    <Link href="/contacto" className={styles.aboutPrimary}>
+                      Anunciar um produto
                     </Link>
                   </div>
                 </div>
 
-                <div className={styles.networkPanel} aria-hidden="true">
-                  <div className={styles.networkCenter}>+</div>
-                  {networkCandidates.map((candidate, index) => (
-                    <span
-                      key={candidate.id}
-                      className={`${styles.networkNode} ${styles[`networkNode${index + 1}`] || ''}`}
-                    >
-                      {candidate.photoUrl ? (
-                        <Image
-                          src={candidate.photoUrl}
-                          alt=""
-                          className={styles.networkNodeImage}
-                          width={50}
-                          height={50}
-                          unoptimized
-                        />
-                      ) : (
-                        candidate.initials
-                      )}
-                    </span>
-                  ))}
-                  {!networkCandidates.length ? (
-                    <>
-                      <span
-                        className={`${styles.networkNode} ${styles.networkNode1}`}
-                      >
-                        CV
-                      </span>
-                      <span
-                        className={`${styles.networkNode} ${styles.networkNode2}`}
-                      >
-                        RH
-                      </span>
-                      <span
-                        className={`${styles.networkNode} ${styles.networkNode3}`}
-                      >
-                        TI
-                      </span>
-                      <span
-                        className={`${styles.networkNode} ${styles.networkNode4}`}
-                      >
-                        MK
-                      </span>
-                    </>
-                  ) : null}
-                </div>
+                <ProductAdsCarousel
+                  ads={productAds}
+                  previewCreativeSrc={previewCreativeSrc}
+                />
               </div>
             </div>
           </section>
@@ -981,7 +942,7 @@ export default function HomePage({
                     encontrando o candidato certo através da nossa plataforma de
                     procura de emprego.
                   </p>
-                  <Link href="/candidatos" className={styles.talentsLink}>
+                  <Link href="/verificados" className={styles.talentsLink}>
                     <span>Explorar</span>
                     <FiArrowRight aria-hidden="true" />
                   </Link>

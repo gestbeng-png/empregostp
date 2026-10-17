@@ -1,6 +1,6 @@
 import { admin } from '../../../lib/firebaseAdmin';
 import { enforceApiRateLimit } from '../../../lib/apiRateLimit';
-import { isValidJobAlertUnsubscribeToken } from '../../../lib/jobAlertSubscription';
+import { isValidUnsubscribeTokenForAlert } from '../../../lib/jobAlertSubscription';
 import { logServerError } from '../../../lib/serverLog';
 
 const SAFE_ALERT_ID = /^[A-Za-z0-9_-]{1,128}$/;
@@ -35,10 +35,7 @@ export default async function handler(req, res) {
 
     if (
       !alertSnapshot.exists ||
-      !isValidJobAlertUnsubscribeToken(
-        token,
-        alertData.unsubscribeTokenHash,
-      )
+      !isValidUnsubscribeTokenForAlert(token, alertData)
     ) {
       return res.status(400).json({
         error: 'O link de cancelamento é inválido ou já expirou.',

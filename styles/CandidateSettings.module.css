@@ -96,7 +96,10 @@
   font-weight: 650;
   text-align: left;
   cursor: pointer;
-  transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
 }
 
 .sectionButton svg {
@@ -215,7 +218,10 @@
   color: var(--text-1);
   font: inherit;
   font-size: 0.9rem;
-  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
 }
 
 .passwordForm input:focus,
@@ -342,7 +348,10 @@
   font-size: 0.84rem;
   font-weight: 750;
   cursor: pointer;
-  transition: background 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .primaryButton {
@@ -633,7 +642,7 @@
 /* Workbridge fidelity layer. */
 .page {
   color: var(--text-1, #102441);
-  font-family: var(--font-instrument, "Instrument Sans"), Arial, sans-serif;
+  font-family: var(--font-instrument, 'Instrument Sans'), Arial, sans-serif;
 }
 
 .pageHeader h1,

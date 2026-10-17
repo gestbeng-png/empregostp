@@ -27,7 +27,12 @@
   position: absolute;
   inset: 0 0 auto;
   height: 4px;
-  background: linear-gradient(90deg, #064bb5 0 68%, #69c8ff 68% 88%, #daff45 88%);
+  background: linear-gradient(
+    90deg,
+    #064bb5 0 68%,
+    #69c8ff 68% 88%,
+    #daff45 88%
+  );
 }
 
 .close {

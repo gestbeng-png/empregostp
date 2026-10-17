@@ -1,19 +1,14 @@
 import Head from 'next/head';
+import Image from 'next/image';
 import Link from 'next/link';
 import {
   FiArrowRight,
-  FiBarChart2,
   FiBriefcase,
   FiCheck,
-  FiFilter,
   FiHome,
   FiSearch,
-  FiShield,
-  FiStar,
-  FiTarget,
   FiUser,
   FiUsers,
-  FiZap,
 } from 'react-icons/fi';
 import PublicPageShell from '../components/PublicPageShell';
 import {
@@ -22,89 +17,12 @@ import {
 } from '../lib/empresaPlansCatalog';
 import styles from '../styles/EmpresasStitchPage.module.css';
 
-const RECRUITMENT_TOOLS = [
-  {
-    title: 'Perfil institucional',
-    description:
-      'Crie um perfil completo da sua empresa com verificação oficial.',
-    Icon: FiHome,
-  },
-  {
-    title: 'Publicação de vagas',
-    description:
-      'Publique vagas em minutos com um formulário intuitivo e modelos profissionais.',
-    Icon: FiZap,
-  },
-  {
-    title: 'Banco de talentos',
-    description:
-      'Aceda a uma base de candidatos qualificados e filtre por competências.',
-    Icon: FiUsers,
-  },
-  {
-    title: 'Triagem inteligente',
-    description:
-      'Filtre candidatos automaticamente com base nos requisitos da vaga.',
-    Icon: FiFilter,
-  },
-  {
-    title: 'Sugestões automáticas',
-    description:
-      'A plataforma sugere os candidatos mais compatíveis com cada vaga.',
-    Icon: FiTarget,
-  },
-  {
-    title: 'Relatórios',
-    description:
-      'Analise o desempenho das vagas e o processo de recrutamento com dados reais.',
-    Icon: FiBarChart2,
-  },
-  {
-    title: 'Destaque de vagas',
-    description:
-      'Destaque as suas vagas para aparecerem no topo das pesquisas.',
-    Icon: FiStar,
-  },
-  {
-    title: 'Empresa verificada',
-    description:
-      'Obtenha o selo de empresa verificada e aumente a confiança dos candidatos.',
-    Icon: FiShield,
-  },
-  {
-    title: 'Serviço de RH',
-    description:
-      'Recrutamento assistido por especialistas: triagem, seleção, entrevistas, avaliação de competências e relatórios profissionais.',
-    Icon: FiBriefcase,
-  },
-];
-
-const COMPANY_STEPS = [
-  {
-    number: '01',
-    title: 'Crie o perfil da empresa',
-    description:
-      'Registe a sua empresa e obtenha a verificação oficial para aumentar a credibilidade.',
-  },
-  {
-    number: '02',
-    title: 'Publique a vaga',
-    description:
-      'Define os requisitos, responsabilidades e benefícios da posição em aberto.',
-  },
-  {
-    number: '03',
-    title: 'Receba candidaturas',
-    description:
-      'A plataforma filtra e sugere os candidatos mais compatíveis automaticamente.',
-  },
-  {
-    number: '04',
-    title: 'Avalie e contrate',
-    description:
-      'Crie listas de candidatos, marque entrevistas e tome decisões informadas com dados reais.',
-  },
-];
+const COMPANY_PHOTOS = {
+  collaboration:
+    '/assets/imagens/Fotos para usar no site/06092026-EmpregoSTP Sequência nº (002)-45.jpg',
+  professional:
+    '/assets/imagens/Fotos para usar no site/06092026-EmpregoSTP Sequência nº (002)-34.jpg',
+};
 
 /**
  * @param {{
@@ -176,155 +94,36 @@ export default function EmpresasPage({ companyPlans = [] }) {
                   </div>
                 </div>
 
-                <div
-                  className={styles.recruitmentPanel}
-                  role="group"
-                  aria-label="Exemplo do painel de recrutamento"
-                >
-                  <div className={styles.panelHeader}>
-                    <div>
-                      <span className={styles.panelKicker}>
-                        Painel de recrutamento
-                      </span>
-                      <strong>Processo em curso</strong>
+                <div className={styles.heroVisual}>
+                  <div className={styles.heroVisualMain}>
+                    <Image
+                      src={COMPANY_PHOTOS.collaboration}
+                      alt="Profissionais a colaborar num processo de recrutamento"
+                      fill
+                      priority
+                      sizes="(max-width: 767px) 100vw, 52vw"
+                      className={styles.heroVisualImage}
+                    />
+                    <div className={styles.heroVisualCaption}>
+                      <span>Empresas que avançam</span>
+                      <strong>Talento certo, no momento certo</strong>
                     </div>
-                    <span className={styles.liveBadge}>
-                      <i /> Ativo
-                    </span>
+                  </div>
+                  <div className={styles.heroVisualDetail}>
+                    <Image
+                      src={COMPANY_PHOTOS.professional}
+                      alt="Profissional em ambiente de trabalho"
+                      fill
+                      sizes="180px"
+                      className={styles.heroVisualImage}
+                    />
+                  </div>
+                  <div className={styles.heroVisualBadge} aria-hidden="true">
+                    <span>RH</span>
+                    <small>com mais clareza</small>
                   </div>
 
-                  <div className={styles.jobSummary}>
-                    <span className={styles.jobMark}>EM</span>
-                    <div>
-                      <strong>Especialista de marketing</strong>
-                      <span>São Tomé · Tempo inteiro</span>
-                    </div>
-                    <span className={styles.applicationCount}>24</span>
-                  </div>
-
-                  <div className={styles.pipeline}>
-                    <div className={styles.pipelineItem}>
-                      <span>Recebidas</span>
-                      <strong>24</strong>
-                      <i>
-                        <b />
-                      </i>
-                    </div>
-                    <div className={styles.pipelineItem}>
-                      <span>Seleção</span>
-                      <strong>8</strong>
-                      <i>
-                        <b />
-                      </i>
-                    </div>
-                    <div className={styles.pipelineItem}>
-                      <span>Entrevistas</span>
-                      <strong>3</strong>
-                      <i>
-                        <b />
-                      </i>
-                    </div>
-                  </div>
-
-                  <div className={styles.candidatePreview}>
-                    <div className={styles.candidateAvatars} aria-hidden="true">
-                      <span>AM</span>
-                      <span>JM</span>
-                      <span>LC</span>
-                    </div>
-                    <p>
-                      <strong>3 candidatos</strong> prontos para entrevista
-                    </p>
-                    <FiArrowRight aria-hidden="true" />
-                  </div>
                 </div>
-              </div>
-            </div>
-          </section>
-
-          <section
-            className={styles.valueStrip}
-            aria-label="Benefícios principais"
-          >
-            <div className={`${styles.container} ${styles.valueGrid}`}>
-              <div>
-                <FiZap />
-                <span>
-                  <strong>Publicação simples</strong>Crie uma vaga em poucos
-                  minutos
-                </span>
-              </div>
-              <div>
-                <FiTarget />
-                <span>
-                  <strong>Candidatos relevantes</strong>Filtre por perfil e
-                  competências
-                </span>
-              </div>
-              <div>
-                <FiShield />
-                <span>
-                  <strong>Processo organizado</strong>Acompanhe cada candidatura
-                </span>
-              </div>
-            </div>
-          </section>
-
-          <section className={styles.stepsSection}>
-            <div className={styles.container}>
-              <div className={styles.sectionIntro}>
-                <span className={styles.sectionEyebrow}>Um processo claro</span>
-                <h2 className={styles.stepsTitle}>Da vaga à contratação</h2>
-                <p className={styles.subtitle}>
-                  Quatro passos para transformar uma necessidade da equipa numa
-                  contratação segura.
-                </p>
-              </div>
-
-              <div className={styles.stepsGrid}>
-                {COMPANY_STEPS.map((step) => (
-                  <article key={step.number} className={styles.stepCard}>
-                    <span className={styles.stepNumber}>{step.number}</span>
-                    <div>
-                      <h3 className={styles.stepTitle}>{step.title}</h3>
-                      <p className={styles.stepDescription}>
-                        {step.description}
-                      </p>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          <section className={styles.toolsSection}>
-            <div className={styles.container}>
-              <div className={styles.sectionIntro}>
-                <span className={styles.sectionEyebrow}>Tudo num só lugar</span>
-                <h2 className={styles.title}>
-                  Ferramentas para contratar com confiança
-                </h2>
-                <p className={styles.subtitle}>
-                  Da publicação à contratação, organize o processo sem perder
-                  tempo entre ferramentas diferentes.
-                </p>
-              </div>
-
-              <div
-                className={styles.toolsGrid}
-                role="region"
-                aria-label="Ferramentas de recrutamento"
-                tabIndex={0}
-              >
-                {RECRUITMENT_TOOLS.map(({ title, description, Icon }) => (
-                  <article key={title} className={styles.toolCard}>
-                    <span className={styles.toolIcon} aria-hidden="true">
-                      <Icon />
-                    </span>
-                    <h3 className={styles.toolTitle}>{title}</h3>
-                    <p className={styles.toolDescription}>{description}</p>
-                  </article>
-                ))}
               </div>
             </div>
           </section>

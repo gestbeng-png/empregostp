@@ -44,21 +44,38 @@ export default async function handler(req, res) {
     }
 
     if (!token) {
-      return res.status(401).json({ message: 'Token de autorização ausente ou inválido' });
+      return res
+        .status(401)
+        .json({ message: 'Token de autorização ausente ou inválido' });
     }
 
     const decodedToken = await admin.auth().verifyIdToken(token);
-    const adminDoc = await admin.firestore().collection('users').doc(decodedToken.uid).get();
+    const adminDoc = await admin
+      .firestore()
+      .collection('users')
+      .doc(decodedToken.uid)
+      .get();
     if (!adminDoc.exists || adminDoc.data().userType !== 'admin') {
-      return res.status(403).json({ message: 'Acesso negado. Apenas administradores.' });
+      return res
+        .status(403)
+        .json({ message: 'Acesso negado. Apenas administradores.' });
     }
 
     // Query params
-    const { type, startDate, endDate, search, pageSize = '50', cursorId } = req.query;
+    const {
+      type,
+      startDate,
+      endDate,
+      search,
+      pageSize = '50',
+      cursorId,
+    } = req.query;
     const limitN = Math.min(parseInt(pageSize, 10) || 50, 200);
     const startDateIso = startDate ? toDateInputIso(String(startDate)) : '';
     const endDateIso = endDate ? toEndOfDayIso(String(endDate)) : '';
-    const searchText = String(search || '').trim().toLowerCase();
+    const searchText = String(search || '')
+      .trim()
+      .toLowerCase();
 
     const buildBaseQuery = () => {
       let q = admin.firestore().collection('activities');
@@ -77,8 +94,16 @@ export default async function handler(req, res) {
     const fallbackFilter = (docData) => {
       const normalizedCreatedAt = normalizeDateField(docData.createdAt);
       if (type && type !== 'all' && docData.type !== type) return false;
-      if (startDateIso && (!normalizedCreatedAt || normalizedCreatedAt < startDateIso)) return false;
-      if (endDateIso && (!normalizedCreatedAt || normalizedCreatedAt > endDateIso)) return false;
+      if (
+        startDateIso &&
+        (!normalizedCreatedAt || normalizedCreatedAt < startDateIso)
+      )
+        return false;
+      if (
+        endDateIso &&
+        (!normalizedCreatedAt || normalizedCreatedAt > endDateIso)
+      )
+        return false;
       return true;
     };
 
@@ -88,12 +113,19 @@ export default async function handler(req, res) {
       q = buildBaseQuery();
     } catch (error) {
       isFallback = true;
-      q = admin.firestore().collection('activities').orderBy('createdAt', 'desc');
+      q = admin
+        .firestore()
+        .collection('activities')
+        .orderBy('createdAt', 'desc');
     }
 
     let cursorDoc = null;
     if (cursorId) {
-      const cursorSnap = await admin.firestore().collection('activities').doc(String(cursorId)).get();
+      const cursorSnap = await admin
+        .firestore()
+        .collection('activities')
+        .doc(String(cursorId))
+        .get();
       if (cursorSnap.exists) {
         cursorDoc = cursorSnap;
         q = q.startAfter(cursorSnap);
@@ -107,7 +139,10 @@ export default async function handler(req, res) {
       // Composite index may not exist yet. Fallback to broad query and filter in-memory.
       if (error?.code !== 9) throw error;
       isFallback = true;
-      let fallbackQuery = admin.firestore().collection('activities').orderBy('createdAt', 'desc');
+      let fallbackQuery = admin
+        .firestore()
+        .collection('activities')
+        .orderBy('createdAt', 'desc');
       if (cursorDoc) {
         fallbackQuery = fallbackQuery.startAfter(cursorDoc);
       }
@@ -133,16 +168,17 @@ export default async function handler(req, res) {
         userId: data.userId || null,
         adminId: data.adminId || null,
         createdAt: normalizeDateField(data.createdAt),
-        meta: data.meta || null
+        meta: data.meta || null,
       };
     });
 
     if (searchText) {
-      activities = activities.filter((a) =>
-        (a.description && a.description.toLowerCase().includes(searchText)) ||
-        (a.type && a.type.toLowerCase().includes(searchText)) ||
-        (a.userId && a.userId.toLowerCase().includes(searchText)) ||
-        (a.adminId && a.adminId.toLowerCase().includes(searchText))
+      activities = activities.filter(
+        (a) =>
+          (a.description && a.description.toLowerCase().includes(searchText)) ||
+          (a.type && a.type.toLowerCase().includes(searchText)) ||
+          (a.userId && a.userId.toLowerCase().includes(searchText)) ||
+          (a.adminId && a.adminId.toLowerCase().includes(searchText)),
       );
       // With free-text filtering the backend cannot accurately paginate without full scan.
       hasMore = false;
@@ -150,7 +186,7 @@ export default async function handler(req, res) {
 
     // Enrich with user and admin names
     const uids = new Set();
-    activities.forEach(a => {
+    activities.forEach((a) => {
       if (a.userId) uids.add(a.userId);
       if (a.adminId) uids.add(a.adminId);
     });
@@ -158,27 +194,31 @@ export default async function handler(req, res) {
     const userMap = {};
     if (uids.size > 0) {
       await Promise.all(
-        [...uids].map(async uid => {
+        [...uids].map(async (uid) => {
           try {
-            const userDoc = await admin.firestore().collection('users').doc(uid).get();
+            const userDoc = await admin
+              .firestore()
+              .collection('users')
+              .doc(uid)
+              .get();
             if (userDoc.exists) {
               const d = userDoc.data();
               userMap[uid] = d.name || d.fullName || d.email || uid;
             }
           } catch (_) {}
-        })
+        }),
       );
     }
 
-    activities = activities.map(a => ({
+    activities = activities.map((a) => ({
       ...a,
-      userName: a.userId ? (userMap[a.userId] || a.userId) : null,
-      adminName: a.adminId ? (userMap[a.adminId] || a.adminId) : null,
+      userName: a.userId ? userMap[a.userId] || a.userId : null,
+      adminName: a.adminId ? userMap[a.adminId] || a.adminId : null,
     }));
 
     // Activity type counts for stats
     const typeCounts = {};
-    activities.forEach(a => {
+    activities.forEach((a) => {
       typeCounts[a.type] = (typeCounts[a.type] || 0) + 1;
     });
 
@@ -199,17 +239,20 @@ export default async function handler(req, res) {
       total = activities.length;
     }
 
-    const nextCursorId = hasMore && rawDocs.length > 0 ? rawDocs[rawDocs.length - 1].id : null;
+    const nextCursorId =
+      hasMore && rawDocs.length > 0 ? rawDocs[rawDocs.length - 1].id : null;
 
     return res.status(200).json({
       activities,
       total,
       typeCounts,
       hasMore,
-      nextCursorId
+      nextCursorId,
     });
   } catch (error) {
     logServerError('admin_activities.buscar_atividades_failed', error);
-    return res.status(500).json({ message: 'Erro interno do servidor', error: error.message });
+    return res
+      .status(500)
+      .json({ message: 'Erro interno do servidor', error: error.message });
   }
 }

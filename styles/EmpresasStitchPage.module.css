@@ -1464,3 +1464,776 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Editorial employer direction: photography leads, the recruitment panel
+   remains as the practical proof point. */
+.page.page.page {
+  background: var(--company-surface);
+  color: var(--company-text);
+}
+
+.page.page .container {
+  width: min(1220px, calc(100% - 3rem));
+}
+
+.page.page.page .hero {
+  min-height: 640px;
+  padding: 5.8rem 0 6.3rem;
+  background: var(--company-surface);
+}
+
+.page.page.page.page .hero::before,
+.page.page.page.page .hero::after {
+  content: none !important;
+  display: none !important;
+}
+
+.page.page .heroGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.88fr) minmax(420px, 1.12fr);
+  align-items: center;
+  gap: clamp(2.5rem, 6vw, 6rem);
+}
+
+.page.page .heroCopy {
+  max-width: 600px;
+}
+
+.page.page .heroEyebrow,
+.page.page .sectionEyebrow,
+.page.page .closingEyebrow {
+  color: var(--company-blue);
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.page.page .heroEyebrow {
+  position: relative;
+  margin-bottom: 1.45rem;
+  padding: 0 0 0 1.2rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.page.page .heroEyebrow::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: #2563eb;
+  box-shadow: 0 0 0 5px rgba(37, 99, 235, 0.13);
+  content: '';
+  transform: translateY(-50%);
+}
+
+.page.page.page.page .heroTitle {
+  max-width: 620px;
+  margin: 0;
+  color: var(--company-ink);
+  font-family: var(--app-font-display);
+  font-size: clamp(3.35rem, 5.8vw, 5.6rem);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 0.97;
+  text-transform: none;
+}
+
+.page.page .heroLead {
+  margin-top: 1.6rem;
+  color: var(--company-blue);
+  font-family: var(--app-font-display);
+  font-size: 1.45rem;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.03em;
+}
+
+.page.page .heroText {
+  max-width: 500px;
+  margin-top: 0.75rem;
+  color: var(--company-muted);
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.page.page .heroActions {
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+.page.page .primaryAction,
+.page.page .secondaryAction,
+.page.page .closingAction,
+.page.page .planAction {
+  min-height: 50px;
+  border-radius: 9px;
+  padding: 0 1.25rem;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.page.page .primaryAction {
+  border-color: var(--company-navy);
+  background: var(--company-navy);
+  color: #ffffff;
+}
+
+.page.page .primaryAction:hover {
+  border-color: var(--company-blue);
+  background: var(--company-blue);
+}
+
+.page.page .secondaryAction {
+  border-color: var(--company-outline);
+  background: transparent;
+  color: var(--company-navy);
+}
+
+.page.page .secondaryAction:hover {
+  border-color: var(--company-blue);
+  background: rgba(37, 99, 235, 0.08);
+  color: var(--company-blue);
+}
+
+.page.page .heroAssurance {
+  gap: 0.6rem;
+  margin-top: 1.15rem;
+  color: var(--company-muted);
+  font-size: 0.76rem;
+}
+
+.page.page .heroAssurance > span {
+  width: 21px;
+  height: 21px;
+  flex-basis: 21px;
+  background: rgba(37, 99, 235, 0.12);
+  color: var(--company-blue);
+}
+
+.page.page .heroVisual {
+  position: relative;
+  min-height: 540px;
+}
+
+.page.page .heroVisualMain {
+  position: absolute;
+  inset: 0 0 0 12%;
+  overflow: hidden;
+  border-radius: 26px 26px 26px 106px;
+  background: #c5c6cf;
+  box-shadow: 0 24px 58px rgba(11, 33, 71, 0.15);
+}
+
+.page.page .heroVisualMain::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 50%, rgba(11, 33, 71, 0.6));
+  content: '';
+  pointer-events: none;
+}
+
+.page.page .heroVisualImage {
+  object-fit: cover;
+}
+
+.page.page .heroVisualCaption {
+  position: absolute;
+  right: 1.5rem;
+  bottom: 1.3rem;
+  z-index: 1;
+  display: grid;
+  gap: 0.2rem;
+  color: #ffffff;
+  text-align: right;
+}
+
+.page.page .heroVisualCaption span {
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.page.page .heroVisualCaption strong {
+  font-family: var(--app-font-display);
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+
+.page.page .heroVisualDetail {
+  position: absolute;
+  bottom: 1.8rem;
+  left: 0;
+  z-index: 2;
+  width: 31%;
+  height: 218px;
+  overflow: hidden;
+  border: 8px solid var(--company-surface);
+  border-radius: 18px;
+  background: #c5c6cf;
+  box-shadow: 0 18px 32px rgba(11, 33, 71, 0.17);
+  transform: rotate(-5deg);
+}
+
+.page.page .heroVisualBadge {
+  position: absolute;
+  top: 2rem;
+  left: 1rem;
+  z-index: 2;
+  width: 76px;
+  height: 76px;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  border-radius: 50%;
+  background: #2563eb;
+  color: #ffffff;
+  transform: rotate(10deg);
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.28);
+}
+
+.page.page .heroVisualBadge span {
+  font-family: var(--app-font-display);
+  font-size: 1.55rem;
+  line-height: 1;
+}
+
+.page.page .heroVisualBadge small {
+  margin-top: 0.2rem;
+  font-size: 0.48rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.page.page .recruitmentPanel {
+  position: absolute;
+  right: -1rem;
+  bottom: -1.1rem;
+  z-index: 3;
+  width: min(76%, 410px);
+  min-height: 0;
+  padding: 1.1rem;
+  border: 1px solid rgba(11, 33, 71, 0.1);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 20px 38px rgba(11, 33, 71, 0.16);
+  backdrop-filter: blur(14px);
+}
+
+.page.page .panelHeader {
+  padding-bottom: 0.85rem;
+}
+
+.page.page .panelHeader strong {
+  font-family: var(--app-font-display);
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.page.page .panelKicker,
+.page.page .liveBadge {
+  font-size: 0.62rem;
+}
+
+.page.page .jobSummary {
+  margin-top: 0.85rem;
+  padding: 0.7rem;
+  border-radius: 9px;
+}
+
+.page.page .pipeline {
+  gap: 0.45rem;
+  margin-top: 0.55rem;
+}
+
+.page.page .pipelineItem {
+  padding: 0.65rem;
+  border-radius: 8px;
+}
+
+.page.page .pipelineItem span,
+.page.page .jobSummary > div span,
+.page.page .candidatePreview p {
+  font-size: 0.66rem;
+}
+
+.page.page .pipelineItem strong {
+  font-size: 1rem;
+}
+
+.page.page .candidatePreview {
+  margin-top: 0.75rem;
+}
+
+.page.page .valueStrip {
+  padding: 1.25rem 0;
+  border-block: 1px solid var(--company-outline);
+  background: #ffffff;
+}
+
+.page.page .valueGrid {
+  gap: 1.4rem;
+}
+
+.page.page .valueGrid svg {
+  color: var(--company-blue);
+}
+
+.page.page .valueGrid span {
+  color: var(--company-muted);
+  font-size: 0.78rem;
+}
+
+.page.page .valueGrid strong {
+  color: var(--company-ink);
+}
+
+.page.page .stepsSection,
+.page.page .toolsSection,
+.page.page .plansSection {
+  padding: 5.5rem 0;
+}
+
+.page.page .stepsSection {
+  background: #ffffff;
+}
+
+.page.page .toolsSection,
+.page.page .plansSection {
+  background: var(--company-surface);
+}
+
+.page.page .sectionIntro,
+.page.page .plansIntro {
+  max-width: 780px;
+  margin-bottom: 2.7rem;
+  text-align: left;
+}
+
+.page.page .sectionIntro .sectionEyebrow,
+.page.page .plansIntro .sectionEyebrow {
+  margin-inline: 0;
+}
+
+.page.page .title,
+.page.page .stepsTitle,
+.page.page .plansTitle {
+  color: var(--company-ink);
+  font-family: var(--app-font-display);
+  font-size: clamp(2.2rem, 4vw, 3.35rem);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.04;
+}
+
+.page.page .subtitle,
+.page.page .plansSubtitle {
+  max-width: 680px;
+  margin: 0.7rem 0 0;
+  color: var(--company-muted);
+  font-size: 0.95rem;
+  line-height: 1.75;
+}
+
+.page.page .stepsGrid {
+  gap: 1rem;
+}
+
+.page.page .stepsGrid::before {
+  border-top-color: var(--company-outline);
+}
+
+.page.page .stepNumber {
+  width: 78px;
+  height: 78px;
+  border-color: var(--company-outline);
+  background: var(--company-surface);
+  color: var(--company-blue);
+  font-family: var(--app-font-display);
+  font-size: 1.35rem;
+}
+
+.page.page .stepCard:first-child .stepNumber {
+  border-color: var(--company-blue);
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.page.page .stepTitle {
+  color: var(--company-ink);
+  font-family: var(--app-font-display);
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.page.page .stepDescription,
+.page.page .toolDescription,
+.page.page .planDescription,
+.page.page .planFeatures li {
+  color: var(--company-muted);
+  line-height: 1.6;
+}
+
+.page.page .toolCard,
+.page.page .planCard {
+  border-color: var(--company-outline);
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 12px 28px rgba(11, 33, 71, 0.05);
+}
+
+.page.page .toolCard:hover {
+  border-color: rgba(37, 99, 235, 0.36);
+  box-shadow: 0 18px 34px rgba(11, 33, 71, 0.09);
+}
+
+.page.page .toolIcon {
+  border-radius: 11px;
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--company-blue);
+}
+
+.page.page .toolTitle,
+.page.page .planName {
+  color: var(--company-ink);
+  font-family: var(--app-font-display);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+
+.page.page .toolCard:nth-child(9) {
+  border-color: var(--company-navy);
+  background: var(--company-navy);
+}
+
+.page.page .toolCard:nth-child(9) .toolIcon {
+  background: var(--company-lime);
+  color: var(--company-navy);
+}
+
+.page.page .planCard {
+  min-height: 438px;
+  padding: 1.75rem;
+}
+
+.page.page .planCardPopular {
+  border-color: var(--company-navy);
+  background: var(--company-navy);
+  box-shadow: 0 20px 42px rgba(11, 33, 71, 0.15);
+  transform: translateY(-10px);
+}
+
+.page.page .planBadge {
+  background: var(--company-lime);
+  color: var(--company-navy);
+  font-size: 0.64rem;
+}
+
+.page.page .planPrice {
+  color: var(--company-ink);
+  font-family: var(--app-font-display);
+  font-weight: 800;
+}
+
+.page.page .planFeatures svg {
+  color: var(--company-blue);
+}
+
+.page.page .planCardPopular .planFeatures svg {
+  color: var(--company-lime);
+}
+
+.page.page .planAction {
+  border-color: var(--company-outline);
+  color: var(--company-navy);
+}
+
+.page.page .planCardPopular .planAction {
+  border-color: var(--company-lime);
+  background: var(--company-lime);
+}
+
+.page.page .closingSection {
+  padding: 0 0 5.5rem;
+  background: #ffffff;
+}
+
+.page.page .closingPanel {
+  position: relative;
+  overflow: hidden;
+  padding: 3.3rem 3.5rem;
+  border-radius: 22px;
+  background: var(--company-navy);
+  box-shadow: 0 22px 48px rgba(11, 33, 71, 0.14);
+}
+
+.page.page .closingPanel::after {
+  position: absolute;
+  right: -6rem;
+  bottom: -8rem;
+  width: 22rem;
+  height: 22rem;
+  border: 1px solid rgba(217, 249, 109, 0.4);
+  border-radius: 50%;
+  content: '';
+}
+
+.page.page .closingPanel > div,
+.page.page .closingPanel > a {
+  position: relative;
+  z-index: 1;
+}
+
+.page.page .closingPanel h2 {
+  font-family: var(--app-font-display);
+  font-size: clamp(2.1rem, 4vw, 3.3rem);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+
+.page.page .closingPanel p {
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.7;
+}
+
+.page.page .closingEyebrow {
+  color: var(--company-lime);
+}
+
+.page.page .closingAction {
+  border-color: var(--company-lime);
+  background: var(--company-lime);
+  color: var(--company-navy);
+}
+
+@media (max-width: 1023px) {
+  .page.page .heroGrid {
+    gap: 2.5rem;
+  }
+
+  .page.page .heroVisual {
+    min-height: 480px;
+  }
+}
+
+@media (max-width: 767px) {
+  .page.page .container {
+    width: calc(100% - 2rem);
+  }
+
+  .page.page.page .hero {
+    padding: 3.8rem 0 4.5rem;
+  }
+
+  .page.page .heroGrid {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 3rem;
+  }
+
+  .page.page .heroCopy {
+    max-width: none;
+  }
+
+  .page.page.page.page .heroTitle {
+    font-size: clamp(3rem, 12vw, 4.5rem);
+  }
+
+  .page.page .heroActions {
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .page.page .primaryAction,
+  .page.page .secondaryAction {
+    width: 100%;
+  }
+
+  .page.page .heroVisual {
+    min-height: 425px;
+  }
+
+  .page.page .heroVisualMain {
+    inset: 0 0 0 8%;
+    border-radius: 20px 20px 20px 70px;
+  }
+
+  .page.page .heroVisualDetail {
+    bottom: 1.25rem;
+    width: 34%;
+    height: 160px;
+    border-width: 6px;
+  }
+
+  .page.page .heroVisualBadge {
+    top: 1rem;
+    left: 0.3rem;
+    width: 64px;
+    height: 64px;
+  }
+
+  .page.page .heroVisualBadge span {
+    font-size: 1.25rem;
+  }
+
+  .page.page .heroVisualCaption {
+    right: 1rem;
+    bottom: 1rem;
+  }
+
+  .page.page .heroVisualCaption strong {
+    font-size: 1.1rem;
+  }
+
+  .page.page .recruitmentPanel {
+    display: none;
+  }
+
+  .page.page .valueGrid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .page.page .valueGrid > div {
+    padding: 0.7rem 0;
+  }
+
+  .page.page .valueGrid > div + div {
+    border-top: 1px solid var(--company-surface-mid);
+  }
+
+  .page.page .stepsSection,
+  .page.page .toolsSection,
+  .page.page .plansSection {
+    padding: 4rem 0;
+  }
+
+  .page.page .sectionIntro,
+  .page.page .plansIntro {
+    margin-bottom: 2rem;
+  }
+
+  .page.page .title,
+  .page.page .stepsTitle,
+  .page.page .plansTitle {
+    font-size: 2.35rem;
+  }
+
+  .page.page .stepsGrid {
+    grid-template-columns: 1fr;
+    gap: 1.6rem;
+  }
+
+  .page.page .stepsGrid::before {
+    display: none;
+  }
+
+  .page.page .toolsGrid {
+    display: flex;
+    width: calc(100vw - 1rem);
+    gap: 0.7rem;
+    padding-right: 1rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .page.page .toolCard,
+  .page.page .toolCard:nth-child(n) {
+    width: 210px;
+    min-width: 210px;
+    min-height: 158px;
+    padding: 1rem;
+  }
+
+  .page.page .plansGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .page.page .planCard,
+  .page.page .planCardPopular {
+    min-height: 0;
+    transform: none;
+  }
+
+  .page.page .closingSection {
+    padding-bottom: 4rem;
+  }
+
+  .page.page .closingPanel {
+    display: grid;
+    gap: 1.5rem;
+    padding: 2.1rem 1.5rem;
+  }
+
+  .page.page .closingAction {
+    width: 100%;
+  }
+}
+
+/* Carimbo decorativo com texto de 7px: ilegível e infantil. */
+.page.page .heroVisualBadge {
+  display: none;
+}
+
+/* ------------------------------------------------------------------
+   Cores de produção e alinhamento
+
+   Paleta da página em produção (marinho, azul #2563eb e lima #d9f96d), uma só
+   família de títulos e nada de texto escuro sobre escuro.
+   ------------------------------------------------------------------ */
+
+.page.page.page.page .heroTitle {
+  font-size: clamp(3rem, 4.6vw, 4.5rem);
+  line-height: 1.02;
+}
+
+.page.page .heroVisualCaption strong {
+  color: #ffffff;
+  font-weight: 700;
+  text-shadow: 0 1px 12px rgba(11, 33, 71, 0.35);
+}
+
+/* Só há dois planos e a grelha fica centrada: o título também. */
+.page.page .plansIntro {
+  margin-inline: auto;
+  text-align: center;
+}
+
+.page.page .plansIntro .sectionEyebrow {
+  margin-inline: auto;
+}
+
+.page.page .planPrice {
+  font-size: clamp(2.25rem, 3.2vw, 2.75rem);
+  letter-spacing: -0.02em;
+}
+
+.page.page .planBadge {
+  font-size: 0.875rem;
+}
+
+/* O cartão em destaque é marinho: nome, preço e lista passavam
+   despercebidos (texto escuro sobre escuro). */
+.page.page .planCardPopular :is(.planName, .planPrice) {
+  color: #ffffff;
+}
+
+.page.page .planCardPopular :is(.planPricePeriod, .planDescription) {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.page.page .planCardPopular .planFeatures li {
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.page.page .planCardPopular .planAction {
+  color: var(--company-navy);
+}

@@ -50,7 +50,7 @@ export default function LandingHeader({ variant = 'light' }) {
 
 function LandingHeaderContent({ variant = 'light' }) {
   const router = useRouter();
-  const { user, logout } = useAuth();
+  const { user, loading: authLoading, logout } = useAuth();
   const [profile, setProfile] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [openSubmenu, setOpenSubmenu] = useState(null);
@@ -293,7 +293,12 @@ function LandingHeaderContent({ variant = 'light' }) {
           </div>
 
           {!user ? (
-            <div className={styles.authActions}>
+            <div
+              className={`${styles.authActions} ${
+                authLoading ? styles.authPending : ''
+              }`}
+              aria-hidden={authLoading || undefined}
+            >
               {isLight ? (
                 <Link href="/login" className={styles.lightLoginButton}>
                   <span>Iniciar sessão</span>
@@ -499,7 +504,12 @@ function LandingHeaderContent({ variant = 'light' }) {
           </nav>
 
           {!user ? (
-            <div className={styles.mobileActions}>
+            <div
+              className={`${styles.mobileActions} ${
+                authLoading ? styles.authPending : ''
+              }`}
+              aria-hidden={authLoading || undefined}
+            >
               <Link href="/login" className={styles.mobileGhostButton}>
                 Iniciar sessão
               </Link>

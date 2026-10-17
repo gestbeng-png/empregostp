@@ -1,20 +1,38 @@
-# O Vercel constrói o projeto do lado dele: os artefactos locais de build só
-# engordam o upload. Este ficheiro substitui o .gitignore para o CLI — quando
-# existe, o .gitignore deixa de ser consultado, por isso tem de repetir aqui
-# tudo o que não deve subir.
-.next
+# Builds e artefactos locais
+.next/
 .next-*/
-node_modules
-.git
+node_modules/
+.git/
+.swc/
+.cache/
+*.tsbuildinfo
+coverage/
+playwright-report/
+test-results/
+tmp/
+private/
+docs/audits/
 
-# Testes e auditorias
-coverage
-playwright-report
-test-results
-docs/audits/screenshots
-docs/audits/data
-tmp
-private
+# Configuração privada: definir as variáveis no ambiente da Vercel
+.env
+.env.*
+*.env
+*.pem
+*.key
+*.p12
+*.pfx
+ADMIN-CREDENTIALS.txt
+lib/firebase-admin-credentials.json
+*service-account*.json
+*serviceaccount*.json
 
-# Ferramentas locais do agente — sem relação com o produto
-.claude/skills
+# Ferramentas e logs locais
+.claude/
+.agents/
+.codex/
+audits/
+.d-tmp.mjs
+.idea/
+.vscode/
+.DS_Store
+*-debug*.log

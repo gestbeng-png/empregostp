@@ -227,7 +227,7 @@
 }
 
 .sectionTitle::before {
-  content: "";
+  content: '';
   width: 8px;
   height: 28px;
   flex: 0 0 auto;
@@ -263,4 +263,63 @@
   .title {
     font-size: clamp(2.25rem, 12vw, 3rem);
   }
+}
+
+/* Atualização visual das páginas legais: superfície editorial limpa, sem o
+   tratamento antigo de blocos pesados. */
+.page {
+  width: min(1120px, calc(100% - (var(--app-page-inline) * 2)));
+  padding: clamp(2rem, 5vw, 4.5rem) 0 6rem;
+  color: var(--app-text-primary);
+}
+
+.hero {
+  padding: 0 0 2.5rem;
+}
+
+.heroPanel {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(2rem, 6vw, 4.5rem);
+  border: 1px solid rgba(32, 87, 215, 0.14);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 88% 8%, rgba(105, 200, 255, 0.26), transparent 30%),
+    linear-gradient(135deg, #102441 0%, #174d8f 100%);
+  box-shadow: 0 24px 60px rgba(16, 36, 65, 0.16);
+}
+
+.heroKicker {
+  color: var(--app-brand-lime);
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.title {
+  max-width: 760px;
+  margin: 1rem 0 1.25rem;
+  color: #fff;
+  font-size: clamp(2.35rem, 5vw, 4.6rem);
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+}
+
+.heroText { max-width: 700px; color: rgba(255, 255, 255, 0.78); }
+.heroDate { color: var(--app-brand-secondary); }
+.stack { gap: 1.1rem; }
+.section, .contact {
+  padding: clamp(1.5rem, 4vw, 2.4rem);
+  border: 1px solid var(--app-border-subtle);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 12px 32px rgba(16, 36, 65, 0.06);
+}
+.sectionTitle, .contact h2 { color: var(--app-brand-dark); }
+.sectionTitle::before { width: 4px; height: 24px; border-radius: 99px; background: var(--app-brand-secondary); }
+.contact { border-color: rgba(218, 255, 69, 0.7); background: #f5fbdc; }
+
+@media (max-width: 640px) {
+  .page { width: min(100% - 24px, 100%); padding-top: 1.5rem; }
+  .heroPanel { border-radius: 18px; }
 }

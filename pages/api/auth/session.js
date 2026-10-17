@@ -53,7 +53,9 @@ export default async function handler(req, res) {
   const authHeader = req.headers.authorization;
   if (!authHeader?.startsWith('Bearer ')) {
     clearSessionCookie(req, res);
-    return res.status(401).json({ error: 'Token de autenticação não fornecido' });
+    return res
+      .status(401)
+      .json({ error: 'Token de autenticação não fornecido' });
   }
 
   const token = authHeader.slice('Bearer '.length).trim();
@@ -82,8 +84,12 @@ export default async function handler(req, res) {
       });
     }
 
-    const secondsUntilExpiry = Number(decodedToken.exp) - Math.floor(Date.now() / 1000);
-    const maxAge = Math.max(1, Math.min(60 * 60, secondsUntilExpiry || 60 * 60));
+    const secondsUntilExpiry =
+      Number(decodedToken.exp) - Math.floor(Date.now() / 1000);
+    const maxAge = Math.max(
+      1,
+      Math.min(60 * 60, secondsUntilExpiry || 60 * 60),
+    );
     nookies.set({ req, res }, COOKIE_NAME, token, cookieOptions(maxAge));
     return res.status(200).json({ success: true });
   } catch (error) {

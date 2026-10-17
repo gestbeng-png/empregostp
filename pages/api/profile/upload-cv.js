@@ -14,7 +14,7 @@ const mapPlanInfo = (userData) => ({
   planFeatures: userData.planFeatures,
   destaque: userData.destaque,
   curriculoDestacado: userData.curriculoDestacado,
-  vagasLimit: userData.vagasLimit
+  vagasLimit: userData.vagasLimit,
 });
 
 const serializeValue = (value) => {
@@ -24,7 +24,10 @@ const serializeValue = (value) => {
   if (value instanceof Date) return value.toISOString();
   if (typeof value === 'object') {
     return Object.fromEntries(
-      Object.entries(value).map(([key, currentValue]) => [key, serializeValue(currentValue)])
+      Object.entries(value).map(([key, currentValue]) => [
+        key,
+        serializeValue(currentValue),
+      ]),
     );
   }
   return value;
@@ -39,7 +42,9 @@ export default async function handler(req, res) {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Token de autenticação não fornecido' });
+      return res
+        .status(401)
+        .json({ error: 'Token de autenticação não fornecido' });
     }
 
     const token = authHeader.split('Bearer ')[1];
@@ -77,7 +82,7 @@ export default async function handler(req, res) {
       cvName,
       cvStoragePath,
       cvUpdatedAt,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     });
     await profileRef.set(
       {
@@ -85,12 +90,15 @@ export default async function handler(req, res) {
         cvName,
         cvStoragePath,
         cvUpdatedAt,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       },
-      { merge: true }
+      { merge: true },
     );
 
-    const [userSnap, profileSnap] = await Promise.all([userRef.get(), profileRef.get()]);
+    const [userSnap, profileSnap] = await Promise.all([
+      userRef.get(),
+      profileRef.get(),
+    ]);
     const userData = userSnap.data() || {};
     const profileData = profileSnap.data() || {};
 
@@ -102,16 +110,24 @@ export default async function handler(req, res) {
       cvUrl: userData.cvUrl || profileData.cvUrl || '',
       cvName: userData.cvName || profileData.cvName || '',
       cvUpdatedAt: userData.cvUpdatedAt || profileData.cvUpdatedAt || '',
-      verificationStatus: userData.verificationStatus || profileData.verificationStatus || 'unverified',
-      verificationSummary: serializeValue(userData.verificationSummary || profileData.verificationSummary || null),
-      verificationItems: serializeValue(userData.verificationItems || profileData.verificationItems || null),
-      verificationId: userData.verificationId || profileData.verificationId || null,
-      ...mapPlanInfo(userData)
+      verificationStatus:
+        userData.verificationStatus ||
+        profileData.verificationStatus ||
+        'unverified',
+      verificationSummary: serializeValue(
+        userData.verificationSummary || profileData.verificationSummary || null,
+      ),
+      verificationItems: serializeValue(
+        userData.verificationItems || profileData.verificationItems || null,
+      ),
+      verificationId:
+        userData.verificationId || profileData.verificationId || null,
+      ...mapPlanInfo(userData),
     };
 
     return res.status(200).json({
       profile: mergedProfile,
-      message: 'CV atualizado com sucesso.'
+      message: 'CV atualizado com sucesso.',
     });
   } catch (error) {
     logServerError('profile.cv_upload_failed', error);

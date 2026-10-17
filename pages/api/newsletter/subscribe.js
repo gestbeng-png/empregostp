@@ -14,14 +14,20 @@ function baseUrl(req) {
   if (process.env.NEXT_PUBLIC_SITE_URL) {
     return process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '');
   }
-  const proto = (req.headers['x-forwarded-proto'] || 'https').split(',')[0].trim();
+  const proto = (req.headers['x-forwarded-proto'] || 'https')
+    .split(',')[0]
+    .trim();
   const host = req.headers['x-forwarded-host'] || req.headers.host;
   return host ? `${proto}://${host}` : '';
 }
 
 function sanitize(value, max = 60) {
   if (typeof value !== 'string') return '';
-  return value.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim().slice(0, max);
+  return value
+    .replace(/<[^>]*>/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, max);
 }
 
 export default async function handler(req, res) {
@@ -46,7 +52,9 @@ export default async function handler(req, res) {
     }
 
     const source = sanitize(req.body?.source, 40) || 'site';
-    const subscribersRef = admin.firestore().collection('newsletterSubscribers');
+    const subscribersRef = admin
+      .firestore()
+      .collection('newsletterSubscribers');
 
     // Evitar duplicados: usar o email como id do documento.
     const docId = email.replace(/[^a-z0-9]/g, '_');
@@ -66,9 +74,12 @@ export default async function handler(req, res) {
         active: true,
         source,
         createdAt: existing.exists
-          ? existing.data()?.createdAt || admin.firestore.FieldValue.serverTimestamp()
+          ? existing.data()?.createdAt ||
+            admin.firestore.FieldValue.serverTimestamp()
           : admin.firestore.FieldValue.serverTimestamp(),
-        resubscribedAt: existing.exists ? admin.firestore.FieldValue.serverTimestamp() : null,
+        resubscribedAt: existing.exists
+          ? admin.firestore.FieldValue.serverTimestamp()
+          : null,
         userAgent: req.headers['user-agent'] || null,
         ip: getClientIp(req),
       },
@@ -81,9 +92,13 @@ export default async function handler(req, res) {
       try {
         await sendEmail({ to: email, subject, html, text });
       } catch (emailError) {
-        logServerError('newsletter_subscribe.enviar_email_de_boas_vindas_da_newsletter_failed', emailError);
+        logServerError(
+          'newsletter_subscribe.enviar_email_de_boas_vindas_da_newsletter_failed',
+          emailError,
+        );
         return res.status(202).json({
-          message: 'Subscrição registada! (O email de confirmação será enviado em breve.)',
+          message:
+            'Subscrição registada! (O email de confirmação será enviado em breve.)',
           emailSent: false,
         });
       }
@@ -100,6 +115,8 @@ export default async function handler(req, res) {
     });
   } catch (error) {
     logServerError('newsletter_subscribe.subscrever_newsletter_failed', error);
-    return res.status(500).json({ error: 'Não foi possível concluir a subscrição.' });
+    return res
+      .status(500)
+      .json({ error: 'Não foi possível concluir a subscrição.' });
   }
 }

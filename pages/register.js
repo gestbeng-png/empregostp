@@ -28,6 +28,7 @@ import {
   normalizeEmail,
 } from '../lib/validation';
 import { INDUSTRY_SECTORS } from '../lib/companyOptions';
+import { buildLoginUrl, readLoginRedirect } from '../lib/loginRedirect';
 import { isNetworkError, OFFLINE_MESSAGE } from '../lib/networkError';
 import {
   createServerSession,
@@ -66,9 +67,12 @@ function normalizeAccountType(value) {
 
 export default function Register() {
   const router = useRouter();
-  const typeQuery = Array.isArray(router.query.type)
-    ? router.query.type[0]
-    : router.query.type;
+  const requestedType = router.query.type ?? router.query.tipo;
+  const typeQuery = Array.isArray(requestedType)
+    ? requestedType[0]
+    : requestedType;
+  const redirect = readLoginRedirect(router.query);
+  const loginHref = buildLoginUrl(redirect);
   const googleQuery = Array.isArray(router.query.google)
     ? router.query.google[0]
     : router.query.google;
@@ -92,6 +96,8 @@ export default function Register() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [verificationSent, setVerificationSent] = useState(false);
+  const [verificationEmailDelivered, setVerificationEmailDelivered] =
+    useState(false);
   const [resendState, setResendState] = useState('');
   const [passwordFocused, setPasswordFocused] = useState(false);
   const [pendingEmailRegistration, setPendingEmailRegistration] =
@@ -189,7 +195,9 @@ export default function Register() {
 
         await createServerSession(token);
 
-        if (userTypeData === 'empresa') {
+        if (redirect) {
+          window.location.href = redirect;
+        } else if (userTypeData === 'empresa') {
           window.location.href = '/dashboard/empresa';
         } else if (userTypeData === 'admin') {
           window.location.href = '/dashboard/admin';
@@ -233,7 +241,9 @@ export default function Register() {
 
       await createServerSession(token);
 
-      if (userType === 'empresa') {
+      if (redirect) {
+        window.location.href = redirect;
+      } else if (userType === 'empresa') {
         window.location.href = '/dashboard/empresa';
       } else {
         window.location.href = '/dashboard/candidato';
@@ -389,7 +399,7 @@ export default function Register() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ name: name.trim() }),
+        body: JSON.stringify({ name: name.trim(), returnTo: redirect }),
       });
       verificationEmailSent = verifyResponse.ok;
     } catch (sendError) {
@@ -403,6 +413,7 @@ export default function Register() {
     }
 
     setLoading(false);
+    setVerificationEmailDelivered(verificationEmailSent);
     setVerificationSent(true);
     if (!verificationEmailSent) {
       setResendState(
@@ -426,10 +437,11 @@ export default function Register() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ name: name.trim() }),
+        body: JSON.stringify({ name: name.trim(), returnTo: redirect }),
       });
       await auth.signOut();
       if (!response.ok) throw new Error('resend_failed');
+      setVerificationEmailDelivered(true);
       setResendState('sent');
     } catch (err) {
       console.error('Erro ao reenviar email de confirmação:', err);
@@ -453,10 +465,20 @@ export default function Register() {
             <FiMail className={styles.verifyIcon} aria-hidden="true" />
             <h1 className={styles.verifyTitle}>Confirme o seu email</h1>
             <p className={styles.verifyText}>
-              Enviámos um link de confirmação para{' '}
-              <strong>{normalizeEmail(email)}</strong>. Abra o email e clique no
-              link para ativar a sua conta. Só poderá entrar depois de
-              confirmar.
+              {verificationEmailDelivered ? (
+                <>
+                  Enviámos um link de confirmação para{' '}
+                  <strong>{normalizeEmail(email)}</strong>. Abra o email e
+                  clique no link para confirmar o seu endereço. Só poderá entrar
+                  depois de confirmar.
+                </>
+              ) : (
+                <>
+                  A conta foi criada, mas o envio do email de confirmação ainda
+                  não foi confirmado. Use “Reenviar email de confirmação” para
+                  tentar novamente.
+                </>
+              )}
             </p>
 
             {resendState === 'sent' ? (
@@ -477,7 +499,7 @@ export default function Register() {
               </div>
             ) : null}
 
-            <Link href="/login" className={styles.primaryButton}>
+            <Link href={loginHref} className={styles.primaryButton}>
               Iniciar sessão
             </Link>
 
@@ -826,7 +848,7 @@ export default function Register() {
 
         <p className={styles.footerNote}>
           Já tem conta?{' '}
-          <Link href="/login" className={styles.footerLink}>
+          <Link href={loginHref} className={styles.footerLink}>
             Iniciar sessão
           </Link>
         </p>

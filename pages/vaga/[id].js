@@ -1,13 +1,11 @@
 import Head from 'next/head';
 import Link from 'next/link';
-import { useState, useEffect, useMemo } from 'react';
-import { getAuth } from 'firebase/auth';
+import dynamic from 'next/dynamic';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import PublicPageShell from '../../components/PublicPageShell';
-import UpgradeModal from '../../components/UpgradeModal';
 import AutoSaveStatus from '../../components/forms/AutoSaveStatus';
 import useAutoDraft from '../../hooks/useAutoDraft';
-import ApplicationModal from '../../components/ApplicationModal';
 import {
   createEmptyApplicationForm,
   normalizeApplicationForm,
@@ -15,45 +13,58 @@ import {
 import {
   normalizeRequiredDocuments,
   resolveDocumentRequirements,
-  validateApplicationDocuments,
 } from '../../lib/applicationDocuments';
+import useScrollReveal from '../../lib/useScrollReveal';
 import styles from '../../styles/VagaDetailPage.module.css';
 import {
   FiArrowLeft,
   FiArrowRight,
+  FiAward,
   FiBookmark,
   FiBriefcase,
   FiCalendar,
   FiCheck,
+  FiCheckSquare,
   FiClock,
-  FiDollarSign,
   FiDownload,
   FiFileText,
   FiFlag,
+  FiGift,
   FiGlobe,
+  FiInfo,
   FiMail,
   FiMapPin,
+  FiPaperclip,
   FiPhone,
   FiShare2,
   FiShield,
   FiStar,
   FiUsers,
-  FiX,
   FiZap,
 } from 'react-icons/fi';
+import CoinsIcon from '../../components/icons/CoinsIcon';
 import {
   buildCoverLetterSuggestion,
-  evaluateCandidateJobAccess,
-  getCandidatePremiumApplicationAccess,
-  getJobApplicationPremiumConfig,
+  getJobApplicationPolicy,
   normalizeCoverLetter,
-} from '../../lib/candidateApplicationPremium';
+} from '../../lib/applicationPolicy';
 import { analyzeCandidateJobFit } from '../../lib/candidateOptimizationInsights';
 import { normalizeExternalUrl } from '../../lib/externalUrl';
 import { createFormDraftKey } from '../../lib/formDraft';
+import { formatStpDate } from '../../domain/jobs/deadlines';
 import { deduplicateRelatedJobs, projectPublicJob } from '../../lib/publicJob';
 import { getPublicSkillsAssessment } from '../../lib/skillsAssessment';
 import { shareWithClipboardFallback } from '../../lib/shareWithFallback';
+
+// F1.8/E9: só carregado quando `V2_MODERATION` está ligada.
+const JobReportPanel = dynamic(
+  () => import('../../components/jobs/JobReportPanel'),
+);
+
+const ApplicationModal = dynamic(
+  () => import('../../components/ApplicationModal'),
+);
+const UpgradeModal = dynamic(() => import('../../components/UpgradeModal'));
 
 function formatMoneyValue(value) {
   if (!value && value !== 0) return '';
@@ -79,9 +90,28 @@ function formatMoneyValue(value) {
 
   const numericValue = Number(normalized);
   if (!Number.isFinite(numericValue)) return '';
-  return numericValue.toLocaleString('pt-PT', {
-    maximumFractionDigits: 0,
-  });
+  // Pontos de milhar como na listagem (3.500), também para 4 algarismos.
+  return Math.round(numericValue)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+// Dias até ao fim das candidaturas, contados a partir da hora do servidor
+// (`referenceNow`) para o texto ser igual no servidor e no browser.
+function getDeadlineHint(value, referenceNow) {
+  if (!value || !referenceNow) return null;
+  const end =
+    typeof value?.toDate === 'function'
+      ? value.toDate()
+      : value?.seconds
+        ? new Date(value.seconds * 1000)
+        : new Date(value);
+  if (Number.isNaN(end.getTime())) return null;
+  const days = Math.ceil((end.getTime() - referenceNow) / 86400000);
+  if (days < 0) return { text: 'Prazo terminado', urgent: true };
+  if (days === 0) return { text: 'Termina hoje', urgent: true };
+  if (days === 1) return { text: 'Falta 1 dia', urgent: true };
+  return { text: `Faltam ${days} dias`, urgent: days <= 7 };
 }
 
 function formatCurrency(value, currency = 'STD') {
@@ -137,19 +167,6 @@ function getJobModalityLabel(job = {}) {
   return 'Não informado';
 }
 
-function formatDateTime(value) {
-  if (!value) return 'Não informado';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString('pt-PT', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
-
 function parseList(value) {
   if (!value) return [];
   if (Array.isArray(value)) return value.filter(Boolean);
@@ -160,6 +177,97 @@ function parseList(value) {
       .filter(Boolean);
   }
   return [];
+}
+
+const ENDS_WITH_PUNCTUATION = /[.!?:;…]$/;
+
+function wordCount(text) {
+  return text.split(/\s+/).filter(Boolean).length;
+}
+
+// Junta os itens de um grupo em texto corrido: frases ficam frases; listas
+// curtas sem pontuação (ex.: ferramentas) viram uma enumeração com "e".
+function joinAsProse(items) {
+  if (!items.length) return '';
+  const punctuated = items.filter((item) => ENDS_WITH_PUNCTUATION.test(item));
+  const averageWords =
+    items.reduce((total, item) => total + wordCount(item), 0) / items.length;
+  const looksLikeSentences =
+    punctuated.length * 2 >= items.length || averageWords > 6;
+
+  if (looksLikeSentences) {
+    return items
+      .map((item) => (ENDS_WITH_PUNCTUATION.test(item) ? item : `${item}.`))
+      .join(' ');
+  }
+
+  const bare = items.map((item) => item.replace(/[.;,]+$/, ''));
+  if (bare.length === 1) return `${bare[0]}.`;
+  const last = bare[bare.length - 1];
+  const head = bare.slice(0, -1).join(', ');
+  const connector = /\s(ou|e)\s/i.test(last) ? ', ' : ' e ';
+  return `${head}${connector}${last}.`;
+}
+
+/**
+ * Requisitos e responsabilidades em texto corrido, agrupados pelos subtítulos que a empresa
+ * escreveu (ex.: "Formação Académica"). Um subtítulo é uma linha curta, sem
+ * pontuação final, que abre o texto ou vem depois de uma linha terminada em
+ * pontuação. Só se parte por linhas: as vírgulas ficam dentro das frases.
+ */
+function parseProseGroups(value) {
+  if (!value) return [];
+  const lines = (
+    Array.isArray(value) ? value.map(String) : String(value).split(/\n+/)
+  )
+    .map((line) => line.trim().replace(/^[-•*·]\s*/, ''))
+    .filter(Boolean);
+
+  const groups = [];
+  let current = { heading: '', items: [] };
+  lines.forEach((line, index) => {
+    const previous = lines[index - 1];
+    const isHeading =
+      index < lines.length - 1 &&
+      !ENDS_WITH_PUNCTUATION.test(line) &&
+      wordCount(line) <= 4 &&
+      (index === 0 || ENDS_WITH_PUNCTUATION.test(previous));
+    if (isHeading) {
+      if (current.heading || current.items.length) groups.push(current);
+      current = { heading: line, items: [] };
+    } else {
+      current.items.push(line);
+    }
+  });
+  if (current.heading || current.items.length) groups.push(current);
+
+  // Um bloco longo de frases sem subtítulo divide-se em parágrafos
+  // equilibrados de ~4 frases, para respirar sem deixar frases órfãs.
+  return groups
+    .flatMap((group) => {
+      const { items } = group;
+      const sentences = items.filter((item) =>
+        ENDS_WITH_PUNCTUATION.test(item),
+      );
+      if (
+        group.heading ||
+        items.length <= 5 ||
+        sentences.length * 2 < items.length
+      ) {
+        return [{ heading: group.heading, text: joinAsProse(items) }];
+      }
+      const chunks = Math.ceil(items.length / 4);
+      return Array.from({ length: chunks }, (_, index) => ({
+        heading: '',
+        text: joinAsProse(
+          items.slice(
+            Math.round((index * items.length) / chunks),
+            Math.round(((index + 1) * items.length) / chunks),
+          ),
+        ),
+      }));
+    })
+    .filter((group) => group.text);
 }
 
 function parseParagraphs(value) {
@@ -207,8 +315,11 @@ function resolveUrl(value) {
 
 function getContractTypeLabel(value) {
   const types = {
-    'full-time': 'Tempo integral',
-    'part-time': 'Meio período',
+    'full-time': 'Tempo inteiro',
+    'tempo integral': 'Tempo inteiro',
+    'part-time': 'Tempo parcial',
+    'meio período': 'Tempo parcial',
+    'meio periodo': 'Tempo parcial',
     contract: 'Contrato',
     internship: 'Estágio',
     freelance: 'Freelance',
@@ -290,7 +401,7 @@ function serializeJob(job) {
   return serializeFirestoreValue(job) || {};
 }
 
-const BENEFIT_ICONS = [FiDollarSign, FiBriefcase, FiShield, FiGlobe];
+const BENEFIT_ICONS = [CoinsIcon, FiBriefcase, FiShield, FiGlobe];
 
 function RelatedJobsPanel({ jobs, className = '', headingLevel = 'h3' }) {
   if (!jobs.length) return null;
@@ -299,6 +410,7 @@ function RelatedJobsPanel({ jobs, className = '', headingLevel = 'h3' }) {
   return (
     <section
       className={`${styles.sidebarCard} ${styles.relatedCard} ${className}`}
+      data-reveal
     >
       <div className={styles.relatedHeader}>
         <Heading className={styles.sidebarTitle}>Vagas semelhantes</Heading>
@@ -365,13 +477,19 @@ export default function VagaDetalhe({
   vaga,
   relatedJobs = [],
   referenceNow = 0,
+  publicPage = null,
+  jsonLd = '',
+  gone = false,
+  moderationEnabled = false,
 }) {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [applyStatus, setApplyStatus] = useState('idle');
   const [errorMsg, setErrorMsg] = useState('');
   const [userType, setUserType] = useState(null);
   const [candidateProfileData, setCandidateProfileData] = useState(null);
-  const [profileLoading, setProfileLoading] = useState(Boolean(user));
+  // Começa a carregar: a página renderiza antes de a sessão estar resolvida, e
+  // o botão de candidatura não pode mandar para o login quem já tem sessão.
+  const [profileLoading, setProfileLoading] = useState(true);
   const [isSaved, setIsSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [shareFeedback, setShareFeedback] = useState(null);
@@ -383,6 +501,19 @@ export default function VagaDetalhe({
     new Array(vaga?.skillsAssessment?.questions?.length || 0).fill(null),
   );
   const [applyModalOpen, setApplyModalOpen] = useState(false);
+  // D8: uma chave por intenção de candidatura. Repetições (duplo clique,
+  // rede instável) reutilizam-na e o servidor devolve a mesma resposta.
+  const applicationIntentKey = useRef(null);
+  // Barra fixa com "Candidatar" que desce quando o topo da vaga sai do ecrã
+  // (só desktop; no telemóvel já existe a barra fixa em baixo).
+  const heroRef = useRef(null);
+  const [showStickyApply, setShowStickyApply] = useState(false);
+  // Entradas suaves das secções, na mesma linha de /carreira e /sobre-nos.
+  const pageRef = useRef(null);
+  useScrollReveal(pageRef, [vaga?.id]);
+  const [reportSignal, setReportSignal] = useState(0);
+  // Política do formulário decidida no servidor (`V2_APPLICATION_SNAPSHOT`).
+  const [submissionPolicy, setSubmissionPolicy] = useState('legacy');
   const [applicationForm, setApplicationForm] = useState(() =>
     createEmptyApplicationForm(),
   );
@@ -476,9 +607,7 @@ export default function VagaDetalhe({
 
     // Nome higienizado: o original vai parar a um caminho do Storage e a um
     // cabeçalho de download.
-    const nomeSeguro = file.name
-      .replace(/[^\w.\-]+/g, '_')
-      .slice(-80);
+    const nomeSeguro = file.name.replace(/[^\w.\-]+/g, '_').slice(-80);
     const caminho = `candidaturas/${user.uid}/${jobId}/${documentId}-${Date.now()}-${nomeSeguro}`;
 
     // Import dinâmico: o SDK do Storage só é carregado quando alguém anexa
@@ -563,7 +692,9 @@ export default function VagaDetalhe({
 
   useEffect(() => {
     async function trackView() {
-      if (!vaga?.id) return;
+      // Espera pela sessão para registar uma única visualização, já com o
+      // utilizador certo.
+      if (!vaga?.id || authLoading) return;
 
       try {
         await fetch('/api/track-view', {
@@ -583,7 +714,7 @@ export default function VagaDetalhe({
     }
 
     trackView();
-  }, [vaga?.id, user?.uid]);
+  }, [vaga?.id, user?.uid, authLoading]);
 
   useEffect(() => {
     let active = true;
@@ -593,7 +724,7 @@ export default function VagaDetalhe({
     async function checkExisting() {
       if (!user || !vaga?.id) return;
       try {
-        const auth = getAuth();
+        const { auth } = await import('../../lib/firebaseAuth');
         const token = await auth.currentUser?.getIdToken();
         if (!token) return;
 
@@ -602,6 +733,9 @@ export default function VagaDetalhe({
         });
         if (response.ok) {
           const data = await response.json();
+          if (active && data.submissionPolicy === 'v2') {
+            setSubmissionPolicy('v2');
+          }
           if (active && data.applications && data.applications.length > 0) {
             setApplyStatus('success');
           }
@@ -621,15 +755,15 @@ export default function VagaDetalhe({
     let active = true;
     setUserType(null);
     setCandidateProfileData(null);
-    setProfileLoading(Boolean(user));
+    setProfileLoading(authLoading || Boolean(user));
 
     async function loadProfile() {
       if (!user) {
-        setProfileLoading(false);
+        if (!authLoading) setProfileLoading(false);
         return;
       }
       try {
-        const auth = getAuth();
+        const { auth } = await import('../../lib/firebaseAuth');
         const token = await auth.currentUser?.getIdToken();
         if (!token) {
           if (active) setUserType(null);
@@ -665,7 +799,7 @@ export default function VagaDetalhe({
     return () => {
       active = false;
     };
-  }, [user]);
+  }, [user, authLoading]);
 
   useEffect(() => {
     let active = true;
@@ -674,7 +808,7 @@ export default function VagaDetalhe({
     async function loadSavedJobs() {
       if (!user || !vaga?.id) return;
       try {
-        const auth = getAuth();
+        const { auth } = await import('../../lib/firebaseAuth');
         const token = await auth.currentUser?.getIdToken();
         if (!token) return;
 
@@ -715,24 +849,12 @@ export default function VagaDetalhe({
     return formatRelativeDate(raw, referenceNow);
   }, [referenceNow, vaga]);
 
-  const premiumConfig = useMemo(
-    () => getJobApplicationPremiumConfig(vaga),
+  const applicationConfig = useMemo(
+    // `vaga` é null quando a vaga não existe ou foi retirada: o valor por
+    // omissão do parâmetro só cobre `undefined`.
+    () => getJobApplicationPolicy(vaga || {}),
     [vaga],
   );
-  const candidatePremiumAccess = useMemo(
-    () => getCandidatePremiumApplicationAccess(candidateProfileData),
-    [candidateProfileData],
-  );
-  const normalizedCoverLetter = useMemo(
-    () => normalizeCoverLetter(applicationForm.coverLetter),
-    [applicationForm.coverLetter],
-  );
-  const premiumApplyRestriction = useMemo(() => {
-    if (!user || (userType && userType !== 'candidato')) return null;
-    if (user && !candidateProfileData && userType === null) return null;
-    const access = evaluateCandidateJobAccess(vaga, candidateProfileData);
-    return access.allowed ? null : access;
-  }, [vaga, candidateProfileData, user, userType]);
 
   const candidateJobInsights = useMemo(() => {
     if (!user || (userType && userType !== 'candidato')) return null;
@@ -744,8 +866,11 @@ export default function VagaDetalhe({
     );
   }, [vaga, candidateProfileData, user, userType]);
 
+  // A lista alimenta as competências da barra lateral; o texto corrido é o
+  // que se lê na secção Requisitos.
   const requirementsList = parseList(vaga?.requisitos);
-  const responsibilitiesParagraphs = parseParagraphs(vaga?.responsabilidades);
+  const requirementsProse = parseProseGroups(vaga?.requisitos);
+  const responsibilitiesProse = parseProseGroups(vaga?.responsabilidades);
   const benefitsList = parseList(vaga?.beneficios);
   const overviewParagraphs = parseParagraphs(vaga?.descricao);
   const skillsTags = Array.from(
@@ -761,73 +886,106 @@ export default function VagaDetalhe({
   ).slice(0, 8);
 
   const skillChecklist = useMemo(() => {
-    const shorten = (value) => {
-      const label = String(value || '').trim();
-      if (label.length <= 34) return label;
-      return `${label.slice(0, 31).trim()}…`;
-    };
+    // Chips curtos: frases longas ficam na secção Requisitos, não são cortadas.
+    const isChip = (label) => label.length > 0 && label.length <= 40;
 
     if (candidateJobInsights) {
       const matched = (candidateJobInsights.matchedSkills || [])
-        .slice(0, 4)
-        .map((skill) => ({ label: shorten(skill), matched: true }));
+        .map((skill) => String(skill || '').trim())
+        .filter(isChip)
+        .slice(0, 6)
+        .map((label) => ({ label, matched: true }));
       const missing = (candidateJobInsights.missingSkills || [])
-        .slice(0, Math.max(0, 4 - matched.length))
-        .map((skill) => ({ label: shorten(skill), matched: false }));
+        .map((skill) => String(skill || '').trim())
+        .filter(isChip)
+        .slice(0, Math.max(0, 6 - matched.length))
+        .map((label) => ({ label, matched: false }));
       const combined = [...matched, ...missing];
       if (combined.length) return combined;
     }
 
     const publicSkills = Array.from(
       new Set(
-        [
-          ...skillsTags,
-          ...requirementsList.slice(0, 4),
-          vaga?.categoria,
-          vaga?.nivelExperiencia,
-        ]
-          .map((item) => shorten(humanizeRangeLabel(item)))
-          .filter(Boolean),
+        [...skillsTags, ...requirementsList]
+          .map((item) => humanizeRangeLabel(item).trim())
+          .filter(isChip),
       ),
-    ).slice(0, 4);
+    ).slice(0, 6);
 
     return publicSkills.map((skill) => ({
       label: skill,
       matched: null,
     }));
-  }, [
-    candidateJobInsights,
-    requirementsList,
-    skillsTags,
-    vaga?.categoria,
-    vaga?.nivelExperiencia,
-  ]);
+  }, [candidateJobInsights, requirementsList, skillsTags]);
 
   const skillFitPercent = candidateJobInsights
     ? Math.min(100, Math.max(0, Number(candidateJobInsights.matchPercent) || 0))
     : null;
 
+  useEffect(() => {
+    const hero = heroRef.current;
+    if (!hero || !('IntersectionObserver' in window)) return undefined;
+    const headerHeight =
+      document.querySelector('header')?.getBoundingClientRect().height || 0;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setShowStickyApply(
+          !entry.isIntersecting && entry.boundingClientRect.top < 0,
+        );
+      },
+      { rootMargin: `-${Math.round(headerHeight)}px 0px 0px 0px` },
+    );
+    observer.observe(hero);
+    return () => observer.disconnect();
+  }, [vaga?.id]);
+
   if (!vaga) {
     return (
-      <PublicPageShell headerVariant="light">
-        <section className={styles.notFound}>
-          <h2>Vaga não encontrada</h2>
-          <Link href="/vagas" className={styles.notFoundLink}>
-            Voltar para vagas
-          </Link>
-        </section>
-      </PublicPageShell>
+      <>
+        {gone ? (
+          <Head>
+            <title>Vaga retirada | EmpregoSTP</title>
+            <meta name="robots" content="noindex, nofollow" />
+          </Head>
+        ) : null}
+        <PublicPageShell headerVariant="light">
+          <section className={styles.notFound}>
+            <h2>{gone ? 'Esta vaga foi retirada' : 'Vaga não encontrada'}</h2>
+            {gone ? (
+              <p>Esta oferta já não está disponível no EmpregoSTP.</p>
+            ) : null}
+            <Link href="/vagas" className={styles.notFoundLink}>
+              Voltar para vagas
+            </Link>
+          </section>
+        </PublicPageShell>
+      </>
     );
   }
+
+  // F8.6 — vaga que já não aceita candidaturas (só com V2_SEO_PAGES).
+  const closure =
+    publicPage && publicPage.kind !== 'OPEN'
+      ? {
+          title:
+            publicPage.kind === 'CLOSED'
+              ? publicPage.closedAt
+                ? `Esta vaga encerrou em ${formatStpDate(new Date(publicPage.closedAt))}`
+                : 'Esta vaga encerrou'
+              : publicPage.kind === 'PAUSED'
+                ? 'Esta vaga não está a receber candidaturas de momento'
+                : 'Esta vaga foi arquivada',
+          similarHref: vaga.categoria
+            ? `/vagas?categoria=${encodeURIComponent(vaga.categoria)}`
+            : '/vagas',
+        }
+      : null;
 
   const {
     titulo,
     descricao,
-    requisitos,
-    responsabilidades,
     localizacao,
     tipoContrato,
-    beneficios,
     dataAbertura,
     dataFecho,
     status,
@@ -890,11 +1048,9 @@ export default function VagaDetalhe({
         ? 'Candidatura enviada'
         : !isOpen
           ? 'Vaga encerrada'
-          : premiumApplyRestriction
-            ? 'Desbloquear acesso'
-            : !assessmentComplete
-              ? 'Concluir teste'
-              : 'Candidatar agora';
+          : !assessmentComplete
+            ? 'Concluir teste'
+            : 'Candidatar agora';
 
   const applicationCount = Number(
     vaga.applicationsCount ||
@@ -938,7 +1094,7 @@ export default function VagaDetalhe({
     {
       label: 'Salário',
       value: salaryRange,
-      Icon: FiDollarSign,
+      Icon: CoinsIcon,
     },
     {
       label: 'Experiência',
@@ -950,6 +1106,7 @@ export default function VagaDetalhe({
     {
       label: 'Prazo',
       value: formatDate(dataFecho),
+      hint: isOpen ? getDeadlineHint(dataFecho, referenceNow) : null,
       Icon: FiCalendar,
     },
     {
@@ -1026,6 +1183,10 @@ export default function VagaDetalhe({
   };
 
   const handleReport = () => {
+    if (moderationEnabled) {
+      setReportSignal((value) => value + 1);
+      return;
+    }
     const subject = encodeURIComponent(`Denúncia da vaga: ${titulo}`);
     const body = encodeURIComponent(
       [
@@ -1041,12 +1202,12 @@ export default function VagaDetalhe({
   };
 
   const handleToggleSave = async () => {
-    if (saving) return;
+    if (saving || authLoading) return;
     setSaving(true);
     setErrorMsg('');
 
     try {
-      const auth = getAuth();
+      const { auth } = await import('../../lib/firebaseAuth');
       const currentUser = auth.currentUser;
 
       if (!currentUser) {
@@ -1119,16 +1280,6 @@ export default function VagaDetalhe({
       return;
     }
 
-    if (!candidatePremiumAccess.canUseCoverLetter) {
-      setUpgradeModal({
-        open: true,
-        message:
-          'Cartas de apresentação personalizadas estão disponíveis apenas nos planos Profissional e Premium.',
-        userType: 'candidato',
-      });
-      return;
-    }
-
     setIsGeneratingCoverLetter(true);
     try {
       const suggestion = buildCoverLetterSuggestion({
@@ -1157,18 +1308,6 @@ export default function VagaDetalhe({
       setApplyStatus('error');
       return;
     }
-    if (premiumApplyRestriction) {
-      setUpgradeModal({
-        open: true,
-        message:
-          premiumApplyRestriction.upgradeMessage ||
-          premiumApplyRestriction.reason ||
-          'Escolha um plano para continuar.',
-        userType: 'candidato',
-      });
-      setApplyStatus('idle');
-      return;
-    }
     // A partir daqui é o modal que recolhe e valida a candidatura.
     setErrorMsg('');
     setApplyModalOpen(true);
@@ -1179,7 +1318,7 @@ export default function VagaDetalhe({
       setApplyStatus('loading');
       setErrorMsg('');
 
-      const auth = getAuth();
+      const { auth } = await import('../../lib/firebaseAuth');
       const token = await auth.currentUser?.getIdToken();
 
       if (!token) {
@@ -1187,11 +1326,18 @@ export default function VagaDetalhe({
         return;
       }
 
+      if (!applicationIntentKey.current) {
+        applicationIntentKey.current =
+          typeof crypto !== 'undefined' && crypto.randomUUID
+            ? crypto.randomUUID()
+            : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 14)}`;
+      }
       const response = await fetch('/api/applications', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
+          'Idempotency-Key': applicationIntentKey.current,
         },
         body: JSON.stringify({
           jobId: vaga.id,
@@ -1202,6 +1348,7 @@ export default function VagaDetalhe({
       });
 
       if (response.status === 409) {
+        applicationIntentKey.current = null;
         await clearApplicationDraft();
         setApplyModalOpen(false);
         setApplyStatus('success');
@@ -1232,7 +1379,11 @@ export default function VagaDetalhe({
             setApplyStatus('idle');
             return;
           }
-          friendly = data?.error || friendly;
+          // Formato antigo (texto) e formato único D16 ({ code, message }).
+          friendly =
+            (typeof data?.error === 'string'
+              ? data.error
+              : data?.error?.message) || friendly;
         } catch (_) {
           // ignore
         }
@@ -1241,6 +1392,7 @@ export default function VagaDetalhe({
         return;
       }
 
+      applicationIntentKey.current = null;
       await clearApplicationDraft();
       setApplyModalOpen(false);
       setApplyStatus('success');
@@ -1253,44 +1405,59 @@ export default function VagaDetalhe({
 
   return (
     <>
-      <ApplicationModal
-        isOpen={applyModalOpen}
-        onClose={() => setApplyModalOpen(false)}
-        job={vaga}
-        form={applicationForm}
-        onChange={setApplicationForm}
-        onSubmit={handleSubmitApplication}
-        submitting={isApplying}
-        errorMessage={errorMsg}
-        onGenerateCoverLetter={handleGenerateCoverLetter}
-        generatingCoverLetter={isGeneratingCoverLetter}
-        documentRequirements={documentRequirements}
-        onUploadDocument={handleUploadDocument}
-        coverLetterEnabled={Boolean(candidatePremiumAccess.canUseCoverLetter)}
-        draftStatus={
-          <AutoSaveStatus
-            status={applicationDraftStatus}
-            lastSavedAt={applicationDraftLastSavedAt}
-            isOnline={applicationDraftIsOnline}
-          />
-        }
-      />
+      {applyModalOpen ? (
+        <ApplicationModal
+          isOpen={applyModalOpen}
+          onClose={() => setApplyModalOpen(false)}
+          job={vaga}
+          form={applicationForm}
+          onChange={setApplicationForm}
+          onSubmit={handleSubmitApplication}
+          submitting={isApplying}
+          errorMessage={errorMsg}
+          onGenerateCoverLetter={handleGenerateCoverLetter}
+          generatingCoverLetter={isGeneratingCoverLetter}
+          documentRequirements={documentRequirements}
+          onUploadDocument={handleUploadDocument}
+          coverLetterEnabled
+          policy={submissionPolicy}
+          draftStatus={
+            <AutoSaveStatus
+              status={applicationDraftStatus}
+              lastSavedAt={applicationDraftLastSavedAt}
+              isOnline={applicationDraftIsOnline}
+            />
+          }
+        />
+      ) : null}
 
-      <UpgradeModal
-        isOpen={upgradeModal.open}
-        onClose={() => setUpgradeModal({ open: false, message: '' })}
-        message={upgradeModal.message}
-        upgradeUrl="/premium/candidatos"
-        userType="candidato"
-      />
+      {upgradeModal.open ? (
+        <UpgradeModal
+          isOpen={upgradeModal.open}
+          onClose={() => setUpgradeModal({ open: false, message: '' })}
+          message={upgradeModal.message}
+          upgradeUrl="/premium/candidatos"
+          userType="candidato"
+        />
+      ) : null}
 
       <Head>
         <title>{titulo} | EmpregoSTP</title>
         <meta name="description" content={metaDescription} />
+        {publicPage && !publicPage.indexable ? (
+          <meta name="robots" content="noindex, follow" />
+        ) : null}
+        {jsonLd ? (
+          <script
+            type="application/ld+json"
+            // Serializado por serializeJsonLd: não fecha o <script>.
+            dangerouslySetInnerHTML={{ __html: jsonLd }}
+          />
+        ) : null}
       </Head>
 
       <PublicPageShell headerVariant="light">
-        <div className={styles.page}>
+        <div className={styles.page} ref={pageRef}>
           <div className={styles.toolbar}>
             <Link href="/vagas" className={styles.backButton}>
               <span className={styles.backIcon}>
@@ -1336,15 +1503,83 @@ export default function VagaDetalhe({
             </p>
           ) : null}
 
-          <div className={styles.mainGrid}>
-            <section className={styles.hero}>
+          {closure ? (
+            <div className={styles.closureNotice} role="status">
+              <strong>{closure.title}</strong>
+              <span>
+                Pode ver outras oportunidades parecidas e criar um alerta para
+                receber as próximas.
+              </span>
+              <Link href={closure.similarHref}>
+                Ver vagas semelhantes e criar alerta
+              </Link>
+            </div>
+          ) : null}
+
+          <div
+            className={`${styles.stickyApply} ${
+              showStickyApply ? styles.stickyApplyVisible : ''
+            }`}
+            aria-hidden={!showStickyApply}
+            inert={!showStickyApply}
+          >
+            <div className={styles.stickyApplyInner}>
+              <span className={styles.stickyApplyMark} aria-hidden="true">
+                {vaga.companyLogo || vaga.empresaLogo ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={vaga.companyLogo || vaga.empresaLogo}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    width="40"
+                    height="40"
+                  />
+                ) : (
+                  companyInitials
+                )}
+              </span>
+              <div className={styles.stickyApplyCopy}>
+                <strong>{titulo}</strong>
+                <span>
+                  {companyLabel}
+                  {localizacao ? ` · ${localizacao}` : ''}
+                </span>
+              </div>
+              <span className={`${styles.statusPill} ${styles.contractPill}`}>
+                {getContractTypeLabel(tipoContrato)}
+              </span>
+              <button
+                type="button"
+                className={`${styles.headerApplyButton} ${
+                  applyDisabled
+                    ? styles.headerApplyButtonDisabled
+                    : styles.headerApplyButtonEnabled
+                }`}
+                onClick={handleApply}
+                disabled={applyDisabled}
+              >
+                <span>{applicationButtonLabel}</span>
+                <FiArrowRight size={17} />
+              </button>
+            </div>
+          </div>
+
+          <div
+            className={`${styles.mainGrid} ${closure ? styles.mainGridClosed : ''}`}
+          >
+            <section ref={heroRef} className={styles.hero}>
+              <div className={styles.heroGlow} aria-hidden="true">
+                <span />
+                <span />
+              </div>
               <div className={styles.heroMain}>
                 <span className={styles.companyMark}>
                   {vaga.companyLogo || vaga.empresaLogo ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={vaga.companyLogo || vaga.empresaLogo}
-                      alt={companyLabel}
+                      alt=""
                       className={styles.companyMarkLogo}
                       loading="eager"
                       decoding="async"
@@ -1381,12 +1616,6 @@ export default function VagaDetalhe({
                     )}
                     {!isOpen && (
                       <span className={styles.closedPill}>{statusLabel}</span>
-                    )}
-                    {premiumConfig.premiumOnly && (
-                      <span className={styles.premiumPill}>
-                        <FiShield size={13} />
-                        Premium
-                      </span>
                     )}
                   </div>
 
@@ -1467,36 +1696,15 @@ export default function VagaDetalhe({
                 )}
               </div>
 
-              {premiumConfig.hasPremiumFlow && (
-                <div className={styles.premiumCallout}>
-                  <div className={styles.premiumCalloutTitle}>
-                    Fluxo premium de candidatura
+              {applicationConfig.requireCoverLetter && (
+                <div className={styles.applicationNotice}>
+                  <div className={styles.applicationNoticeTitle}>
+                    Carta de apresentação obrigatória
                   </div>
-                  <p className={styles.premiumCalloutText}>
-                    {premiumConfig.premiumOnly
-                      ? 'Esta vaga está aberta apenas para candidatos Profissional e Premium.'
-                      : 'Esta vaga usa recursos premium para elevar a qualidade da candidatura.'}
-                    {premiumConfig.isEarlyAccessActive
-                      ? ` Durante a janela antecipada, o acesso fica reservado até ${formatDateTime(premiumConfig.earlyAccessUntil)}.`
-                      : ''}
-                    {premiumConfig.requireCoverLetter
-                      ? ' A carta de apresentação personalizada faz parte do envio.'
-                      : ''}
+                  <p className={styles.applicationNoticeText}>
+                    Inclua uma carta de apresentação no envio. A candidatura e a
+                    carta escrita por si são gratuitas.
                   </p>
-                  {user && !isBlocked && premiumApplyRestriction && (
-                    <p className={styles.premiumCalloutWarning}>
-                      {premiumApplyRestriction.reason}
-                    </p>
-                  )}
-                  {user &&
-                    !isBlocked &&
-                    !premiumApplyRestriction &&
-                    candidatePremiumAccess.priorityApplied && (
-                      <p className={styles.premiumCalloutPositive}>
-                        O seu plano atual envia esta candidatura com prioridade
-                        adicional na triagem.
-                      </p>
-                    )}
                 </div>
               )}
             </section>
@@ -1514,9 +1722,40 @@ export default function VagaDetalhe({
                 </div>
               ) : null}
 
+              <nav className={styles.sectionNav} aria-label="Secções da vaga">
+                <span className={styles.sectionNavLabel}>Nesta vaga</span>
+                {[
+                  ['descricao', 'Descrição', true],
+                  [
+                    'responsabilidades',
+                    'Responsabilidades',
+                    responsibilitiesProse.length > 0,
+                  ],
+                  ['requisitos', 'Requisitos', true],
+                  ['beneficios', 'Benefícios', benefitsToShow.length > 0],
+                  ['informacoes', 'Informações', true],
+                  ['documentacao', 'Documentos', Boolean(tdrUrl)],
+                ]
+                  .filter(([, , visible]) => visible)
+                  .map(([id, label]) => (
+                    <a key={id} href={`#${id}`}>
+                      {label}
+                    </a>
+                  ))}
+              </nav>
+
               <div className={styles.editorialGroup}>
-                <section className={styles.jobDescriptionCard}>
-                  <h2 className={styles.sectionTitle}>Descrição da vaga</h2>
+                <section
+                  id="descricao"
+                  className={styles.jobDescriptionCard}
+                  data-reveal
+                >
+                  <h2 className={styles.sectionTitle}>
+                    <span className={styles.sectionIcon} aria-hidden="true">
+                      <FiFileText />
+                    </span>
+                    Descrição da vaga
+                  </h2>
 
                   <div className={styles.richText}>
                     {(overviewParagraphs.length
@@ -1528,45 +1767,76 @@ export default function VagaDetalhe({
                   </div>
                 </section>
 
-                {responsibilitiesParagraphs.length > 0 && (
-                  <section className={styles.sectionCard}>
-                    <h2 className={styles.sectionTitle}>Responsabilidades</h2>
+                {responsibilitiesProse.length > 0 && (
+                  <section
+                    id="responsabilidades"
+                    className={styles.sectionCard}
+                    data-reveal
+                  >
+                    <h2 className={styles.sectionTitle}>
+                      <span className={styles.sectionIcon} aria-hidden="true">
+                        <FiCheckSquare />
+                      </span>
+                      Responsabilidades
+                    </h2>
                     <div className={styles.richText}>
-                      {responsibilitiesParagraphs.map((paragraph, index) => (
-                        <p key={`responsibility-${index}`}>{paragraph}</p>
+                      {responsibilitiesProse.map((group, index) => (
+                        <p key={`responsibility-${index}`}>
+                          {group.heading ? (
+                            <strong className={styles.proseLead}>
+                              {group.heading}:{' '}
+                            </strong>
+                          ) : null}
+                          {group.text}
+                        </p>
                       ))}
                     </div>
                   </section>
                 )}
 
-                <section className={styles.sectionCard}>
-                  <h2 className={styles.sectionTitle}>Requisitos</h2>
-                  <div className={styles.bulletList}>
-                    {requirementsList.length ? (
-                      requirementsList.map((item, index) => (
-                        <div
-                          key={`requirement-${index}`}
-                          className={`${styles.bulletItem} ${styles.requirementItem}`}
-                        >
-                          <span className={styles.requirementIcon}>
-                            <FiArrowRight size={15} />
-                          </span>
-                          <span>{item}</span>
-                        </div>
-                      ))
-                    ) : (
-                      <p className={styles.emptySectionCopy}>
-                        A empresa não indicou requisitos específicos.
-                      </p>
-                    )}
-                  </div>
+                <section
+                  id="requisitos"
+                  className={styles.sectionCard}
+                  data-reveal
+                >
+                  <h2 className={styles.sectionTitle}>
+                    <span className={styles.sectionIcon} aria-hidden="true">
+                      <FiAward />
+                    </span>
+                    Requisitos
+                  </h2>
+                  {requirementsProse.length ? (
+                    <div className={styles.richText}>
+                      {requirementsProse.map((group, index) => (
+                        <p key={`requirement-${index}`}>
+                          {group.heading ? (
+                            <strong className={styles.proseLead}>
+                              {group.heading}:{' '}
+                            </strong>
+                          ) : null}
+                          {group.text}
+                        </p>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className={styles.emptySectionCopy}>
+                      A empresa não indicou requisitos específicos.
+                    </p>
+                  )}
                 </section>
 
                 {benefitsToShow.length > 0 ? (
-                  <section className={styles.benefitsCard}>
+                  <section
+                    id="beneficios"
+                    className={styles.benefitsCard}
+                    data-reveal
+                  >
                     <h2
                       className={`${styles.sectionTitle} ${styles.benefitsTitle}`}
                     >
+                      <span className={styles.sectionIcon} aria-hidden="true">
+                        <FiGift />
+                      </span>
                       Benefícios &amp; vantagens
                     </h2>
                     <div className={styles.benefitsGrid}>
@@ -1592,8 +1862,15 @@ export default function VagaDetalhe({
                 ) : null}
               </div>
 
-              <section className={styles.sectionCard}>
+              <section
+                id="informacoes"
+                className={styles.sectionCard}
+                data-reveal
+              >
                 <h2 className={styles.sectionTitle}>
+                  <span className={styles.sectionIcon} aria-hidden="true">
+                    <FiInfo />
+                  </span>
                   Informações complementares
                 </h2>
                 <div className={styles.detailsGrid}>
@@ -1614,9 +1891,16 @@ export default function VagaDetalhe({
               </section>
 
               {tdrUrl && (
-                <section className={styles.sectionCard}>
+                <section
+                  id="documentacao"
+                  className={styles.sectionCard}
+                  data-reveal
+                >
                   <div className={styles.sectionHeader}>
                     <h2 className={styles.sectionTitle}>
+                      <span className={styles.sectionIcon} aria-hidden="true">
+                        <FiPaperclip />
+                      </span>
                       Documentação da vaga
                     </h2>
                   </div>
@@ -1647,7 +1931,7 @@ export default function VagaDetalhe({
               )}
 
               {publicAssessment && (
-                <section className={styles.sectionCard}>
+                <section className={styles.sectionCard} data-reveal>
                   <div className={styles.sectionHeader}>
                     <h2 className={styles.sectionTitle}>
                       Teste de competências
@@ -1712,6 +1996,7 @@ export default function VagaDetalhe({
                 <section
                   id="candidatura"
                   className={`${styles.sidebarCard} ${styles.generalInfoCard}`}
+                  data-reveal
                 >
                   <h3 className={styles.sidebarTitle}>Resumo da vaga</h3>
 
@@ -1723,7 +2008,20 @@ export default function VagaDetalhe({
                         </span>
                         <div>
                           <dt>{item.label}</dt>
-                          <dd>{item.value}</dd>
+                          <dd>
+                            {item.value}
+                            {item.hint ? (
+                              <span
+                                className={`${styles.deadlineHint} ${
+                                  item.hint.urgent
+                                    ? styles.deadlineHintUrgent
+                                    : ''
+                                }`}
+                              >
+                                {item.hint.text}
+                              </span>
+                            ) : null}
+                          </dd>
                         </div>
                       </div>
                     ))}
@@ -1788,6 +2086,14 @@ export default function VagaDetalhe({
                     </button>
                   </div>
 
+                  {moderationEnabled ? (
+                    <JobReportPanel
+                      jobId={vaga.id}
+                      openSignal={reportSignal}
+                      loginHref={`/login?redirect=/vaga/${vaga.id}`}
+                    />
+                  ) : null}
+
                   {isBlocked && (
                     <p className={styles.warningText}>
                       O seu perfil atual não pode candidatar a esta vaga.
@@ -1799,11 +2105,7 @@ export default function VagaDetalhe({
                       Conclua o teste de competências para ativar a candidatura.
                     </p>
                   )}
-                  {user &&
-                  userType !== 'empresa' &&
-                  (publicAssessment ||
-                    premiumConfig.requireCoverLetter ||
-                    candidatePremiumAccess.canUseCoverLetter) ? (
+                  {user && userType !== 'empresa' ? (
                     <AutoSaveStatus
                       status={applicationDraftStatus}
                       lastSavedAt={applicationDraftLastSavedAt}
@@ -1816,6 +2118,7 @@ export default function VagaDetalhe({
                 {skillChecklist.length > 0 ? (
                   <section
                     className={`${styles.sidebarCard} ${styles.skillsCard}`}
+                    data-reveal
                   >
                     <h3 className={styles.sidebarTitle}>
                       {candidateJobInsights
@@ -1830,30 +2133,24 @@ export default function VagaDetalhe({
                         />
                       </div>
                     ) : null}
-                    <div className={styles.skillList}>
+                    <p className={styles.skillLead}>
+                      Habilidades técnicas requeridas para a função:
+                    </p>
+                    <ul className={styles.skillChips}>
                       {skillChecklist.map((skill, index) => (
-                        <div key={`skill-${index}`} className={styles.skillRow}>
-                          <span>{skill.label}</span>
-                          <strong
-                            className={
-                              skill.matched === null
-                                ? styles.skillNeutral
-                                : skill.matched
-                                  ? styles.skillCheck
-                                  : styles.skillMiss
-                            }
-                          >
-                            {skill.matched === null ? (
-                              <FiBriefcase size={16} />
-                            ) : skill.matched ? (
-                              <FiCheck size={18} />
-                            ) : (
-                              <FiX size={18} />
-                            )}
-                          </strong>
-                        </div>
+                        <li
+                          key={`skill-${index}`}
+                          className={`${styles.skillChip} ${
+                            skill.matched === false ? styles.skillChipMiss : ''
+                          }`}
+                        >
+                          {skill.matched === true ? (
+                            <FiCheck size={14} aria-label="Tem" />
+                          ) : null}
+                          {skill.label}
+                        </li>
                       ))}
-                    </div>
+                    </ul>
                     {candidateJobInsights?.matchLabel && (
                       <p className={styles.sidebarMuted}>
                         {candidateJobInsights.matchLabel}
@@ -1864,6 +2161,7 @@ export default function VagaDetalhe({
 
                 <section
                   className={`${styles.sidebarCard} ${styles.companyCard}`}
+                  data-reveal
                 >
                   <span className={styles.sidebarEyebrow}>Empresa</span>
                   <div className={styles.companySidebar}>
@@ -1874,7 +2172,7 @@ export default function VagaDetalhe({
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={vaga.companyLogo || vaga.empresaLogo}
-                              alt={companyLabel}
+                              alt=""
                               className={styles.companySidebarLogo}
                               loading="lazy"
                               decoding="async"
@@ -1962,30 +2260,6 @@ export default function VagaDetalhe({
                     ) : null}
                   </div>
                 </section>
-
-                {tdrUrl && (
-                  <section
-                    className={`${styles.sidebarCard} ${styles.tdrCard}`}
-                  >
-                    <span className={styles.sidebarEyebrow}>
-                      Documento extra
-                    </span>
-                    <h3 className={styles.sidebarTitle}>TDR disponível</h3>
-                    <p className={styles.sidebarText}>
-                      A empresa publicou um documento adicional com mais
-                      detalhes sobre escopo, requisitos e contexto técnico.
-                    </p>
-                    <a
-                      href={tdrUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={styles.documentButton}
-                    >
-                      <FiDownload size={14} />
-                      Abrir TDR
-                    </a>
-                  </section>
-                )}
               </div>
             </aside>
           </div>
@@ -2028,7 +2302,34 @@ export default function VagaDetalhe({
   );
 }
 
-export async function getServerSideProps({ params }) {
+// Leitor de flags por instância: a cache de 60 s evita uma leitura ao
+// Firestore por cada visita à página.
+let seoFlagsReader = null;
+async function isSeoPagesEnabled(adminInstance, key = 'V2_SEO_PAGES') {
+  try {
+    const [{ FirestoreFeatureFlags }, { getFeatureEnvironment }] =
+      await Promise.all([
+        import('../../infrastructure/firebase/marketplace/FirestoreFeatureFlags'),
+        import('../../infrastructure/firebase/marketplace/environment'),
+      ]);
+    seoFlagsReader ||= new FirestoreFeatureFlags(adminInstance.firestore());
+    return await seoFlagsReader.enabled(key, {
+      environment: getFeatureEnvironment(),
+    });
+  } catch {
+    return false;
+  }
+}
+
+function toDateValue(value) {
+  if (!value) return null;
+  if (typeof value?.toDate === 'function') return value.toDate();
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+export async function getServerSideProps(context) {
+  const { params } = context;
   const { id } = params;
 
   try {
@@ -2038,6 +2339,7 @@ export async function getServerSideProps({ params }) {
     const {
       getEffectiveJobStatus,
       isJobPubliclyVisible,
+      parseJobCloseDate,
       syncExpiredJobStatus,
     } = await import('../../lib/jobExpiration');
     const doc = await admin.firestore().collection('jobs').doc(id).get();
@@ -2053,7 +2355,48 @@ export async function getServerSideProps({ params }) {
       status: getEffectiveJobStatus(synced.jobData),
     };
 
-    if (!isJobPubliclyVisible(currentJob)) {
+    const [seoPages, moderationEnabled] = await Promise.all([
+      isSeoPagesEnabled(admin),
+      isSeoPagesEnabled(admin, 'V2_MODERATION'),
+    ]);
+    let publicPage = null;
+    if (seoPages) {
+      const { resolvePublicJobPage } =
+        await import('../../domain/jobs/publicPage');
+      const closingDate = parseJobCloseDate(
+        synced.jobData.dataFecho ||
+          synced.jobData.expiresAt ||
+          synced.jobData.dataEncerramento,
+      );
+      const closedAt =
+        toDateValue(synced.jobData.closedAt) ||
+        toDateValue(synced.jobData.expiredAt) ||
+        (closingDate && closingDate.getTime() < Date.now()
+          ? closingDate
+          : null);
+      const page = resolvePublicJobPage({
+        v2Status: synced.jobData.v2Status,
+        legacyStatus: currentJob.status,
+        closedAt,
+        now: new Date(),
+      });
+      if (page.kind === 'NOT_FOUND') return { notFound: true };
+      if (page.kind === 'GONE') {
+        context.res.statusCode = 410;
+        return {
+          props: {
+            vaga: null,
+            gone: true,
+            relatedJobs: [],
+            referenceNow: Date.now(),
+          },
+        };
+      }
+      publicPage = {
+        ...page,
+        closedAt: closedAt ? closedAt.toISOString() : null,
+      };
+    } else if (!isJobPubliclyVisible(currentJob)) {
       return { notFound: true };
     }
 
@@ -2199,14 +2542,52 @@ export async function getServerSideProps({ params }) {
         return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
       });
     const relatedJobs = deduplicateRelatedJobs(rankedRelatedJobs)
-      .slice(0, 4)
+      // F8.6: até 6 semelhantes quando a vaga já não aceita candidaturas.
+      .slice(0, publicPage && publicPage.kind !== 'OPEN' ? 6 : 4)
       .map(({ _score, ...job }) => job);
+
+    let jsonLd = '';
+    if (publicPage?.jsonLd) {
+      const { buildJobPostingJsonLd, serializeJsonLd } =
+        await import('../../domain/jobs/publicPage');
+      const website = String(jobData.companyWebsite || '');
+      const modality = `${jobData.modalidade || ''} ${jobData.regime || ''}`;
+      jsonLd = serializeJsonLd(
+        buildJobPostingJsonLd({
+          id,
+          title: jobData.titulo || jobData.title || '',
+          descriptionHtml: jobData.descricao || jobData.description || '',
+          publishedAt: toDateValue(
+            jobData.publicadoEm || jobData.publishedAt || jobData.createdAt,
+          ),
+          validThrough: parseJobCloseDate(
+            jobData.dataFecho || jobData.expiresAt || jobData.dataEncerramento,
+          ),
+          employmentType: jobData.tipoContrato,
+          companyName: jobData.companyName,
+          companyWebsite: /^https?:\/\//i.test(website) ? website : '',
+          companyLogo: jobData.companyLogo || '',
+          location: jobData.localizacao || '',
+          remote: jobData.remoto === true || /remoto|remote/i.test(modality),
+          salaryFrom: jobData.salarioDe,
+          salaryTo: jobData.salarioAte,
+          // O modelo legado não guarda o período: sem ele, o salário fica de
+          // fora do JobPosting em vez de se presumir "por mês".
+          salaryPeriod: jobData.salaryPeriod || null,
+          createdAt: toDateValue(jobData.createdAt),
+          url: `https://empregostp.com/vaga/${encodeURIComponent(id)}`,
+        }),
+      );
+    }
 
     return {
       props: {
         vaga: serializeJob(projectPublicJob(jobData)),
         relatedJobs,
         referenceNow: Date.now(),
+        ...(publicPage ? { publicPage } : {}),
+        ...(jsonLd ? { jsonLd } : {}),
+        ...(moderationEnabled ? { moderationEnabled } : {}),
       },
     };
   } catch (error) {

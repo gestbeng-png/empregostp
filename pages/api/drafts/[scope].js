@@ -61,7 +61,9 @@ export default async function handler(req, res) {
 
   const target = resolveDraftTarget(req);
   if (!target) {
-    return res.status(400).json({ error: 'Identificador de rascunho inválido.' });
+    return res
+      .status(400)
+      .json({ error: 'Identificador de rascunho inválido.' });
   }
 
   try {
@@ -72,9 +74,7 @@ export default async function handler(req, res) {
     if (!authResult) return;
     const { uid, userRef } = authResult;
 
-    const draftRef = userRef
-      .collection('formDrafts')
-      .doc(target.documentId);
+    const draftRef = userRef.collection('formDrafts').doc(target.documentId);
 
     if (req.method === 'DELETE') {
       await draftRef.delete();
@@ -154,6 +154,8 @@ export default async function handler(req, res) {
       scope: target.scope,
       method: req.method,
     });
-    return res.status(500).json({ error: 'Não foi possível guardar o rascunho.' });
+    return res
+      .status(500)
+      .json({ error: 'Não foi possível guardar o rascunho.' });
   }
 }

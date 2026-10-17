@@ -28,6 +28,12 @@ const getStatusConfig = (status) => {
         color: '#f87171',
         border: '1px solid rgba(239, 68, 68, 0.3)',
       };
+    case 'cancelled':
+      // Cancelado pelo titular antes de enviar comprovativo.
+      return {
+        ...getStatusConfig('rejected'),
+        label: 'Cancelado pelo utilizador',
+      };
     default:
       return {
         label: 'Aguardando comprovativo',
@@ -224,6 +230,7 @@ export default function SubscriptionRequests() {
               <option value="payment_submitted">Comprovativo enviado</option>
               <option value="approved">Aprovados</option>
               <option value="rejected">Rejeitados</option>
+              <option value="cancelled">Cancelados pelo utilizador</option>
             </select>
             <Link
               href="/dashboard/admin"

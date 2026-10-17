@@ -179,20 +179,16 @@ export default async function handler(req, res) {
         !tipoContrato ||
         !dataFecho
       ) {
-        return res
-          .status(400)
-          .json({
-            message:
-              'Empresa, título, descrição, localização, tipo de contrato e data de fecho são obrigatórios',
-          });
+        return res.status(400).json({
+          message:
+            'Empresa, título, descrição, localização, tipo de contrato e data de fecho são obrigatórios',
+        });
       }
 
       if (manualCompanyName.length > 120) {
-        return res
-          .status(400)
-          .json({
-            message: 'O nome da empresa não pode exceder 120 caracteres',
-          });
+        return res.status(400).json({
+          message: 'O nome da empresa não pode exceder 120 caracteres',
+        });
       }
 
       let companyDisplayName = manualCompanyName;

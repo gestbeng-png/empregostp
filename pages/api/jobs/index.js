@@ -1,12 +1,199 @@
 import { admin } from '../../../lib/firebaseAdmin';
-import { canCreateJob, canHighlightJob, getEmpresaPlanSummary, getJobExpirationDate } from '../../../lib/empresaPlanFeatures';
-import { buildJobApplicationPremiumFields } from '../../../lib/candidateApplicationPremium';
-import { getEffectiveJobStatus, syncExpiredJobStatus } from '../../../lib/jobExpiration';
-import { JOB_STATUS_PENDING_REVIEW, isJobModerationEnabled } from '../../../lib/jobModeration';
+import {
+  canCreateJob,
+  canHighlightJob,
+  getEmpresaPlanSummary,
+  getJobExpirationDate,
+} from '../../../lib/empresaPlanFeatures';
+import { buildJobApplicationPolicy } from '../../../lib/applicationPolicy';
+import {
+  getEffectiveJobStatus,
+  syncExpiredJobStatus,
+} from '../../../lib/jobExpiration';
+import {
+  JOB_STATUS_PENDING_REVIEW,
+  isJobModerationEnabled,
+} from '../../../lib/jobModeration';
 import { logServerError, logServerWarning } from '../../../lib/serverLog';
 import { normalizeSkillsAssessmentInput } from '../../../lib/skillsAssessment';
 import { normalizeRequiredDocuments } from '../../../lib/applicationDocuments';
 import { broadcastNewJob } from '../../../lib/newJobBroadcast';
+import { evaluateJobSubmission } from '../../../domain/jobs/submission';
+import { validateScreeningQuestions } from '../../../domain/jobs/screening';
+import { canUseFeature } from '../../../domain/entitlements/canUseFeature';
+import { EMPLOYER_REVIEW_MESSAGE } from '../../../domain/jobs/riskScore';
+import { FirestoreFeatureFlags } from '../../../infrastructure/firebase/marketplace/FirestoreFeatureFlags';
+import { getFeatureEnvironment } from '../../../infrastructure/firebase/marketplace/environment';
+import {
+  jobIdFor,
+  persistJobV2,
+} from '../../../infrastructure/firebase/jobs/FirestoreJobPublisher';
+
+// D9: ciclo de vida v2 da vaga (E3/F1), lido no servidor por organização.
+let jobFlags = null;
+async function isV2JobLifecycleEnabled(uid) {
+  try {
+    jobFlags ||= new FirestoreFeatureFlags(admin.firestore());
+    return await jobFlags.enabled('V2_JOB_LIFECYCLE', {
+      environment: getFeatureEnvironment(),
+      organizationId: uid,
+      userId: uid,
+    });
+  } catch (error) {
+    logServerWarning('jobs.v2_flag_read_failed', error);
+    return false;
+  }
+}
+
+async function notifyAdminsOfReview(payload, jobId) {
+  // Os admins recebem a nova vaga na fila de revisão; uma falha aqui não
+  // impede a submissão da vaga.
+  try {
+    const adminsSnapshot = await admin
+      .firestore()
+      .collection('users')
+      .where('userType', '==', 'admin')
+      .get();
+    await Promise.all(
+      adminsSnapshot.docs.map((adminDoc) =>
+        admin
+          .firestore()
+          .collection('notifications')
+          .add({
+            userId: adminDoc.id,
+            type: 'JOB_REVIEW',
+            title: 'Vaga aguarda revisão',
+            message: `${payload.companyName || 'Uma empresa'} submeteu a vaga "${payload.titulo}" para revisão.`,
+            icon: '📋',
+            read: false,
+            relatedId: jobId,
+            relatedType: 'job',
+            actionUrl: '/dashboard/admin/jobs?status=pending_review',
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          }),
+      ),
+    );
+  } catch (notificationError) {
+    logServerWarning(
+      'jobs.moderation_admin_notification_failed',
+      notificationError,
+    );
+  }
+}
+
+async function createV2Job({
+  req,
+  res,
+  auth,
+  payload,
+  moderationEnabled,
+  warning,
+}) {
+  const now = new Date();
+  // F3.3: perguntas de triagem — limite pelo entitlement (gratuito: 3).
+  const screeningLimit =
+    canUseFeature(
+      { type: 'ORGANIZATION', id: auth.uid },
+      'SCREENING_QUESTIONS',
+      [],
+      { now: now.getTime(), v2Enabled: true },
+    ).limit ?? 8;
+  const screening = validateScreeningQuestions(
+    req.body?.screeningQuestions,
+    screeningLimit,
+  );
+  if (!screening.ok) {
+    return res.status(422).json({
+      error: { code: screening.code, message: screening.message },
+      ...(screening.terms ? { terms: screening.terms } : {}),
+    });
+  }
+  payload = { ...payload, screeningQuestions: screening.questions };
+  const [existingSnapshot] = await Promise.all([
+    admin
+      .firestore()
+      .collection('jobs')
+      .where('companyId', '==', auth.uid)
+      .limit(200)
+      .get(),
+  ]);
+  const toDate = (value) =>
+    value?.toDate ? value.toDate() : value ? new Date(value) : null;
+  const evaluation = evaluateJobSubmission({
+    payload,
+    company: auth.userData,
+    companyCreatedAt: toDate(auth.userData.createdAt),
+    existingJobs: existingSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })),
+    platformModerationForced: Boolean(moderationEnabled),
+    now,
+  });
+  const { decision } = evaluation;
+  if (decision.kind === 'BLOCKED') {
+    return res.status(422).json({
+      error: { code: decision.code, message: decision.message },
+      ...(decision.code === 'JOB_MULTIPLE_ROLES'
+        ? { splitTitles: decision.splitTitles }
+        : {}),
+      ...(decision.code === 'JOB_QUALITY_TOO_LOW'
+        ? {
+            missing: decision.missing.map(({ criterion, label }) => ({
+              criterion,
+              label,
+            })),
+          }
+        : {}),
+      ...(decision.code === 'JOB_DUPLICATE'
+        ? { duplicateOfJobId: decision.duplicateOfJobId }
+        : {}),
+    });
+  }
+  const header = req.headers?.['idempotency-key'];
+  const idempotencyKey =
+    String((Array.isArray(header) ? header[0] : header) || '').trim() || null;
+  const jobId = jobIdFor(admin.firestore(), auth.uid, idempotencyKey);
+  const outcome = await persistJobV2(admin.firestore(), {
+    jobId,
+    ownerUserId: auth.uid,
+    payload,
+    evaluation,
+    now,
+  });
+  const jobDoc = await admin.firestore().collection('jobs').doc(jobId).get();
+  const job = buildJobResponse(jobDoc, jobDoc.data(), 0);
+  if (outcome.kind === 'CREATED') {
+    if (outcome.status === 'PUBLISHED') {
+      try {
+        await broadcastNewJob(admin, { job: jobDoc.data(), jobId, req });
+      } catch (broadcastError) {
+        logServerWarning('jobs.new_job_broadcast_failed', broadcastError);
+      }
+    } else {
+      await notifyAdminsOfReview(payload, jobId);
+    }
+  }
+  const published = String(outcome.status) === 'PUBLISHED';
+  return res.status(outcome.kind === 'CREATED' ? 201 : 200).json({
+    // F1.6: o empregador nunca vê os sinais de risco em detalhe.
+    message: published ? 'Vaga criada com sucesso' : EMPLOYER_REVIEW_MESSAGE,
+    warning,
+    // F1.2: sugestões só quando publica com 50–69.
+    suggestions: [
+      ...(evaluation.quality.score < 70
+        ? evaluation.quality.missing.map(({ label }) => label)
+        : []),
+      // H8: aviso ao empregador (a vaga vai para revisão humana).
+      ...(evaluation.protectedTerms.length
+        ? [
+            `Retire referências a ${evaluation.protectedTerms.join(', ')}: não podem ser critério de seleção`,
+          ]
+        : []),
+    ],
+    job,
+  });
+}
 
 function toIsoDateString(value) {
   if (!value) return '';
@@ -31,7 +218,10 @@ function normalizeKeywords(value) {
     return value.map((item) => `${item}`.trim()).filter(Boolean);
   }
   if (typeof value === 'string') {
-    return value.split(',').map((item) => item.trim()).filter(Boolean);
+    return value
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean);
   }
   return [];
 }
@@ -42,7 +232,7 @@ function getBasicEmpresaUpdate() {
     planId: 'basic_empresa',
     planName: 'Básico',
     planEndDate: null,
-    updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   };
 }
 
@@ -55,10 +245,14 @@ async function getAuthenticatedCompany(req, res) {
 
   const token = authHeader.split('Bearer ')[1];
   const decodedToken = await admin.auth().verifyIdToken(token);
-  const userDoc = await admin.firestore().collection('users').doc(decodedToken.uid).get();
+  const userDoc = await admin
+    .firestore()
+    .collection('users')
+    .doc(decodedToken.uid)
+    .get();
 
   if (!userDoc.exists) {
-    res.status(404).json({ error: 'Usuário não encontrado' });
+    res.status(404).json({ error: 'Utilizador não encontrado' });
     return null;
   }
 
@@ -78,11 +272,14 @@ async function getAuthenticatedCompany(req, res) {
           currentPlan: planSummary.planId,
           planId: planSummary.planId,
           planName: planSummary.planName || userData.planName || '',
-          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         });
       }
     } catch (error) {
-      logServerError('jobs.sincronizar_plano_expirado_da_empresa_failed', error);
+      logServerError(
+        'jobs.sincronizar_plano_expirado_da_empresa_failed',
+        error,
+      );
     }
   }
 
@@ -90,7 +287,7 @@ async function getAuthenticatedCompany(req, res) {
     uid: decodedToken.uid,
     userDoc,
     userData,
-    planSummary
+    planSummary,
   };
 }
 
@@ -100,19 +297,24 @@ function buildJobResponse(doc, data, applicationCount = 0) {
     id: doc.id,
     ...data,
     status: effectiveStatus,
-    createdAt: toIsoDateString(data.createdAt) || toIsoDateString(data.updatedAt),
-    updatedAt: toIsoDateString(data.updatedAt) || toIsoDateString(data.createdAt),
+    createdAt:
+      toIsoDateString(data.createdAt) || toIsoDateString(data.updatedAt),
+    updatedAt:
+      toIsoDateString(data.updatedAt) || toIsoDateString(data.createdAt),
     publishedAt: toIsoDateString(data.publishedAt),
     expiresAt: toIsoDateString(data.expiresAt),
     createdAtMillis: toMillis(data.createdAt),
     updatedAtMillis: toMillis(data.updatedAt),
-    applicationCount
+    applicationCount,
   };
 }
 
 export default async function handler(req, res) {
   if (req.method !== 'GET' && req.method !== 'POST') {
-    return res.status(405).setHeader('Allow', ['GET', 'POST']).json({ error: 'Método não permitido' });
+    return res
+      .status(405)
+      .setHeader('Allow', ['GET', 'POST'])
+      .json({ error: 'Método não permitido' });
   }
 
   try {
@@ -121,31 +323,45 @@ export default async function handler(req, res) {
 
     if (req.method === 'GET') {
       const [jobsSnapshot, applicationsSnapshot] = await Promise.all([
-        admin.firestore().collection('jobs').where('companyId', '==', auth.uid).get(),
-        admin.firestore().collection('applications').where('companyId', '==', auth.uid).get()
+        admin
+          .firestore()
+          .collection('jobs')
+          .where('companyId', '==', auth.uid)
+          .get(),
+        admin
+          .firestore()
+          .collection('applications')
+          .where('companyId', '==', auth.uid)
+          .get(),
       ]);
 
       const applicationCounts = {};
       applicationsSnapshot.forEach((doc) => {
         const application = doc.data();
         if (application.jobId) {
-          applicationCounts[application.jobId] = (applicationCounts[application.jobId] || 0) + 1;
+          applicationCounts[application.jobId] =
+            (applicationCounts[application.jobId] || 0) + 1;
         }
       });
 
       const normalizedJobs = await Promise.all(
         jobsSnapshot.docs.map(async (doc) => {
           const synced = await syncExpiredJobStatus(doc.ref, doc.data(), admin);
-          return buildJobResponse(doc, synced.jobData, applicationCounts[doc.id] || 0);
-        })
+          return buildJobResponse(
+            doc,
+            synced.jobData,
+            applicationCounts[doc.id] || 0,
+          );
+        }),
       );
 
-      const vagas = normalizedJobs
-        .sort((a, b) => (b.createdAtMillis || 0) - (a.createdAtMillis || 0));
+      const vagas = normalizedJobs.sort(
+        (a, b) => (b.createdAtMillis || 0) - (a.createdAtMillis || 0),
+      );
 
       return res.status(200).json({
         vagas,
-        plan: auth.planSummary
+        plan: auth.planSummary,
       });
     }
 
@@ -174,11 +390,13 @@ export default async function handler(req, res) {
       premiumOnly = false,
       earlyAccessHours = 0,
       requireCoverLetter = false,
-      requiredDocuments = null
+      requiredDocuments = null,
     } = req.body || {};
 
     if (!titulo || !descricao || !localizacao || !tipoContrato || !dataFecho) {
-      return res.status(400).json({ error: 'Preencha os campos obrigatórios da vaga' });
+      return res
+        .status(400)
+        .json({ error: 'Preencha os campos obrigatórios da vaga' });
     }
 
     const planId = auth.planSummary.planId;
@@ -200,13 +418,16 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Data de fecho inválida' });
     }
 
-    const finalCloseDate = requestedCloseDate > maxExpirationDate ? maxExpirationDate : requestedCloseDate;
+    const finalCloseDate =
+      requestedCloseDate > maxExpirationDate
+        ? maxExpirationDate
+        : requestedCloseDate;
     const openDate = dataAbertura || new Date().toISOString().split('T')[0];
     const moderationEnabled = await isJobModerationEnabled(admin);
-    const premiumApplicationFields = buildJobApplicationPremiumFields({
+    const premiumApplicationFields = buildJobApplicationPolicy({
       premiumOnly,
       earlyAccessHours,
-      requireCoverLetter
+      requireCoverLetter,
     });
 
     const payload = {
@@ -227,7 +448,10 @@ export default async function handler(req, res) {
       destaque: Boolean(destaque),
       tdrUrl: `${tdrUrl}`.trim(),
       tdrFileName: `${tdrFileName}`.trim(),
-      vagasDisponiveis: Number.parseInt(vagasDisponiveis, 10) > 0 ? Number.parseInt(vagasDisponiveis, 10) : 1,
+      vagasDisponiveis:
+        Number.parseInt(vagasDisponiveis, 10) > 0
+          ? Number.parseInt(vagasDisponiveis, 10)
+          : 1,
       palavrasChave: normalizeKeywords(palavrasChave),
       categoria: `${categoria}`.trim(),
       skillsAssessment: normalizeSkillsAssessmentInput(skillsAssessment),
@@ -240,10 +464,28 @@ export default async function handler(req, res) {
       applicationCount: 0,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      publishedAt: moderationEnabled ? null : admin.firestore.FieldValue.serverTimestamp(),
+      publishedAt: moderationEnabled
+        ? null
+        : admin.firestore.FieldValue.serverTimestamp(),
       expiresAt: admin.firestore.Timestamp.fromDate(finalCloseDate),
-      planId
+      planId,
     };
+
+    const warning =
+      requestedCloseDate > maxExpirationDate
+        ? `A data de fecho foi ajustada para ${payload.dataFecho} com base no limite do seu plano.`
+        : null;
+
+    if (await isV2JobLifecycleEnabled(auth.uid)) {
+      return createV2Job({
+        req,
+        res,
+        auth,
+        payload,
+        moderationEnabled,
+        warning,
+      });
+    }
 
     const jobRef = await admin.firestore().collection('jobs').add(payload);
     const jobDoc = await jobRef.get();
@@ -252,33 +494,10 @@ export default async function handler(req, res) {
     // Com a moderação ligada, os admins recebem a nova vaga na fila de
     // revisão; uma falha aqui não impede a submissão da vaga.
     if (moderationEnabled) {
-      try {
-        const adminsSnapshot = await admin.firestore()
-          .collection('users')
-          .where('userType', '==', 'admin')
-          .get();
-        await Promise.all(adminsSnapshot.docs.map((adminDoc) =>
-          admin.firestore().collection('notifications').add({
-            userId: adminDoc.id,
-            type: 'JOB_REVIEW',
-            title: 'Vaga aguarda revisão',
-            message: `${payload.companyName || 'Uma empresa'} submeteu a vaga "${payload.titulo}" para revisão.`,
-            icon: '📋',
-            read: false,
-            relatedId: jobRef.id,
-            relatedType: 'job',
-            actionUrl: '/dashboard/admin/jobs?status=pending_review',
-            createdAt: admin.firestore.FieldValue.serverTimestamp()
-          })));
-      } catch (notificationError) {
-        logServerWarning('jobs.moderation_admin_notification_failed', notificationError);
-      }
+      await notifyAdminsOfReview(payload, jobRef.id);
     } else {
       // Sem moderação, a vaga nasce publicada: os candidatos são avisados aqui,
-      // no servidor. Antes isto dependia de o cliente chamar
-      // /api/notify-candidates depois de criar, o que falhava em silêncio se a
-      // pessoa fechasse o separador — e nunca cobria as vagas criadas pelo
-      // admin nem as aprovadas em moderação.
+      // no servidor, sem depender de um segundo pedido do cliente.
       try {
         await broadcastNewJob(admin, {
           job: jobDoc.data(),
@@ -290,16 +509,12 @@ export default async function handler(req, res) {
       }
     }
 
-    const warning = requestedCloseDate > maxExpirationDate
-      ? `A data de fecho foi ajustada para ${payload.dataFecho} com base no limite do seu plano.`
-      : null;
-
     return res.status(201).json({
       message: moderationEnabled
         ? 'Vaga submetida para revisão. Será publicada após aprovação do administrador.'
         : 'Vaga criada com sucesso',
       warning,
-      job
+      job,
     });
   } catch (error) {
     logServerError('jobs.api_api_jobs_failed', error);

@@ -34,13 +34,17 @@ export default async function handler(req, res) {
     if (!authResult) return;
     const { userData } = authResult;
     if (userData.userType !== 'candidato') {
-      return res.status(403).json({ error: 'Esta API é apenas para candidatos' });
+      return res
+        .status(403)
+        .json({ error: 'Esta API é apenas para candidatos' });
     }
 
     // Ler os documentos canónicos diretamente pelo id (onde vivem as edições do
     // admin). Evita queries/índices e é determinístico: sempre os mesmos 3 planos.
     const plansCollection = admin.firestore().collection('plans');
-    const refs = FIXED_CANDIDATE_PLANS.map((plan) => plansCollection.doc(plan.id));
+    const refs = FIXED_CANDIDATE_PLANS.map((plan) =>
+      plansCollection.doc(plan.id),
+    );
     const docs = await admin.firestore().getAll(...refs);
 
     const overrides = {};
@@ -50,23 +54,23 @@ export default async function handler(req, res) {
       }
     });
 
-    const plans = FIXED_CANDIDATE_PLANS
-      .map((base) => {
-        const override = overrides[base.id] || {};
-        const merged = {
-          ...base,
-          ...override,
-          id: base.id,
-          planTierId: base.id,
-          type: 'candidato',
-          // Mantém os recursos por omissão se o admin não tiver definido nenhum.
-          features: Array.isArray(override.features) && override.features.length
+    const plans = FIXED_CANDIDATE_PLANS.map((base) => {
+      const override = overrides[base.id] || {};
+      const merged = {
+        ...base,
+        ...override,
+        id: base.id,
+        planTierId: base.id,
+        type: 'candidato',
+        // Mantém os recursos por omissão se o admin não tiver definido nenhum.
+        features:
+          Array.isArray(override.features) && override.features.length
             ? override.features
             : base.features,
-        };
-        merged.priceLabel = normalizePriceLabel(merged);
-        return merged;
-      })
+      };
+      merged.priceLabel = normalizePriceLabel(merged);
+      return merged;
+    })
       // O admin pode desativar um plano canónico; nesse caso não é mostrado.
       .filter((plan) => plan.isActive !== false);
 

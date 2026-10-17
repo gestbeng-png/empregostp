@@ -47,7 +47,11 @@ function normalizeDocuments(rawDocuments) {
     const url = sanitize(item?.url);
     if (!url) continue; // ignora linhas vazias
     if (!isValidUrl(url) || url.length > LIMITS.docUrl.max) {
-      return { documents: null, error: 'Cada documento deve ter um link válido (começando por http:// ou https://).' };
+      return {
+        documents: null,
+        error:
+          'Cada documento deve ter um link válido (começando por http:// ou https://).',
+      };
     }
     const label = sanitize(item?.label).slice(0, LIMITS.docLabel.max);
     documents.push({ label: label || 'Documento', url });
@@ -76,7 +80,9 @@ function serialize(doc) {
     documents: Array.isArray(data.documents) ? data.documents : [],
     status: data.status || 'pending',
     adminResponse: data.adminResponse || '',
-    resultDocuments: Array.isArray(data.resultDocuments) ? data.resultDocuments : [],
+    resultDocuments: Array.isArray(data.resultDocuments)
+      ? data.resultDocuments
+      : [],
     createdAt: toIso(data.createdAt),
     updatedAt: toIso(data.updatedAt),
     processedAt: toIso(data.processedAt),
@@ -97,7 +103,10 @@ async function notifyAdmins(payload) {
       ),
     );
   } catch (error) {
-    logServerError('hr_services.notificar_admins_sobre_pedido_de_servico_rh_failed', error);
+    logServerError(
+      'hr_services.notificar_admins_sobre_pedido_de_servico_rh_failed',
+      error,
+    );
   }
 }
 
@@ -120,7 +129,9 @@ export default async function handler(req, res) {
     const userType = userSnap.exists ? userSnap.data().userType : null;
 
     if (userType !== 'empresa') {
-      return res.status(403).json({ error: 'Apenas empresas podem solicitar serviços de RH.' });
+      return res
+        .status(403)
+        .json({ error: 'Apenas empresas podem solicitar serviços de RH.' });
     }
 
     const collectionRef = admin.firestore().collection(COLLECTION);
@@ -129,7 +140,9 @@ export default async function handler(req, res) {
       const snapshot = await collectionRef.where('companyId', '==', uid).get();
       const requests = snapshot.docs
         .map(serialize)
-        .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+        .sort((a, b) =>
+          String(b.createdAt || '').localeCompare(String(a.createdAt || '')),
+        );
       return res.status(200).json({ requests });
     }
 
@@ -138,17 +151,24 @@ export default async function handler(req, res) {
       const serviceType = sanitize(req.body?.serviceType);
       const title = sanitize(req.body?.title);
       const description = sanitizeMultiline(req.body?.description);
-      const { documents, error: documentsError } = normalizeDocuments(req.body?.documents);
+      const { documents, error: documentsError } = normalizeDocuments(
+        req.body?.documents,
+      );
 
       if (!serviceType || serviceType.length > LIMITS.serviceType.max) {
-        return res.status(400).json({ error: 'Selecione o tipo de serviço pretendido.' });
+        return res
+          .status(400)
+          .json({ error: 'Selecione o tipo de serviço pretendido.' });
       }
       if (title.length < LIMITS.title.min || title.length > LIMITS.title.max) {
         return res.status(400).json({
           error: `O assunto deve ter entre ${LIMITS.title.min} e ${LIMITS.title.max} caracteres.`,
         });
       }
-      if (description.length < LIMITS.description.min || description.length > LIMITS.description.max) {
+      if (
+        description.length < LIMITS.description.min ||
+        description.length > LIMITS.description.max
+      ) {
         return res.status(400).json({
           error: `A descrição deve ter entre ${LIMITS.description.min} e ${LIMITS.description.max} caracteres.`,
         });
@@ -160,7 +180,11 @@ export default async function handler(req, res) {
       const now = admin.firestore.FieldValue.serverTimestamp();
       const payload = {
         companyId: uid,
-        companyName: userData.companyName || userData.name || userData.fullName || 'Empresa',
+        companyName:
+          userData.companyName ||
+          userData.name ||
+          userData.fullName ||
+          'Empresa',
         companyEmail: userData.email || decodedToken.email || '',
         serviceType,
         title,
@@ -187,7 +211,8 @@ export default async function handler(req, res) {
 
       const saved = await docRef.get();
       return res.status(201).json({
-        message: 'Pedido de serviço RH enviado com sucesso. A nossa equipa irá analisá-lo em breve.',
+        message:
+          'Pedido de serviço RH enviado com sucesso. A nossa equipa irá analisá-lo em breve.',
         request: serialize(saved),
       });
     }

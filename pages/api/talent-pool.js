@@ -1,12 +1,23 @@
 import { admin } from '../../lib/firebaseAdmin';
-import { canAccessTalentPool, getEmpresaPlanSummary } from '../../lib/empresaPlanFeatures';
+import {
+  canAccessTalentPool,
+  getEmpresaPlanSummary,
+} from '../../lib/empresaPlanFeatures';
 import { normalizeUserType } from '../../lib/defaultPlans';
-import { buildCandidateVisibility, compareCandidatesByVisibility, isCandidateVerified } from '../../lib/candidateProfileInsights';
+import {
+  buildCandidateVisibility,
+  compareCandidatesByVisibility,
+  isCandidateVerified,
+} from '../../lib/candidateProfileInsights';
 import {
   canCandidateAppearInTalentPool,
   getCandidatePrivacy,
 } from '../../lib/candidatePrivacy';
 import { logServerError } from '../../lib/serverLog';
+import {
+  BLOCKED_ACCOUNT_MESSAGE,
+  isUserAccountActive,
+} from '../../lib/userStatus';
 
 /**
  * GET /api/talent-pool
@@ -26,13 +37,15 @@ export default async function handler(req, res) {
 
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Token de autenticação não fornecido' });
+    return res
+      .status(401)
+      .json({ error: 'Token de autenticação não fornecido' });
   }
   const token = authHeader.split('Bearer ')[1];
 
   let uid;
   try {
-    const decoded = await admin.auth().verifyIdToken(token);
+    const decoded = await admin.auth().verifyIdToken(token, true);
     uid = decoded.uid;
   } catch {
     return res.status(401).json({ error: 'Token inválido' });
@@ -44,8 +57,16 @@ export default async function handler(req, res) {
     return res.status(404).json({ error: 'Utilizador não encontrado' });
   }
   const userData = userDoc.data();
+  if (!isUserAccountActive(userData)) {
+    return res.status(403).json({
+      error: BLOCKED_ACCOUNT_MESSAGE,
+      code: 'ACCOUNT_BLOCKED',
+    });
+  }
   if (userData.userType !== 'empresa') {
-    return res.status(403).json({ error: 'Apenas empresas podem aceder ao banco de talentos' });
+    return res
+      .status(403)
+      .json({ error: 'Apenas empresas podem aceder ao banco de talentos' });
   }
 
   // Verificar plano
@@ -56,7 +77,7 @@ export default async function handler(req, res) {
       error: access.reason,
       code: access.code,
       upgradeMessage: access.upgradeMessage,
-      upgradeUrl: access.upgradeUrl
+      upgradeUrl: access.upgradeUrl,
     });
   }
 
@@ -69,7 +90,12 @@ export default async function handler(req, res) {
 
     // Banco de talentos deve mostrar apenas candidatos verificados.
     // Usamos users como fonte de verdade (candidatos podem não ter profiles preenchidos).
-    const [verifiedFlagSnap, verifiedStatusSnap, verifiedLegacySnap, verifiedLegacy2Snap] = await Promise.all([
+    const [
+      verifiedFlagSnap,
+      verifiedStatusSnap,
+      verifiedLegacySnap,
+      verifiedLegacy2Snap,
+    ] = await Promise.all([
       db
         .collection('users')
         .where('userType', '==', 'candidato')
@@ -97,14 +123,20 @@ export default async function handler(req, res) {
     ]);
 
     const usersById = new Map();
-    for (const doc of verifiedFlagSnap.docs) usersById.set(doc.id, doc.data() || {});
-    for (const doc of verifiedStatusSnap.docs) usersById.set(doc.id, doc.data() || {});
-    for (const doc of verifiedLegacySnap.docs) usersById.set(doc.id, doc.data() || {});
-    for (const doc of verifiedLegacy2Snap.docs) usersById.set(doc.id, doc.data() || {});
+    for (const doc of verifiedFlagSnap.docs)
+      usersById.set(doc.id, doc.data() || {});
+    for (const doc of verifiedStatusSnap.docs)
+      usersById.set(doc.id, doc.data() || {});
+    for (const doc of verifiedLegacySnap.docs)
+      usersById.set(doc.id, doc.data() || {});
+    for (const doc of verifiedLegacy2Snap.docs)
+      usersById.set(doc.id, doc.data() || {});
 
     const candidateIds = Array.from(usersById.keys());
     const profileDocs = candidateIds.length
-      ? await db.getAll(...candidateIds.map((uid) => db.collection('profiles').doc(uid)))
+      ? await db.getAll(
+          ...candidateIds.map((uid) => db.collection('profiles').doc(uid)),
+        )
       : [];
     const profilesById = new Map();
     for (const doc of profileDocs) {
@@ -135,9 +167,15 @@ export default async function handler(req, res) {
       }
 
       if (skillsLower) {
-        const hard = Array.isArray(d.skillsHard) ? d.skillsHard.join(', ') : String(d.skillsHard || '');
-        const soft = Array.isArray(d.skillsSoft) ? d.skillsSoft.join(', ') : String(d.skillsSoft || '');
-        const userSkills = Array.isArray(u.skills) ? u.skills.join(', ') : String(u.skills || '');
+        const hard = Array.isArray(d.skillsHard)
+          ? d.skillsHard.join(', ')
+          : String(d.skillsHard || '');
+        const soft = Array.isArray(d.skillsSoft)
+          ? d.skillsSoft.join(', ')
+          : String(d.skillsSoft || '');
+        const userSkills = Array.isArray(u.skills)
+          ? u.skills.join(', ')
+          : String(u.skills || '');
         const docSkills = `${hard} ${soft} ${userSkills}`.toLowerCase();
         if (!docSkills.includes(skillsLower)) continue;
       }
@@ -146,7 +184,7 @@ export default async function handler(req, res) {
       const privacy = getCandidatePrivacy(d);
       const canExposeCv = Boolean(
         privacy.showContactInfo &&
-          planSummary.features?.canViewCandidateContact,
+        planSummary.features?.canViewCandidateContact,
       );
 
       candidates.push({
@@ -154,8 +192,11 @@ export default async function handler(req, res) {
         fullName: d.fullName || d.name || u.fullName || u.name || 'Candidato',
         headline: d.headline || d.profession || d.objectiveArea || '',
         objectiveArea: d.objectiveArea || '',
-        location: d.location || d.city || u.cidade || u.localizacao || u.location || '',
-        skillsHard: Array.isArray(d.skillsHard) ? d.skillsHard.join(', ') : (d.skillsHard || ''),
+        location:
+          d.location || d.city || u.cidade || u.localizacao || u.location || '',
+        skillsHard: Array.isArray(d.skillsHard)
+          ? d.skillsHard.join(', ')
+          : d.skillsHard || '',
         availableForWork: d.availableForWork || false,
         photoUrl: d.photoUrl || u.photoUrl || null,
         // Só a existência do CV; o download passa por
@@ -176,7 +217,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       candidates: candidates.slice(0, limit),
-      total: candidates.length
+      total: candidates.length,
     });
   } catch (error) {
     logServerError('talent_pool.buscar_banco_de_talentos_failed', error);

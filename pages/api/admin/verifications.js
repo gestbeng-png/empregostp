@@ -32,12 +32,21 @@ export default async function handler(req, res) {
     const decodedToken = await admin.auth().verifyIdToken(token);
     const adminUid = decodedToken.uid;
 
-    const adminDoc = await admin.firestore().collection('users').doc(adminUid).get();
+    const adminDoc = await admin
+      .firestore()
+      .collection('users')
+      .doc(adminUid)
+      .get();
     if (!adminDoc.exists || adminDoc.data().userType !== 'admin') {
-      return res.status(403).json({ error: 'Forbidden - Admin access required' });
+      return res
+        .status(403)
+        .json({ error: 'Forbidden - Admin access required' });
     }
 
-    const verificationsSnapshot = await admin.firestore().collection('verifications').get();
+    const verificationsSnapshot = await admin
+      .firestore()
+      .collection('verifications')
+      .get();
     const latestByUser = new Map();
 
     verificationsSnapshot.docs.forEach((doc) => {
@@ -54,20 +63,33 @@ export default async function handler(req, res) {
 
     const verifications = [];
     for (const entry of sortedDocs) {
-      const verificationData = serializeVerificationTimestamps(entry.data || {});
+      const verificationData = serializeVerificationTimestamps(
+        entry.data || {},
+      );
       let candidateInfo = {
         name: 'Desconhecido',
-        email: verificationData.profileSnapshot?.email || verificationData.documents?.contact?.email || 'Não informado',
+        email:
+          verificationData.profileSnapshot?.email ||
+          verificationData.documents?.contact?.email ||
+          'Não informado',
       };
       let cvUrl = '';
       let cvName = '';
       let currentPlan = 'basic_candidato';
 
       try {
-        const userDoc = await admin.firestore().collection('users').doc(verificationData.uid).get();
+        const userDoc = await admin
+          .firestore()
+          .collection('users')
+          .doc(verificationData.uid)
+          .get();
         if (userDoc.exists) {
           const userData = userDoc.data() || {};
-          candidateInfo.name = userData.fullName || userData.name || userData.displayName || 'Desconhecido';
+          candidateInfo.name =
+            userData.fullName ||
+            userData.name ||
+            userData.displayName ||
+            'Desconhecido';
           if (!candidateInfo.email || candidateInfo.email === 'Não informado') {
             candidateInfo.email = userData.email || 'Não informado';
           }
@@ -86,9 +108,18 @@ export default async function handler(req, res) {
       const hasCv = Boolean(String(cvUrl || '').trim());
       const planAccess = canVerifyProfile(currentPlan);
       const approvalEligibility = !hasCv
-        ? { allowed: false, code: 'VERIFICATION_MISSING_CV', reason: 'O candidato ainda não anexou um currículo (CV) ao perfil.' }
+        ? {
+            allowed: false,
+            code: 'VERIFICATION_MISSING_CV',
+            reason: 'O candidato ainda não anexou um currículo (CV) ao perfil.',
+          }
         : !planAccess.allowed
-          ? { allowed: false, code: 'VERIFICATION_PLAN_NOT_ELIGIBLE', reason: 'O plano atual do candidato já não inclui verificação de perfil (pagamento não confirmado).' }
+          ? {
+              allowed: false,
+              code: 'VERIFICATION_PLAN_NOT_ELIGIBLE',
+              reason:
+                'O plano atual do candidato já não inclui verificação de perfil (pagamento não confirmado).',
+            }
           : { allowed: true };
 
       verifications.push({
@@ -113,6 +144,8 @@ export default async function handler(req, res) {
     return res.status(200).json({ verifications });
   } catch (error) {
     logServerError('admin_verifications.fetching_verifications_failed', error);
-    return res.status(500).json({ error: 'Internal server error', details: error.message });
+    return res
+      .status(500)
+      .json({ error: 'Internal server error', details: error.message });
   }
 }

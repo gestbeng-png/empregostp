@@ -13,8 +13,7 @@ const STRING_PROFILE_FIELDS = [
 
 const SOCIAL_PROFILE_FIELDS = ['linkedin', 'facebook', 'instagram'];
 
-const hasOwn = (value, key) =>
-  Object.prototype.hasOwnProperty.call(value, key);
+const hasOwn = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
 
 function normalizeString(value) {
   return typeof value === 'string' ? value.trim() : null;
@@ -46,7 +45,10 @@ export function buildCompanyProfileUpdate(body = {}) {
     if (normalizedValue !== null) update[field] = normalizedValue;
   });
 
-  if (hasOwn(source, 'industrySectors') && Array.isArray(source.industrySectors)) {
+  if (
+    hasOwn(source, 'industrySectors') &&
+    Array.isArray(source.industrySectors)
+  ) {
     update.industrySectors = [
       ...new Set(
         source.industrySectors
@@ -87,7 +89,9 @@ export default async function handler(req, res) {
   // First, verify the user's token
   const { authorization } = req.headers;
   if (!authorization || !authorization.startsWith('Bearer ')) {
-    return res.status(401).json({ message: 'Authorization token missing or invalid.' });
+    return res
+      .status(401)
+      .json({ message: 'Authorization token missing or invalid.' });
   }
 
   const token = authorization.split('Bearer ')[1];
@@ -104,7 +108,9 @@ export default async function handler(req, res) {
   const userDoc = await userDocRef.get();
 
   if (!userDoc.exists || userDoc.data().userType !== 'empresa') {
-    return res.status(403).json({ message: 'Acesso permitido apenas para empresas.' });
+    return res
+      .status(403)
+      .json({ message: 'Acesso permitido apenas para empresas.' });
   }
 
   const companyDocRef = userDocRef;

@@ -68,7 +68,11 @@ export default async function handler(req, res) {
     }
 
     const entrada = application.applicationForm?.documents?.[documentType];
-    const ficheiros = Array.isArray(entrada) ? entrada : entrada ? [entrada] : [];
+    const ficheiros = Array.isArray(entrada)
+      ? entrada
+      : entrada
+        ? [entrada]
+        : [];
     const ficheiro = ficheiros[fileIndex];
 
     if (!ficheiro) {

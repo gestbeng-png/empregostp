@@ -22,8 +22,12 @@
   right: 0;
   width: 5px;
   height: 100%;
-  background: linear-gradient(180deg, var(--blue, #2057d7), var(--lime, #d9ff2f));
-  content: "";
+  background: linear-gradient(
+    180deg,
+    var(--blue, #2057d7),
+    var(--lime, #d9ff2f)
+  );
+  content: '';
 }
 
 .heroHeader,
@@ -109,7 +113,7 @@
   margin-right: 7px;
   border-radius: 50%;
   background: var(--text-4, #94a3b8);
-  content: "";
+  content: '';
 }
 
 .statusBadge,
@@ -174,7 +178,9 @@
   border-right: 1px solid var(--border, #dfe7f1);
 }
 
-.statCard:last-child { border-right: 0; }
+.statCard:last-child {
+  border-right: 0;
+}
 
 .statCard::before {
   position: absolute;
@@ -184,13 +190,21 @@
   height: 2px;
   border-radius: 0 0 2px 2px;
   background: var(--stat-accent, #2057d7);
-  content: "";
+  content: '';
 }
 
-.statBlue { --stat-accent: #2057d7; }
-.statAmber { --stat-accent: #b6db21; }
-.statGreen { --stat-accent: #3dbb7a; }
-.statRed { --stat-accent: #dc6a7c; }
+.statBlue {
+  --stat-accent: #2057d7;
+}
+.statAmber {
+  --stat-accent: #b6db21;
+}
+.statGreen {
+  --stat-accent: #3dbb7a;
+}
+.statRed {
+  --stat-accent: #dc6a7c;
+}
 
 .statLabel {
   color: var(--text-3, #64748b);
@@ -265,7 +279,9 @@
   line-height: 1.7;
 }
 
-.bodyCopy { white-space: pre-wrap; }
+.bodyCopy {
+  white-space: pre-wrap;
+}
 
 .list {
   display: grid;
@@ -274,7 +290,9 @@
   padding-left: 20px;
 }
 
-.list li::marker { color: var(--blue, #2057d7); }
+.list li::marker {
+  color: var(--blue, #2057d7);
+}
 
 .assessmentCard,
 .applicationInsight {
@@ -398,7 +416,11 @@
   font-weight: 750;
   text-decoration: none;
   cursor: pointer;
-  transition: transform 160ms ease, border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .docButton,
@@ -410,7 +432,9 @@
   box-shadow: 0 8px 18px rgba(32, 87, 215, 0.14);
 }
 
-.actionButton { width: 100%; }
+.actionButton {
+  width: 100%;
+}
 
 .actionSuccess,
 .smallActionApprove {
@@ -486,7 +510,10 @@
   border: 1px solid var(--border, #dfe7f1);
   border-radius: 10px;
   background: var(--surface, #fff);
-  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
 }
 
 .applicationCard:hover {
@@ -508,9 +535,13 @@
   text-decoration: none;
 }
 
-.applicationName:hover { color: var(--blue, #2057d7); }
+.applicationName:hover {
+  color: var(--blue, #2057d7);
+}
 
-.applicationBadgeRow { margin-top: 4px; }
+.applicationBadgeRow {
+  margin-top: 4px;
+}
 
 .applicationBadge,
 .assessmentBadge {
@@ -539,7 +570,9 @@
   color: var(--dash-company-text, #526516);
 }
 
-.applicationMetrics { margin-top: 4px; }
+.applicationMetrics {
+  margin-top: 4px;
+}
 
 .assessmentPassed {
   border-color: rgba(61, 187, 122, 0.25);
@@ -581,8 +614,13 @@
   flex: 0 0 auto;
 }
 
-.applicationActions { justify-content: flex-end; }
-.smallActionButton { min-height: var(--dash-control-height, 44px); padding: 0 11px; }
+.applicationActions {
+  justify-content: flex-end;
+}
+.smallActionButton {
+  min-height: var(--dash-control-height, 44px);
+  padding: 0 11px;
+}
 
 .docButton:hover,
 .actionButton:not(:disabled):hover,
@@ -599,42 +637,85 @@
 }
 
 @media (max-width: 1020px) {
-  .contentGrid { grid-template-columns: 1fr; }
-  .sidebarColumn { position: static; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .sidebarColumn > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .contentGrid {
+    grid-template-columns: 1fr;
+  }
+  .sidebarColumn {
+    position: static;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .sidebarColumn > :last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
 }
 
 @media (max-width: 760px) {
   .heroHeader,
   .sectionHeader,
-  .applicationMain { flex-direction: column; }
-  .heroStats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .statCard:nth-child(2) { border-right: 0; }
-  .statCard:nth-child(-n + 2) { border-bottom: 1px solid var(--border, #dfe7f1); }
-  .sidebarColumn { grid-template-columns: 1fr; }
-  .sidebarColumn > :last-child:nth-child(odd) { grid-column: auto; }
+  .applicationMain {
+    flex-direction: column;
+  }
+  .heroStats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .statCard:nth-child(2) {
+    border-right: 0;
+  }
+  .statCard:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--border, #dfe7f1);
+  }
+  .sidebarColumn {
+    grid-template-columns: 1fr;
+  }
+  .sidebarColumn > :last-child:nth-child(odd) {
+    grid-column: auto;
+  }
   .applicationAside,
-  .applicationActions { width: 100%; justify-items: stretch; justify-content: flex-start; }
+  .applicationActions {
+    width: 100%;
+    justify-items: stretch;
+    justify-content: flex-start;
+  }
   .applicationStatus,
-  .smallActionButton { width: 100%; }
+  .smallActionButton {
+    width: 100%;
+  }
 }
 
 @media (max-width: 440px) {
-  .heroStats { grid-template-columns: 1fr; }
+  .heroStats {
+    grid-template-columns: 1fr;
+  }
   .statCard,
-  .statCard:nth-child(2) { border-right: 0; border-bottom: 1px solid var(--border, #dfe7f1); }
-  .statCard:last-child { border-bottom: 0; }
-  .heroMeta { display: grid; }
-  .heroMeta span + span::before { display: none; }
-  .summaryItem { grid-template-columns: 1fr; gap: 3px; }
-  .summaryItem dd { text-align: left; }
+  .statCard:nth-child(2) {
+    border-right: 0;
+    border-bottom: 1px solid var(--border, #dfe7f1);
+  }
+  .statCard:last-child {
+    border-bottom: 0;
+  }
+  .heroMeta {
+    display: grid;
+  }
+  .heroMeta span + span::before {
+    display: none;
+  }
+  .summaryItem {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+  .summaryItem dd {
+    text-align: left;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .applicationCard,
   .docButton,
   .actionButton,
-  .smallActionButton { transition: none; }
+  .smallActionButton {
+    transition: none;
+  }
 }
 
 /* Workbridge fidelity layer. */
@@ -654,7 +735,7 @@
 
 .heroCard {
   color: var(--text-1, #102441);
-  font-family: var(--font-instrument, "Instrument Sans"), Arial, sans-serif;
+  font-family: var(--font-instrument, 'Instrument Sans'), Arial, sans-serif;
 }
 
 .heroCard::after {

@@ -1166,8 +1166,12 @@
    Compact, accessible and shared by every administrative route.
    ========================================================== */
 
+/* `.modalOverlay` recebe as mesmas variáveis porque os modais são
+   renderizados fora de `.page`; sem isto `--admin-surface` ficava indefinida e
+   o modal e os cartões apareciam transparentes sobre o fundo escuro. */
 .page,
-.legacyPage {
+.legacyPage,
+.modalOverlay {
   --admin-navy: var(--navy, #1e2b4d);
   --admin-navy-deep: var(--dash-navy-deep, #14203a);
   --admin-blue: var(--blue, #2057d7);
@@ -1783,7 +1787,8 @@
 
 /* Workbridge fidelity layer: flat operational surfaces and exact brand geometry. */
 .page,
-.legacyPage {
+.legacyPage,
+.modalOverlay {
   --admin-navy: var(--navy, #102441);
   --admin-navy-deep: var(--dash-navy-deep, #102441);
   --admin-blue: var(--blue, #064bb5);
@@ -2371,4 +2376,62 @@
   .modalCard {
     border-radius: 8px 8px 0 0;
   }
+}
+
+/* Revisão de verificações: acções por tipo e estado público do perfil. */
+.verificationPublicRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.verificationActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.buttonDangerOutline {
+  border-color: color-mix(in srgb, var(--danger) 40%, transparent);
+  background: var(--admin-surface);
+  color: var(--danger);
+}
+
+.buttonDangerOutline:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--danger) 8%, var(--admin-surface));
+}
+
+.modalCard .buttonGroupEnd {
+  margin-top: 1.5rem;
+}
+
+/* Estados das verificações: cor do token + fundo e borda derivados dela. */
+.statusPending,
+.statusApproved,
+.statusRejected,
+.statusPartial,
+.statusDraft {
+  --badge-color: var(--status-tone);
+  --badge-bg: color-mix(in srgb, var(--status-tone) 12%, transparent);
+  --badge-border: 0.0625rem solid
+    color-mix(in srgb, var(--status-tone) 30%, transparent);
+}
+.statusPending {
+  --status-tone: var(--color-warning);
+}
+.statusApproved {
+  --status-tone: var(--color-success);
+}
+.statusRejected {
+  --status-tone: var(--danger);
+}
+.statusPartial {
+  --status-tone: var(--admin-blue);
+}
+.statusDraft {
+  --status-tone: var(--admin-muted);
 }

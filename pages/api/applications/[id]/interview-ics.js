@@ -61,7 +61,11 @@ export default async function handler(req, res) {
     return res.status(403).end('Forbidden');
   }
 
-  const appDoc = await adminApp.firestore().collection('applications').doc(id).get();
+  const appDoc = await adminApp
+    .firestore()
+    .collection('applications')
+    .doc(id)
+    .get();
   if (!appDoc.exists) {
     return res.status(404).end('Not found');
   }
@@ -87,10 +91,13 @@ export default async function handler(req, res) {
 
   const title = `Entrevista - ${app.jobTitle || 'Vaga'}`;
   const mode = String(interview.mode || 'online');
-  const where = mode === 'presencial' ? (interview.location || '') : (interview.link || '');
+  const where =
+    mode === 'presencial' ? interview.location || '' : interview.link || '';
   const descriptionParts = [
     `Empresa: ${app.company || ''}`.trim(),
-    mode === 'presencial' ? `Local: ${interview.location || 'A confirmar'}` : `Link: ${interview.link || 'A confirmar'}`,
+    mode === 'presencial'
+      ? `Local: ${interview.location || 'A confirmar'}`
+      : `Link: ${interview.link || 'A confirmar'}`,
     interview.notes ? `Observações: ${interview.notes}` : '',
   ].filter(Boolean);
 
@@ -113,9 +120,14 @@ export default async function handler(req, res) {
     `DESCRIPTION:${escapeICS(descriptionParts.join('\\n'))}`,
     'END:VEVENT',
     'END:VCALENDAR',
-  ].filter(Boolean).join('\r\n');
+  ]
+    .filter(Boolean)
+    .join('\r\n');
 
   res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
-  res.setHeader('Content-Disposition', `attachment; filename="entrevista_${id}.ics"`);
+  res.setHeader(
+    'Content-Disposition',
+    `attachment; filename="entrevista_${id}.ics"`,
+  );
   return res.status(200).send(ics);
 }

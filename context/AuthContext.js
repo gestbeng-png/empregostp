@@ -1,6 +1,4 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { onIdTokenChanged, signOut } from 'firebase/auth';
-import { auth } from '../lib/firebase';
 import {
   createServerSession,
   destroyServerSession,
@@ -8,7 +6,14 @@ import {
 
 const AuthContext = createContext();
 
-export function AuthProvider({ children }) {
+// `renderWhileLoading` deixa as páginas públicas renderizar no servidor e no
+// primeiro paint, sem esperar pelo Firebase Auth no browser. Sem isto o HTML
+// de todas as rotas saía vazio (sem título, description nem `og:`), o que
+// apagava o SEO e as pré-visualizações de links no WhatsApp. Quem precisa de
+// saber o utilizador lê `loading`. Os dashboards e as páginas de autenticação
+// continuam a esperar (valor por omissão), porque assumem o utilizador
+// resolvido no primeiro render.
+export function AuthProvider({ children, renderWhileLoading = false }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -22,8 +27,12 @@ export function AuthProvider({ children }) {
   // é o gancho certo para manter o cookie a par do token.
   useEffect(() => {
     let tokenSincronizado = '';
-
-    const unsubscribe = onIdTokenChanged(auth, async (proximoUtilizador) => {
+    let active = true;
+    let subscribed = false;
+    let connecting = false;
+    let unsubscribe = () => {};
+    const onUserChanged = async (proximoUtilizador) => {
+      if (!active) return;
       setUser(proximoUtilizador);
       setLoading(false);
 
@@ -34,6 +43,7 @@ export function AuthProvider({ children }) {
 
       try {
         const token = await proximoUtilizador.getIdToken();
+        if (!active) return;
         if (token === tokenSincronizado) return;
         tokenSincronizado = token;
         await createServerSession(token);
@@ -42,9 +52,30 @@ export function AuthProvider({ children }) {
         // válida e a próxima renovação do token volta a tentar.
         tokenSincronizado = '';
       }
-    });
-
-    return () => unsubscribe();
+    };
+    const connect = async () => {
+      if (connecting || subscribed || !active) return;
+      connecting = true;
+      try {
+        const { auth, onIdTokenChanged } =
+          await import('../lib/authClientRuntime');
+        if (!active) return;
+        unsubscribe = onIdTokenChanged(auth, onUserChanged);
+        subscribed = true;
+      } catch {
+        // A missing SDK chunk is not proof that the user is anonymous. Keep
+        // loading=true (private views/actions stay gated), then retry online.
+      } finally {
+        connecting = false;
+      }
+    };
+    void connect();
+    window.addEventListener('online', connect);
+    return () => {
+      active = false;
+      unsubscribe();
+      window.removeEventListener('online', connect);
+    };
   }, []);
 
   const logout = async () => {
@@ -54,19 +85,23 @@ export function AuthProvider({ children }) {
     try {
       if (typeof window !== 'undefined') {
         try {
-          const { unregisterCurrentPushToken } = await import('../lib/webPushClient');
+          const { unregisterCurrentPushToken } =
+            await import('../lib/webPushClient');
           await unregisterCurrentPushToken();
         } catch (error) {
           // best effort
         }
 
         if (navigator.serviceWorker?.controller) {
-          navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_AUTH_CACHES' });
+          navigator.serviceWorker.controller.postMessage({
+            type: 'CLEAR_AUTH_CACHES',
+          });
         }
       }
 
       let token = '';
       try {
+        const { auth } = await import('../lib/authClientRuntime');
         token = (await auth.currentUser?.getIdToken()) || '';
       } catch (error) {
         // O DELETE continua útil para expirar o cookie mesmo sem token válido.
@@ -85,6 +120,7 @@ export function AuthProvider({ children }) {
     // O estado Firebase local é sempre encerrado, mesmo se a revogação ou o
     // pedido ao servidor falhar. O resultado distingue uma limpeza parcial.
     try {
+      const { auth, signOut } = await import('../lib/authClientRuntime');
       await signOut(auth);
       setUser(null);
     } catch (error) {
@@ -111,7 +147,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={{ user, loading, logout }}>
-      {!loading && children}
+      {renderWhileLoading || !loading ? children : null}
     </AuthContext.Provider>
   );
 }

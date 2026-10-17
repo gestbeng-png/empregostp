@@ -1,10 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import Link from "next/link";
 import { onAuthStateChanged } from "firebase/auth";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { EARLY_ACCESS_HOUR_OPTIONS } from "../../../../lib/candidateApplicationPremium";
 import { auth, storage } from "../../../../lib/firebase";
 import { getFirebaseStorageErrorMessage } from "../../../../lib/firebaseStorageError";
 import { normalizeSkillsAssessmentInput } from "../../../../lib/skillsAssessment";
@@ -19,6 +18,10 @@ import AutoSaveStatus from "../../../../components/forms/AutoSaveStatus";
 import useAutoDraft from "../../../../hooks/useAutoDraft";
 import { createFormDraftKey } from "../../../../lib/formDraft";
 import { buildLoginUrl } from "../../../../lib/loginRedirect";
+import {
+  describeJobSubmissionError,
+  describeJobSubmissionSuccess,
+} from "../../../../lib/jobSubmissionFeedback";
 import { requireCompanySession } from "../../../../lib/serverSession";
 import styles from "../../../../styles/EmpresaJobForm.module.css";
 
@@ -170,6 +173,7 @@ export default function CriarVaga() {
   const [isLoadingExisting, setIsLoadingExisting] = useState(false);
   const [uploadingTDR, setUploadingTDR] = useState(false);
   const [error, setError] = useState("");
+  const publishIntentKey = useRef(null);
   const [errorAction, setErrorAction] = useState(null);
   const [success, setSuccess] = useState("");
   const [currentStep, setCurrentStep] = useState(1);
@@ -362,7 +366,7 @@ export default function CriarVaga() {
     try {
       const user = auth.currentUser;
       if (!user) {
-        setError("Você precisa estar logado");
+        setError("Inicie sessão para continuar.");
         setErrorAction(null);
         setUploadingTDR(false);
         return;
@@ -545,7 +549,7 @@ export default function CriarVaga() {
       );
       if (!normalizedAssessment.questions.length) {
         setError(
-          "Adicione pelo menos uma pergunta válida ao teste de habilidades ou desative o teste.",
+          "Adicione pelo menos uma pergunta válida ao teste de competências ou desative o teste.",
         );
         setErrorAction(null);
         return;
@@ -555,7 +559,7 @@ export default function CriarVaga() {
         jobData.skillsAssessment.questions.length
       ) {
         setError(
-          "Revise o teste de habilidades. Todas as perguntas precisam de enunciado, pelo menos 2 opções e uma resposta correta.",
+          "Revise o teste de competências. Todas as perguntas precisam de enunciado, pelo menos 2 opções e uma resposta correta.",
         );
         setErrorAction(null);
         return;
@@ -622,22 +626,30 @@ export default function CriarVaga() {
       const endpoint = isEditMode ? `/api/jobs/${editJobId}` : "/api/jobs";
       const method = isEditMode ? "PUT" : "POST";
 
+      // D8: uma chave por intenção de publicar; repetir o envio (duplo
+      // clique, rede instável) não cria uma segunda vaga.
+      if (!isEditMode && !publishIntentKey.current) {
+        publishIntentKey.current =
+          typeof crypto !== "undefined" && crypto.randomUUID
+            ? crypto.randomUUID()
+            : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 14)}`;
+      }
       const createResponse = await fetch(endpoint, {
         method,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${await user.getIdToken()}`,
+          ...(isEditMode ? {} : { "Idempotency-Key": publishIntentKey.current }),
         },
         body: JSON.stringify(vagaData),
       });
 
       const createData = await createResponse.json().catch(() => ({}));
       if (!createResponse.ok) {
-        const businessMessage =
-          createData.reason ||
-          createData.error ||
-          createData.message ||
-          "Não foi possível criar a vaga neste momento.";
+        const businessMessage = describeJobSubmissionError(
+          createData,
+          "Não foi possível criar a vaga neste momento.",
+        );
 
         setError(businessMessage);
         setErrorAction(
@@ -651,6 +663,7 @@ export default function CriarVaga() {
         return;
       }
 
+      publishIntentKey.current = null;
       await clearJobDraft();
 
       // A difusão aos candidatos passou para o servidor
@@ -661,15 +674,10 @@ export default function CriarVaga() {
       // o separador antes de o pedido concluir.
 
       setSuccess(
-        createData.warning
-          ? `${
-              isEditMode
-                ? "Vaga atualizada com sucesso!"
-                : "Vaga criada com sucesso!"
-            } ${createData.warning}`
-          : isEditMode
-            ? "Vaga atualizada com sucesso!"
-            : "Vaga criada com sucesso!",
+        describeJobSubmissionSuccess(
+          createData,
+          isEditMode ? "Vaga atualizada com sucesso!" : "Vaga criada com sucesso!",
+        ),
       );
 
       setTimeout(() => {
@@ -1085,58 +1093,14 @@ export default function CriarVaga() {
                     Acesso premium da candidatura
                   </h3>
                   <p className={styles.advancedDescription}>
-                    Configure vagas premium, acesso antecipado e carta de
-                    apresentação sem afetar vagas antigas.
+                    Configure a carta de apresentação sem afetar vagas
+                    antigas.
                   </p>
                 </div>
 
                 <div className={styles.optionStack}>
-                  <label className={styles.optionCard}>
-                    <div>
-                      <strong className={styles.optionTitle}>
-                        Vaga premium
-                      </strong>
-                      <span className={styles.optionDescription}>
-                        Apenas candidatos Profissional e Premium podem
-                        candidatar-se.
-                      </span>
-                    </div>
-                    <input
-                      type="checkbox"
-                      name="premiumOnly"
-                      checked={jobData.premiumOnly}
-                      onChange={handleChange}
-                      className={styles.checkbox}
-                    />
-                  </label>
-
-                  <div className={`${styles.optionCard} ${styles.optionCardStack}`}>
-                    <div>
-                      <strong className={styles.optionTitle}>
-                        Acesso antecipado
-                      </strong>
-                      <span className={styles.optionDescription}>
-                        Durante o período escolhido, a candidatura fica aberta
-                        primeiro para candidatos Profissional e Premium.
-                      </span>
-                    </div>
-                    <SelectField
-                      label="Janela de acesso antecipado"
-                      name="earlyAccessHours"
-                      value={jobData.earlyAccessHours}
-                      onChange={handleChange}
-                      options={[
-                        { value: "0", label: "Sem acesso antecipado" },
-                        ...EARLY_ACCESS_HOUR_OPTIONS.filter(
-                          (hours) => hours > 0,
-                        ).map((hours) => ({
-                          value: String(hours),
-                          label: `${hours} hora${hours > 1 ? "s" : ""}`,
-                        })),
-                      ]}
-                    />
-                  </div>
-
+                  {/* F2.1/K1 (ADR-016): «vaga premium» e «acesso antecipado»
+                      davam vantagem a candidatos pagantes — retirados. */}
                   <label className={styles.optionCard}>
                     <div>
                       <strong className={styles.optionTitle}>
@@ -1238,7 +1202,7 @@ export default function CriarVaga() {
                 <div className={styles.assessmentHeader}>
                   <div>
                     <h3 className={styles.advancedTitle}>
-                      Teste de habilidades
+                      Teste de competências
                     </h3>
                     <p className={styles.advancedDescription}>
                       Adicione perguntas rápidas para filtrar melhor os
@@ -1418,18 +1382,6 @@ export default function CriarVaga() {
                   value={jobData.remoto ? "Sim" : "Não"}
                 />
                 <ReviewItem
-                  label="Vaga premium"
-                  value={jobData.premiumOnly ? "Sim" : "Não"}
-                />
-                <ReviewItem
-                  label="Acesso antecipado"
-                  value={
-                    Number(jobData.earlyAccessHours) > 0
-                      ? `${jobData.earlyAccessHours} hora(s)`
-                      : "Não ativado"
-                  }
-                />
-                <ReviewItem
                   label="Carta obrigatória"
                   value={jobData.requireCoverLetter ? "Sim" : "Não"}
                 />
@@ -1452,7 +1404,7 @@ export default function CriarVaga() {
                   value={jobData.tdrFileName || "Não enviado"}
                 />
                 <ReviewItem
-                  label="Teste de habilidades"
+                  label="Teste de competências"
                   value={
                     jobData.skillsAssessment.enabled
                       ? `${jobData.skillsAssessment.questions.length} pergunta(s)`

@@ -19,53 +19,60 @@ export default async function handler(req, res) {
 
   try {
     // Buscar apenas vagas ativas
-    const jobsSnapshot = await admin.firestore()
+    const jobsSnapshot = await admin
+      .firestore()
       .collection('jobs')
       .where('status', '==', 'active')
       .get();
 
-    const jobs = await Promise.all(jobsSnapshot.docs.map(async (doc) => {
-      const jobData = { id: doc.id, ...doc.data() };
-      if (!isJobPubliclyVisible(jobData)) return null;
-      let companyData = {};
+    const jobs = await Promise.all(
+      jobsSnapshot.docs.map(async (doc) => {
+        const jobData = { id: doc.id, ...doc.data() };
+        if (!isJobPubliclyVisible(jobData)) return null;
+        let companyData = {};
 
-      // Buscar informações da empresa
-      if (jobData.companyId) {
-        const companyDoc = await admin.firestore()
-          .collection('users')
-          .doc(jobData.companyId)
-          .get();
+        // Buscar informações da empresa
+        if (jobData.companyId) {
+          const companyDoc = await admin
+            .firestore()
+            .collection('users')
+            .doc(jobData.companyId)
+            .get();
 
-        if (companyDoc.exists) {
-          companyData = {
-            companyName: companyDoc.data().name || companyDoc.data().fullName || 'Empresa',
-            logo: companyDoc.data().logoUrl || companyDoc.data().logo || ''
-          };
+          if (companyDoc.exists) {
+            companyData = {
+              companyName:
+                companyDoc.data().name ||
+                companyDoc.data().fullName ||
+                'Empresa',
+              logo: companyDoc.data().logoUrl || companyDoc.data().logo || '',
+            };
+          }
         }
-      }
 
-      const publicJob = projectPublicJob({
-        ...jobData,
-        companyName: companyData.companyName || jobData.companyName,
-        empresaNome:
-          companyData.companyName ||
-          jobData.empresaNome ||
-          jobData.companyName,
-        companyLogo: companyData.logo || jobData.companyLogo || '',
-        empresaLogo: companyData.logo || jobData.empresaLogo || '',
-      });
+        const publicJob = projectPublicJob({
+          ...jobData,
+          companyName: companyData.companyName || jobData.companyName,
+          empresaNome:
+            companyData.companyName ||
+            jobData.empresaNome ||
+            jobData.companyName,
+          companyLogo: companyData.logo || jobData.companyLogo || '',
+          empresaLogo: companyData.logo || jobData.empresaLogo || '',
+        });
 
-      return {
-        ...publicJob,
-        createdAt: toIsoDate(publicJob.createdAt) || new Date().toISOString(),
-        updatedAt: toIsoDate(publicJob.updatedAt),
-        publishedAt: toIsoDate(publicJob.publishedAt),
-        publicadoEm: toIsoDate(publicJob.publicadoEm),
-        dataFecho: toIsoDate(publicJob.dataFecho) || publicJob.dataFecho,
-        deadline: toIsoDate(publicJob.deadline) || publicJob.deadline,
-        expiresAt: toIsoDate(publicJob.expiresAt) || publicJob.expiresAt,
-      };
-    }));
+        return {
+          ...publicJob,
+          createdAt: toIsoDate(publicJob.createdAt) || new Date().toISOString(),
+          updatedAt: toIsoDate(publicJob.updatedAt),
+          publishedAt: toIsoDate(publicJob.publishedAt),
+          publicadoEm: toIsoDate(publicJob.publicadoEm),
+          dataFecho: toIsoDate(publicJob.dataFecho) || publicJob.dataFecho,
+          deadline: toIsoDate(publicJob.deadline) || publicJob.deadline,
+          expiresAt: toIsoDate(publicJob.expiresAt) || publicJob.expiresAt,
+        };
+      }),
+    );
 
     // Ordenar por data de criação (mais recentes primeiro)
     const publicJobs = jobs.filter(Boolean);

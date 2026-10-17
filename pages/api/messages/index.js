@@ -1,5 +1,8 @@
 import { admin } from '../../../lib/firebaseAdmin';
-import { canSendDirectMessage, getEmpresaPlanSummary } from '../../../lib/empresaPlanFeatures';
+import {
+  canSendDirectMessage,
+  getEmpresaPlanSummary,
+} from '../../../lib/empresaPlanFeatures';
 import {
   canUsersContinueConversation,
   canUsersStartConversation,
@@ -8,7 +11,12 @@ import { logServerError, logServerWarning } from '../../../lib/serverLog';
 import { requireActiveApiUser } from '../../../lib/apiUserAuth';
 
 function isMissingIndexError(error) {
-  return error?.code === 9 || String(error?.details || error?.message || '').toLowerCase().includes('requires an index');
+  return (
+    error?.code === 9 ||
+    String(error?.details || error?.message || '')
+      .toLowerCase()
+      .includes('requires an index')
+  );
 }
 
 function toMillis(value) {
@@ -34,7 +42,10 @@ async function listUserConversations(uid) {
       throw error;
     }
 
-    logServerWarning('messages.messages_query_without_composite_index_using_failed', uid);
+    logServerWarning(
+      'messages.messages_query_without_composite_index_using_failed',
+      uid,
+    );
 
     const fallbackSnapshot = await firestore
       .collection('conversations')
@@ -42,7 +53,9 @@ async function listUserConversations(uid) {
       .get();
 
     const sortedDocs = [...fallbackSnapshot.docs]
-      .sort((a, b) => toMillis(b.data()?.updatedAt) - toMillis(a.data()?.updatedAt))
+      .sort(
+        (a, b) => toMillis(b.data()?.updatedAt) - toMillis(a.data()?.updatedAt),
+      )
       .slice(0, 50);
 
     return { docs: sortedDocs };
@@ -66,34 +79,45 @@ export default async function handler(req, res) {
       // Buscar conversas onde o utilizador é participante
       const snapshot = await listUserConversations(uid);
 
-      const conversations = await Promise.all(snapshot.docs.map(async (doc) => {
-        const data = doc.data();
-        const otherParticipantId = data.participants.find((p) => p !== uid);
+      const conversations = await Promise.all(
+        snapshot.docs.map(async (doc) => {
+          const data = doc.data();
+          const otherParticipantId = data.participants.find((p) => p !== uid);
 
-        let participant = { id: otherParticipantId, name: 'Utilizador', avatar: null };
-        if (otherParticipantId) {
-          try {
-            const partDoc = await admin.firestore().collection('users').doc(otherParticipantId).get();
-            if (partDoc.exists) {
-              const pd = partDoc.data();
-              participant = {
-                id: otherParticipantId,
-                name: pd.fullName || pd.name || pd.companyName || 'Utilizador',
-                avatar: pd.photoUrl || pd.logo || null,
-                role: pd.userType || ''
-              };
-            }
-          } catch (_) {}
-        }
+          let participant = {
+            id: otherParticipantId,
+            name: 'Utilizador',
+            avatar: null,
+          };
+          if (otherParticipantId) {
+            try {
+              const partDoc = await admin
+                .firestore()
+                .collection('users')
+                .doc(otherParticipantId)
+                .get();
+              if (partDoc.exists) {
+                const pd = partDoc.data();
+                participant = {
+                  id: otherParticipantId,
+                  name:
+                    pd.fullName || pd.name || pd.companyName || 'Utilizador',
+                  avatar: pd.photoUrl || pd.logo || null,
+                  role: pd.userType || '',
+                };
+              }
+            } catch (_) {}
+          }
 
-        return {
-          id: doc.id,
-          participant,
-          lastMessage: data.lastMessage || '',
-          lastMessageAt: data.updatedAt?.toDate?.()?.toISOString() || null,
-          unreadCount: data.unreadCounts?.[uid] || 0
-        };
-      }));
+          return {
+            id: doc.id,
+            participant,
+            lastMessage: data.lastMessage || '',
+            lastMessageAt: data.updatedAt?.toDate?.()?.toISOString() || null,
+            unreadCount: data.unreadCounts?.[uid] || 0,
+          };
+        }),
+      );
 
       return res.status(200).json({ conversations });
     } catch (error) {
@@ -115,7 +139,9 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'participantId é obrigatório' });
     }
     if (participantId === uid) {
-      return res.status(400).json({ error: 'Não é possível iniciar conversa consigo mesmo' });
+      return res
+        .status(400)
+        .json({ error: 'Não é possível iniciar conversa consigo mesmo' });
     }
 
     if (requesterData.userType === 'empresa') {
@@ -126,7 +152,7 @@ export default async function handler(req, res) {
           error: messageAccess.reason,
           code: messageAccess.code,
           upgradeMessage: messageAccess.upgradeMessage,
-          upgradeUrl: messageAccess.upgradeUrl
+          upgradeUrl: messageAccess.upgradeUrl,
         });
       }
     }
@@ -146,7 +172,8 @@ export default async function handler(req, res) {
       // Uma conversa existente continua utilizável mesmo que o candidato tenha
       // entretanto tornado o perfil privado. A privacidade bloqueia apenas uma
       // nova ligação; os papéis dos participantes continuam a ser validados.
-      const existingSnapshot = await admin.firestore()
+      const existingSnapshot = await admin
+        .firestore()
         .collection('conversations')
         .where('participants', 'array-contains', uid)
         .get();
@@ -170,11 +197,7 @@ export default async function handler(req, res) {
 
       const requesterProfileDoc =
         requesterData.userType === 'candidato'
-          ? await admin
-              .firestore()
-              .collection('profiles')
-              .doc(uid)
-              .get()
+          ? await admin.firestore().collection('profiles').doc(uid).get()
           : null;
       const participantProfileDoc =
         participantData.userType === 'candidato'
@@ -231,7 +254,7 @@ export default async function handler(req, res) {
             lastMessage: '',
             unreadCounts: { [uid]: 0, [participantId]: 0 },
             createdAt: now,
-            updatedAt: now
+            updatedAt: now,
           });
         }
       });

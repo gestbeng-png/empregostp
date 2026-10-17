@@ -1,17 +1,17 @@
-import { admin } from "../../../lib/firebaseAdmin";
+import { admin } from '../../../lib/firebaseAdmin';
 import {
   canCreateJob,
   canHighlightJob,
   getEmpresaPlanSummary,
   getJobExpirationDate,
-} from "../../../lib/empresaPlanFeatures";
-import { buildJobApplicationPremiumFields } from "../../../lib/candidateApplicationPremium";
+} from '../../../lib/empresaPlanFeatures';
+import { buildJobApplicationPolicy } from '../../../lib/applicationPolicy';
 import {
   getEffectiveJobStatus,
   isJobExpired,
   syncExpiredJobStatus,
-} from "../../../lib/jobExpiration";
-import { normalizeSkillsAssessmentInput } from "../../../lib/skillsAssessment";
+} from '../../../lib/jobExpiration';
+import { normalizeSkillsAssessmentInput } from '../../../lib/skillsAssessment';
 import { logServerError } from '../../../lib/serverLog';
 
 function toIsoDateString(value) {
@@ -30,9 +30,9 @@ function normalizeKeywords(value) {
     return value.map((item) => `${item}`.trim()).filter(Boolean);
   }
 
-  if (typeof value === "string") {
+  if (typeof value === 'string') {
     return value
-      .split(",")
+      .split(',')
       .map((item) => item.trim())
       .filter(Boolean);
   }
@@ -42,26 +42,26 @@ function normalizeKeywords(value) {
 
 async function getAuthenticatedCompany(req, res) {
   const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    res.status(401).json({ error: "Token de autenticação não fornecido" });
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    res.status(401).json({ error: 'Token de autenticação não fornecido' });
     return null;
   }
 
-  const token = authHeader.split("Bearer ")[1];
+  const token = authHeader.split('Bearer ')[1];
   const decodedToken = await admin.auth().verifyIdToken(token);
   const userDoc = await admin
     .firestore()
-    .collection("users")
+    .collection('users')
     .doc(decodedToken.uid)
     .get();
 
   if (!userDoc.exists) {
-    res.status(404).json({ error: "Usuário não encontrado" });
+    res.status(404).json({ error: 'Utilizador não encontrado' });
     return null;
   }
 
-  if (userDoc.data().userType !== "empresa") {
-    res.status(403).json({ error: "Somente empresas podem gerir vagas" });
+  if (userDoc.data().userType !== 'empresa') {
+    res.status(403).json({ error: 'Somente empresas podem gerir vagas' });
     return null;
   }
 
@@ -76,11 +76,11 @@ async function getAuthenticatedCompany(req, res) {
 }
 
 export default async function handler(req, res) {
-  if (!["GET", "PATCH", "PUT", "DELETE"].includes(req.method)) {
+  if (!['GET', 'PATCH', 'PUT', 'DELETE'].includes(req.method)) {
     return res
       .status(405)
-      .setHeader("Allow", ["GET", "PATCH", "PUT", "DELETE"])
-      .json({ error: "Método não permitido" });
+      .setHeader('Allow', ['GET', 'PATCH', 'PUT', 'DELETE'])
+      .json({ error: 'Método não permitido' });
   }
 
   try {
@@ -88,21 +88,21 @@ export default async function handler(req, res) {
     if (!auth) return;
 
     const { id } = req.query;
-    const jobRef = admin.firestore().collection("jobs").doc(id);
+    const jobRef = admin.firestore().collection('jobs').doc(id);
     const jobDoc = await jobRef.get();
 
     if (!jobDoc.exists) {
-      return res.status(404).json({ error: "Vaga não encontrada" });
+      return res.status(404).json({ error: 'Vaga não encontrada' });
     }
 
     const jobData = jobDoc.data();
     if (jobData.companyId !== auth.uid) {
       return res
         .status(403)
-        .json({ error: "Você não tem permissão para gerir esta vaga" });
+        .json({ error: 'Não tem permissão para gerir esta vaga.' });
     }
 
-    if (req.method === "GET") {
+    if (req.method === 'GET') {
       const synced = await syncExpiredJobStatus(jobRef, jobData, admin);
       return res.status(200).json({
         job: {
@@ -117,13 +117,21 @@ export default async function handler(req, res) {
       });
     }
 
-    if (req.method === "DELETE") {
+    if (req.method === 'DELETE') {
       // Apagar só a vaga deixava para trás as candidaturas e os favoritos que
       // lhe apontavam: registos que a interface tenta abrir e nao encontra, e
       // que continuavam a contar para estatisticas. Removidos no mesmo lote.
       const [applicationsSnapshot, savedSnapshot] = await Promise.all([
-        admin.firestore().collection("applications").where("jobId", "==", id).get(),
-        admin.firestore().collection("savedJobs").where("jobId", "==", id).get(),
+        admin
+          .firestore()
+          .collection('applications')
+          .where('jobId', '==', id)
+          .get(),
+        admin
+          .firestore()
+          .collection('savedJobs')
+          .where('jobId', '==', id)
+          .get(),
       ]);
 
       const batch = admin.firestore().batch();
@@ -133,7 +141,7 @@ export default async function handler(req, res) {
 
       await jobRef.delete();
       return res.status(200).json({
-        message: "Vaga eliminada com sucesso",
+        message: 'Vaga eliminada com sucesso',
         removidos: {
           candidaturas: applicationsSnapshot.size,
           vagasGuardadas: savedSnapshot.size,
@@ -141,28 +149,28 @@ export default async function handler(req, res) {
       });
     }
 
-    if (req.method === "PUT") {
+    if (req.method === 'PUT') {
       const {
         titulo,
         descricao,
-        requisitos = "",
-        responsabilidades = "",
+        requisitos = '',
+        responsabilidades = '',
         localizacao,
         tipoContrato,
-        nivelExperiencia = "",
-        escolaridade = "",
-        salarioDe = "",
-        salarioAte = "",
-        beneficios = "",
+        nivelExperiencia = '',
+        escolaridade = '',
+        salarioDe = '',
+        salarioAte = '',
+        beneficios = '',
         dataAbertura,
         dataFecho,
         remoto = false,
         destaque = false,
-        tdrUrl = "",
-        tdrFileName = "",
+        tdrUrl = '',
+        tdrFileName = '',
         vagasDisponiveis = 1,
-        palavrasChave = "",
-        categoria = "",
+        palavrasChave = '',
+        categoria = '',
         skillsAssessment = null,
         premiumOnly = false,
         earlyAccessHours = 0,
@@ -178,12 +186,12 @@ export default async function handler(req, res) {
       ) {
         return res
           .status(400)
-          .json({ error: "Preencha os campos obrigatórios da vaga" });
+          .json({ error: 'Preencha os campos obrigatórios da vaga' });
       }
 
       const requestedCloseDate = new Date(dataFecho);
       if (Number.isNaN(requestedCloseDate.getTime())) {
-        return res.status(400).json({ error: "Data de fecho inválida" });
+        return res.status(400).json({ error: 'Data de fecho inválida' });
       }
 
       const maxExpirationDate = getJobExpirationDate(auth.planSummary.planId);
@@ -203,7 +211,7 @@ export default async function handler(req, res) {
         }
       }
 
-      const premiumApplicationFields = buildJobApplicationPremiumFields(
+      const premiumApplicationFields = buildJobApplicationPolicy(
         {
           premiumOnly,
           earlyAccessHours,
@@ -225,14 +233,14 @@ export default async function handler(req, res) {
         tipoContrato: `${tipoContrato}`.trim(),
         nivelExperiencia: `${nivelExperiencia}`.trim(),
         escolaridade: `${escolaridade}`.trim(),
-        salarioDe: salarioDe || "",
-        salarioAte: salarioAte || "",
+        salarioDe: salarioDe || '',
+        salarioAte: salarioAte || '',
         beneficios: `${beneficios}`.trim(),
         dataAbertura:
           dataAbertura ||
           jobData.dataAbertura ||
-          new Date().toISOString().split("T")[0],
-        dataFecho: finalCloseDate.toISOString().split("T")[0],
+          new Date().toISOString().split('T')[0],
+        dataFecho: finalCloseDate.toISOString().split('T')[0],
         remoto: Boolean(remoto),
         destaque: Boolean(destaque),
         tdrUrl: `${tdrUrl}`.trim(),
@@ -252,7 +260,7 @@ export default async function handler(req, res) {
       await jobRef.update(payload);
 
       return res.status(200).json({
-        message: "Vaga atualizada com sucesso",
+        message: 'Vaga atualizada com sucesso',
         warning:
           requestedCloseDate > maxExpirationDate
             ? `A data de fecho foi ajustada para ${payload.dataFecho} com base no limite do seu plano.`
@@ -261,16 +269,16 @@ export default async function handler(req, res) {
     }
 
     const { status } = req.body || {};
-    const validStatuses = ["active", "closed", "draft"];
+    const validStatuses = ['active', 'closed', 'draft'];
     if (!status || !validStatuses.includes(status)) {
-      return res.status(400).json({ error: "Status inválido" });
+      return res.status(400).json({ error: 'Status inválido' });
     }
 
-    if (status === "active" && jobData.status !== "active") {
+    if (status === 'active' && jobData.status !== 'active') {
       if (isJobExpired(jobData)) {
         return res.status(400).json({
           error:
-            "A data de fecho desta vaga ja expirou. Atualize o prazo antes de reativar.",
+            'A data de fecho desta vaga ja expirou. Atualize o prazo antes de reativar.',
         });
       }
       const planSummary = getEmpresaPlanSummary(auth.userData);
@@ -290,7 +298,7 @@ export default async function handler(req, res) {
     });
 
     return res.status(200).json({
-      message: "Vaga atualizada com sucesso",
+      message: 'Vaga atualizada com sucesso',
       job: {
         id: jobDoc.id,
         ...jobData,
@@ -299,6 +307,6 @@ export default async function handler(req, res) {
     });
   } catch (error) {
     logServerError('jobs_id.api_api_jobs_id_failed', error);
-    return res.status(500).json({ error: "Erro interno do servidor" });
+    return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 }

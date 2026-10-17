@@ -135,7 +135,9 @@
   color: var(--text-1, #162a55);
   font-size: 0.92rem;
   font-family: inherit;
-  transition: border-color 0.16s ease, box-shadow 0.16s ease;
+  transition:
+    border-color 0.16s ease,
+    box-shadow 0.16s ease;
 }
 
 .input:focus,
@@ -177,7 +179,9 @@
   color: #fff;
   background: linear-gradient(135deg, #2057d7, #4f8ef7);
   box-shadow: 0 10px 22px rgba(32, 87, 215, 0.26);
-  transition: transform 0.14s ease, opacity 0.14s ease;
+  transition:
+    transform 0.14s ease,
+    opacity 0.14s ease;
 }
 
 .submitBtn:hover:not(:disabled) {
@@ -305,7 +309,7 @@
 /* Workbridge fidelity layer. */
 .wrap {
   color: var(--text-1, #102441);
-  font-family: var(--font-instrument, "Instrument Sans"), Arial, sans-serif;
+  font-family: var(--font-instrument, 'Instrument Sans'), Arial, sans-serif;
 }
 
 .hero {

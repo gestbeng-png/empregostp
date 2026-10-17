@@ -11,7 +11,7 @@ import { redirectToLogin } from '../../../../lib/loginRedirect';
 
 export default function AdminNewsList({ news: initialNews }) {
     const [news, setNews] = useState(initialNews);
-    const [loading, setLoading] = useState(false);
+    const [, setLoading] = useState(false);
 
     const handleDelete = async (id) => {
         if (!confirm('Tem certeza que deseja excluir esta notícia?')) return;

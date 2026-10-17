@@ -1,0 +1,152 @@
+import { useEffect, useRef } from 'react';
+import { FiExternalLink, FiX } from 'react-icons/fi';
+import { normalizeExternalUrl } from '../lib/externalUrl';
+import { sanitizeRichHtml } from '../lib/sanitizeRichHtml';
+import styles from '../styles/AnnouncementBar.module.css';
+
+function hasHtmlMarkup(content) {
+  return /<\/?[a-z][\s\S]*>/i.test(String(content || ''));
+}
+
+export default function AnnouncementDetailModal({ item, onClose }) {
+  const dialogRef = useRef(null);
+
+  useEffect(() => {
+    const previouslyFocused = document.activeElement;
+    const dialog = dialogRef.current;
+    const focusableSelector =
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+    function handleKeyDown(event) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+
+      if (event.key !== 'Tab' || !dialog) return;
+      const focusable = [...dialog.querySelectorAll(focusableSelector)].filter(
+        (element) => element.getClientRects().length > 0,
+      );
+      if (!focusable.length) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.body.classList.add('modal-open');
+    document.addEventListener('keydown', handleKeyDown);
+    window.requestAnimationFrame(() => {
+      dialog?.querySelector('button')?.focus({ preventScroll: true });
+    });
+
+    return () => {
+      document.body.classList.remove('modal-open');
+      document.removeEventListener('keydown', handleKeyDown);
+      if (previouslyFocused instanceof HTMLElement) {
+        previouslyFocused.focus({ preventScroll: true });
+      }
+    };
+  }, [onClose]);
+
+  const paragraphs = String(item.content || '')
+    .split(/\n{2,}/)
+    .map((block) => block.trim())
+    .filter(Boolean);
+
+  // Links opcionais definidos pelo admin: formulário de inscrição e site externo.
+  const formUrl = normalizeExternalUrl(item.formUrl);
+  const siteUrl = normalizeExternalUrl(item.siteUrl);
+  const hasActions = Boolean(formUrl || siteUrl);
+
+  return (
+    <div
+      className={styles.modalOverlay}
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <div
+        ref={dialogRef}
+        className={styles.modal}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="announcement-modal-title"
+        tabIndex={-1}
+      >
+        <button
+          type="button"
+          className={styles.modalClose}
+          onClick={onClose}
+          aria-label="Fechar"
+        >
+          <FiX aria-hidden="true" />
+        </button>
+        <span className={styles.modalBadge}>{item.category}</span>
+        <h2 id="announcement-modal-title" className={styles.modalTitle}>
+          {item.title}
+        </h2>
+        {item.date ? <p className={styles.modalDate}>{item.date}</p> : null}
+        <div className={styles.modalBody}>
+          {item.content ? (
+            hasHtmlMarkup(item.content) ? (
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: sanitizeRichHtml(item.content),
+                }}
+              />
+            ) : paragraphs.length > 0 ? (
+              paragraphs.map((paragraph, index) => (
+                <p key={index}>{paragraph}</p>
+              ))
+            ) : (
+              <p>{item.content}</p>
+            )
+          ) : hasActions ? null : (
+            <p>Sem detalhes adicionais para esta atualização.</p>
+          )}
+        </div>
+        {hasActions ? (
+          <div className={styles.modalActions}>
+            {formUrl ? (
+              <a
+                className={`${styles.modalAction} ${styles.modalActionPrimary}`}
+                href={formUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Preencher o formulário (abre numa nova janela)"
+              >
+                Preencher formulário
+                <FiExternalLink aria-hidden="true" />
+              </a>
+            ) : null}
+            {siteUrl ? (
+              <a
+                className={`${styles.modalAction} ${styles.modalActionSecondary}`}
+                href={siteUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Ir ao site (abre numa nova janela)"
+              >
+                Ir ao site
+                <FiExternalLink aria-hidden="true" />
+              </a>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}

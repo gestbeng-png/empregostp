@@ -6,6 +6,7 @@ import {
   FiAlertTriangle,
   FiBell,
   FiCheck,
+  FiDownload,
   FiGlobe,
   FiLock,
   FiMail,
@@ -14,6 +15,7 @@ import {
   FiShield,
   FiTrash2,
   FiUser,
+  FiX,
 } from 'react-icons/fi';
 
 import type {
@@ -21,6 +23,7 @@ import type {
   CandidateSettings,
   ProfileVisibility,
 } from '@/domain/candidate-settings/CandidateSettings';
+import { useAccountPrivacy } from '@/presentation/candidate-settings/useAccountPrivacy';
 import { useCandidateSettingsController } from '@/presentation/candidate-settings/useCandidateSettingsController';
 import { pt } from '@/shared/i18n/pt';
 
@@ -38,6 +41,17 @@ interface SettingsSection {
 }
 
 const copy = pt.candidateSettings;
+
+function formatDeletionDate(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '';
+  return new Intl.DateTimeFormat('pt-PT', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'Africa/Sao_Tome',
+  }).format(date);
+}
 
 const sections: readonly SettingsSection[] = [
   {
@@ -217,6 +231,17 @@ export default function CandidateSettings({
     ? activeSection
     : (filteredSections[0]?.id ?? null);
 
+  const accountPrivacy = useAccountPrivacy(visibleSection === 'delete');
+  const [deleteConfirmation, setDeleteConfirmation] = useState('');
+
+  async function handleDeletionSubmit(
+    event: FormEvent<HTMLFormElement>,
+  ): Promise<void> {
+    event.preventDefault();
+    await accountPrivacy.requestDeletion(deleteConfirmation);
+    setDeleteConfirmation('');
+  }
+
   async function handlePasswordSubmit(
     event: FormEvent<HTMLFormElement>,
   ): Promise<void> {
@@ -274,24 +299,27 @@ export default function CandidateSettings({
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              {feedback ? (
-                <div
-                  className={[
-                    styles.feedback,
-                    feedback.type === 'error'
-                      ? styles.feedbackError
-                      : styles.feedbackSuccess,
-                  ].join(' ')}
-                  role="status"
-                >
-                  {feedback.type === 'success' ? (
-                    <FiCheck aria-hidden="true" />
-                  ) : (
-                    <FiAlertTriangle aria-hidden="true" />
-                  )}
-                  <span>{feedback.message}</span>
-                </div>
-              ) : null}
+              {[feedback, accountPrivacy.feedback].map((item, index) =>
+                item ? (
+                  <div
+                    key={index}
+                    className={[
+                      styles.feedback,
+                      item.type === 'error'
+                        ? styles.feedbackError
+                        : styles.feedbackSuccess,
+                    ].join(' ')}
+                    role="status"
+                  >
+                    {item.type === 'success' ? (
+                      <FiCheck aria-hidden="true" />
+                    ) : (
+                      <FiAlertTriangle aria-hidden="true" />
+                    )}
+                    <span>{item.message}</span>
+                  </div>
+                ) : null,
+              )}
 
               {!visibleSection ? (
                 <section className={styles.emptySearch}>
@@ -527,78 +555,101 @@ export default function CandidateSettings({
               ) : null}
 
               {visibleSection === 'privacy' ? (
-                <section className={styles.panel}>
-                  <PanelHeader
-                    icon={FiShield}
-                    title={copy.privacy.title}
-                    description={copy.privacy.description}
-                  />
-                  <label className={styles.selectField}>
-                    <span>{copy.privacy.profileVisibility}</span>
-                    <select
-                      value={settings.privacy.profileVisibility}
-                      onChange={(event) =>
-                        updatePrivacy(
-                          'profileVisibility',
-                          event.currentTarget.value as ProfileVisibility,
-                        )
-                      }
-                    >
-                      <option value="recruiters">
-                        {copy.privacy.visibilityOptions.recruiters}
-                      </option>
-                      <option value="public">
-                        {copy.privacy.visibilityOptions.public}
-                      </option>
-                      <option value="private">
-                        {copy.privacy.visibilityOptions.private}
-                      </option>
-                    </select>
-                  </label>
-                  <div className={styles.preferenceList}>
-                    <PreferenceRow
-                      title={copy.privacy.rows.showContactInfo.title}
-                      description={
-                        copy.privacy.rows.showContactInfo.description
-                      }
-                      checked={settings.privacy.showContactInfo}
-                      onChange={(value) =>
-                        updatePrivacy('showContactInfo', value)
-                      }
+                <>
+                  <section className={styles.panel}>
+                    <PanelHeader
+                      icon={FiShield}
+                      title={copy.privacy.title}
+                      description={copy.privacy.description}
                     />
-                    <PreferenceRow
-                      title={copy.privacy.rows.allowSearchEngines.title}
-                      description={
-                        copy.privacy.rows.allowSearchEngines.description
-                      }
-                      checked={settings.privacy.allowSearchEngines}
-                      onChange={(value) =>
-                        updatePrivacy('allowSearchEngines', value)
-                      }
+                    <label className={styles.selectField}>
+                      <span>{copy.privacy.profileVisibility}</span>
+                      <select
+                        value={settings.privacy.profileVisibility}
+                        onChange={(event) =>
+                          updatePrivacy(
+                            'profileVisibility',
+                            event.currentTarget.value as ProfileVisibility,
+                          )
+                        }
+                      >
+                        <option value="recruiters">
+                          {copy.privacy.visibilityOptions.recruiters}
+                        </option>
+                        <option value="public">
+                          {copy.privacy.visibilityOptions.public}
+                        </option>
+                        <option value="private">
+                          {copy.privacy.visibilityOptions.private}
+                        </option>
+                      </select>
+                    </label>
+                    <div className={styles.preferenceList}>
+                      <PreferenceRow
+                        title={copy.privacy.rows.showContactInfo.title}
+                        description={
+                          copy.privacy.rows.showContactInfo.description
+                        }
+                        checked={settings.privacy.showContactInfo}
+                        onChange={(value) =>
+                          updatePrivacy('showContactInfo', value)
+                        }
+                      />
+                      <PreferenceRow
+                        title={copy.privacy.rows.allowSearchEngines.title}
+                        description={
+                          copy.privacy.rows.allowSearchEngines.description
+                        }
+                        checked={settings.privacy.allowSearchEngines}
+                        onChange={(value) =>
+                          updatePrivacy('allowSearchEngines', value)
+                        }
+                      />
+                      <PreferenceRow
+                        title={copy.privacy.rows.showActivityStatus.title}
+                        description={
+                          copy.privacy.rows.showActivityStatus.description
+                        }
+                        checked={settings.privacy.showActivityStatus}
+                        onChange={(value) =>
+                          updatePrivacy('showActivityStatus', value)
+                        }
+                      />
+                    </div>
+                    <div className={styles.panelActions}>
+                      <button
+                        type="button"
+                        className={styles.primaryButton}
+                        onClick={saveSettings}
+                        disabled={saving}
+                      >
+                        <FiSave aria-hidden="true" />
+                        {saving ? pt.common.saving : copy.privacy.save}
+                      </button>
+                    </div>
+                  </section>
+
+                  <section className={styles.panel}>
+                    <PanelHeader
+                      icon={FiDownload}
+                      title={copy.exportData.title}
+                      description={copy.exportData.description}
                     />
-                    <PreferenceRow
-                      title={copy.privacy.rows.showActivityStatus.title}
-                      description={
-                        copy.privacy.rows.showActivityStatus.description
-                      }
-                      checked={settings.privacy.showActivityStatus}
-                      onChange={(value) =>
-                        updatePrivacy('showActivityStatus', value)
-                      }
-                    />
-                  </div>
-                  <div className={styles.panelActions}>
-                    <button
-                      type="button"
-                      className={styles.primaryButton}
-                      onClick={saveSettings}
-                      disabled={saving}
-                    >
-                      <FiSave aria-hidden="true" />
-                      {saving ? pt.common.saving : copy.privacy.save}
-                    </button>
-                  </div>
-                </section>
+                    <div className={styles.panelActions}>
+                      <button
+                        type="button"
+                        className={styles.primaryButton}
+                        onClick={accountPrivacy.exportData}
+                        disabled={accountPrivacy.busy === 'export'}
+                      >
+                        <FiDownload aria-hidden="true" />
+                        {accountPrivacy.busy === 'export'
+                          ? copy.exportData.preparing
+                          : copy.exportData.action}
+                      </button>
+                    </div>
+                  </section>
+                </>
               ) : null}
 
               {visibleSection === 'language' ? (
@@ -650,20 +701,97 @@ export default function CandidateSettings({
                     title={copy.deleteAccount.title}
                     description={copy.deleteAccount.description}
                   />
-                  <div className={styles.dangerNotice}>
-                    <FiAlertTriangle aria-hidden="true" />
-                    <div>
-                      <strong>{copy.deleteAccount.noticeTitle}</strong>
-                      <p>{copy.deleteAccount.notice}</p>
+                  {accountPrivacy.busy === 'load' ? (
+                    <p role="status">{copy.deleteAccount.loading}</p>
+                  ) : accountPrivacy.deletion ? (
+                    <>
+                      <div className={styles.dangerNotice}>
+                        <FiAlertTriangle aria-hidden="true" />
+                        <div>
+                          <strong>{copy.deleteAccount.pendingTitle}</strong>
+                          <p>
+                            {copy.deleteAccount.pendingDescription.replace(
+                              '{date}',
+                              formatDeletionDate(
+                                accountPrivacy.deletion.executeAfter,
+                              ),
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                      <div className={styles.panelActions}>
+                        <button
+                          type="button"
+                          className={styles.primaryButton}
+                          onClick={accountPrivacy.cancelDeletion}
+                          disabled={accountPrivacy.busy === 'cancel'}
+                        >
+                          <FiX aria-hidden="true" />
+                          {accountPrivacy.busy === 'cancel'
+                            ? copy.deleteAccount.sending
+                            : copy.deleteAccount.cancel}
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className={styles.dangerNotice}>
+                        <FiAlertTriangle aria-hidden="true" />
+                        <div>
+                          <strong>{copy.deleteAccount.noticeTitle}</strong>
+                          <p>{copy.deleteAccount.notice}</p>
+                          <p>{copy.deleteAccount.kept}</p>
+                        </div>
+                      </div>
+                      <form
+                        className={styles.passwordForm}
+                        onSubmit={handleDeletionSubmit}
+                      >
+                        <label>
+                          <span>{copy.deleteAccount.confirmLabel}</span>
+                          <input
+                            type="text"
+                            autoComplete="off"
+                            value={deleteConfirmation}
+                            onChange={(event) =>
+                              setDeleteConfirmation(event.currentTarget.value)
+                            }
+                            aria-describedby="delete-account-reauth"
+                            required
+                          />
+                        </label>
+                        <p id="delete-account-reauth">
+                          {copy.deleteAccount.reauthHint}
+                        </p>
+                        <button
+                          type="submit"
+                          className={styles.dangerButton}
+                          disabled={
+                            accountPrivacy.busy === 'request' ||
+                            deleteConfirmation.trim().toUpperCase() !==
+                              'ELIMINAR'
+                          }
+                        >
+                          <FiTrash2 aria-hidden="true" />
+                          {accountPrivacy.busy === 'request'
+                            ? copy.deleteAccount.sending
+                            : copy.deleteAccount.action}
+                        </button>
+                      </form>
+                    </>
+                  )}
+                  {onOpenSupport ? (
+                    <div className={styles.panelActions}>
+                      <button
+                        type="button"
+                        className={styles.sectionButton}
+                        onClick={onOpenSupport}
+                      >
+                        <FiMail aria-hidden="true" />{' '}
+                        {copy.deleteAccount.support}
+                      </button>
                     </div>
-                  </div>
-                  <button
-                    type="button"
-                    className={styles.dangerButton}
-                    onClick={onOpenSupport}
-                  >
-                    <FiMail aria-hidden="true" /> {copy.deleteAccount.action}
-                  </button>
+                  ) : null}
                 </section>
               ) : null}
             </m.div>

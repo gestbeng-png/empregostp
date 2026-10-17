@@ -11,12 +11,18 @@ async function requireAdmin(req, res) {
   }
 
   if (!token) {
-    res.status(401).json({ message: 'Token de autorização ausente ou inválido' });
+    res
+      .status(401)
+      .json({ message: 'Token de autorização ausente ou inválido' });
     return null;
   }
 
   const decodedToken = await admin.auth().verifyIdToken(token);
-  const adminDoc = await admin.firestore().collection('users').doc(decodedToken.uid).get();
+  const adminDoc = await admin
+    .firestore()
+    .collection('users')
+    .doc(decodedToken.uid)
+    .get();
   if (!adminDoc.exists || adminDoc.data().userType !== 'admin') {
     res.status(403).json({ message: 'Acesso negado. Apenas administradores.' });
     return null;
@@ -89,6 +95,8 @@ export default async function handler(req, res) {
     return res.status(200).json({ affiliates, stats });
   } catch (error) {
     logServerError('admin_affiliates.api_de_afiliados_admin_failed', error);
-    return res.status(500).json({ message: 'Erro interno do servidor', error: error.message });
+    return res
+      .status(500)
+      .json({ message: 'Erro interno do servidor', error: error.message });
   }
 }

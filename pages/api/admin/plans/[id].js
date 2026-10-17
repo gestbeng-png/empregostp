@@ -14,7 +14,11 @@ export default async function handler(req, res) {
     const decodedToken = await admin.auth().verifyIdToken(token);
 
     // Verificar se é admin
-    const userDoc = await admin.firestore().collection('users').doc(decodedToken.uid).get();
+    const userDoc = await admin
+      .firestore()
+      .collection('users')
+      .doc(decodedToken.uid)
+      .get();
     if (!userDoc.exists || userDoc.data().userType !== 'admin') {
       return res.status(403).json({ error: 'Acesso não autorizado' });
     }
@@ -31,7 +35,7 @@ export default async function handler(req, res) {
         id: planDoc.id,
         ...data,
         createdAt: data.createdAt ? data.createdAt.toMillis() : null,
-        updatedAt: data.updatedAt ? data.updatedAt.toMillis() : null
+        updatedAt: data.updatedAt ? data.updatedAt.toMillis() : null,
       });
     }
 
@@ -46,10 +50,16 @@ export default async function handler(req, res) {
         destaque,
         curriculoDestacado,
         features,
-        isActive
+        isActive,
       } = req.body || {};
 
-      if (!name || typeof price !== 'number' || !priceLabel || typeof duration !== 'number' || !type) {
+      if (
+        !name ||
+        typeof price !== 'number' ||
+        !priceLabel ||
+        typeof duration !== 'number' ||
+        !type
+      ) {
         return res.status(400).json({ error: 'Dados do plano inválidos' });
       }
       if (!['empresa', 'candidato'].includes(type)) {
@@ -63,11 +73,14 @@ export default async function handler(req, res) {
         duration,
         type,
         isActive: Boolean(isActive),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       };
 
       if (type === 'empresa') {
-        updateData.vagasLimit = vagasLimit === null || vagasLimit === undefined ? null : Number(vagasLimit);
+        updateData.vagasLimit =
+          vagasLimit === null || vagasLimit === undefined
+            ? null
+            : Number(vagasLimit);
         updateData.destaque = Boolean(destaque);
         delete updateData.curriculoDestacado;
       } else if (type === 'candidato') {
@@ -89,19 +102,22 @@ export default async function handler(req, res) {
       const updated = await planRef.get();
       const d = updated.data();
 
-      await admin.firestore().collection('activities').add({
-        type: 'plan_updated',
-        description: `Plano "${d.name || updated.id}" foi atualizado por um administrador`,
-        planId: updated.id,
-        adminId: decodedToken.uid,
-        createdAt: new Date().toISOString()
-      });
+      await admin
+        .firestore()
+        .collection('activities')
+        .add({
+          type: 'plan_updated',
+          description: `Plano "${d.name || updated.id}" foi atualizado por um administrador`,
+          planId: updated.id,
+          adminId: decodedToken.uid,
+          createdAt: new Date().toISOString(),
+        });
 
       return res.status(200).json({
         id: updated.id,
         ...d,
         createdAt: d.createdAt ? d.createdAt.toMillis() : null,
-        updatedAt: d.updatedAt ? d.updatedAt.toMillis() : null
+        updatedAt: d.updatedAt ? d.updatedAt.toMillis() : null,
       });
     }
 
@@ -112,15 +128,20 @@ export default async function handler(req, res) {
       const planName = planDoc.data()?.name || id;
       await planRef.delete();
 
-      await admin.firestore().collection('activities').add({
-        type: 'plan_deleted',
-        description: `Plano "${planName}" foi excluído por um administrador`,
-        planId: id,
-        adminId: decodedToken.uid,
-        createdAt: new Date().toISOString()
-      });
+      await admin
+        .firestore()
+        .collection('activities')
+        .add({
+          type: 'plan_deleted',
+          description: `Plano "${planName}" foi excluído por um administrador`,
+          planId: id,
+          adminId: decodedToken.uid,
+          createdAt: new Date().toISOString(),
+        });
 
-      return res.status(200).json({ message: 'Plano excluído com sucesso', id });
+      return res
+        .status(200)
+        .json({ message: 'Plano excluído com sucesso', id });
     }
 
     res.setHeader('Allow', ['GET', 'PUT', 'DELETE']);
@@ -130,7 +151,3 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 }
-
-
-
-

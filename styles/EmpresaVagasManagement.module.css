@@ -33,7 +33,11 @@
   font-size: 0.88rem;
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 .hero {
   display: flex;
@@ -102,7 +106,11 @@
   font-weight: 750;
   text-decoration: none;
   cursor: pointer;
-  transition: transform 160ms ease, border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .primaryCta,
@@ -144,13 +152,21 @@
   height: 2px;
   border-radius: 0 0 2px 2px;
   background: var(--summary-accent, #2057d7);
-  content: "";
+  content: '';
 }
 
-.summaryBlue { --summary-accent: #2057d7; }
-.summaryGreen { --summary-accent: #3dbb7a; }
-.summaryGold { --summary-accent: #b6db21; }
-.summaryViolet { --summary-accent: #5fb8f5; }
+.summaryBlue {
+  --summary-accent: #2057d7;
+}
+.summaryGreen {
+  --summary-accent: #3dbb7a;
+}
+.summaryGold {
+  --summary-accent: #b6db21;
+}
+.summaryViolet {
+  --summary-accent: #5fb8f5;
+}
 
 .summaryLabel {
   overflow: hidden;
@@ -219,7 +235,9 @@
   color: var(--text-1, #17233b);
   font: inherit;
   font-size: 0.83rem;
-  transition: border-color 160ms ease, box-shadow 160ms ease;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .select:focus,
@@ -251,7 +269,10 @@
   border-radius: 12px;
   background: var(--surface, #fff);
   box-shadow: var(--shadow-sm, 0 1px 2px rgba(15, 23, 42, 0.04));
-  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
 }
 
 .jobCard:hover {
@@ -274,8 +295,12 @@
   min-width: 0;
 }
 
-.jobContent { gap: 9px; }
-.jobTitleWrap { gap: 7px; }
+.jobContent {
+  gap: 9px;
+}
+.jobTitleWrap {
+  gap: 7px;
+}
 
 .jobTitle {
   overflow: hidden;
@@ -293,7 +318,9 @@
   text-decoration: none;
 }
 
-.jobTitle a:hover { color: var(--blue, #2057d7); }
+.jobTitle a:hover {
+  color: var(--blue, #2057d7);
+}
 
 .badges,
 .metaRow,
@@ -346,7 +373,7 @@
   margin-right: 7px;
   border-radius: 50%;
   background: var(--text-4, #94a3b8);
-  content: "";
+  content: '';
 }
 
 .actions {
@@ -456,48 +483,99 @@
 }
 
 @media (max-width: 980px) {
-  .summaryGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .summaryCard:nth-child(2) { border-right: 0; }
-  .summaryCard:nth-child(-n + 2) { border-bottom: 1px solid var(--border, #dfe7f1); }
-  .controlBar { grid-template-columns: minmax(220px, 1fr) repeat(2, minmax(140px, 180px)); }
-  .resultCount { grid-column: 1 / -1; margin: 0; }
-  .jobCard { grid-template-columns: 1fr; }
-  .actions { justify-content: flex-start; }
+  .summaryGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .summaryCard:nth-child(2) {
+    border-right: 0;
+  }
+  .summaryCard:nth-child(-n + 2) {
+    border-bottom: 1px solid var(--border, #dfe7f1);
+  }
+  .controlBar {
+    grid-template-columns: minmax(220px, 1fr) repeat(2, minmax(140px, 180px));
+  }
+  .resultCount {
+    grid-column: 1 / -1;
+    margin: 0;
+  }
+  .jobCard {
+    grid-template-columns: 1fr;
+  }
+  .actions {
+    justify-content: flex-start;
+  }
 }
 
 @media (max-width: 680px) {
-  .hero { align-items: stretch; flex-direction: column; }
-  .primaryCta { width: 100%; }
-  .controlBar { grid-template-columns: 1fr; }
-  .resultCount { grid-column: auto; }
-  .jobCard { padding: 15px; }
-  .actions { display: grid; grid-template-columns: 1fr 1fr; }
-  .actionButton { width: 100%; }
-  .actions .actionDelete { grid-column: 1 / -1; }
-  .tipBox { grid-template-columns: 1fr; gap: 6px; }
+  .hero {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .primaryCta {
+    width: 100%;
+  }
+  .controlBar {
+    grid-template-columns: 1fr;
+  }
+  .resultCount {
+    grid-column: auto;
+  }
+  .jobCard {
+    padding: 15px;
+  }
+  .actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .actionButton {
+    width: 100%;
+  }
+  .actions .actionDelete {
+    grid-column: 1 / -1;
+  }
+  .tipBox {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
 }
 
 @media (max-width: 430px) {
-  .summaryGrid { grid-template-columns: 1fr; }
+  .summaryGrid {
+    grid-template-columns: 1fr;
+  }
   .summaryCard,
-  .summaryCard:nth-child(2) { border-right: 0; border-bottom: 1px solid var(--border, #dfe7f1); }
-  .summaryCard:last-child { border-bottom: 0; }
-  .actions { grid-template-columns: 1fr; }
-  .actions .actionDelete { grid-column: auto; }
+  .summaryCard:nth-child(2) {
+    border-right: 0;
+    border-bottom: 1px solid var(--border, #dfe7f1);
+  }
+  .summaryCard:last-child {
+    border-bottom: 0;
+  }
+  .actions {
+    grid-template-columns: 1fr;
+  }
+  .actions .actionDelete {
+    grid-column: auto;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .loadingSpinner { animation: none; }
+  .loadingSpinner {
+    animation: none;
+  }
   .jobCard,
   .primaryCta,
   .emptyAction,
-  .actionButton { transition: none; }
+  .actionButton {
+    transition: none;
+  }
 }
 
 /* Workbridge fidelity layer. */
 .page {
   color: var(--text-1, #102441);
-  font-family: var(--font-instrument, "Instrument Sans"), Arial, sans-serif;
+  font-family: var(--font-instrument, 'Instrument Sans'), Arial, sans-serif;
 }
 
 .hero,

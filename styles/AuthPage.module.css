@@ -602,7 +602,6 @@
   .formPanelInnerWide {
     width: 100%;
   }
-
 }
 
 @media (max-width: 640px) {
@@ -647,7 +646,6 @@
     padding: 1.15rem;
     border-radius: var(--app-radius-md);
   }
-
 }
 
 /* --- Autenticação: verificação de email, campos de empresa e recuperação --- */

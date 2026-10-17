@@ -541,36 +541,9 @@ export default function DetalheVaga({ vaga, candidaturas }) {
                   APPLICATION_STATUS_LABELS[applicationStatus] ||
                   applicationStatus;
                 const result = candidatura.skillsAssessmentResult;
-                const premiumBadges = [
-                  candidatura.priorityApplied
-                    ? {
-                        key: "priority",
-                        label: "Prioritária",
-                        className: styles.applicationBadgePriority,
-                      }
-                    : null,
-                  candidatura.applicationHighlighted
-                    ? {
-                        key: "highlight",
-                        label: "Destaque",
-                        className: styles.applicationBadgeHighlight,
-                      }
-                    : null,
-                  candidatura.premiumOnlyJob
-                    ? {
-                        key: "premium",
-                        label: "Vaga premium",
-                        className: styles.applicationBadgePremium,
-                      }
-                    : null,
-                  candidatura.accessedDuringEarlyWindow
-                    ? {
-                        key: "early",
-                        label: "Acesso antecipado",
-                        className: styles.applicationBadgeEarly,
-                      }
-                    : null,
-                ].filter(Boolean);
+                // F2.1/K1: a empresa não vê se o candidato pagou (prioridade,
+                // destaque, vaga premium ou acesso antecipado).
+                const premiumBadges = [];
                 return (
                   <article
                     key={candidatura.id}
@@ -825,9 +798,7 @@ export async function getServerSideProps(context) {
     });
 
     candidaturas.sort((a, b) => {
-      const priorityDiff =
-        (Number(b.priorityLevel) || 0) - (Number(a.priorityLevel) || 0);
-      if (priorityDiff !== 0) return priorityDiff;
+      // F2.1/K1: nenhuma candidatura passa à frente por plano pago.
       if (!a.createdAt) return 1;
       if (!b.createdAt) return -1;
       return new Date(b.createdAt) - new Date(a.createdAt);

@@ -81,7 +81,11 @@ export default async function handler(req, res) {
 
     if (req.method === 'POST') {
       // Papel do utilizador (candidato/empresa) obtido do próprio registo
-      const userSnap = await admin.firestore().collection('users').doc(uid).get();
+      const userSnap = await admin
+        .firestore()
+        .collection('users')
+        .doc(uid)
+        .get();
       const userType = userSnap.exists ? userSnap.data().userType : null;
       const role = userType === 'empresa' ? 'empresa' : 'candidato';
 
@@ -93,7 +97,10 @@ export default async function handler(req, res) {
       const channels = sanitize(req.body?.channels);
       const motivation = sanitize(req.body?.motivation);
 
-      if (fullName.length < LIMITS.fullName.min || fullName.length > LIMITS.fullName.max) {
+      if (
+        fullName.length < LIMITS.fullName.min ||
+        fullName.length > LIMITS.fullName.max
+      ) {
         return res.status(400).json({
           error: `O nome deve ter entre ${LIMITS.fullName.min} e ${LIMITS.fullName.max} caracteres.`,
         });
@@ -102,25 +109,39 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Indique um email válido.' });
       }
       if (phone.length < LIMITS.phone.min || phone.length > LIMITS.phone.max) {
-        return res.status(400).json({ error: 'Indique um telefone/WhatsApp válido.' });
+        return res
+          .status(400)
+          .json({ error: 'Indique um telefone/WhatsApp válido.' });
       }
       if (location.length > LIMITS.location.max) {
-        return res.status(400).json({ error: 'A localização é demasiado longa.' });
+        return res
+          .status(400)
+          .json({ error: 'A localização é demasiado longa.' });
       }
       if (occupation.length > LIMITS.occupation.max) {
-        return res.status(400).json({ error: 'O campo de atividade é demasiado longo.' });
+        return res
+          .status(400)
+          .json({ error: 'O campo de atividade é demasiado longo.' });
       }
       if (channels.length > LIMITS.channels.max) {
-        return res.status(400).json({ error: 'A descrição dos canais é demasiado longa.' });
+        return res
+          .status(400)
+          .json({ error: 'A descrição dos canais é demasiado longa.' });
       }
-      if (motivation.length < LIMITS.motivation.min || motivation.length > LIMITS.motivation.max) {
+      if (
+        motivation.length < LIMITS.motivation.min ||
+        motivation.length > LIMITS.motivation.max
+      ) {
         return res.status(400).json({
           error: `A motivação deve ter entre ${LIMITS.motivation.min} e ${LIMITS.motivation.max} caracteres.`,
         });
       }
 
       const existing = await docRef.get();
-      if (existing.exists && BLOCKING_STATUSES.includes(existing.data().status)) {
+      if (
+        existing.exists &&
+        BLOCKING_STATUSES.includes(existing.data().status)
+      ) {
         return res.status(409).json({
           error: 'Já existe uma candidatura de afiliado registada.',
           application: serialize(existing),
@@ -153,7 +174,8 @@ export default async function handler(req, res) {
 
       const saved = await docRef.get();
       return res.status(201).json({
-        message: 'Candidatura de afiliado enviada com sucesso. A nossa equipa entrará em contacto.',
+        message:
+          'Candidatura de afiliado enviada com sucesso. A nossa equipa entrará em contacto.',
         application: serialize(saved),
       });
     }

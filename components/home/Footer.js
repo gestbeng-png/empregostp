@@ -11,15 +11,15 @@ const candidateLinks = [
 
 const companyLinks = [
   { label: 'Publicar vagas', href: '/dashboard/empresa/vaga/criar-vaga' },
-  { label: 'Procurar candidatos', href: '/#candidatos-verificados' },
+  { label: 'Procurar candidatos', href: '/verificados' },
   { label: 'Recursos', href: '/recursos' },
 ];
 
 const companyInfoLinks = [
   { label: 'Sobre nós', href: '/sobre-nos' },
   { label: 'Blog', href: '/blog' },
+  { label: 'Carreira', href: '/carreira' },
   { label: 'Contactos', href: '/contacto' },
-  { label: 'Privacidade', href: '/politica-privacidade' },
 ];
 
 function FooterLinkGroup({ title, links, className = '' }) {
@@ -46,15 +46,6 @@ export default function Footer() {
   return (
     <footer className={`${styles.footer} workbridgeFooter`}>
       <div className={styles.inner}>
-        <div className={styles.signatureRail}>
-          <span className={styles.signaturePlace}>
-            São Tomé e Príncipe · Linha do Equador
-          </span>
-          <span className={styles.signatureMessage}>
-            Talento local. Impacto global.
-          </span>
-        </div>
-
         <div className={styles.grid}>
           <div
             className={`${styles.mobileBlock} ${styles.primaryBlock}`}

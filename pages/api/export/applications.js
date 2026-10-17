@@ -1,11 +1,14 @@
 import { admin } from '../../../lib/firebaseAdmin';
-import { canExportApplications, getEmpresaPlanSummary } from '../../../lib/empresaPlanFeatures';
+import {
+  canExportApplications,
+  getEmpresaPlanSummary,
+} from '../../../lib/empresaPlanFeatures';
 import { logServerError, logServerWarning } from '../../../lib/serverLog';
 
 function isMissingIndexError(error) {
   return (
-    error?.code === 9
-    || String(error?.details || error?.message || '')
+    error?.code === 9 ||
+    String(error?.details || error?.message || '')
       .toLowerCase()
       .includes('requires an index')
   );
@@ -35,7 +38,9 @@ export default async function handler(req, res) {
 
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Token de autenticação não fornecido' });
+    return res
+      .status(401)
+      .json({ error: 'Token de autenticação não fornecido' });
   }
   const token = authHeader.split('Bearer ')[1];
 
@@ -53,7 +58,9 @@ export default async function handler(req, res) {
   }
   const userData = userDoc.data();
   if (userData.userType !== 'empresa') {
-    return res.status(403).json({ error: 'Apenas empresas podem exportar candidaturas' });
+    return res
+      .status(403)
+      .json({ error: 'Apenas empresas podem exportar candidaturas' });
   }
 
   // Verificar plano
@@ -64,14 +71,15 @@ export default async function handler(req, res) {
       error: access.reason,
       code: access.code,
       upgradeMessage: access.upgradeMessage,
-      upgradeUrl: access.upgradeUrl
+      upgradeUrl: access.upgradeUrl,
     });
   }
 
   try {
     const { jobId, status } = req.query;
 
-    let query = admin.firestore()
+    let query = admin
+      .firestore()
       .collection('applications')
       .where('companyId', '==', uid);
 
@@ -106,7 +114,7 @@ export default async function handler(req, res) {
         escapeCsv(d.candidateEmail || ''),
         escapeCsv(d.jobTitle || ''),
         escapeCsv(d.status || ''),
-        escapeCsv(createdAt)
+        escapeCsv(createdAt),
       ].join(',');
     });
 

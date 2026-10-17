@@ -29,23 +29,6 @@ const EMPLOYMENT_TYPES = [
   'Voluntariado',
 ];
 
-const EXPERIENCE_LEVELS = [
-  'Júnior (0-2 anos)',
-  'Pleno (2-5 anos)',
-  'Sénior (5+ anos)',
-  'Especialista',
-  'Gestão',
-];
-
-const EDUCATION_LEVELS = [
-  'Ensino Básico',
-  'Ensino Secundário',
-  'Licenciatura',
-  'Mestrado',
-  'Doutoramento',
-  'Não exigido',
-];
-
 const JOB_CATEGORIES = [
   'Marketing Digital',
   'Programação',

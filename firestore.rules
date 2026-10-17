@@ -39,7 +39,14 @@ service cloud.firestore {
     }
 
     match /jobs/{jobId} {
-      allow read: if true;
+      // SEC-04: nenhuma página lê vagas pelo SDK do browser — tudo passa por
+      // SSR/API com o Admin SDK e pela allowlist `projectPublicJob`. As regras
+      // não conseguem esconder campos, por isso a leitura direta fica só para
+      // o admin e para a empresa dona. Campos internos da v2 (risco, cliente
+      // confidencial, notas de moderação) vivem em `jobInternals/{jobId}`,
+      // que não tem regra e fica negado pelo bloqueio final.
+      allow read: if isAdmin()
+        || (isCompany() && resource.data.companyId == request.auth.uid);
       allow write: if isAdmin();
     }
 
@@ -106,7 +113,9 @@ service cloud.firestore {
     }
 
     match /resources_premium/{itemId} {
-      allow read: if true;
+      // SEC-05: conteúdo pago. Lido só no servidor (Admin SDK) depois de
+      // verificar o acesso; o browser não o lê diretamente.
+      allow read: if isAdmin();
       allow write: if isAdmin();
     }
 

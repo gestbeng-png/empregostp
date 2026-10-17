@@ -11,12 +11,18 @@ async function requireAdmin(req, res) {
   }
 
   if (!token) {
-    res.status(401).json({ message: 'Token de autorização ausente ou inválido' });
+    res
+      .status(401)
+      .json({ message: 'Token de autorização ausente ou inválido' });
     return null;
   }
 
   const decodedToken = await admin.auth().verifyIdToken(token);
-  const adminDoc = await admin.firestore().collection('users').doc(decodedToken.uid).get();
+  const adminDoc = await admin
+    .firestore()
+    .collection('users')
+    .doc(decodedToken.uid)
+    .get();
   if (!adminDoc.exists || adminDoc.data().userType !== 'admin') {
     res.status(403).json({ message: 'Acesso negado. Apenas administradores.' });
     return null;
@@ -41,10 +47,15 @@ export default async function handler(req, res) {
       return res.status(400).json({ message: 'ID do afiliado em falta' });
     }
 
-    const docRef = admin.firestore().collection('affiliateApplications').doc(id);
+    const docRef = admin
+      .firestore()
+      .collection('affiliateApplications')
+      .doc(id);
     const docSnap = await docRef.get();
     if (!docSnap.exists) {
-      return res.status(404).json({ message: 'Candidatura de afiliado não encontrada' });
+      return res
+        .status(404)
+        .json({ message: 'Candidatura de afiliado não encontrada' });
     }
 
     if (req.method === 'DELETE') {
@@ -58,7 +69,9 @@ export default async function handler(req, res) {
       if (!status) {
         return res
           .status(400)
-          .json({ message: 'Ação inválida. Use approve, reject, contact ou reset.' });
+          .json({
+            message: 'Ação inválida. Use approve, reject, contact ou reset.',
+          });
       }
 
       await docRef.update({
@@ -74,6 +87,8 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: 'Método não permitido' });
   } catch (error) {
     logServerError('admin_affiliates_id.moderar_afiliado_failed', error);
-    return res.status(500).json({ message: 'Erro interno do servidor', error: error.message });
+    return res
+      .status(500)
+      .json({ message: 'Erro interno do servidor', error: error.message });
   }
 }

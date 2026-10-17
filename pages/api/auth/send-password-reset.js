@@ -1,5 +1,8 @@
 import { isValidEmail, normalizeEmail } from '../../../lib/validation';
-import { sendResetPasswordEmail, resolveBaseUrl } from '../../../lib/authEmails';
+import {
+  sendResetPasswordEmail,
+  resolveBaseUrl,
+} from '../../../lib/authEmails';
 import { enforceApiRateLimit } from '../../../lib/apiRateLimit';
 import { logServerError, logServerWarning } from '../../../lib/serverLog';
 import { createHash } from 'node:crypto';
@@ -59,10 +62,18 @@ export default async function handler(req, res) {
       return res.status(200).json({ message: 'Email de recuperação enviado.' });
     }
     if (error.code === 'EMAIL_NOT_CONFIGURED') {
-      logServerWarning('auth_send_password_reset.envio_de_email_nao_configurado_send_password_failed', undefined);
+      logServerWarning(
+        'auth_send_password_reset.envio_de_email_nao_configurado_send_password_failed',
+        undefined,
+      );
       return res.status(503).json({ error: 'Serviço de email indisponível.' });
     }
-    logServerError('auth_send_password_reset.enviar_email_de_recuperacao_failed', error);
-    return res.status(500).json({ error: 'Não foi possível enviar o email de recuperação.' });
+    logServerError(
+      'auth_send_password_reset.enviar_email_de_recuperacao_failed',
+      error,
+    );
+    return res
+      .status(500)
+      .json({ error: 'Não foi possível enviar o email de recuperação.' });
   }
 }

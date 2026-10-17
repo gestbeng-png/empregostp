@@ -544,17 +544,6 @@ function TextAreaField({
   );
 }
 
-function PreviewBlock({ title, children, sidebar = false }) {
-  return (
-    <section
-      className={sidebar ? styles.previewSidebarCard : styles.previewSection}
-    >
-      <h3 className={styles.previewSectionTitle}>{title}</h3>
-      {children}
-    </section>
-  );
-}
-
 function LockedState({
   title,
   description,

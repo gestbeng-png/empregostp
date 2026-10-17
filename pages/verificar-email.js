@@ -6,10 +6,12 @@ import { applyActionCode } from 'firebase/auth';
 import { FiAlertCircle, FiCheckCircle, FiClock } from 'react-icons/fi';
 import auth from '../lib/firebaseAuth';
 import AuthShell from '../components/auth/AuthShell';
+import { buildLoginUrl, readLoginRedirect } from '../lib/loginRedirect';
 import styles from '../styles/AuthPage.module.css';
 
 export default function VerificarEmail() {
   const router = useRouter();
+  const loginHref = buildLoginUrl(readLoginRedirect(router.query));
   const [status, setStatus] = useState('verifying'); // verifying | success | error
 
   useEffect(() => {
@@ -67,10 +69,10 @@ export default function VerificarEmail() {
               <FiCheckCircle className={styles.verifyIcon} aria-hidden="true" />
               <h1 className={styles.verifyTitle}>Email confirmado</h1>
               <p className={styles.verifyText}>
-                A sua conta foi ativada com sucesso. Já pode entrar e começar a
-                usar o EmpregoSTP.
+                O seu endereço de email foi confirmado. Inicie sessão para
+                continuar no EmpregoSTP.
               </p>
-              <Link href="/login" className={styles.primaryButton}>
+              <Link href={loginHref} className={styles.primaryButton}>
                 Iniciar sessão
               </Link>
             </div>
@@ -84,7 +86,7 @@ export default function VerificarEmail() {
                 Este link de confirmação já foi usado ou expirou. Inicie sessão
                 para pedir um novo email de confirmação.
               </p>
-              <Link href="/login" className={styles.primaryButton}>
+              <Link href={loginHref} className={styles.primaryButton}>
                 Iniciar sessão
               </Link>
             </div>

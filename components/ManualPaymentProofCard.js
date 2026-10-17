@@ -34,12 +34,15 @@ export default function ManualPaymentProofCard({
   description = 'Depois da transferência, envie o comprovativo por aqui para revisão do administrador.',
   embedded = false,
   onSubmitted,
+  onCancelled,
 }) {
   const [file, setFile] = useState(null);
   const [note, setNote] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [confirmingCancel, setConfirmingCancel] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
   const instructions = request?.paymentInstructions || {};
   const hasProof = Boolean(request?.paymentProof?.url);
@@ -54,6 +57,36 @@ export default function ManualPaymentProofCard({
   if (!request?.id) {
     return null;
   }
+
+  // Só antes do comprovativo: depois, a decisão é do administrador.
+  const canCancel =
+    typeof onCancelled === 'function' &&
+    request.status === 'pending' &&
+    !hasProof;
+
+  const handleCancel = async () => {
+    setError('');
+    setCancelling(true);
+    try {
+      const token = await getAuth().currentUser?.getIdToken();
+      if (!token)
+        throw new Error('A sessão terminou. Inicie sessão novamente.');
+      const response = await fetch(
+        `/api/subscription-requests/${encodeURIComponent(request.id)}/cancel`,
+        { method: 'POST', headers: { Authorization: `Bearer ${token}` } },
+      );
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || 'Não foi possível cancelar o pedido.');
+      }
+      setConfirmingCancel(false);
+      onCancelled(request.id);
+    } catch (cancelError) {
+      setError(cancelError.message || 'Não foi possível cancelar o pedido.');
+    } finally {
+      setCancelling(false);
+    }
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -240,6 +273,42 @@ export default function ManualPaymentProofCard({
           {buttonLabel}
         </button>
       </form>
+
+      {canCancel ? (
+        <div className={styles.cancelRow}>
+          {confirmingCancel ? (
+            <>
+              <span>
+                Cancelar este pedido? Pode escolher outro plano a seguir.
+              </span>
+              <button
+                type="button"
+                className={styles.secondaryAction}
+                onClick={handleCancel}
+                disabled={cancelling}
+              >
+                {cancelling ? 'A cancelar...' : 'Sim, cancelar pedido'}
+              </button>
+              <button
+                type="button"
+                className={styles.secondaryAction}
+                onClick={() => setConfirmingCancel(false)}
+                disabled={cancelling}
+              >
+                Manter pedido
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              className={styles.secondaryAction}
+              onClick={() => setConfirmingCancel(true)}
+            >
+              Cancelar pedido
+            </button>
+          )}
+        </div>
+      ) : null}
     </section>
   );
 }

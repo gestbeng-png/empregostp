@@ -63,7 +63,7 @@ export default function AdminServices({ services = [] }) {
         throw new Error(errorData.message || 'Erro ao adicionar serviço');
       }
 
-      const data = await res.json();
+      await res.json();
       setSuccess('Serviço adicionado com sucesso!');
       setNewService({
         title: '',

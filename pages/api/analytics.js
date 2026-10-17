@@ -1,9 +1,17 @@
 import { admin } from '../../lib/firebaseAdmin';
-import { canAccessAnalytics, getEmpresaPlanSummary } from '../../lib/empresaPlanFeatures';
+import {
+  canAccessAnalytics,
+  getEmpresaPlanSummary,
+} from '../../lib/empresaPlanFeatures';
 import { logServerError, logServerWarning } from '../../lib/serverLog';
 
 function isMissingIndexError(error) {
-  return error?.code === 9 || String(error?.details || error?.message || '').toLowerCase().includes('requires an index');
+  return (
+    error?.code === 9 ||
+    String(error?.details || error?.message || '')
+      .toLowerCase()
+      .includes('requires an index')
+  );
 }
 
 function toMillis(value) {
@@ -28,7 +36,10 @@ async function fetchViewsForBatch(batch, thirtyDaysTimestamp) {
       throw error;
     }
 
-    logServerWarning('analytics.analytics_query_without_composite_index_usin_failed', batch);
+    logServerWarning(
+      'analytics.analytics_query_without_composite_index_usin_failed',
+      batch,
+    );
 
     try {
       const fallbackSnapshot = await firestore
@@ -44,14 +55,19 @@ async function fetchViewsForBatch(batch, thirtyDaysTimestamp) {
 
       return { docs: filteredDocs };
     } catch (fallbackError) {
-      logServerWarning('analytics.analytics_batch_fallback_failed_using_global_failed', fallbackError);
+      logServerWarning(
+        'analytics.analytics_batch_fallback_failed_using_global_failed',
+        fallbackError,
+      );
 
       const fullSnapshot = await firestore.collection('jobViews').get();
       const jobSet = new Set(batch);
       const threshold = thirtyDaysTimestamp.toMillis();
       const filteredDocs = fullSnapshot.docs.filter((doc) => {
         const data = doc.data();
-        return jobSet.has(data?.jobId) && toMillis(data?.timestamp) >= threshold;
+        return (
+          jobSet.has(data?.jobId) && toMillis(data?.timestamp) >= threshold
+        );
       });
 
       return { docs: filteredDocs };
@@ -68,7 +84,7 @@ export default async function handler(req, res) {
   try {
     const authHeader = req.headers.authorization;
     const token = authHeader?.split('Bearer ')[1];
-    
+
     if (!token) {
       return res.status(401).json({ error: 'Não autorizado' });
     }
@@ -77,14 +93,20 @@ export default async function handler(req, res) {
     const decodedToken = await admin.auth().verifyIdToken(token);
     const companyUid = decodedToken.uid;
 
-    const userDoc = await admin.firestore().collection('users').doc(companyUid).get();
+    const userDoc = await admin
+      .firestore()
+      .collection('users')
+      .doc(companyUid)
+      .get();
     if (!userDoc.exists) {
       return res.status(404).json({ error: 'Usuário não encontrado' });
     }
 
     const userData = userDoc.data();
     if (userData.userType !== 'empresa') {
-      return res.status(403).json({ error: 'Somente empresas podem aceder a analytics' });
+      return res
+        .status(403)
+        .json({ error: 'Somente empresas podem aceder a analytics' });
     }
 
     const planSummary = getEmpresaPlanSummary(userData);
@@ -94,27 +116,27 @@ export default async function handler(req, res) {
         error: analyticsAccess.reason,
         code: analyticsAccess.code,
         upgradeMessage: analyticsAccess.upgradeMessage,
-        upgradeUrl: analyticsAccess.upgradeUrl
+        upgradeUrl: analyticsAccess.upgradeUrl,
       });
     }
 
-
     // Buscar vagas da empresa
-    const jobsSnapshot = await admin.firestore()
+    const jobsSnapshot = await admin
+      .firestore()
       .collection('jobs')
       .where('companyId', '==', companyUid)
       .get();
 
-    const jobIds = jobsSnapshot.docs.map(doc => doc.id);
+    const jobIds = jobsSnapshot.docs.map((doc) => doc.id);
     const jobsData = {};
 
-    jobsSnapshot.docs.forEach(doc => {
+    jobsSnapshot.docs.forEach((doc) => {
       const data = doc.data();
       jobsData[doc.id] = {
         id: doc.id,
         titulo: data.titulo || '',
         views: data.views || 0,
-        status: data.status || 'active'
+        status: data.status || 'active',
       };
     });
 
@@ -125,18 +147,19 @@ export default async function handler(req, res) {
         conversionRate: 0,
         jobsAnalytics: [],
         viewsTimeline: [],
-        topJobs: []
+        topJobs: [],
       });
     }
 
     // Buscar candidaturas
-    const applicationsSnapshot = await admin.firestore()
+    const applicationsSnapshot = await admin
+      .firestore()
       .collection('applications')
       .where('companyId', '==', companyUid)
       .get();
 
     const applicationsByJob = {};
-    applicationsSnapshot.docs.forEach(doc => {
+    applicationsSnapshot.docs.forEach((doc) => {
       const data = doc.data();
       const jobId = data.jobId;
       if (jobId) {
@@ -149,12 +172,16 @@ export default async function handler(req, res) {
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
     // Firestore 'in' query limita-se a 10 itens — usar batches para empresas com >10 vagas
-    const thirtyDaysTimestamp = admin.firestore.Timestamp.fromDate(thirtyDaysAgo);
+    const thirtyDaysTimestamp =
+      admin.firestore.Timestamp.fromDate(thirtyDaysAgo);
     const BATCH_SIZE = 10;
     const viewsDocs = [];
     for (let i = 0; i < jobIds.length; i += BATCH_SIZE) {
       const batch = jobIds.slice(i, i + BATCH_SIZE);
-      const batchSnapshot = await fetchViewsForBatch(batch, thirtyDaysTimestamp);
+      const batchSnapshot = await fetchViewsForBatch(
+        batch,
+        thirtyDaysTimestamp,
+      );
       viewsDocs.push(...batchSnapshot.docs);
     }
 
@@ -163,37 +190,45 @@ export default async function handler(req, res) {
     const viewsByJob = {};
     const viewsTimeline = {};
 
-    viewsDocs.forEach(doc => {
+    viewsDocs.forEach((doc) => {
       const data = doc.data();
       const jobId = data.jobId;
       viewsByJob[jobId] = (viewsByJob[jobId] || 0) + 1;
       totalViews++;
 
       // Timeline (por dia)
-      const date = data.timestamp?.toDate ? data.timestamp.toDate().toISOString().split('T')[0] : null;
+      const date = data.timestamp?.toDate
+        ? data.timestamp.toDate().toISOString().split('T')[0]
+        : null;
       if (date) {
         viewsTimeline[date] = (viewsTimeline[date] || 0) + 1;
       }
     });
 
     // Somar views das vagas (usando campo 'views' como fallback)
-    Object.values(jobsData).forEach(job => {
+    Object.values(jobsData).forEach((job) => {
       if (!viewsByJob[job.id]) {
         totalViews += job.views;
       }
     });
 
     const totalApplications = applicationsSnapshot.size;
-    const conversionRate = totalViews > 0 ? ((totalApplications / totalViews) * 100).toFixed(2) : 0;
+    const conversionRate =
+      totalViews > 0 ? ((totalApplications / totalViews) * 100).toFixed(2) : 0;
 
     // Analytics por vaga
-    const jobsAnalytics = Object.values(jobsData).map(job => ({
+    const jobsAnalytics = Object.values(jobsData).map((job) => ({
       ...job,
       views: viewsByJob[job.id] || job.views || 0,
       applications: applicationsByJob[job.id] || 0,
-      conversionRate: (viewsByJob[job.id] || job.views) > 0 
-        ? (((applicationsByJob[job.id] || 0) / (viewsByJob[job.id] || job.views)) * 100).toFixed(2)
-        : 0
+      conversionRate:
+        (viewsByJob[job.id] || job.views) > 0
+          ? (
+              ((applicationsByJob[job.id] || 0) /
+                (viewsByJob[job.id] || job.views)) *
+              100
+            ).toFixed(2)
+          : 0,
     }));
 
     // Ordenar por views
@@ -213,12 +248,10 @@ export default async function handler(req, res) {
       conversionRate: parseFloat(conversionRate),
       jobsAnalytics,
       viewsTimeline: timelineArray,
-      topJobs
+      topJobs,
     });
-
   } catch (error) {
     logServerError('analytics.buscar_analytics_failed', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }
 }
-

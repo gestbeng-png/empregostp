@@ -1,12 +1,12 @@
 import {
   GUIDE_CONTENTS,
   TEMPLATE_CONTENTS,
-  slugifyFilename
+  slugifyFilename,
 } from '../../../lib/resourcesCatalog';
 
 const RESOURCE_KIND = {
   template: 'template',
-  guide: 'guide'
+  guide: 'guide',
 };
 
 const getQueryValue = (value) => {
@@ -27,10 +27,13 @@ export default function handler(req, res) {
   const title = getQueryValue(req.query.title).trim();
 
   if (!kind || !id) {
-    return res.status(400).json({ error: 'Parametros obrigatorios: kind e id.' });
+    return res
+      .status(400)
+      .json({ error: 'Parametros obrigatorios: kind e id.' });
   }
 
-  const source = kind === RESOURCE_KIND.guide ? GUIDE_CONTENTS : TEMPLATE_CONTENTS;
+  const source =
+    kind === RESOURCE_KIND.guide ? GUIDE_CONTENTS : TEMPLATE_CONTENTS;
   const content = source[id];
 
   if (!content) {

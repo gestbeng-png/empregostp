@@ -16,7 +16,7 @@ const FEATURED_POST = {
     date: '2 Fev 2026',
     readTime: '5 min',
     views: '4.8k',
-    image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&auto=format&fit=crop&q=80'
+    image: '/assets/people/team-working.webp'
 };
 
 const POSTS = [

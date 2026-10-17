@@ -14,7 +14,7 @@ import auth from '../lib/firebaseAuth';
 import { db } from '../lib/firebase';
 import AuthShell from '../components/auth/AuthShell';
 import { isValidEmail, normalizeEmail } from '../lib/validation';
-import { sanitizeLoginRedirect } from '../lib/loginRedirect';
+import { buildRegisterUrl, readLoginRedirect } from '../lib/loginRedirect';
 import { isNetworkError, OFFLINE_MESSAGE } from '../lib/networkError';
 import {
   createServerSession,
@@ -59,21 +59,24 @@ export default function Login() {
   const [resending, setResending] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const requestedRedirect = Array.isArray(router.query.redirect)
-    ? router.query.redirect[0]
-    : router.query.redirect;
-  const redirect = sanitizeLoginRedirect(requestedRedirect);
+  const redirect = readLoginRedirect(router.query);
+  const registerHref = buildRegisterUrl(redirect);
+  const googleRegisterHref = `${registerHref}${redirect ? '&' : '?'}google=true`;
 
   // Quem já tem sessão guardada no browser não devia ter de a escrever outra
   // vez: o cookie do servidor expirou, mas o Firebase ainda tem o utilizador.
   // Recriamos a sessão e seguimos para o destino pedido.
   useEffect(() => {
+    if (router.isReady === false) return undefined;
+    let active = true;
     const unsubscribe = onIdTokenChanged(auth, async (utilizadorAtual) => {
       if (!utilizadorAtual || !podeRetomarSessao()) return;
 
       try {
         const token = await utilizadorAtual.getIdToken();
+        if (!active) return;
         await createServerSession(token);
+        if (!active) return;
         marcarRetomaSessao();
         // O cookie já está escrito: o `getServerSideProps` do destino corre
         // com a sessão válida, por isso basta navegar.
@@ -83,7 +86,10 @@ export default function Login() {
       }
     });
 
-    return () => unsubscribe();
+    return () => {
+      active = false;
+      unsubscribe();
+    };
   }, [redirect, router]);
 
   const handleGoogleLogin = async () => {
@@ -100,7 +106,7 @@ export default function Login() {
 
       if (!userDoc.exists()) {
         await destroyServerSession().catch(() => undefined);
-        window.location.href = '/register?google=true';
+        window.location.href = googleRegisterHref;
         return;
       }
 
@@ -108,7 +114,7 @@ export default function Login() {
 
       if (userData.needsTypeSelection) {
         await destroyServerSession().catch(() => undefined);
-        window.location.href = '/register?google=true';
+        window.location.href = googleRegisterHref;
         return;
       }
 
@@ -270,7 +276,10 @@ export default function Login() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ name: credential.user.displayName || '' }),
+        body: JSON.stringify({
+          name: credential.user.displayName || '',
+          returnTo: redirect,
+        }),
       });
       await auth.signOut();
       if (!response.ok) throw new Error('resend_failed');
@@ -414,7 +423,7 @@ export default function Login() {
 
         <p className={styles.footerNote}>
           Ainda não tem uma conta?{' '}
-          <Link href="/register" className={styles.footerLink}>
+          <Link href={registerHref} className={styles.footerLink}>
             Criar conta
           </Link>
         </p>

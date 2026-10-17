@@ -28,10 +28,14 @@
 }
 
 .pageLayout::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent 62%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.2),
+    transparent 62%
+  );
   pointer-events: none;
   z-index: -1;
 }
@@ -51,7 +55,7 @@
 }
 
 .sidebar::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0 0 auto;
   height: 180px;
@@ -231,7 +235,7 @@
 }
 
 .navActive::before {
-  content: "";
+  content: '';
   position: absolute;
   left: 0;
   top: 50%;
@@ -1326,7 +1330,11 @@
 .profileCover {
   height: 160px;
   background:
-    radial-gradient(circle at 18% 0%, rgba(95, 184, 245, 0.28), transparent 34%),
+    radial-gradient(
+      circle at 18% 0%,
+      rgba(95, 184, 245, 0.28),
+      transparent 34%
+    ),
     linear-gradient(135deg, #eef7ff 0%, #dbeafe 48%, #f8fbff 100%);
   background-size: cover;
   background-position: center;
@@ -1335,8 +1343,16 @@
 
 .profileCoverEmpty {
   background:
-    radial-gradient(circle at 16% 8%, rgba(95, 184, 245, 0.32), transparent 32%),
-    radial-gradient(circle at 84% 18%, rgba(217, 255, 47, 0.18), transparent 26%),
+    radial-gradient(
+      circle at 16% 8%,
+      rgba(95, 184, 245, 0.32),
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at 84% 18%,
+      rgba(217, 255, 47, 0.18),
+      transparent 26%
+    ),
     linear-gradient(135deg, #f4faff 0%, #dbeafe 50%, #f8fbff 100%);
 }
 
@@ -2086,7 +2102,7 @@
 }
 
 .planFeatures li::before {
-  content: "";
+  content: '';
   width: 16px;
   height: 16px;
   background: rgba(217, 255, 47, 0.2);
@@ -3589,615 +3605,614 @@
   }
 }
 
-
 /* ============================================================
    DARK MODE (append-only, generated)
    Scoped to .dashShell[data-theme="dark"]; light mode untouched.
    ============================================================ */
-:global(.dashShell[data-theme="dark"]) .pageLayout {
+:global(.dashShell[data-theme='dark']) .pageLayout {
   background: var(--surface-2);
   border-color: var(--border);
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .sidebar {
+:global(.dashShell[data-theme='dark']) .sidebar {
   background: var(--surface-2);
 }
 
-:global(.dashShell[data-theme="dark"]) .sidebarLogo {
+:global(.dashShell[data-theme='dark']) .sidebarLogo {
   border-color: var(--border);
 }
 
-:global(.dashShell[data-theme="dark"]) .logoText {
+:global(.dashShell[data-theme='dark']) .logoText {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .sidebarProfile {
+:global(.dashShell[data-theme='dark']) .sidebarProfile {
   background: var(--surface-2);
   border-color: var(--border);
 }
 
-:global(.dashShell[data-theme="dark"]) .profileName {
+:global(.dashShell[data-theme='dark']) .profileName {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .navButton {
+:global(.dashShell[data-theme='dark']) .navButton {
   background: var(--surface);
 }
 
-:global(.dashShell[data-theme="dark"]) .navButton:hover {
+:global(.dashShell[data-theme='dark']) .navButton:hover {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .navActive {
+:global(.dashShell[data-theme='dark']) .navActive {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .sidebarFooter {
+:global(.dashShell[data-theme='dark']) .sidebarFooter {
   border-color: var(--border);
 }
 
-:global(.dashShell[data-theme="dark"]) .planCard {
+:global(.dashShell[data-theme='dark']) .planCard {
   background: var(--surface);
 }
 
-:global(.dashShell[data-theme="dark"]) .planCardTitle {
+:global(.dashShell[data-theme='dark']) .planCardTitle {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .topBar {
-  background: var(--surface);
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .pageTitle {
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .searchBox {
-  background: var(--surface-2);
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .searchInput {
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .iconButton {
-  background: var(--surface-2);
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .iconButton:hover {
-  background: var(--surface);
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .statCard {
-  background: var(--surface-2);
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .statCard:hover {
-  background: var(--surface);
-}
-
-:global(.dashShell[data-theme="dark"]) .statValue {
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .chartCard,
-:global(.dashShell[data-theme="dark"]) .tipsCard {
-  background: var(--surface-2);
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .sectionTitle span {
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .tipItem {
-  background: var(--surface-2);
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .tipItem:hover {
-  background: var(--surface);
-}
-
-:global(.dashShell[data-theme="dark"]) .tipTitle {
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .sectionBlock {
-  background: var(--surface-2);
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .profileCompletionValue {
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .profileInsightBadge,
-:global(.dashShell[data-theme="dark"]) .profileHeaderBadge {
+:global(.dashShell[data-theme='dark']) .topBar {
   background: var(--surface);
   border-color: var(--border);
 }
 
-:global(.dashShell[data-theme="dark"]) .profileInsightBadgeMuted,
-:global(.dashShell[data-theme="dark"]) .profileHeaderBadgeMuted {
-  background: var(--surface-2);
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .profileChecklistItem {
-  background: var(--surface-2);
-  border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .profileChecklistItem strong {
+:global(.dashShell[data-theme='dark']) .pageTitle {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .viewerItem {
+:global(.dashShell[data-theme='dark']) .searchBox {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .searchInput {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .iconButton {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .iconButton:hover {
+  background: var(--surface);
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .statCard {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .statCard:hover {
   background: var(--surface);
 }
 
-:global(.dashShell[data-theme="dark"]) .viewerContent strong {
+:global(.dashShell[data-theme='dark']) .statValue {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .viewerEmptyState,
-:global(.dashShell[data-theme="dark"]) .viewerUpgradeBox {
+:global(.dashShell[data-theme='dark']) .chartCard,
+:global(.dashShell[data-theme='dark']) .tipsCard {
   background: var(--surface-2);
   border-color: var(--border);
 }
 
-:global(.dashShell[data-theme="dark"]) .optimizationScoreValue {
+:global(.dashShell[data-theme='dark']) .sectionTitle span {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .optimizationScoreMeta h3 {
+:global(.dashShell[data-theme='dark']) .tipItem {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .tipItem:hover {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme='dark']) .tipTitle {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .optimizationSectionLabel {
+:global(.dashShell[data-theme='dark']) .sectionBlock {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .profileCompletionValue {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .profileInsightBadge,
+:global(.dashShell[data-theme='dark']) .profileHeaderBadge {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .profileInsightBadgeMuted,
+:global(.dashShell[data-theme='dark']) .profileHeaderBadgeMuted {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .profileChecklistItem {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .profileChecklistItem strong {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .viewerItem {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme='dark']) .viewerContent strong {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .viewerEmptyState,
+:global(.dashShell[data-theme='dark']) .viewerUpgradeBox {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .optimizationScoreValue {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .optimizationScoreMeta h3 {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .optimizationSectionLabel {
   color: var(--text-4);
 }
 
-:global(.dashShell[data-theme="dark"]) .insightChip {
+:global(.dashShell[data-theme='dark']) .insightChip {
   background: var(--surface-2);
   border-color: var(--border);
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .optimizationActionItem {
+:global(.dashShell[data-theme='dark']) .optimizationActionItem {
   background: var(--surface-2);
   border-color: var(--border);
 }
 
-:global(.dashShell[data-theme="dark"]) .optimizationActionItem strong {
+:global(.dashShell[data-theme='dark']) .optimizationActionItem strong {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .topMatchItem {
+:global(.dashShell[data-theme='dark']) .topMatchItem {
   background: var(--surface-2);
   border-color: var(--border);
 }
 
-:global(.dashShell[data-theme="dark"]) .topMatchItem strong {
+:global(.dashShell[data-theme='dark']) .topMatchItem strong {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .topMatchItem p {
+:global(.dashShell[data-theme='dark']) .topMatchItem p {
   color: var(--text-4);
 }
 
-:global(.dashShell[data-theme="dark"]) .applicationTable th {
+:global(.dashShell[data-theme='dark']) .applicationTable th {
   background: var(--surface-2);
   border-color: var(--border);
 }
 
-:global(.dashShell[data-theme="dark"]) .applicationTable td {
+:global(.dashShell[data-theme='dark']) .applicationTable td {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .jobCard {
+:global(.dashShell[data-theme='dark']) .jobCard {
   background: var(--surface);
 }
 
-:global(.dashShell[data-theme="dark"]) .jobCard:hover {
+:global(.dashShell[data-theme='dark']) .jobCard:hover {
   background: var(--surface);
 }
 
-:global(.dashShell[data-theme="dark"]) .jobTitle {
+:global(.dashShell[data-theme='dark']) .jobTitle {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .savedCard {
+:global(.dashShell[data-theme='dark']) .savedCard {
   background: var(--surface-2);
   border-color: var(--border);
 }
 
-:global(.dashShell[data-theme="dark"]) .savedCard:hover {
+:global(.dashShell[data-theme='dark']) .savedCard:hover {
   background: var(--surface);
 }
 
-:global(.dashShell[data-theme="dark"]) .savedCard h3 {
+:global(.dashShell[data-theme='dark']) .savedCard h3 {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .profileHeader {
+:global(.dashShell[data-theme='dark']) .profileHeader {
   background: var(--surface-2);
   border-color: var(--border);
 }
 
-:global(.dashShell[data-theme="dark"]) .profileCover {
+:global(.dashShell[data-theme='dark']) .profileCover {
   background: var(--surface-2);
 }
 
-:global(.dashShell[data-theme="dark"]) .profileCoverEmpty {
+:global(.dashShell[data-theme='dark']) .profileCoverEmpty {
   background: var(--surface-2);
 }
 
-:global(.dashShell[data-theme="dark"]) .coverOverlaySoft {
+:global(.dashShell[data-theme='dark']) .coverOverlaySoft {
   background: var(--surface);
 }
 
-:global(.dashShell[data-theme="dark"]) .profileInfo .profileAvatar {
+:global(.dashShell[data-theme='dark']) .profileInfo .profileAvatar {
   background: var(--surface);
 }
 
-:global(.dashShell[data-theme="dark"]) .profileAvatarFallback {
+:global(.dashShell[data-theme='dark']) .profileAvatarFallback {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .profileHeaderContent h1 {
+:global(.dashShell[data-theme='dark']) .profileHeaderContent h1 {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .secondaryButton {
-  background: var(--surface-2);
-  border-color: var(--border);
-  color: var(--text-1);
-}
-
-:global(.dashShell[data-theme="dark"]) .secondaryButton:hover {
-  background: var(--surface);
-}
-
-:global(.dashShell[data-theme="dark"]) .profileCard {
+:global(.dashShell[data-theme='dark']) .secondaryButton {
   background: var(--surface-2);
   border-color: var(--border);
-}
-
-:global(.dashShell[data-theme="dark"]) .profileCard h3 {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .profileInput {
+:global(.dashShell[data-theme='dark']) .secondaryButton:hover {
   background: var(--surface);
+}
+
+:global(.dashShell[data-theme='dark']) .profileCard {
+  background: var(--surface-2);
   border-color: var(--border);
+}
+
+:global(.dashShell[data-theme='dark']) .profileCard h3 {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .profileInput:focus {
-  background: var(--surface);
-}
-
-:global(.dashShell[data-theme="dark"]) .profileTextarea {
+:global(.dashShell[data-theme='dark']) .profileInput {
   background: var(--surface);
   border-color: var(--border);
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .profileTextarea:focus {
+:global(.dashShell[data-theme='dark']) .profileInput:focus {
   background: var(--surface);
 }
 
-:global(.dashShell[data-theme="dark"]) .cvName {
+:global(.dashShell[data-theme='dark']) .profileTextarea {
+  background: var(--surface);
+  border-color: var(--border);
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .profileCardWide {
+:global(.dashShell[data-theme='dark']) .profileTextarea:focus {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme='dark']) .cvName {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .profileCardWide {
   background: var(--surface-2);
   border-color: var(--border);
 }
 
-:global(.dashShell[data-theme="dark"]) .profileCardWideHeader h3 {
+:global(.dashShell[data-theme='dark']) .profileCardWideHeader h3 {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .timelineList article h4 {
+:global(.dashShell[data-theme='dark']) .timelineList article h4 {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .experienceItem {
+:global(.dashShell[data-theme='dark']) .experienceItem {
   background: var(--surface-2);
   border-color: var(--border);
 }
 
-:global(.dashShell[data-theme="dark"]) .messagesList {
+:global(.dashShell[data-theme='dark']) .messagesList {
   background: var(--surface-2);
   border-color: var(--border);
 }
 
-:global(.dashShell[data-theme="dark"]) .messageItem:hover {
+:global(.dashShell[data-theme='dark']) .messageItem:hover {
   background: var(--surface-2);
 }
 
-:global(.dashShell[data-theme="dark"]) .messageBody strong {
+:global(.dashShell[data-theme='dark']) .messageBody strong {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .messageTime {
+:global(.dashShell[data-theme='dark']) .messageTime {
   color: var(--text-3);
 }
 
-:global(.dashShell[data-theme="dark"]) .messageDetail {
+:global(.dashShell[data-theme='dark']) .messageDetail {
   background: var(--surface);
   border-color: var(--border);
 }
 
-:global(.dashShell[data-theme="dark"]) .messageDetailHeader h3 {
+:global(.dashShell[data-theme='dark']) .messageDetailHeader h3 {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .messageBubble {
+:global(.dashShell[data-theme='dark']) .messageBubble {
   background: var(--surface);
 }
 
-:global(.dashShell[data-theme="dark"]) .messageBubble span {
+:global(.dashShell[data-theme='dark']) .messageBubble span {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .messageBubbleOwn span {
+:global(.dashShell[data-theme='dark']) .messageBubbleOwn span {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .messageTextInput {
+:global(.dashShell[data-theme='dark']) .messageTextInput {
   background: var(--surface);
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .messageSendBtn {
+:global(.dashShell[data-theme='dark']) .messageSendBtn {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .messageEmptyState {
+:global(.dashShell[data-theme='dark']) .messageEmptyState {
   color: var(--text-3);
 }
 
-:global(.dashShell[data-theme="dark"]) .notificationsWrapper {
+:global(.dashShell[data-theme='dark']) .notificationsWrapper {
   background: var(--surface);
 }
 
-:global(.dashShell[data-theme="dark"]) .notificationItem {
+:global(.dashShell[data-theme='dark']) .notificationItem {
   background: var(--surface);
 }
 
-:global(.dashShell[data-theme="dark"]) .notificationItem:hover {
+:global(.dashShell[data-theme='dark']) .notificationItem:hover {
   background: var(--surface);
 }
 
-:global(.dashShell[data-theme="dark"]) .notificationTime {
+:global(.dashShell[data-theme='dark']) .notificationTime {
   color: var(--text-3);
 }
 
-:global(.dashShell[data-theme="dark"]) .planDetails,
-:global(.dashShell[data-theme="dark"]) .planResources {
+:global(.dashShell[data-theme='dark']) .planDetails,
+:global(.dashShell[data-theme='dark']) .planResources {
   background: var(--surface);
 }
 
-:global(.dashShell[data-theme="dark"]) .planDetails h2 {
+:global(.dashShell[data-theme='dark']) .planDetails h2 {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .planPrice {
+:global(.dashShell[data-theme='dark']) .planPrice {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .planResources h3 {
+:global(.dashShell[data-theme='dark']) .planResources h3 {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .resourceItem {
+:global(.dashShell[data-theme='dark']) .resourceItem {
   background: var(--surface);
 }
 
-:global(.dashShell[data-theme="dark"]) .resourceValue {
+:global(.dashShell[data-theme='dark']) .resourceValue {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .planCatalogHeader h3 {
+:global(.dashShell[data-theme='dark']) .planCatalogHeader h3 {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .planCatalogCard {
+:global(.dashShell[data-theme='dark']) .planCatalogCard {
   background: var(--surface-2);
   border-color: var(--border);
 }
 
-:global(.dashShell[data-theme="dark"]) .planCatalogCard:hover {
+:global(.dashShell[data-theme='dark']) .planCatalogCard:hover {
   background: var(--surface);
 }
 
-:global(.dashShell[data-theme="dark"]) .planCatalogName {
+:global(.dashShell[data-theme='dark']) .planCatalogName {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .verificationGrid {
+:global(.dashShell[data-theme='dark']) .verificationGrid {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .mobileMenuButton {
+:global(.dashShell[data-theme='dark']) .mobileMenuButton {
   background: var(--surface);
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .mobileMenuButton:hover {
+:global(.dashShell[data-theme='dark']) .mobileMenuButton:hover {
   background: var(--surface);
 }
 
-:global(.dashShell[data-theme="dark"]) .editCoverBtn {
+:global(.dashShell[data-theme='dark']) .editCoverBtn {
   background: var(--surface);
 }
 
-:global(.dashShell[data-theme="dark"]) .formSection {
+:global(.dashShell[data-theme='dark']) .formSection {
   border-color: var(--border);
 }
 
-:global(.dashShell[data-theme="dark"]) .formSectionTitle {
+:global(.dashShell[data-theme='dark']) .formSectionTitle {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .fieldLabel {
+:global(.dashShell[data-theme='dark']) .fieldLabel {
   color: var(--text-4);
 }
 
-:global(.dashShell[data-theme="dark"]) .profileObjective {
+:global(.dashShell[data-theme='dark']) .profileObjective {
   border-color: var(--border);
 }
 
-:global(.dashShell[data-theme="dark"]) .profileObjectiveValue span {
+:global(.dashShell[data-theme='dark']) .profileObjectiveValue span {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .verificationPanel {
+:global(.dashShell[data-theme='dark']) .verificationPanel {
   background: var(--surface);
 }
 
-:global(.dashShell[data-theme="dark"]) .verificationState h3 {
+:global(.dashShell[data-theme='dark']) .verificationState h3 {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .verificationStateText {
+:global(.dashShell[data-theme='dark']) .verificationStateText {
   color: var(--text-4);
 }
 
-:global(.dashShell[data-theme="dark"]) .verificationChecklistItem {
+:global(.dashShell[data-theme='dark']) .verificationChecklistItem {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .verificationStepLabel {
+:global(.dashShell[data-theme='dark']) .verificationStepLabel {
   color: var(--text-4);
 }
 
-:global(.dashShell[data-theme="dark"]) .verificationStepTitle {
+:global(.dashShell[data-theme='dark']) .verificationStepTitle {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .verificationStepDescription {
+:global(.dashShell[data-theme='dark']) .verificationStepDescription {
   color: var(--text-4);
 }
 
-:global(.dashShell[data-theme="dark"]) .verificationFieldLabel {
+:global(.dashShell[data-theme='dark']) .verificationFieldLabel {
   color: var(--text-4);
 }
 
-:global(.dashShell[data-theme="dark"]) .verificationExistingCv {
+:global(.dashShell[data-theme='dark']) .verificationExistingCv {
   background: var(--surface);
 }
 
-:global(.dashShell[data-theme="dark"]) .verificationExistingCvName {
+:global(.dashShell[data-theme='dark']) .verificationExistingCvName {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .verificationOverview {
+:global(.dashShell[data-theme='dark']) .verificationOverview {
   background: var(--surface-2);
 }
 
-:global(.dashShell[data-theme="dark"]) .verificationStatusMuted {
+:global(.dashShell[data-theme='dark']) .verificationStatusMuted {
   border-color: var(--border);
   color: var(--text-4);
 }
 
-:global(.dashShell[data-theme="dark"]) .verificationOverviewTitle {
+:global(.dashShell[data-theme='dark']) .verificationOverviewTitle {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .verificationOverviewText {
+:global(.dashShell[data-theme='dark']) .verificationOverviewText {
   color: var(--text-4);
 }
 
-:global(.dashShell[data-theme="dark"]) .verificationOverviewMeta {
+:global(.dashShell[data-theme='dark']) .verificationOverviewMeta {
   color: var(--text-4);
 }
 
-:global(.dashShell[data-theme="dark"]) .verificationOverviewStat {
+:global(.dashShell[data-theme='dark']) .verificationOverviewStat {
   background: var(--surface);
 }
 
-:global(.dashShell[data-theme="dark"]) .verificationOverviewStat strong {
+:global(.dashShell[data-theme='dark']) .verificationOverviewStat strong {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .verificationOverviewStat span {
+:global(.dashShell[data-theme='dark']) .verificationOverviewStat span {
   color: var(--text-4);
 }
 
-:global(.dashShell[data-theme="dark"]) .verificationTypeCard {
+:global(.dashShell[data-theme='dark']) .verificationTypeCard {
   background: var(--surface);
 }
 
-:global(.dashShell[data-theme="dark"]) .verificationTypeTitle {
+:global(.dashShell[data-theme='dark']) .verificationTypeTitle {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .verificationTypeMetaRow {
+:global(.dashShell[data-theme='dark']) .verificationTypeMetaRow {
   color: var(--text-4);
 }
 
-:global(.dashShell[data-theme="dark"]) .verificationTypeMetaRow span {
+:global(.dashShell[data-theme='dark']) .verificationTypeMetaRow span {
   background: var(--surface);
 }
 
-:global(.dashShell[data-theme="dark"]) .verificationChecklistCompactItem {
+:global(.dashShell[data-theme='dark']) .verificationChecklistCompactItem {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .verificationMiniCheckPending {
+:global(.dashShell[data-theme='dark']) .verificationMiniCheckPending {
   color: var(--text-4);
 }
 
-:global(.dashShell[data-theme="dark"]) .verificationTypeHint {
+:global(.dashShell[data-theme='dark']) .verificationTypeHint {
   color: var(--text-4);
 }
 
-:global(.dashShell[data-theme="dark"]) .verificationLockedTitle {
+:global(.dashShell[data-theme='dark']) .verificationLockedTitle {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .verificationComposer {
+:global(.dashShell[data-theme='dark']) .verificationComposer {
   background: var(--surface);
   border-color: var(--border);
 }
 
-:global(.dashShell[data-theme="dark"]) .verificationComposerTitle {
+:global(.dashShell[data-theme='dark']) .verificationComposerTitle {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .verificationTypeToggle {
+:global(.dashShell[data-theme='dark']) .verificationTypeToggle {
   background: var(--surface-2);
   border-color: var(--border);
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .verificationEmptySelection {
+:global(.dashShell[data-theme='dark']) .verificationEmptySelection {
   background: var(--surface);
   border-color: var(--border);
   color: var(--text-4);
 }
 
-:global(.dashShell[data-theme="dark"]) .verificationFormCard {
+:global(.dashShell[data-theme='dark']) .verificationFormCard {
   background: var(--surface);
 }
 
-:global(.dashShell[data-theme="dark"]) .verificationFormCardHeader h4 {
+:global(.dashShell[data-theme='dark']) .verificationFormCardHeader h4 {
   color: var(--text-1);
 }
 
-:global(.dashShell[data-theme="dark"]) .verificationFileChip {
+:global(.dashShell[data-theme='dark']) .verificationFileChip {
   background: var(--surface);
   color: var(--text-1);
 }
@@ -4253,7 +4268,7 @@
 }
 
 .candidateSectionEyebrow::before {
-  content: "";
+  content: '';
   width: 18px;
   height: 3px;
   border-radius: 999px;
@@ -4268,7 +4283,8 @@
   flex-wrap: wrap;
 }
 
-.candidateSectionTitleRow h1 {
+.candidateSectionTitleRow h1,
+.candidateSectionTitleRow h2 {
   margin: 0;
   color: var(--text-1, #17233b);
   font-size: clamp(1.45rem, 2.4vw, 2rem);
@@ -4301,6 +4317,8 @@
 
 .candidateSectionAction {
   display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
   align-items: center;
   flex: none;
 }
@@ -4374,7 +4392,10 @@
   font-size: 0.86rem;
   font-weight: 800;
   box-shadow: 0 10px 22px rgba(32, 87, 215, 0.16);
-  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
 }
 
 .candidateEmptyAction:hover {
@@ -4405,7 +4426,12 @@
 .candidateLoadingHeader span,
 .candidateLoadingGrid span {
   border-radius: 12px;
-  background: linear-gradient(90deg, var(--surface-2, #f4f8fc) 25%, var(--surface-3, #eaf2fa) 50%, var(--surface-2, #f4f8fc) 75%);
+  background: linear-gradient(
+    90deg,
+    var(--surface-2, #f4f8fc) 25%,
+    var(--surface-3, #eaf2fa) 50%,
+    var(--surface-2, #f4f8fc) 75%
+  );
   background-size: 220% 100%;
   animation: candidateSkeleton 1.35s ease-in-out infinite;
 }
@@ -4874,7 +4900,11 @@
   padding: 1.1rem;
   border-radius: 14px;
   background:
-    radial-gradient(circle at 100% 0%, rgba(95, 184, 245, 0.17), transparent 40%),
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(95, 184, 245, 0.17),
+      transparent 40%
+    ),
     var(--surface-2, #f7fbff);
 }
 
@@ -4966,7 +4996,11 @@
   border: 1px solid rgba(32, 87, 215, 0.13);
   border-radius: 16px;
   background:
-    radial-gradient(circle at 100% 0%, rgba(217, 255, 47, 0.14), transparent 36%),
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(217, 255, 47, 0.14),
+      transparent 36%
+    ),
     var(--surface, #fff);
   box-shadow: 0 10px 28px rgba(15, 23, 42, 0.045);
 }
@@ -5814,7 +5848,7 @@
   --candidate-muted-soft: var(--text-3, #5f6874);
   background: var(--bg, #eef4f8);
   color: var(--text-1, #102441);
-  font-family: var(--font-instrument, "Instrument Sans"), Arial, sans-serif;
+  font-family: var(--font-instrument, 'Instrument Sans'), Arial, sans-serif;
 }
 
 .pageLayout::before,
@@ -5926,7 +5960,7 @@
 .candidateSectionCopy,
 .candidateSectionTitleRow {
   color: var(--text-1, #102441);
-  font-family: var(--font-instrument, "Instrument Sans"), Arial, sans-serif;
+  font-family: var(--font-instrument, 'Instrument Sans'), Arial, sans-serif;
 }
 
 .pageDate,

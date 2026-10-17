@@ -14,22 +14,36 @@ export default async function handler(req, res) {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ message: 'Token de autorização ausente ou inválido' });
+      return res
+        .status(401)
+        .json({ message: 'Token de autorização ausente ou inválido' });
     }
 
-    const decodedToken = await admin.auth().verifyIdToken(authHeader.split('Bearer ')[1]);
-    const adminDoc = await admin.firestore().collection('users').doc(decodedToken.uid).get();
+    const decodedToken = await admin
+      .auth()
+      .verifyIdToken(authHeader.split('Bearer ')[1]);
+    const adminDoc = await admin
+      .firestore()
+      .collection('users')
+      .doc(decodedToken.uid)
+      .get();
     if (!adminDoc.exists || adminDoc.data().userType !== 'admin') {
-      return res.status(403).json({ message: 'Acesso negado. Apenas administradores.' });
+      return res
+        .status(403)
+        .json({ message: 'Acesso negado. Apenas administradores.' });
     }
 
-    const settingsRef = admin.firestore().collection('settings').doc('moderation');
+    const settingsRef = admin
+      .firestore()
+      .collection('settings')
+      .doc('moderation');
 
     if (req.method === 'GET') {
       const settingsDoc = await settingsRef.get();
       return res.status(200).json({
         jobApprovalRequired:
-          settingsDoc.exists && settingsDoc.data()?.jobApprovalRequired === true,
+          settingsDoc.exists &&
+          settingsDoc.data()?.jobApprovalRequired === true,
       });
     }
 
@@ -49,13 +63,16 @@ export default async function handler(req, res) {
       { merge: true },
     );
 
-    await admin.firestore().collection('activities').add({
-      type: 'moderation_settings_updated',
-      description: `Moderação de vagas ${jobApprovalRequired ? 'ativada' : 'desativada'} por administrador`,
-      adminId: decodedToken.uid,
-      jobApprovalRequired,
-      createdAt: new Date().toISOString(),
-    });
+    await admin
+      .firestore()
+      .collection('activities')
+      .add({
+        type: 'moderation_settings_updated',
+        description: `Moderação de vagas ${jobApprovalRequired ? 'ativada' : 'desativada'} por administrador`,
+        adminId: decodedToken.uid,
+        jobApprovalRequired,
+        createdAt: new Date().toISOString(),
+      });
 
     return res.status(200).json({ jobApprovalRequired });
   } catch (error) {

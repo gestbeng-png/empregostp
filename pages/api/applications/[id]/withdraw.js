@@ -3,6 +3,15 @@ import { createServerNotification } from '../../../../lib/serverNotifications';
 import { logServerError } from '../../../../lib/serverLog';
 import { requireActiveApiUser } from '../../../../lib/apiUserAuth';
 import { recordActivity } from '../../../../lib/activityLog';
+import { assertTransition } from '../../../../domain/applications/states';
+import { legacyStatusUpdate } from '../../../../domain/lifecycle/legacyStatus';
+
+// F2.6 — motivos opcionais (nunca texto livre identificável).
+export const WITHDRAWAL_REASONS = new Set([
+  'ACCEPTED_OTHER_OFFER',
+  'NOT_INTERESTED',
+  'OTHER',
+]);
 
 export const WITHDRAWABLE_APPLICATION_STATUSES = new Set([
   'pending',
@@ -47,6 +56,12 @@ export default async function handler(req, res) {
     let applicationData = null;
     let timelineEvent = null;
     let alreadyWithdrawn = false;
+    const reason = WITHDRAWAL_REASONS.has(req.body?.reason)
+      ? req.body.reason
+      : null;
+    // Só para candidaturas v2; alocados uma vez, não em cada nova tentativa.
+    let historyRef = null;
+    let eventRef = null;
 
     try {
       await adminApp.firestore().runTransaction(async (transaction) => {
@@ -67,6 +82,82 @@ export default async function handler(req, res) {
         }
 
         const status = String(data.status || 'pending').toLowerCase();
+        // Candidaturas v2: a máquina de estados decide (qualquer estado não
+        // terminal) e o estado legado é escrito em conjunto (D7).
+        if (typeof data.v2Status === 'string') {
+          if (data.v2Status === 'WITHDRAWN') {
+            applicationData = data;
+            alreadyWithdrawn = true;
+            return;
+          }
+          const allowed = assertTransition(
+            data.v2Status,
+            'WITHDRAWN',
+            'CANDIDATE',
+          );
+          if (!allowed.ok) {
+            throw withdrawalError(
+              'APPLICATION_STATUS_NOT_WITHDRAWABLE',
+              'Esta candidatura já está encerrada e não pode ser retirada.',
+            );
+          }
+          historyRef ||= adminApp
+            .firestore()
+            .collection('applicationsStatusHistory')
+            .doc();
+          eventRef ||= adminApp.firestore().collection('outboxEvents').doc();
+          const legacy = legacyStatusUpdate('Application', 'WITHDRAWN');
+          const version =
+            (Number.isSafeInteger(data.version) ? data.version : 0) + 1;
+          const nowMs = Date.now();
+          timelineEvent = {
+            title: 'Candidatura retirada',
+            description: 'Retirou voluntariamente a candidatura.',
+            icon: '↩️',
+            date: new Date(nowMs).toISOString(),
+            by: uid,
+            byType: 'candidato',
+          };
+          applicationData = data;
+          transaction.update(applicationRef, {
+            ...(legacy.ok ? legacy.value : { status: 'withdrawn' }),
+            v2Status: 'WITHDRAWN',
+            version,
+            withdrawalReason: reason,
+            withdrawnAt: adminApp.firestore.FieldValue.serverTimestamp(),
+            lastStatusChangeAt: adminApp.firestore.FieldValue.serverTimestamp(),
+            updatedAt: adminApp.firestore.FieldValue.serverTimestamp(),
+            updatedBy: uid,
+            timeline: [
+              ...(Array.isArray(data.timeline) ? data.timeline : []),
+              timelineEvent,
+            ],
+          });
+          transaction.create(historyRef, {
+            entityId: applicationId,
+            from: data.v2Status,
+            to: 'WITHDRAWN',
+            actorId: uid,
+            actorType: 'CANDIDATE',
+            reason,
+            at: adminApp.firestore.FieldValue.serverTimestamp(),
+            version,
+          });
+          transaction.create(eventRef, {
+            type: 'entity_status_changed',
+            schemaVersion: 1,
+            payload: {
+              entityId: applicationId,
+              entityKind: 'Application',
+              version,
+            },
+            status: 'PENDING',
+            attempts: 0,
+            createdAtMs: nowMs,
+            nextAttemptAtMs: nowMs,
+          });
+          return;
+        }
         if (status === 'withdrawn') {
           applicationData = data;
           alreadyWithdrawn = true;

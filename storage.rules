@@ -9,12 +9,43 @@ service firebase.storage {
       return isAuthenticated()
         && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.userType == 'admin';
     }
+
+    // Limites de upload (secção 69 do fecho). Alinhados com o que cada ecrã
+    // aceita; o cliente mostra o erro antes, a regra impede quem o contorna.
+    // SVG fica de fora: é XML que pode levar scripts.
+    function underMb(mb) { return request.resource.size < mb * 1024 * 1024; }
+    function isImage() {
+      return request.resource.contentType.matches('image/(jpeg|png|webp|gif|avif|heic|heif)');
+    }
+    function isPdf() { return request.resource.contentType == 'application/pdf'; }
+    function isWord() {
+      return request.resource.contentType == 'application/msword'
+        || request.resource.contentType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+    }
     
     // Regras que você pediu
-    match /company-covers/{userId}/{allPaths=**} { allow read: if true; allow write: if isAuthenticated() && isOwner(userId); }
-    match /company-logos/{userId}/{allPaths=**} { allow read: if true; allow write: if isAuthenticated() && isOwner(userId); }
-    match /job-tdr/{userId}/{allPaths=**} { allow read: if isAuthenticated(); allow write: if isAuthenticated() && isOwner(userId); }
-    match /users/{userId}/{allPaths=**} { allow read: if isAuthenticated() && isOwner(userId); allow write: if isAuthenticated() && isOwner(userId); }
+    match /company-covers/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow delete: if isAuthenticated() && isOwner(userId);
+      allow create, update: if isAuthenticated() && isOwner(userId) && underMb(10) && isImage();
+    }
+    match /company-logos/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow delete: if isAuthenticated() && isOwner(userId);
+      allow create, update: if isAuthenticated() && isOwner(userId) && underMb(10) && isImage();
+    }
+    match /job-tdr/{userId}/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow delete: if isAuthenticated() && isOwner(userId);
+      allow create, update: if isAuthenticated() && isOwner(userId) && underMb(10) && (isPdf() || isWord());
+    }
+    // Ficheiros dos recursos carregados no admin (ver dashboard/admin/resources).
+    match /users/{userId}/{allPaths=**} {
+      allow read: if isAuthenticated() && isOwner(userId);
+      allow delete: if isAuthenticated() && isOwner(userId);
+      allow create, update: if isAuthenticated() && isOwner(userId) && underMb(15)
+        && (isPdf() || isWord() || request.resource.contentType == 'text/plain');
+    }
 
     // --- Ficheiros pessoais do candidato ---
     //
@@ -29,11 +60,13 @@ service firebase.storage {
     // dos utilizadores reais deixam de abrir. Ver docs/DEPLOY-GUIDE.md.
     match /cvUrl/{userId}/{fileName} {
       allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
-      allow write: if isAuthenticated() && isOwner(userId);
+      allow delete: if isAuthenticated() && isOwner(userId);
+      allow create, update: if isAuthenticated() && isOwner(userId) && underMb(10) && (isPdf() || isWord());
     }
     match /certificados/{userId}/{fileName} {
       allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
-      allow write: if isAuthenticated() && isOwner(userId);
+      allow delete: if isAuthenticated() && isOwner(userId);
+      allow create, update: if isAuthenticated() && isOwner(userId) && underMb(10) && (isPdf() || isImage());
     }
 
     // Documentos anexados a uma candidatura (registo criminal, atestado
@@ -43,9 +76,11 @@ service firebase.storage {
     // da vaga a que a candidatura pertence.
     match /candidaturas/{userId}/{jobId}/{fileName} {
       allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
-      allow write: if isAuthenticated()
+      allow delete: if isAuthenticated() && isOwner(userId);
+      allow create, update: if isAuthenticated()
         && isOwner(userId)
-        && request.resource.size < 10 * 1024 * 1024;
+        && underMb(10)
+        && (isPdf() || isWord() || isImage());
     }
 
     // A fotografia de perfil é exibida em páginas públicas de candidatos
@@ -54,13 +89,15 @@ service firebase.storage {
     // página é servida de todo.
     match /photoUrl/{userId}/{fileName} {
       allow read: if true;
-      allow write: if isAuthenticated() && isOwner(userId);
+      allow delete: if isAuthenticated() && isOwner(userId);
+      allow create, update: if isAuthenticated() && isOwner(userId) && underMb(10) && isImage();
     }
 
     // Documentos de Verificação (ADICIONADO)
     match /verification/{docType}/{userId}/{fileName} { 
       allow read: if isAuthenticated() && isOwner(userId); 
-      allow write: if isAuthenticated() && isOwner(userId); 
+      allow delete: if isAuthenticated() && isOwner(userId);
+      allow create, update: if isAuthenticated() && isOwner(userId) && underMb(10) && (isPdf() || isImage());
     }
 
     // Comprovativos de pagamento (assinaturas/planos)

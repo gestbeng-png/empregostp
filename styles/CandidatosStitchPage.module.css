@@ -57,16 +57,6 @@
   margin-inline: auto;
 }
 
-.marketSwitchBar {
-  position: sticky;
-  z-index: 70;
-  top: 0;
-  order: 1;
-  border-bottom: 1px solid var(--candidate-outline);
-  background: rgba(255, 255, 255, 0.97);
-  backdrop-filter: blur(14px);
-}
-
 .hero {
   order: 2;
 }
@@ -85,6 +75,18 @@
 
 .ctaSection {
   order: 6;
+}
+
+.ctaActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 1.75rem;
+}
+
+.page.page .ctaCopy .ctaActions .ctaButton {
+  margin-top: 0;
 }
 
 .marketSwitch {
@@ -808,12 +810,6 @@
     height: 44px;
   }
 
-  .marketSwitchBar {
-    /* The public header is sticky too; keep the market switch visible below
-       it instead of letting the two layers occupy the same top edge. */
-    top: 58px;
-  }
-
   .marketSwitch {
     width: 100%;
     justify-content: flex-start;
@@ -973,5 +969,1241 @@
   .page *::after {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Premium candidate market direction
+
+   The candidate route keeps the existing catalogue and plan logic, while
+   giving the page a warmer editorial identity built around the campaign
+   photography supplied for EmpregoSTP.
+   ------------------------------------------------------------------ */
+
+.page.page.page {
+  background: var(--candidate-surface);
+  color: var(--candidate-text);
+}
+
+.page.page .container {
+  width: min(1220px, calc(100% - 3rem));
+}
+
+.page.page .marketSwitch {
+  gap: 2.5rem;
+}
+
+.page.page .marketSwitchLink {
+  min-height: 54px;
+  color: var(--candidate-muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.page.page .marketSwitchLinkActive,
+.page.page .marketSwitchLink:hover {
+  color: var(--candidate-blue);
+}
+
+.page.page .marketSwitchLinkActive::after {
+  height: 3px;
+  background: var(--candidate-blue);
+}
+
+.page.page.page.page .hero {
+  min-height: 640px;
+  padding: 5.8rem 0 6.3rem;
+  background: var(--candidate-surface);
+}
+
+.page.page .heroGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(420px, 1.1fr);
+  align-items: center;
+  gap: clamp(2.5rem, 6vw, 6rem);
+}
+
+.page.page .heroCopy {
+  max-width: 590px;
+  margin: 0;
+  text-align: left;
+}
+
+.page.page .heroEyebrow,
+.page.page .sectionEyebrow,
+.page.page .ctaEyebrow {
+  color: var(--candidate-blue);
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.page.page .heroEyebrow {
+  margin-bottom: 1.45rem;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.page.page .heroEyebrow::before {
+  width: 0.55rem;
+  height: 0.55rem;
+  margin-right: 0.65rem;
+  border-radius: 50%;
+  background: #2563eb;
+  box-shadow: 0 0 0 5px rgba(37, 99, 235, 0.16);
+  content: '';
+}
+
+.page.page.page.page .heroTitle {
+  max-width: 620px;
+  margin: 0;
+  color: var(--candidate-ink);
+  font-family: var(--app-font-display);
+  font-size: clamp(3.2rem, 5.6vw, 5.3rem);
+  font-weight: 500;
+  letter-spacing: -0.075em;
+  line-height: 0.99;
+}
+
+.page.page .heroTitle span {
+  color: var(--candidate-blue);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.page.page .heroText {
+  max-width: 500px;
+  margin: 1.65rem 0 0;
+  color: var(--candidate-muted);
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.page.page .heroActions {
+  justify-content: flex-start;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+.page.page .primaryAction,
+.page.page .secondaryAction {
+  min-height: 50px;
+  border-radius: 9px;
+  padding: 0 1.25rem;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.page.page .primaryAction {
+  border-color: var(--candidate-navy);
+  background: var(--candidate-navy);
+  color: #ffffff;
+}
+
+.page.page .primaryAction:hover {
+  border-color: var(--candidate-blue);
+  background: var(--candidate-blue);
+}
+
+.page.page .secondaryAction {
+  border-color: var(--candidate-outline);
+  color: var(--candidate-navy);
+}
+
+.page.page .secondaryAction:hover {
+  border-color: var(--candidate-blue);
+  background: rgba(37, 99, 235, 0.08);
+  color: var(--candidate-blue);
+}
+
+.page.page .heroAssurance {
+  justify-content: flex-start;
+  gap: 0.6rem;
+  margin-top: 1.15rem;
+}
+
+.page.page .heroAssurance > span {
+  width: 21px;
+  height: 21px;
+  flex-basis: 21px;
+  background: rgba(37, 99, 235, 0.12);
+  color: var(--candidate-blue);
+}
+
+.page.page .heroAssurance p {
+  color: var(--candidate-muted);
+  font-size: 0.76rem;
+}
+
+.page.page .marketVisual {
+  position: relative;
+  display: block;
+  min-height: 540px;
+}
+
+.page.page .marketVisualMain {
+  position: absolute;
+  inset: 0 0 0 12%;
+  overflow: hidden;
+  border-radius: 26px 26px 26px 106px;
+  background: #c5c6cf;
+  box-shadow: 0 24px 58px rgba(11, 33, 71, 0.15);
+}
+
+.page.page .marketVisualMain::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 54%, rgba(11, 33, 71, 0.57));
+  content: '';
+  pointer-events: none;
+}
+
+.page.page .marketVisualImage {
+  object-fit: cover;
+}
+
+.page.page .marketVisualCaption {
+  position: absolute;
+  right: 1.5rem;
+  bottom: 1.3rem;
+  z-index: 1;
+  display: grid;
+  gap: 0.2rem;
+  color: #ffffff;
+  text-align: right;
+}
+
+.page.page .marketVisualCaption span {
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.page.page .marketVisualCaption strong {
+  font-family: var(--app-font-display);
+  font-size: 1.45rem;
+  font-weight: 400;
+}
+
+.page.page .marketVisualDetail {
+  position: absolute;
+  bottom: 1.8rem;
+  left: 0;
+  z-index: 2;
+  width: 31%;
+  height: 218px;
+  overflow: hidden;
+  border: 8px solid var(--candidate-surface);
+  border-radius: 18px;
+  background: #c5c6cf;
+  box-shadow: 0 18px 32px rgba(11, 33, 71, 0.17);
+  transform: rotate(-5deg);
+}
+
+.page.page .marketVisualStat {
+  position: absolute;
+  right: -1rem;
+  bottom: -1.2rem;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 210px;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(11, 33, 71, 0.08);
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 18px 34px rgba(11, 33, 71, 0.14);
+}
+
+.page.page .marketVisualStat strong {
+  color: var(--candidate-blue);
+  font-family: var(--app-font-display);
+  font-size: 2rem;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.page.page .marketVisualStat strong span {
+  font-size: 1.35rem;
+}
+
+.page.page .marketVisualStat small {
+  color: var(--candidate-muted);
+  font-size: 0.64rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.page.page .catalogSection,
+.page.page .plansSection {
+  padding: 5.5rem 0;
+}
+
+.page.page .catalogSection {
+  background: #ffffff;
+}
+
+.page.page .plansSection {
+  background: var(--candidate-surface);
+}
+
+.page.page .sectionHeading,
+.page.page .plansHeading {
+  max-width: 780px;
+  gap: 0.65rem;
+  margin-bottom: 2.7rem;
+  text-align: left;
+}
+
+.page.page .sectionHeading > div,
+.page.page .plansHeading > div {
+  justify-items: start;
+  gap: 0.5rem;
+}
+
+.page.page .sectionHeadingTitle,
+.page.page .plansHeading h2,
+.page.page .talentHeading h2 {
+  color: var(--candidate-ink);
+  font-family: var(--app-font-display);
+  font-size: clamp(2.2rem, 4vw, 3.35rem);
+  font-weight: 400;
+  letter-spacing: -0.055em;
+  line-height: 1.04;
+}
+
+.page.page .sectionHeadingText,
+.page.page .plansHeading > p {
+  max-width: 680px;
+  margin: 0;
+  color: var(--candidate-muted);
+  font-size: 0.95rem;
+  line-height: 1.75;
+}
+
+.page.page .sectionHeadingText strong {
+  color: var(--candidate-ink);
+}
+
+.page.page .servicesGrid {
+  gap: 1rem;
+}
+
+.page.page .serviceCard {
+  min-height: 292px;
+  padding: 1.5rem;
+  border: 1px solid var(--candidate-outline);
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 10px 25px rgba(11, 33, 71, 0.035);
+}
+
+.page.page .serviceCard:hover {
+  border-color: rgba(37, 99, 235, 0.36);
+  box-shadow: 0 18px 34px rgba(11, 33, 71, 0.09);
+}
+
+.page.page .serviceIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 11px;
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--candidate-blue);
+}
+
+.page.page .internationalPage .serviceIcon {
+  background: rgba(217, 249, 109, 0.5);
+  color: #0b2147;
+}
+
+.page.page .serviceCategory {
+  margin-top: 1.2rem;
+  color: var(--candidate-blue);
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+}
+
+.page.page .serviceTitle {
+  margin-top: 0.45rem;
+  color: var(--candidate-ink);
+  font-family: var(--app-font-display);
+  font-size: 1.45rem;
+  font-weight: 400;
+  line-height: 1.17;
+  letter-spacing: -0.035em;
+}
+
+.page.page .serviceDescription {
+  margin-top: 0.6rem;
+  color: var(--candidate-muted);
+  line-height: 1.6;
+}
+
+.page.page .serviceLinkButton {
+  color: var(--candidate-blue);
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.page.page .candidatePlansGrid {
+  gap: 1rem;
+}
+
+.page.page .candidatePlanCard {
+  min-height: 488px;
+  padding: 1.75rem;
+  border: 1px solid var(--candidate-outline);
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 12px 28px rgba(11, 33, 71, 0.05);
+}
+
+.page.page .candidatePlanPopular {
+  border-color: var(--candidate-blue);
+  box-shadow: 0 20px 42px rgba(11, 33, 71, 0.13);
+  transform: translateY(-10px);
+}
+
+.page.page .candidatePlanName {
+  color: var(--candidate-ink);
+  font-family: var(--app-font-display);
+  font-size: 1.5rem;
+  font-weight: 400;
+}
+
+.page.page .candidatePlanBadge {
+  background: var(--candidate-blue);
+  font-size: 0.64rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.page.page .candidatePlanPrice strong {
+  color: var(--candidate-ink);
+  font-family: var(--app-font-display);
+  font-weight: 400;
+}
+
+.page.page .candidatePlanFeatures {
+  gap: 0.85rem;
+}
+
+.page.page .candidatePlanFeatures li {
+  color: var(--candidate-muted);
+}
+
+.page.page .candidatePlanFeatures svg {
+  color: var(--candidate-blue);
+}
+
+.page.page .candidatePlanAction {
+  border-color: var(--candidate-outline);
+  border-radius: 9px;
+  color: var(--candidate-navy);
+}
+
+.page.page .candidatePlanPopular .candidatePlanAction {
+  border-color: var(--candidate-navy);
+  background: var(--candidate-navy);
+}
+
+.page.page .candidatePlanPremium .candidatePlanAction {
+  border-color: var(--candidate-lime);
+  background: var(--candidate-lime);
+  color: var(--candidate-navy);
+}
+
+.page.page .talentSection {
+  padding: 4rem 0 5.5rem;
+  background: #ffffff;
+}
+
+.page.page .talentHeading {
+  margin-bottom: 2rem;
+}
+
+.page.page .talentHeading h2 {
+  margin: 0;
+}
+
+.page.page .talentHeading p {
+  color: var(--candidate-muted);
+}
+
+.page.page .talentLink {
+  min-height: 46px;
+  border-color: var(--candidate-outline);
+  border-radius: 9px;
+  color: var(--candidate-navy);
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.page.page .talentLink:hover {
+  border-color: var(--candidate-navy);
+  background: var(--candidate-navy);
+}
+
+.page.page .ctaSection {
+  padding: 0 0 5.5rem;
+  background: #ffffff;
+}
+
+.page.page .ctaPanel {
+  position: relative;
+  overflow: hidden;
+  padding: 3.3rem 3.5rem;
+  border-radius: 22px;
+  background: var(--candidate-navy);
+  box-shadow: 0 22px 48px rgba(11, 33, 71, 0.14);
+}
+
+.page.page .ctaPanel::after {
+  position: absolute;
+  right: -6rem;
+  bottom: -8rem;
+  width: 22rem;
+  height: 22rem;
+  border: 1px solid rgba(217, 249, 109, 0.4);
+  border-radius: 50%;
+  content: '';
+}
+
+.page.page .ctaPanel > div,
+.page.page .ctaPanel > a {
+  position: relative;
+  z-index: 1;
+}
+
+.page.page .ctaPanel h2 {
+  max-width: 700px;
+  font-family: var(--app-font-display);
+  font-size: clamp(2.1rem, 4vw, 3.3rem);
+  font-weight: 400;
+  letter-spacing: -0.055em;
+}
+
+.page.page .ctaPanel p {
+  max-width: 600px;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.7;
+}
+
+.page.page .ctaEyebrow {
+  color: var(--candidate-lime);
+}
+
+.page.page .ctaButton {
+  min-height: 50px;
+  border-radius: 9px;
+  background: var(--candidate-lime);
+  color: var(--candidate-navy);
+  font-weight: 900;
+}
+
+@media (max-width: 1023px) {
+  .page.page .heroGrid {
+    gap: 2.5rem;
+  }
+
+  .page.page .marketVisual {
+    min-height: 480px;
+  }
+}
+
+@media (max-width: 767px) {
+  .page.page .container {
+    width: calc(100% - 2rem);
+  }
+
+  .page.page.page.page .hero {
+    padding: 3.8rem 0 4.5rem;
+  }
+
+  .page.page .heroGrid {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 3rem;
+  }
+
+  .page.page .heroCopy {
+    max-width: none;
+  }
+
+  .page.page.page.page .heroTitle {
+    font-size: clamp(3rem, 12vw, 4.4rem);
+  }
+
+  .page.page .heroActions {
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .page.page .primaryAction,
+  .page.page .secondaryAction {
+    width: 100%;
+  }
+
+  .page.page .marketVisual {
+    min-height: 425px;
+  }
+
+  .page.page .marketVisualMain {
+    inset: 0 0 0 8%;
+    border-radius: 20px 20px 20px 70px;
+  }
+
+  .page.page .marketVisualDetail {
+    bottom: 1.25rem;
+    width: 34%;
+    height: 160px;
+    border-width: 6px;
+  }
+
+  .page.page .marketVisualCaption {
+    right: 1rem;
+    bottom: 1rem;
+  }
+
+  .page.page .marketVisualCaption strong {
+    font-size: 1.1rem;
+  }
+
+  .page.page .marketVisualStat {
+    right: 0;
+    bottom: -1rem;
+    min-width: 190px;
+  }
+
+  .page.page .catalogSection,
+  .page.page .plansSection {
+    padding: 4rem 0;
+  }
+
+  .page.page .sectionHeading,
+  .page.page .plansHeading {
+    margin-bottom: 2rem;
+  }
+
+  .page.page .sectionHeadingTitle,
+  .page.page .plansHeading h2,
+  .page.page .talentHeading h2 {
+    font-size: 2.35rem;
+  }
+
+  .page.page .servicesGrid,
+  .page.page .candidatePlansGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .page.page .candidatePlanCard,
+  .page.page .candidatePlanPopular {
+    min-height: 0;
+    transform: none;
+  }
+
+  .page.page .talentSection {
+    padding: 3.5rem 0 4rem;
+  }
+
+  .page.page .talentHeading {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .page.page .talentLink {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .page.page .ctaSection {
+    padding-bottom: 4rem;
+  }
+
+  .page.page .ctaPanel {
+    display: grid;
+    gap: 1.5rem;
+    padding: 2.1rem 1.5rem;
+  }
+
+  .page.page .ctaButton {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page.page .primaryAction,
+  .page.page .secondaryAction,
+  .page.page .serviceCard,
+  .page.page .candidatePlanAction {
+    transition: none;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Harmonização e alinhamento
+
+   Ajustes sobre a direcção editorial acima: tudo encosta à mesma margem do
+   contentor, nenhum texto fica abaixo de 12px, o azul-marinho é o mesmo do
+   cabeçalho e do rodapé, e a grelha de serviços fecha sem buracos.
+   ------------------------------------------------------------------ */
+
+.page.page.page {
+  /* O marinho da marca (cabeçalho, botão "Iniciar sessão", rodapé). */
+  --candidate-navy: #0b2147;
+}
+
+/* Tipografia: a serifa editorial com tracking menos apertado, e o mínimo
+   de 14px que a auditoria de UI (e2e/ui-audit.ts) exige. */
+.page.page :is(h1, h2, h3) {
+  /* Evita palavras órfãs ("STP" sozinho numa linha) nos títulos. */
+  text-wrap: balance;
+}
+
+.page.page.page.page .heroTitle {
+  font-size: clamp(3rem, 4.6vw, 4.5rem);
+  letter-spacing: -0.045em;
+  line-height: 1.02;
+}
+
+/* O tema público pinta o eyebrow e o botão secundário do primeiro <section>
+   com azul e lima, com especificidade (0,5,2); aqui seguem a paleta da
+   página. */
+.page.page.page.page.page .heroEyebrow {
+  border: 0;
+  background: transparent;
+  color: var(--candidate-blue);
+}
+
+.page.page.page.page.page .secondaryAction {
+  border-color: var(--candidate-outline);
+  background: transparent;
+  color: var(--candidate-navy);
+}
+
+.page.page.page.page.page .secondaryAction:hover {
+  border-color: var(--candidate-blue);
+  background: rgba(37, 99, 235, 0.08);
+  color: var(--candidate-blue);
+}
+
+.page.page .sectionHeadingTitle,
+.page.page .plansHeading h2,
+.page.page .talentHeading h2,
+.page.page .ctaPanel h2 {
+  letter-spacing: -0.035em;
+}
+
+.page.page .heroEyebrow,
+.page.page .sectionEyebrow,
+.page.page .ctaEyebrow {
+  font-size: 0.875rem;
+  font-weight: 800;
+  line-height: 1rem;
+}
+
+.page.page .marketSwitchLink {
+  /* #718083 dava 3,7:1 sobre a areia; o tom "muted" passa os 4,5:1. */
+  color: var(--candidate-muted);
+  font-size: 0.875rem;
+}
+
+.page.page .primaryAction,
+.page.page .secondaryAction,
+.page.page .candidatePlanAction,
+.page.page .ctaButton {
+  min-height: 50px;
+  padding: 0 1.4rem;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.page.page .heroAssurance p {
+  font-size: 0.875rem;
+}
+
+.page.page .serviceCategory {
+  font-size: 0.875rem;
+}
+
+.page.page .serviceLinkButton,
+.page.page .talentLink {
+  font-size: 0.875rem;
+  font-weight: 800;
+}
+
+.page.page .candidatePlanBadge {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.875rem;
+}
+
+/* Cabeçalhos de secção alinhados à esquerda do contentor, como as grelhas
+   que introduzem (antes ficavam centrados como bloco, ~220px para dentro). */
+.page.page .sectionHeading,
+.page.page .plansHeading {
+  max-width: 760px;
+  margin: 0 0 2.75rem;
+}
+
+/* Hero: legenda em baixo à direita, foto de detalhe em baixo à esquerda e o
+   selo em cima à direita — três cantos, sem sobreposições. */
+.page.page .marketVisualCaption {
+  right: 1.75rem;
+  bottom: 1.6rem;
+}
+
+.page.page .marketVisualCaption span {
+  font-size: 0.875rem;
+}
+
+/* `.page strong` pinta a legenda de marinho; sobre a fotografia é branca. */
+.page.page .marketVisualCaption strong {
+  color: #ffffff;
+  text-shadow: 0 1px 12px rgba(11, 33, 71, 0.35);
+}
+
+.page.page .marketVisualStat {
+  top: 2.25rem;
+  right: -1.25rem;
+  bottom: auto;
+  min-width: 0;
+  gap: 0.75rem;
+  padding: 0.85rem 1.1rem 0.85rem 0.85rem;
+}
+
+.marketVisualStatIcon {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(37, 99, 235, 0.12);
+  color: var(--candidate-blue);
+  font-size: 1.3rem;
+}
+
+.marketVisualStatCopy {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.page.page .marketVisualStatCopy strong {
+  color: var(--candidate-ink);
+  font-family: var(--app-font-sans);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.page.page .marketVisualStatCopy small {
+  color: var(--candidate-muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+/* Serviços: 5 cartões numa grelha de 6 colunas — 2 largos + 3 estreitos,
+   sem a casa vazia que a grelha de 3 deixava. */
+.page.page .servicesGrid {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.page.page .serviceCard {
+  grid-column: span 2;
+  min-height: 0;
+  padding: 1.75rem;
+}
+
+.page.page .serviceCard:nth-child(-n + 2) {
+  grid-column: span 3;
+}
+
+.page.page .serviceDescription {
+  font-size: 0.9375rem;
+}
+
+/* A classe de mercado está no mesmo elemento que `.page`; o seletor
+   descendente original nunca casava. */
+.internationalPage.page.page .serviceIcon {
+  background: rgba(217, 249, 109, 0.5);
+  color: #0b2147;
+}
+
+/* Planos */
+.page.page .candidatePlansGrid {
+  gap: 1.25rem;
+}
+
+.page.page .candidatePlanCard {
+  min-height: 0;
+  padding: 2rem;
+}
+
+.page.page .candidatePlanPopular .candidatePlanAction {
+  /* Sem isto o texto herdava o marinho e o botão ficava uma barra vazia. */
+  color: #ffffff;
+}
+
+.page.page .candidatePlanAction:hover {
+  border-color: var(--candidate-blue);
+  color: var(--candidate-blue);
+}
+
+.page.page .candidatePlanPopular .candidatePlanAction:hover {
+  border-color: var(--candidate-blue);
+  background: var(--candidate-blue);
+  color: #ffffff;
+}
+
+.page.page .candidatePlanPremium .candidatePlanAction:hover {
+  border-color: #cded62;
+  background: #cded62;
+  color: var(--candidate-navy);
+}
+
+.page.page .plansNote {
+  margin-top: 2.25rem;
+  font-size: 0.875rem;
+}
+
+/* Verificados */
+.page.page .talentHeading {
+  align-items: flex-end;
+  margin-bottom: 2.5rem;
+}
+
+.page.page .talentLink:hover {
+  color: #ffffff;
+}
+
+/* CTA: texto e botão à esquerda, fotografia à direita. */
+.page.page .ctaPanel {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr);
+  align-items: stretch;
+  gap: 2.5rem;
+  padding: 0.75rem 0.75rem 0.75rem 3.5rem;
+}
+
+.page.page .ctaPanel::after {
+  /* O anel decorativo fica por trás da fotografia em vez de cortar o texto. */
+  top: -5rem;
+  right: -5rem;
+  bottom: auto;
+  left: auto;
+}
+
+.ctaCopy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding-block: 2.75rem;
+}
+
+.page.page .ctaPanel p {
+  margin-top: 0.85rem;
+}
+
+.page.page .ctaCopy .ctaButton {
+  margin-top: 1.75rem;
+}
+
+.page.page .ctaButton:hover {
+  border-color: #cded62;
+  background: #cded62;
+  color: var(--candidate-navy);
+}
+
+.page.page .ctaCopy .verifiedButton,
+.page.page .ctaCopy .verifiedButton:hover {
+  border-color: var(--candidate-blue);
+  background: var(--candidate-blue);
+  color: var(--candidate-white);
+}
+
+.ctaMedia {
+  position: relative;
+  z-index: 1;
+  min-height: 320px;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #0b2147;
+}
+
+@media (max-width: 1023px) {
+  .page.page .servicesGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .page.page .serviceCard,
+  .page.page .serviceCard:nth-child(-n + 2) {
+    grid-column: auto;
+  }
+
+  .page.page .serviceCard:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  .page.page .marketVisualStat {
+    right: 0;
+  }
+
+  .page.page .ctaPanel {
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 0.7fr);
+    padding-left: 2.5rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .page.page .servicesGrid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Os dois separadores dividem a largura em vez de transbordarem. */
+  .page.page .marketSwitch {
+    display: grid;
+    width: 100%;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    padding: 0;
+  }
+
+  .page.page .marketSwitchLink {
+    font-size: 0.875rem;
+    letter-spacing: 0.05em;
+  }
+
+  /* Mesmo alinhamento à esquerda das outras secções. */
+  .page.page .talentHeading,
+  .page.page .talentHeading > div {
+    justify-items: start;
+    text-align: left;
+  }
+
+  .page.page .ctaPanel::after {
+    display: none;
+  }
+
+  .page.page .serviceCard,
+  .page.page .serviceCard:last-child:nth-child(odd) {
+    grid-column: auto;
+    padding: 1.5rem;
+  }
+
+  .page.page .sectionHeading,
+  .page.page .plansHeading {
+    margin-bottom: 2rem;
+  }
+
+  .page.page.page.page .heroTitle {
+    font-size: clamp(2.6rem, 11vw, 3.6rem);
+  }
+
+  .page.page .marketVisualStat {
+    top: 1rem;
+    right: 0.75rem;
+    padding: 0.7rem 0.9rem 0.7rem 0.7rem;
+  }
+
+  .page.page .candidatePlanCard {
+    padding: 1.75rem 1.5rem;
+  }
+
+  .page.page .talentHeading {
+    align-items: stretch;
+  }
+
+  .page.page .ctaPanel {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding: 0.6rem;
+  }
+
+  .ctaCopy {
+    padding: 1.9rem 1.15rem 1.75rem;
+  }
+
+  .page.page .ctaCopy .ctaButton {
+    width: 100%;
+  }
+
+  .ctaMedia {
+    min-height: 240px;
+  }
+}
+
+/* O carrossel de verificados vem com os estilos da home; nesta página o
+   cargo segue o mínimo de 14px da auditoria. */
+.page.page .talentSection [class*='homeCandidateHeadline'] {
+  font-size: 0.875rem;
+}
+
+/* ------------------------------------------------------------------
+   Cores e letra de produção
+
+   Paleta da página em produção (azul #2563eb, lima #d9f96d, marinho #0b2147)
+   e uma só família de títulos (a do site) em vez da Georgia.
+   ------------------------------------------------------------------ */
+
+.page.page
+  :is(
+    .heroTitle,
+    .sectionHeadingTitle,
+    .plansHeading h2,
+    .stepsTitle,
+    .serviceTitle,
+    .candidatePlanName,
+    .candidatePlanPrice strong,
+    .marketVisualCaption strong,
+    .talentHeading h2,
+    .ctaPanel h2
+  ) {
+  font-family: var(--app-font-display);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.page.page.page.page.page .heroTitle {
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+/* Itálico a negrito em azul, como "Empregos" no logotipo. */
+.page.page .heroTitle span {
+  color: #2563eb;
+  font-style: italic;
+  font-weight: 800;
+}
+
+.page.page :is(.serviceTitle, .candidatePlanName) {
+  font-weight: 700;
+}
+
+.page.page .marketVisualCaption strong {
+  font-weight: 700;
+}
+
+/* A sans a negrito é mais larga: o preço encolhe para "/ 30 dias" caber na
+   mesma linha. */
+.page.page .candidatePlanPrice strong {
+  font-size: clamp(2.25rem, 3.2vw, 2.75rem);
+}
+
+/* ------------------------------------------------------------------
+   Seletor Nacional / Internacional
+
+   Na mesma linha do eyebrow do hero, encostado à direita por cima da foto,
+   no mesmo azul do eyebrow.
+   ------------------------------------------------------------------ */
+
+.page.page.page .heroTopRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  margin-bottom: 1.6rem;
+}
+
+/* Eyebrow do hero sem maiúsculas forçadas e sem o ponto à frente. */
+.page.page.page.page.page.page .heroEyebrow {
+  margin-bottom: 0;
+  font-size: 0.95rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.page.page.page.page.page.page .heroEyebrow::before {
+  content: none;
+  display: none;
+}
+
+.page.page.page .marketSwitch {
+  display: inline-flex;
+  width: auto;
+  gap: 0;
+  margin: 0;
+  padding: 0.25rem;
+  overflow: visible;
+  border: 0.0625rem solid
+    color-mix(in srgb, var(--candidate-blue) 22%, transparent);
+  border-radius: 10rem;
+  background: var(--candidate-white);
+}
+
+.page.page.page .marketSwitchLink {
+  min-height: 2.4rem;
+  padding: 0 1.25rem;
+  border: 0.0625rem solid transparent;
+  border-radius: 10rem;
+  color: var(--candidate-muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.25rem;
+  text-transform: none;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
+}
+
+.page.page.page .marketSwitchLink::after {
+  content: none;
+}
+
+.page.page.page .marketSwitchLink:hover {
+  color: var(--candidate-blue);
+}
+
+.page.page.page .marketSwitchLinkActive {
+  border-color: var(--candidate-blue);
+  background: color-mix(
+    in srgb,
+    var(--candidate-blue) 8%,
+    var(--candidate-white)
+  );
+  color: var(--candidate-blue);
+}
+
+.page.page.page .marketSwitchLink:focus-visible {
+  outline: 0.1875rem solid var(--candidate-blue);
+  outline-offset: 0.125rem;
+}
+
+@media (max-width: 47.9375rem) {
+  .page.page.page .marketSwitch {
+    display: grid;
+    width: 100%;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .page.page.page .marketSwitchLink {
+    padding: 0 0.4rem;
+    font-size: 0.875rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page.page.page .marketSwitchLink {
+    transition: none;
   }
 }

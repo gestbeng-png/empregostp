@@ -13,7 +13,9 @@ interface ErrorResponse {
 interface SettingsResponse {
   settings: Awaited<
     ReturnType<
-      ReturnType<typeof createServerContainer>['getCandidateSettings']['execute']
+      ReturnType<
+        typeof createServerContainer
+      >['getCandidateSettings']['execute']
     >
   >;
 }

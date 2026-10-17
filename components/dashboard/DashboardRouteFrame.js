@@ -18,6 +18,7 @@ const SELF_CONTAINED_ROUTES = new Set([
 ]);
 
 const ADMIN_ROUTE_META = {
+  operations: ['operations', 'Operações de recrutamento'],
   affiliates: ['affiliates', 'Afiliados'],
   auditoria: ['audit', 'Auditoria'],
   blog: ['blog', 'Conteúdo do blog'],
@@ -26,6 +27,7 @@ const ADMIN_ROUTE_META = {
   news: ['news', 'Notícias'],
   'payment-settings': ['payments', 'Configuração de pagamentos'],
   plans: ['plans', 'Planos'],
+  'product-ads': ['product-ads', 'Anúncios de produtos'],
   reports: ['reports', 'Relatórios'],
   resources: ['resources', 'Recursos'],
   services: ['services', 'Serviços'],

@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
+import useSavedJobActions from '../../../components/candidates/useSavedJobActions';
 import Image from 'next/image';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useAuth } from '../../../context/AuthContext';
-import { getCareerAdvice } from '../../../lib/geminiService';
 import { extractLinkedInProfileHints } from '../../../lib/linkedin';
 import {
   downloadInterviewICS,
@@ -25,7 +25,6 @@ import {
   FiCamera,
   FiCalendar,
   FiCheckCircle,
-  FiEdit2,
   FiFileText,
   FiGlobe,
   FiInbox,
@@ -34,7 +33,6 @@ import {
   FiMessageCircle,
   FiPlus,
   FiPlusCircle,
-  FiSearch,
   FiTarget,
   FiUploadCloud,
   FiUser,
@@ -47,6 +45,11 @@ import AffiliateSection from '../../../components/affiliate/AffiliateSection';
 import AutoSaveStatus from '../../../components/forms/AutoSaveStatus';
 import useAutoDraft from '../../../hooks/useAutoDraft';
 import styles from '../../../styles/DashboardCandidato.module.css';
+import {
+  summarizeJobAlertFilters,
+  useOwnJobAlerts,
+} from '../../../components/candidates/useOwnJobAlerts';
+import { useBrowserPush } from '../../../components/candidates/useBrowserPush';
 import ps from '../../../styles/CandidateProfileSettings.module.css';
 import {
   CANDIDATE_PROFILE_LIMITS as LIMITES,
@@ -55,26 +58,8 @@ import {
 import { createFormDraftKey } from '../../../lib/formDraft';
 import { buildLoginUrl } from '../../../lib/loginRedirect';
 import { requireCandidateSession } from '../../../lib/serverSession';
-
-const CandidateApplicationsChart = dynamic(
-  () => import('../../../components/charts/CandidateApplicationsChart'),
-  {
-    ssr: false,
-    loading: () => (
-      <div
-        className={styles.chartWrapper}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'var(--text-3, #94a3b8)',
-        }}
-      >
-        Carregando gráfico...
-      </div>
-    ),
-  },
-);
+import { candidateStatusLabel } from '../../../domain/applications/candidateView';
+import { recruitmentNotificationPath } from '../../../lib/recruitmentNotificationNavigation';
 
 const CandidatePremiumPlansExperience = dynamic(
   () => import('../../../components/CandidatePremiumPlansExperience'),
@@ -203,6 +188,8 @@ const STATUS_LABELS = {
   interview: 'Entrevista',
   approved: 'Aprovada',
   rejected: 'Rejeitada',
+  // Antes caía em «Pendente»: o candidato via uma retirada como pendente.
+  withdrawn: 'Retirada',
 };
 
 const getInitials = (value = '') =>
@@ -213,30 +200,6 @@ const getInitials = (value = '') =>
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase() || '')
     .join('') || 'U';
-
-const AVATAR_PALETTE = [
-  { background: 'rgba(32,87,215,0.14)', color: '#2057d7' },
-  { background: 'rgba(30,43,77,0.12)', color: '#1e2b4d' },
-  { background: 'rgba(139,92,246,0.14)', color: '#7c3aed' },
-  { background: 'rgba(217,255,47,0.22)', color: '#7a9000' },
-  { background: 'rgba(61,187,122,0.16)', color: '#15803d' },
-];
-
-const getAvatarColor = (seed = '') => {
-  const str = String(seed || '');
-  let hash = 0;
-  for (let i = 0; i < str.length; i += 1) {
-    hash = (hash * 31 + str.charCodeAt(i)) % 997;
-  }
-  return AVATAR_PALETTE[Math.abs(hash) % AVATAR_PALETTE.length];
-};
-
-const getCompletionHeadline = (score) => {
-  if (score >= 90) return 'Perfil completo!';
-  if (score >= 65) return 'Bom progresso!';
-  if (score >= 40) return 'A continuar bem!';
-  return 'Vamos começar!';
-};
 
 const VERIFICATION_TYPE_ORDER = [
   'identity',
@@ -327,40 +290,6 @@ const formatInterviewDate = (value) => {
   });
 };
 
-const formatRelativeTime = (value) => {
-  if (!value) return '';
-  const date = value?.toDate ? value.toDate() : new Date(value);
-  if (Number.isNaN(date.getTime())) return '';
-  const days = Math.floor((Date.now() - date.getTime()) / 86400000);
-  if (days <= 0) return 'Hoje';
-  if (days === 1) return 'Ontem';
-  if (days < 7) return `Há ${days} dias`;
-  const weeks = Math.floor(days / 7);
-  if (days < 30) return weeks === 1 ? 'Há 1 semana' : `Há ${weeks} semanas`;
-  const months = Math.floor(days / 30);
-  if (days < 365) return months === 1 ? 'Há 1 mês' : `Há ${months} meses`;
-  const years = Math.floor(days / 365);
-  return years === 1 ? 'Há 1 ano' : `Há ${years} anos`;
-};
-
-const formatJobSalary = (job) => {
-  const raw =
-    job?.salarioDe ?? job?.salario ?? job?.salary ?? job?.salarioMin ?? null;
-  const num = Number(raw);
-  if (raw === null || raw === '' || Number.isNaN(num) || num <= 0) {
-    return 'A combinar';
-  }
-  return `${num.toLocaleString('pt-PT')} Db`;
-};
-
-const OVERVIEW_STATUS_CLASS = {
-  analysis: 'statusAnalysis',
-  interview: 'statusInterview',
-  approved: 'statusApproved',
-  rejected: 'statusRejected',
-  pending: 'statusPending',
-};
-
 const NAV_MENU = [
   { id: 'dashboard', label: 'Visão geral', icon: 'dashboard' },
   { id: 'profile', label: 'Meu perfil', icon: 'profile' },
@@ -375,42 +304,6 @@ const NAV_MENU = [
   { id: 'affiliate', label: 'Ser Afiliado', icon: 'trophy' },
 ];
 const CANDIDATE_TAB_IDS = new Set(NAV_MENU.map((item) => item.id));
-
-const getPlanFeatureList = (features) => {
-  if (Array.isArray(features)) {
-    return features;
-  }
-
-  if (!features || typeof features !== 'object') {
-    return ['Recursos padrão'];
-  }
-
-  const list = [];
-  if (features.maxApplicationsPerMonth !== undefined) {
-    if (features.maxApplicationsPerMonth === null) {
-      list.push('Candidaturas ilimitadas');
-    } else {
-      list.push(`Até ${features.maxApplicationsPerMonth} candidaturas/mês`);
-    }
-  }
-  if (features.canSaveJobs) {
-    list.push('Salvar vagas favoritas');
-  }
-  if (features.canApplyToFeaturedJobs) {
-    list.push('Candidaturas a vagas em destaque');
-  }
-  if (features.canUploadCertificates) {
-    list.push('Upload seguro de certificados');
-  }
-  if (features.prioritySupport) {
-    list.push('Suporte prioritário');
-  }
-  if (list.length === 0 && features.name) {
-    list.push(features.name);
-  }
-
-  return list.length ? list : ['Recursos padrão'];
-};
 
 const emptyExperience = { company: '', role: '', period: '', description: '' };
 
@@ -464,8 +357,7 @@ const buildProfileForm = (profileData, userState) => {
   };
 };
 
-const normalizeDraftText = (value) =>
-  typeof value === 'string' ? value : '';
+const normalizeDraftText = (value) => (typeof value === 'string' ? value : '');
 
 const prepareCandidateProfileDraft = (value = {}) => {
   const experiences = Array.isArray(value.experiences)
@@ -507,94 +399,6 @@ const prepareCandidateProfileDraft = (value = {}) => {
   };
 };
 
-const SUBLABEL_TONE_STYLES = {
-  positive: { background: 'rgba(34,197,94,0.14)', color: '#16a34a' },
-  neutral: { background: 'rgba(95,184,245,0.12)', color: '#2057d7' },
-  warning: { background: 'rgba(239,68,68,0.15)', color: '#f87171' },
-};
-
-const StatCard = ({
-  label,
-  value,
-  change,
-  trend,
-  icon,
-  color = '#2057d7',
-  sublabel,
-  sublabelWarning,
-  sublabelTone,
-}) => {
-  const tone = sublabelWarning ? 'warning' : sublabelTone || 'neutral';
-  const toneStyle = SUBLABEL_TONE_STYLES[tone] || SUBLABEL_TONE_STYLES.neutral;
-
-  return (
-    <div className={styles.statCard}>
-      <div className={styles.statHeader}>
-        <div
-          className={styles.statIcon}
-          style={{ background: `${color}15`, color: color }}
-        >
-          {icon}
-        </div>
-        {change !== undefined && (
-          <span
-            className={`${styles.statTrend} ${trend === 'up' ? styles.up : trend === 'down' ? styles.down : ''}`}
-          >
-            {trend === 'up' ? '+' : trend === 'down' ? '-' : ''}
-            {change}%
-          </span>
-        )}
-        {sublabel !== undefined && (
-          <span
-            style={{
-              fontSize: '0.7rem',
-              padding: '2px 7px',
-              borderRadius: '6px',
-              fontWeight: 600,
-              background: toneStyle.background,
-              color: toneStyle.color,
-            }}
-          >
-            {sublabel}
-          </span>
-        )}
-      </div>
-      <p className={styles.statValue}>{value}</p>
-      <p className={styles.statLabel}>{label}</p>
-    </div>
-  );
-};
-
-const ProgressRing = ({ value = 0, size = 92 }) => {
-  const strokeWidth = 8;
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const clamped = Math.max(0, Math.min(100, Math.round(value) || 0));
-  const offset = circumference * (1 - clamped / 100);
-
-  return (
-    <div className="progress-ring" style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        <circle className="track" cx={size / 2} cy={size / 2} r={radius} />
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          stroke="#2057d7"
-          fill="none"
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          style={{
-            transition: 'stroke-dashoffset 1s cubic-bezier(0.22,1,0.36,1)',
-          }}
-        />
-      </svg>
-      <div className="progress-ring-val">{clamped}%</div>
-    </div>
-  );
-};
-
 const ApplicationTable = ({ applications }) => (
   <div className={styles.tableContainer}>
     <table className={styles.applicationTable}>
@@ -621,7 +425,9 @@ const ApplicationTable = ({ applications }) => (
               <span
                 className={`${styles.statusPill} ${styles[app.status?.toLowerCase()] || ''}`}
               >
-                {STATUS_LABELS[app.status?.toLowerCase()] || 'Pendente'}
+                {typeof app.v2Status === 'string'
+                  ? candidateStatusLabel(app.v2Status, app.closedReason)
+                  : STATUS_LABELS[app.status?.toLowerCase()] || 'Pendente'}
               </span>
             </td>
             <td data-label="Data">
@@ -685,7 +491,9 @@ function CandidateSectionHeader({
   description,
   count,
   action,
+  headingLevel = 1,
 }) {
+  const Heading = headingLevel === 2 ? 'h2' : 'h1';
   return (
     <header className={styles.candidateSectionHeader}>
       <div className={styles.candidateSectionCopy}>
@@ -701,7 +509,7 @@ function CandidateSectionHeader({
           `h1` e não passam por aqui, por isso não há duplicação.
         */}
         <div className={styles.candidateSectionTitleRow}>
-          <h1>{title}</h1>
+          <Heading>{title}</Heading>
           {count !== undefined ? (
             <span className={styles.candidateSectionCount}>{count}</span>
           ) : null}
@@ -797,12 +605,15 @@ const CandidateDashboard = () => {
   const router = useRouter();
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
+  const jobAlerts = useOwnJobAlerts(activeTab === 'saved');
+  const browserPush = useBrowserPush(activeTab === 'notifications');
   const [loading, setLoading] = useState(true);
   const [dashboardError, setDashboardError] = useState('');
   const [profile, setProfile] = useState(null);
   const [applications, setApplications] = useState([]);
   const [recommendedJobs, setRecommendedJobs] = useState([]);
   const [savedJobs, setSavedJobs] = useState([]);
+  const savedJobActions = useSavedJobActions(setSavedJobs, user?.uid);
   const [notifications, setNotifications] = useState([]);
   const [planStatus, setPlanStatus] = useState(null);
   const [editingProfile, setEditingProfile] = useState(false);
@@ -811,8 +622,6 @@ const CandidateDashboard = () => {
   );
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileFeedback, setProfileFeedback] = useState(null);
-  const [careerTips, setCareerTips] = useState([]);
-  const [loadingTips, setLoadingTips] = useState(false);
   const [conversations, setConversations] = useState([]);
   const [messages, setMessages] = useState([]);
   const [messageInput, setMessageInput] = useState('');
@@ -870,10 +679,7 @@ const CandidateDashboard = () => {
   const handleRestoreProfileDraft = useCallback(
     (draft) => {
       const ownerId = user?.uid || '';
-      if (
-        !ownerId ||
-        profileDraftInteractionOwnerRef.current === ownerId
-      ) {
+      if (!ownerId || profileDraftInteractionOwnerRef.current === ownerId) {
         return;
       }
 
@@ -941,7 +747,7 @@ const CandidateDashboard = () => {
   }, [router.isReady, router.query.tab]);
 
   // Profile Photos State
-  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [, setAvatarUploading] = useState(false);
   const [coverUploading, setCoverUploading] = useState(false);
 
   const unreadMessages = useMemo(
@@ -1216,17 +1022,10 @@ const CandidateDashboard = () => {
           setProfileForm(buildProfileForm(profileData, user));
         }
         setApplications(profileJson.applications || []);
-
-        const headlineFallback =
-          profileData.headline ||
-          profileData.profession ||
-          user?.headline ||
-          '';
         const planPromise = fetchPlanStatus(token);
         const independentDataPromise = Promise.all([
           fetchVerificationRecord(token, uid),
           fetchSavedJobs(token),
-          fetchCareerTips(headlineFallback, token),
         ]);
         const planData = await planPromise;
         await Promise.all([
@@ -1281,18 +1080,6 @@ const CandidateDashboard = () => {
         console.error('Erro ao buscar status do plano:', err);
       }
       return null;
-    };
-
-    const fetchCareerTips = async (headline, token) => {
-      setLoadingTips(true);
-      try {
-        const tips = await getCareerAdvice(headline, token);
-        if (isMounted) setCareerTips(tips);
-      } catch (err) {
-        console.error('Erro ao buscar dicas de carreira:', err);
-      } finally {
-        if (isMounted) setLoadingTips(false);
-      }
     };
 
     initialize();
@@ -1610,27 +1397,6 @@ const CandidateDashboard = () => {
     }
   };
 
-  const chartData = useMemo(() => {
-    const dayLabels = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
-    const counts = { Dom: 0, Seg: 0, Ter: 0, Qua: 0, Qui: 0, Sex: 0, Sab: 0 };
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
-    applications.forEach((app) => {
-      try {
-        const d = app.createdAt
-          ? app.createdAt.toDate
-            ? app.createdAt.toDate()
-            : new Date(app.createdAt)
-          : null;
-        if (d && d >= sevenDaysAgo) {
-          const key = dayLabels[d.getDay()];
-          counts[key] = (counts[key] || 0) + 1;
-        }
-      } catch (_) {}
-    });
-    return dayLabels.map((name) => ({ name, value: counts[name] || 0 }));
-  }, [applications]);
-
   // Enquanto `planStatus` não chega, não sabemos qual é o plano. O fallback
   // anterior afirmava "Básico", pelo que um cliente Premium via o plano errado
   // no topo do painel até a API responder — e ficava assim indefinidamente se
@@ -1650,13 +1416,6 @@ const CandidateDashboard = () => {
     savedJobs: { allowed: false, current: 0, limit: 0 },
     certificates: { allowed: false, current: 0, limit: 0 },
   };
-
-  const planHeading = !planStatusLoaded
-    ? 'A carregar plano…'
-    : activePlan.price === 0
-      ? 'Plano Grátis'
-      : activePlan.planName || 'Plano EmpregoSTP';
-  const planFeatureList = getPlanFeatureList(activePlan.features);
   const profileViewers = useMemo(
     () => planStatus?.profileViewers || [],
     [planStatus?.profileViewers],
@@ -1691,19 +1450,6 @@ const CandidateDashboard = () => {
       profileViewers.length,
     ],
   );
-  const optimizationInsights = planStatus?.optimizationInsights || {
-    employabilityScore: 0,
-    employabilityLabel: 'Perfil inicial',
-    averageTopMatch: 0,
-    bestMatchScore: 0,
-    summarySuggestion: '',
-    strengths: [],
-    improvementActions: [],
-    marketSkillGaps: [],
-    searchKeywords: [],
-    topMatches: [],
-    activeJobsAnalyzed: 0,
-  };
 
   const stats = useMemo(() => {
     const now = new Date();
@@ -2253,7 +1999,7 @@ const CandidateDashboard = () => {
       const { storage } = await import('../../../lib/firebase');
       const auth = getAuth();
       const currentUser = auth.currentUser;
-      if (!currentUser) throw new Error('Usuário não autenticado.');
+      if (!currentUser) throw new Error('Sessão terminada. Inicie sessão novamente.');
 
       const storageRef = ref(
         storage,
@@ -2318,7 +2064,7 @@ const CandidateDashboard = () => {
 
       const auth = getAuth();
       const currentUser = auth.currentUser;
-      if (!currentUser) throw new Error('Usuário não autenticado.');
+      if (!currentUser) throw new Error('Sessão terminada. Inicie sessão novamente.');
 
       const path = type === 'avatar' ? 'photoUrl' : 'company-covers'; // Using existing paths logic or generic 'covers'
       const timestamp = Date.now();
@@ -2493,7 +2239,7 @@ const CandidateDashboard = () => {
 
       const auth = getAuth();
       const currentUser = auth.currentUser;
-      if (!currentUser) throw new Error('Usuário não autenticado');
+      if (!currentUser) throw new Error('Sessão terminada. Inicie sessão novamente.');
 
       const uploadedUrls = [];
       for (const f of files) {
@@ -2545,7 +2291,7 @@ const CandidateDashboard = () => {
       const auth = getAuth();
       const currentUser = auth.currentUser;
       if (!currentUser) {
-        throw new Error('Usuário não autenticado.');
+        throw new Error('Sessão terminada. Inicie sessão novamente.');
       }
       const token = await currentUser.getIdToken();
       const skillsArray = (profileForm.skills || '')
@@ -2599,7 +2345,7 @@ const CandidateDashboard = () => {
 
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || 'Falha ao salvar o perfil.');
+        throw new Error(data.error || 'Não foi possível guardar o perfil.');
       }
 
       const updatedUser = {
@@ -2629,7 +2375,7 @@ const CandidateDashboard = () => {
       console.error('Erro ao salvar perfil:', err);
       setProfileFeedback({
         type: 'error',
-        message: err.message || 'Não foi possível salvar o perfil.',
+        message: err.message || 'Não foi possível guardar o perfil.',
       });
     } finally {
       setProfileSaving(false);
@@ -2700,297 +2446,6 @@ const CandidateDashboard = () => {
           />
         );
 
-      case '__legacy_dashboard':
-        return (
-          <div className={styles.contentArea}>
-            <div className={styles.overviewHero}>
-              <div className={styles.overviewHeroCopy}>
-                <h1 className={styles.overviewHeroTitle}>
-                  Olá, {firstName}! <span aria-hidden="true">👋</span>
-                </h1>
-                <p className={styles.overviewHeroSub}>
-                  Bem-vindo(a) de volta. Aqui está o que está a acontecer com a
-                  sua carreira.
-                </p>
-              </div>
-              <div className={styles.overviewHeroActions}>
-                <button
-                  type="button"
-                  className={styles.overviewHeroGhost}
-                  onClick={() => openTab('profile')}
-                >
-                  <FiEdit2 aria-hidden="true" /> Editar Perfil
-                </button>
-                <Link href="/vagas" className={styles.overviewHeroPrimary}>
-                  <FiSearch aria-hidden="true" /> Procurar Vagas
-                </Link>
-              </div>
-            </div>
-
-            <div className={styles.overviewStatsGrid}>
-              {[
-                {
-                  key: 'apps',
-                  label: 'Candidaturas Enviadas',
-                  value: applications.length,
-                  icon: icons.applications,
-                  tone: 'blue',
-                  sublabel: stats[0]?.sublabel,
-                  trend: stats[0]?.sublabelTone,
-                },
-                {
-                  key: 'saved',
-                  label: 'Vagas Salvas',
-                  value: savedJobs.length,
-                  icon: icons.saved,
-                  tone: 'amber',
-                  sublabel: 'Sem alterações',
-                  trend: 'neutral',
-                },
-                {
-                  key: 'views',
-                  label: 'Visualizações de Perfil',
-                  value: stats[3]?.value ?? 0,
-                  icon: icons.eye,
-                  tone: 'violet',
-                  sublabel: stats[3]?.sublabel,
-                  trend: stats[3]?.sublabelTone,
-                },
-              ].map((card) => (
-                <div key={card.key} className={styles.overviewStatCard}>
-                  <div className={styles.overviewStatTop}>
-                    <span
-                      className={`${styles.overviewStatIcon} ${styles[`statIcon_${card.tone}`]}`}
-                    >
-                      {card.icon}
-                    </span>
-                    {card.sublabel ? (
-                      <span
-                        className={`${styles.overviewStatTrend} ${card.trend === 'positive' ? styles.trendPositive : card.trend === 'warning' ? styles.trendWarning : styles.trendNeutral}`}
-                      >
-                        {card.sublabel}
-                      </span>
-                    ) : null}
-                  </div>
-                  <p className={styles.overviewStatValue}>
-                    {String(card.value ?? 0).padStart(2, '0')}
-                  </p>
-                  <p className={styles.overviewStatLabel}>{card.label}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className={styles.overviewMainGrid}>
-              <div className={styles.overviewColMain}>
-                <section className={styles.overviewCard}>
-                  <div className={styles.overviewCardHead}>
-                    <h2 className={styles.overviewCardTitle}>
-                      Candidaturas Recentes
-                    </h2>
-                    <button
-                      type="button"
-                      className={styles.overviewSeeAll}
-                      onClick={() => openTab('applications')}
-                    >
-                      Ver todas
-                    </button>
-                  </div>
-                  {recentApplications.length ? (
-                    <div className={styles.overviewAppList}>
-                      {recentApplications.slice(0, 4).map((app) => {
-                        const statusKey = app.status?.toLowerCase();
-                        const avatarColor = getAvatarColor(
-                          app.company || app.jobTitle,
-                        );
-                        const appliedRaw =
-                          app.appliedAt || app.appliedDate || app.createdAt;
-                        const appliedLabel = formatRelativeTime(appliedRaw);
-                        return (
-                          <div key={app.id} className={styles.overviewAppRow}>
-                            <span
-                              className={styles.overviewAppAvatar}
-                              style={{
-                                background: avatarColor.background,
-                                color: avatarColor.color,
-                              }}
-                            >
-                              {getInitials(app.company || app.jobTitle)}
-                            </span>
-                            <div className={styles.overviewAppInfo}>
-                              <strong>{app.jobTitle || 'Vaga'}</strong>
-                              <span>
-                                {app.company || 'Empresa'}
-                                {appliedLabel ? ` • ${appliedLabel}` : ''}
-                              </span>
-                            </div>
-                            <span
-                              className={`${styles.overviewStatusPill} ${styles[OVERVIEW_STATUS_CLASS[statusKey]] || styles.statusPending}`}
-                            >
-                              {STATUS_LABELS[statusKey] || 'Pendente'}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <p className={styles.overviewMutedText}>
-                      Ainda não enviou nenhuma candidatura.
-                    </p>
-                  )}
-                </section>
-
-                <div>
-                  <h2 className={styles.overviewSectionHeading}>
-                    Vagas Recomendadas
-                  </h2>
-                  {activePlan.features?.canReceiveRecommendations &&
-                  recommendedJobs.length ? (
-                    <div className={styles.overviewJobGrid}>
-                      {recommendedJobs.slice(0, 2).map((job) => {
-                        const jobTags = (
-                          Array.isArray(job.skills)
-                            ? job.skills
-                            : Array.isArray(job.requisitos)
-                              ? job.requisitos
-                              : []
-                        )
-                          .filter(Boolean)
-                          .slice(0, 2);
-                        const jobType =
-                          job.tipoContrato || job.contractType || 'Vaga';
-                        return (
-                          <Link
-                            key={job.id}
-                            href={`/vaga/${job.id}`}
-                            className={styles.overviewJobCard}
-                          >
-                            <div className={styles.overviewJobTop}>
-                              <span className={styles.overviewJobIcon}>
-                                <FiBriefcase aria-hidden="true" />
-                              </span>
-                              <span className={styles.overviewJobType}>
-                                {jobType}
-                              </span>
-                            </div>
-                            <h3 className={styles.overviewJobTitle}>
-                              {job.titulo || job.title || 'Vaga'}
-                            </h3>
-                            <p className={styles.overviewJobMeta}>
-                              {job.empresa ||
-                                job.empresaNome ||
-                                job.company ||
-                                'Empresa'}{' '}
-                              • {job.localizacao || job.location || 'Local'}
-                            </p>
-                            {jobTags.length > 0 && (
-                              <div className={styles.overviewJobTags}>
-                                {jobTags.map((tag) => (
-                                  <span
-                                    key={tag}
-                                    className={styles.overviewJobTag}
-                                  >
-                                    {tag}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-                            <div className={styles.overviewJobFoot}>
-                              <strong className={styles.overviewJobPrice}>
-                                {formatJobSalary(job)}
-                              </strong>
-                              <span className={styles.overviewJobApply}>
-                                Candidatar-se
-                              </span>
-                            </div>
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className={styles.overviewCard}>
-                      <p className={styles.overviewMutedText}>
-                        {activePlan.features?.canReceiveRecommendations
-                          ? 'Ainda não há vagas recomendadas. Complete o seu perfil para receber sugestões.'
-                          : 'Recomendações personalizadas são um recurso dos planos Profissional e Premium.'}
-                      </p>
-                      <Link href="/vagas" className={styles.overviewJobApply}>
-                        Explorar todas as vagas →
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className={styles.overviewColSide}>
-                <section className={styles.overviewCard}>
-                  <h2 className={styles.overviewCardTitle}>Perfil Completo</h2>
-                  <div className={styles.overviewProfileTopRow}>
-                    <span className={styles.overviewProfilePct}>
-                      {profileCompletion.score}%
-                    </span>
-                    <span className={styles.overviewProfileTag}>
-                      {getCompletionHeadline(profileCompletion.score)}
-                    </span>
-                  </div>
-                  <div className={styles.overviewProfileBar}>
-                    <span
-                      style={{
-                        width: `${Math.max(6, profileCompletion.score)}%`,
-                      }}
-                    />
-                  </div>
-                  <p className={styles.overviewProfileText}>
-                    {completionHintText}
-                  </p>
-                  <button
-                    type="button"
-                    className={styles.overviewOutlineBtn}
-                    onClick={() => openTab('profile')}
-                  >
-                    Completar Perfil
-                  </button>
-                </section>
-
-                <section className={styles.overviewPromoCard}>
-                  <h2 className={styles.overviewPromoTitle}>Destaque-se</h2>
-                  <p className={styles.overviewPromoText}>
-                    Empresas estão à procura de talentos com o seu perfil.
-                    Mantenha o seu currículo atualizado.
-                  </p>
-                  <button
-                    type="button"
-                    className={styles.overviewPromoBtn}
-                    onClick={() => openTab('profile')}
-                  >
-                    Atualizar Agora
-                  </button>
-                </section>
-
-                <section
-                  className={`${styles.overviewCard} ${styles.overviewHelpCard}`}
-                >
-                  <span className={styles.overviewHelpIcon}>
-                    <FiMessageCircle aria-hidden="true" />
-                  </span>
-                  <h3 className={styles.overviewHelpTitle}>
-                    Precisa de ajuda?
-                  </h3>
-                  <p className={styles.overviewHelpText}>
-                    Consulte a nossa central de suporte ou fale connosco.
-                  </p>
-                  <button
-                    type="button"
-                    className={styles.overviewHelpLink}
-                    onClick={() => openTab('messages')}
-                  >
-                    Central de Ajuda
-                  </button>
-                </section>
-              </div>
-            </div>
-          </div>
-        );
-
       case 'profile': {
         const strengthScore = Math.max(
           0,
@@ -3032,6 +2487,18 @@ const CandidateDashboard = () => {
                       lastSavedAt={profileDraftLastSavedAt}
                       isOnline={profileDraftIsOnline}
                     />
+                    {/* C02 — abre a página pública do perfil; o dono vê-a
+                        sempre, mesmo com o perfil privado. */}
+                    {user?.uid ? (
+                      <a
+                        href={`/candidatos/${encodeURIComponent(user.uid)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`${ps.actionBtn} ${ps.btnGhost}`}
+                      >
+                        Ver perfil público
+                      </a>
+                    ) : null}
                     <button
                       type="button"
                       className={`${ps.actionBtn} ${ps.btnGhost}`}
@@ -3046,7 +2513,7 @@ const CandidateDashboard = () => {
                       onClick={handleSaveProfile}
                       disabled={profileSaving}
                     >
-                      {profileSaving ? 'Salvando...' : 'Salvar Alterações'}
+                      {profileSaving ? 'A guardar…' : 'Guardar alterações'}
                     </button>
                   </div>
                 </div>
@@ -3509,8 +2976,7 @@ const CandidateDashboard = () => {
                           plano — só a quantidade tem limite, aplicado em
                           handleCertUpload. */}
                       <label className={ps.certUploadBtn}>
-                        <FiUploadCloud aria-hidden="true" /> Enviar
-                        certificados
+                        <FiUploadCloud aria-hidden="true" /> Enviar certificados
                         <input
                           type="file"
                           multiple
@@ -3912,7 +3378,7 @@ const CandidateDashboard = () => {
                         disabled={profileSaving}
                         onClick={handleSaveProfile}
                       >
-                        {profileSaving ? 'Salvando...' : 'Salvar'}
+                        {profileSaving ? 'A guardar…' : 'Guardar'}
                       </button>
                     </div>
                   ) : (
@@ -4353,16 +3819,36 @@ const CandidateDashboard = () => {
                   : 'Em dia'
               }
               action={
-                <button
-                  type="button"
-                  className={styles.secondaryButton}
-                  onClick={markAllNotificationsAsRead}
-                  disabled={!unreadNotifications}
-                >
-                  Marcar todas como lidas
-                </button>
+                <>
+                  {browserPush.state === 'available' ? (
+                    <button
+                      type="button"
+                      className={styles.secondaryButton}
+                      onClick={browserPush.activate}
+                      disabled={browserPush.activating}
+                    >
+                      {browserPush.activating
+                        ? 'A ativar…'
+                        : 'Ativar notificações no browser'}
+                    </button>
+                  ) : null}
+                  <button
+                    type="button"
+                    className={styles.secondaryButton}
+                    onClick={markAllNotificationsAsRead}
+                    disabled={!unreadNotifications}
+                  >
+                    Marcar todas como lidas
+                  </button>
+                </>
               }
             />
+            {browserPush.error || browserPush.state === 'blocked' ? (
+              <p className={styles.messageSendError} role="status">
+                {browserPush.error ||
+                  'As notificações estão bloqueadas neste browser. Pode autorizá-las nas definições do browser.'}
+              </p>
+            ) : null}
             <div className={styles.notificationsWrapper}>
               <div className={styles.notificationsHeader}>
                 <span>Mais recentes primeiro</span>
@@ -4373,7 +3859,11 @@ const CandidateDashboard = () => {
                     type="button"
                     key={notif.id}
                     className={`${styles.notificationItem} ${notif.read ? styles.notificationRead : ''}`}
-                    onClick={() => markNotificationAsRead(notif.id)}
+                    onClick={() => {
+                      markNotificationAsRead(notif.id);
+                      const path = recruitmentNotificationPath(notif);
+                      if (path) router.push(path);
+                    }}
                   >
                     <span
                       className={styles.notificationIndicator}
@@ -4585,21 +4075,36 @@ const CandidateDashboard = () => {
                 </Link>
               }
             />
+            {savedJobActions.error ? (
+              <p role="alert">{savedJobActions.error}</p>
+            ) : null}
+            {savedJobActions.removed ? (
+              <p role="status">
+                Vaga removida das guardadas.{' '}
+                <button type="button" className={styles.secondaryButton}
+                  disabled={Boolean(savedJobActions.busyId)} onClick={savedJobActions.undo}>
+                  Desfazer
+                </button>
+              </p>
+            ) : null}
             {savedJobs.length ? (
               <div className={styles.savedList}>
                 {savedJobs.map((job) => {
                   const jobId = job.jobId || job.vagaId || job.id;
                   const company =
-                    job.empresa || job.company || 'Empresa não indicada';
+                    job.empresaNome ||
+                    job.companyName ||
+                    job.empresa ||
+                    job.company ||
+                    'Empresa não indicada';
                   const location =
                     job.localizacao || job.location || 'Local a confirmar';
                   const contract =
                     job.tipoContrato || job.contractType || job.jobType || '';
 
                   return (
-                    <Link
+                    <div
                       key={jobId}
-                      href={`/vaga/${jobId}`}
                       className={styles.savedCard}
                     >
                       <div className={styles.savedCardTop}>
@@ -4627,10 +4132,16 @@ const CandidateDashboard = () => {
                           </span>
                         ) : null}
                       </div>
-                      <span className={styles.savedCardAction}>
+                      <Link href={`/vaga/${jobId}`} className={styles.savedCardAction}>
                         Ver detalhes <FiArrowRight aria-hidden="true" />
-                      </span>
-                    </Link>
+                      </Link>
+                      <button type="button" className={styles.secondaryButton}
+                        disabled={Boolean(savedJobActions.busyId)}
+                        aria-label={`Remover vaga guardada: ${job.titulo || job.name || 'Título indisponível'}`}
+                        onClick={() => savedJobActions.remove(job)}>
+                        {savedJobActions.busyId === jobId ? 'A remover…' : 'Remover'}
+                      </button>
+                    </div>
                   );
                 })}
               </div>
@@ -4643,6 +4154,74 @@ const CandidateDashboard = () => {
                 actionLabel="Explorar vagas"
               />
             )}
+
+            {/* C08 — alertas de vagas do email da conta. */}
+            <CandidateSectionHeader
+              headingLevel={2}
+              eyebrow="Avisos por email"
+              title="Alertas de vagas"
+              description="Recebe um email quando for publicada uma vaga com estes filtros."
+              count={jobAlerts.loading ? undefined : jobAlerts.alerts.length}
+              action={
+                <Link href="/vagas" className={styles.secondaryButton}>
+                  Criar alerta
+                </Link>
+              }
+            />
+            {jobAlerts.error ? (
+              <p className={styles.messageSendError} role="alert">
+                {jobAlerts.error}{' '}
+                <button
+                  type="button"
+                  className={styles.secondaryButton}
+                  onClick={jobAlerts.retry}
+                >
+                  Tentar novamente
+                </button>
+              </p>
+            ) : null}
+            {jobAlerts.loading ? (
+              <p role="status">A carregar alertas…</p>
+            ) : jobAlerts.alerts.length ? (
+              <div className={styles.savedList}>
+                {jobAlerts.alerts.map((alert) => (
+                  <div key={alert.id} className={styles.savedCard}>
+                    <div className={styles.savedCardTop}>
+                      <span className={styles.savedCardIcon} aria-hidden="true">
+                        <FiBell />
+                      </span>
+                      <span className={styles.savedCardState}>Ativo</span>
+                    </div>
+                    <div className={styles.savedCardCopy}>
+                      <h3>{summarizeJobAlertFilters(alert.filters)}</h3>
+                      <p>
+                        {alert.lastNotifiedAt
+                          ? `Último aviso: ${formatDate(alert.lastNotifiedAt)}`
+                          : 'Ainda sem vagas novas desde que ativou.'}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      className={styles.secondaryButton}
+                      onClick={() => jobAlerts.cancelAlert(alert.id)}
+                      disabled={jobAlerts.cancellingId === alert.id}
+                    >
+                      {jobAlerts.cancellingId === alert.id
+                        ? 'A cancelar…'
+                        : 'Cancelar alerta'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : !jobAlerts.error ? (
+              <CandidateEmptyState
+                icon={FiBell}
+                title="Ainda não tem alertas de vagas"
+                description="Pesquise vagas, escolha os filtros e ative um alerta para receber as novas por email."
+                actionHref="/vagas"
+                actionLabel="Criar alerta"
+              />
+            ) : null}
           </div>
         );
 
@@ -5418,9 +4997,10 @@ const CandidateDashboard = () => {
       ? `Bem-vindo de volta, ${firstName}`
       : formattedDate;
 
-  const planName = planStatusLoaded
-    ? activePlan.planName || 'Gratuito'
-    : null;
+  const planName = planStatusLoaded ? activePlan.planName || 'Gratuito' : null;
+  // Ordem do wireframe (05_CANDIDATE, C01–C15): os 10 separadores pela ordem
+  // do sitemap, depois atalhos para fora do painel. Igual à barra do shell em
+  // components/dashboard/dashboardNav.js, para a lateral não mudar entre páginas.
   const candidatoNav = [
     {
       label: 'Menu principal',
@@ -5453,34 +5033,6 @@ const CandidateDashboard = () => {
           badge: allInterviews.length || undefined,
           badgeStyle: 'lime',
         },
-      ],
-    },
-    {
-      label: 'Ferramentas',
-      items: [
-        {
-          key: 'cv-generator',
-          label: 'Gerador de CV',
-          icon: 'fileText',
-          href: '/recursos/gerador-cv',
-        },
-        {
-          key: 'verification',
-          label: 'Verificação',
-          icon: 'verification',
-          onClick: () => openTab('verification'),
-        },
-        {
-          key: 'plans',
-          label: 'Planos premium',
-          icon: 'star',
-          onClick: () => openTab('plans'),
-        },
-      ],
-    },
-    {
-      label: 'Mais',
-      items: [
         {
           key: 'messages',
           label: 'Mensagens',
@@ -5495,6 +5047,23 @@ const CandidateDashboard = () => {
           onClick: () => openTab('notifications'),
           badge: unreadNotifications || undefined,
         },
+      ],
+    },
+    {
+      label: 'Conta',
+      items: [
+        {
+          key: 'verification',
+          label: 'Verificação',
+          icon: 'verification',
+          onClick: () => openTab('verification'),
+        },
+        {
+          key: 'plans',
+          label: 'Planos premium',
+          icon: 'star',
+          onClick: () => openTab('plans'),
+        },
         {
           key: 'settings',
           label: 'Configurações',
@@ -5507,6 +5076,24 @@ const CandidateDashboard = () => {
           icon: 'dollar',
           onClick: () => openTab('affiliate'),
         },
+      ],
+    },
+    {
+      label: 'Explorar',
+      items: [
+        {
+          key: 'vagas',
+          label: 'Procurar vagas',
+          icon: 'search',
+          href: '/vagas',
+        },
+        {
+          key: 'cv-generator',
+          label: 'Gerador de CV',
+          icon: 'fileText',
+          href: '/recursos/gerador-cv',
+        },
+        { key: 'recursos', label: 'Recursos', icon: 'tool', href: '/recursos' },
       ],
     },
   ];
@@ -5595,6 +5182,8 @@ const CandidateDashboard = () => {
                         onClick={() => {
                           markNotificationAsRead(notif.id);
                           setNotificationsOpen(false);
+                          const path = recruitmentNotificationPath(notif);
+                          if (path) router.push(path);
                         }}
                         title={notif.message || notif.title || 'Notificação'}
                       >
@@ -5642,7 +5231,11 @@ const CandidateDashboard = () => {
           role: 'Candidato',
           // `undefined` enquanto carrega: mais honesto do que anunciar um
           // plano que ainda não sabemos qual é.
-          plan: planName ? (planName === 'Gratuito' ? 'Free' : planName) : undefined,
+          plan: planName
+            ? planName === 'Gratuito'
+              ? 'Free'
+              : planName
+            : undefined,
           avatarUrl: profile?.photoUrl || user?.avatar || undefined,
         }}
       >

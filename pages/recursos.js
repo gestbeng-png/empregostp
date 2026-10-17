@@ -1,7 +1,9 @@
 import Head from 'next/head';
-import { useMemo, useRef, useState } from 'react';
+import Image from 'next/image';
+import { Fragment, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import {
+  FiArrowRight,
   FiAward,
   FiBarChart2,
   FiBookOpen,
@@ -27,6 +29,7 @@ import {
 import PublicPageShell from '../components/PublicPageShell';
 import { admin } from '../lib/firebaseAdmin';
 import { resolveProfessionalResourceAccess } from '../lib/resourcePremiumAccess';
+import useScrollReveal from '../lib/useScrollReveal';
 import pageStyles from '../styles/RecursosStitchPage.module.css';
 import {
   DEFAULT_GUIDES,
@@ -62,6 +65,23 @@ const icons = {
   shield: <FiShield aria-hidden="true" />,
   trending: <FiTrendingUp aria-hidden="true" />,
 };
+
+const PHOTOS = '/assets/imagens/Fotos para usar no site';
+const HERO_PHOTOS = {
+  main: `${PHOTOS}/06092026-EmpregoSTP Sequência nº (002)-45.jpg`,
+  float: `${PHOTOS}/06092026-EmpregoSTP Sequência nº (002)-30.jpg`,
+};
+
+// O nome acessível do h1 tem de continuar a ser «Recursos gratuitos para a
+// sua carreira» (e2e/resources-public.spec.ts).
+const HERO_WORDS = [
+  'Recursos',
+  { text: 'gratuitos', accent: true },
+  'para',
+  'a',
+  'sua',
+  'carreira',
+];
 
 const normalizeCategory = (category) => {
   return category ? String(category).trim() : 'Outros';
@@ -109,7 +129,7 @@ const FAQS = [
     id: 'faq2',
     question: 'Quanto custa usar a plataforma?',
     answer:
-      'O plano básico permite criar um perfil, candidatar-se a vagas e usar recursos essenciais sem custos. Existem planos pagos com mais candidaturas, visibilidade e ferramentas profissionais.',
+      'O plano básico permite criar um perfil, candidatar-se a vagas e usar recursos essenciais sem custos. Candidatar-se é sempre gratuito e sem limite mensal; os planos pagos oferecem verificação do perfil e ferramentas de preparação, nunca prioridade junto das empresas.',
   },
   {
     id: 'faq3',
@@ -303,7 +323,9 @@ export default function RecursosPage({
     status: 'idle',
     message: '',
   });
+  const pageRef = useRef(null);
   const templateRailRef = useRef(null);
+  useScrollReveal(pageRef);
   const hasProfessionalAccess = Boolean(professionalAccess?.allowed);
   const premiumCtaUrl = professionalAccess?.ctaUrl || '/premium/candidatos';
 
@@ -526,612 +548,707 @@ export default function RecursosPage({
       </Head>
 
       <PublicPageShell>
-        <div className={pageStyles.page}>
-          <div className={pageStyles.toolbar}>
-            <div className={pageStyles.container}>
-              <h1 className={pageStyles.srOnly}>
-                Recursos gratuitos para a sua carreira
-              </h1>
-              <div className={pageStyles.toolbarInner}>
-                <div
-                  className={pageStyles.audienceFilters}
-                  role="group"
-                  aria-label="Filtrar recursos por público"
-                >
-                  {AUDIENCE_FILTERS.map((audience) => (
-                    <button
-                      key={audience.id}
-                      type="button"
-                      onClick={() => {
-                        setActiveAudience(audience.id);
-                        setActiveCategory('todos');
-                        templateRailRef.current?.scrollTo({
-                          left: 0,
-                          behavior: 'smooth',
-                        });
-                      }}
-                      className={[
-                        pageStyles.audienceButton,
-                        activeAudience === audience.id
-                          ? pageStyles.audienceButtonActive
-                          : '',
-                      ]
-                        .filter(Boolean)
-                        .join(' ')}
-                      aria-pressed={activeAudience === audience.id}
-                    >
-                      {audience.label}
-                    </button>
-                  ))}
+        {/* O div interior evita as regras globais do Workbridge que decoram
+            `main > div > section:first-of-type` com círculos e tipografia. */}
+        <div className={pageStyles.page} ref={pageRef}>
+          <div className={pageStyles.flow}>
+            <section
+              className={pageStyles.hero}
+              aria-labelledby="resources-title"
+            >
+              <div className={pageStyles.heroGlow} aria-hidden="true">
+                <span />
+                <span />
+                <span />
+              </div>
+              <div
+                className={`${pageStyles.container} ${pageStyles.heroLayout}`}
+              >
+                <div>
+                  <p className={pageStyles.badge}>
+                    <span className={pageStyles.pulse} aria-hidden="true" />
+                    Centro de recursos
+                  </p>
+                  <h1 id="resources-title" className={pageStyles.heroHeading}>
+                    {HERO_WORDS.map((word, index) => {
+                      const text = typeof word === 'string' ? word : word.text;
+                      return (
+                        <Fragment key={text}>
+                          <span
+                            className={`${pageStyles.word} ${
+                              word.accent ? pageStyles.wordAccent : ''
+                            }`}
+                            style={{ '--i': index }}
+                          >
+                            {text}
+                          </span>{' '}
+                        </Fragment>
+                      );
+                    })}
+                  </h1>
+                  <p className={pageStyles.heroLead}>
+                    Modelos, guias e ferramentas para quem procura emprego e
+                    para quem contrata em São Tomé e Príncipe.
+                  </p>
+                  <div className={pageStyles.heroActions}>
+                    <a href="#modelos" className={pageStyles.primary}>
+                      Ver modelos
+                      <FiArrowRight aria-hidden="true" />
+                    </a>
+                    <a href="#faq" className={pageStyles.ghost}>
+                      Perguntas frequentes
+                    </a>
+                  </div>
                 </div>
 
-                <div className={pageStyles.searchControl}>
-                  <button
-                    type="button"
-                    className={[
-                      pageStyles.searchToggle,
-                      searchOpen || searchQuery
-                        ? pageStyles.searchToggleActive
-                        : '',
-                    ]
-                      .filter(Boolean)
-                      .join(' ')}
-                    aria-label={
-                      searchOpen ? 'Fechar pesquisa' : 'Pesquisar recursos'
-                    }
-                    aria-expanded={searchOpen}
-                    aria-controls="resource-search-panel"
-                    onClick={() => setSearchOpen((current) => !current)}
-                  >
-                    {icons.search}
-                  </button>
+                <div className={pageStyles.heroVisual} aria-hidden="true">
+                  <div className={pageStyles.heroPhotoMain}>
+                    <Image
+                      src={HERO_PHOTOS.main}
+                      alt=""
+                      fill
+                      priority
+                      sizes="(max-width: 64em) 90vw, 40vw"
+                    />
+                  </div>
+                  <div className={pageStyles.heroPhotoFloat}>
+                    <Image src={HERO_PHOTOS.float} alt="" fill sizes="12rem" />
+                  </div>
+                  <div className={pageStyles.heroChip}>
+                    <span className={pageStyles.chipIcon}>
+                      {icons.download}
+                    </span>
+                    <span>
+                      <strong>
+                        {normalizedTemplates.length} modelos e{' '}
+                        {normalizedGuides.length} guias
+                      </strong>
+                      <small>Prontos a usar</small>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </section>
 
-                  {searchOpen ? (
-                    <div
-                      id="resource-search-panel"
-                      className={pageStyles.searchPanel}
-                      role="search"
-                      aria-label="Pesquisar no centro de recursos"
-                    >
-                      <label
-                        className={pageStyles.srOnly}
-                        htmlFor="resource-search"
-                      >
-                        Pesquisar recursos
-                      </label>
-                      <div className={pageStyles.searchField}>
-                        <span aria-hidden="true">{icons.search}</span>
-                        <input
-                          id="resource-search"
-                          type="search"
-                          placeholder="Pesquisar recursos…"
-                          value={searchQuery}
-                          onChange={(event) => {
-                            setSearchQuery(event.target.value);
-                            templateRailRef.current?.scrollTo({
-                              left: 0,
-                              behavior: 'smooth',
-                            });
-                          }}
-                          autoFocus
-                        />
-                      </div>
-                      <label
-                        className={pageStyles.srOnly}
-                        htmlFor="resource-category"
-                      >
-                        Filtrar modelos por categoria
-                      </label>
-                      <select
-                        id="resource-category"
-                        value={activeCategory}
-                        onChange={(event) => {
-                          setActiveCategory(event.target.value);
+            <div className={pageStyles.toolbar}>
+              <div className={pageStyles.container}>
+                <div className={pageStyles.toolbarInner}>
+                  <div
+                    className={pageStyles.audienceFilters}
+                    role="group"
+                    aria-label="Filtrar recursos por público"
+                  >
+                    {AUDIENCE_FILTERS.map((audience) => (
+                      <button
+                        key={audience.id}
+                        type="button"
+                        onClick={() => {
+                          setActiveAudience(audience.id);
+                          setActiveCategory('todos');
                           templateRailRef.current?.scrollTo({
                             left: 0,
                             behavior: 'smooth',
                           });
                         }}
+                        className={[
+                          pageStyles.audienceButton,
+                          activeAudience === audience.id
+                            ? pageStyles.audienceButtonActive
+                            : '',
+                        ]
+                          .filter(Boolean)
+                          .join(' ')}
+                        aria-pressed={activeAudience === audience.id}
                       >
-                        {categories.map((category) => (
-                          <option key={category.id} value={category.id}>
-                            {category.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-
-              <p
-                className={pageStyles.srOnly}
-                role="status"
-                aria-live="polite"
-                aria-atomic="true"
-              >
-                {resourceStatus}
-              </p>
-            </div>
-          </div>
-
-          <div className={pageStyles.resourcesBody}>
-            <section id="modelos" className={pageStyles.section}>
-              <div className={pageStyles.container}>
-                <div className={pageStyles.sectionHeader}>
-                  <div className={pageStyles.sectionHeadingGroup}>
-                    <h2 className={pageStyles.sectionTitle}>
-                      Modelos e documentos
-                    </h2>
-                    <p className={pageStyles.sectionDescription}>
-                      Estruturas profissionais prontas a usar.
-                    </p>
+                        {audience.label}
+                      </button>
+                    ))}
                   </div>
-                  <div
-                    className={pageStyles.carouselControls}
-                    aria-label="Navegar pelos modelos"
-                  >
+
+                  <div className={pageStyles.searchControl}>
                     <button
                       type="button"
-                      aria-label="Modelos anteriores"
-                      onClick={() =>
-                        templateRailRef.current?.scrollBy({
-                          left: -460,
-                          behavior: 'smooth',
-                        })
+                      className={[
+                        pageStyles.searchToggle,
+                        searchOpen || searchQuery
+                          ? pageStyles.searchToggleActive
+                          : '',
+                      ]
+                        .filter(Boolean)
+                        .join(' ')}
+                      aria-label={
+                        searchOpen ? 'Fechar pesquisa' : 'Pesquisar recursos'
                       }
+                      aria-expanded={searchOpen}
+                      aria-controls="resource-search-panel"
+                      onClick={() => setSearchOpen((current) => !current)}
                     >
-                      {icons.chevronLeft}
+                      {icons.search}
                     </button>
-                    <button
-                      type="button"
-                      aria-label="Modelos seguintes"
-                      onClick={() =>
-                        templateRailRef.current?.scrollBy({
-                          left: 460,
-                          behavior: 'smooth',
-                        })
-                      }
-                    >
-                      {icons.chevronRight}
-                    </button>
-                  </div>
-                </div>
 
-                <div
-                  ref={templateRailRef}
-                  className={pageStyles.templatesGrid}
-                  role="list"
-                  aria-label="Modelos e documentos disponíveis"
-                >
-                  {displayedTemplates.length === 0 ? (
-                    <p className={pageStyles.emptyMessage}>
-                      {searchQuery.trim()
-                        ? `Nenhum modelo corresponde a “${searchQuery.trim()}”.`
-                        : 'Ainda não existem modelos para estes filtros.'}
-                    </p>
-                  ) : (
-                    displayedTemplates.map((template, templateIndex) => {
-                      const downloads = Number(template.downloads);
-                      const hasDownloadMetric =
-                        template.downloads !== null &&
-                        template.downloads !== undefined &&
-                        Number.isFinite(downloads) &&
-                        downloads >= 0;
-                      const fileUrl = template.downloadUrl;
-                      const isPopular =
-                        normalizeBoolean(template.popular, false) ||
-                        templateIndex === 0;
-                      return (
-                        <article
-                          key={`${template.id || template.title}-${templateIndex}`}
-                          className={pageStyles.templateCard}
-                          role="listitem"
+                    {searchOpen ? (
+                      <div
+                        id="resource-search-panel"
+                        className={pageStyles.searchPanel}
+                        role="search"
+                        aria-label="Pesquisar no centro de recursos"
+                      >
+                        <label
+                          className={pageStyles.srOnly}
+                          htmlFor="resource-search"
                         >
-                          <div className={pageStyles.cardTopline}>
-                            <span className={pageStyles.templateIcon}>
-                              {icons.document}
-                            </span>
-                            {isPopular ? (
-                              <span className={pageStyles.popularBadge}>
-                                Popular
-                              </span>
-                            ) : null}
-                          </div>
-                          <h3 className={pageStyles.templateTitle}>
-                            {template.title}
-                          </h3>
-                          <p className={pageStyles.templateDescription}>
-                            {template.description}
-                          </p>
-                          <div className={pageStyles.templateMeta}>
-                            <span>{icons.download}</span>
-                            {hasDownloadMetric
-                              ? `${downloads.toLocaleString('pt-PT')} descargas`
-                              : 'Modelo pronto a usar'}
-                          </div>
-                          {fileUrl ? (
-                            <a
-                              href={fileUrl}
-                              className={pageStyles.templateButton}
-                              aria-label={`Descarregar ${template.title}`}
-                            >
-                              Descarregar
-                            </a>
-                          ) : (
-                            <span className={pageStyles.disabledButton}>
-                              Em breve
-                            </span>
-                          )}
-                        </article>
-                      );
-                    })
-                  )}
-                </div>
-              </div>
-            </section>
-
-            <section id="guias" className={pageStyles.section}>
-              <div className={pageStyles.container}>
-                <div className={pageStyles.sectionHeader}>
-                  <div className={pageStyles.sectionHeadingGroup}>
-                    <h2 className={pageStyles.sectionTitle}>Guias e manuais</h2>
-                    <p className={pageStyles.sectionDescription}>
-                      Conteúdo aprofundado para navegação na carreira.
-                    </p>
-                  </div>
-                </div>
-
-                <div className={pageStyles.guidesGrid}>
-                  {guidesToShow.length === 0 ? (
-                    <p className={pageStyles.emptyMessage}>
-                      {searchQuery.trim()
-                        ? `Nenhum guia corresponde a “${searchQuery.trim()}”.`
-                        : 'Ainda não existem guias para estes filtros.'}
-                    </p>
-                  ) : (
-                    guidesToShow.map((guide, guideIndex) => (
-                      <article
-                        key={`${guide.id || guide.title}-${guideIndex}`}
-                        className={pageStyles.guideCard}
-                      >
-                        <span className={pageStyles.guideIcon}>
-                          {guideIndex % 2 === 0 ? icons.book : icons.trending}
-                        </span>
-                        <div className={pageStyles.guideContent}>
-                          <div className={pageStyles.guideTitleRow}>
-                            <h3 className={pageStyles.guideTitle}>
-                              {guide.title}
-                            </h3>
-                            {guide.popular ? (
-                              <span className={pageStyles.popularBadge}>
-                                Popular
-                              </span>
-                            ) : null}
-                          </div>
-                          <p className={pageStyles.guideDescription}>
-                            {guide.description}
-                          </p>
-                          <div className={pageStyles.guideMeta}>
-                            <span>
-                              {icons.clock}
-                              {guide.readTime || 'Não indicado'}
-                            </span>
-                            <span>
-                              {icons.file}
-                              {guide.pages
-                                ? `${guide.pages} páginas`
-                                : 'Não indicado'}
-                            </span>
-                          </div>
-                          <div className={pageStyles.guideButtons}>
-                            {guide.readUrl ? (
-                              <Link
-                                href={guide.readUrl}
-                                className={pageStyles.guideReadButton}
-                                aria-label={`Ler ${guide.title}`}
-                              >
-                                Ler guia
-                              </Link>
-                            ) : null}
-                            {guide.downloadUrl ? (
-                              <a
-                                href={guide.downloadUrl}
-                                className={[
-                                  pageStyles.guideDownloadButton,
-                                  guide.popular
-                                    ? pageStyles.guideDownloadButtonAccent
-                                    : '',
-                                ]
-                                  .filter(Boolean)
-                                  .join(' ')}
-                                aria-label={`Descarregar ${guide.title}`}
-                              >
-                                Descarregar anexo
-                              </a>
-                            ) : null}
-                            {!guide.readUrl && !guide.downloadUrl ? (
-                              <span className={pageStyles.disabledButton}>
-                                Em breve
-                              </span>
-                            ) : null}
-                          </div>
+                          Pesquisar recursos
+                        </label>
+                        <div className={pageStyles.searchField}>
+                          <span aria-hidden="true">{icons.search}</span>
+                          <input
+                            id="resource-search"
+                            type="search"
+                            placeholder="Pesquisar recursos…"
+                            value={searchQuery}
+                            onChange={(event) => {
+                              setSearchQuery(event.target.value);
+                              templateRailRef.current?.scrollTo({
+                                left: 0,
+                                behavior: 'smooth',
+                              });
+                            }}
+                            autoFocus
+                          />
                         </div>
-                      </article>
-                    ))
-                  )}
-                </div>
-              </div>
-            </section>
-
-            <section id="servicos" className={pageStyles.section}>
-              <div className={pageStyles.container}>
-                <div className={pageStyles.sectionHeader}>
-                  <div className={pageStyles.sectionHeadingGroup}>
-                    <h2 className={pageStyles.sectionTitleWithIcon}>
-                      Ferramentas
-                      <span aria-hidden="true">{icons.award}</span>
-                    </h2>
-                    <p className={pageStyles.sectionDescription}>
-                      Funcionalidades avançadas para subscritores Profissionais.
-                    </p>
+                        <label
+                          className={pageStyles.srOnly}
+                          htmlFor="resource-category"
+                        >
+                          Filtrar modelos por categoria
+                        </label>
+                        <select
+                          id="resource-category"
+                          value={activeCategory}
+                          onChange={(event) => {
+                            setActiveCategory(event.target.value);
+                            templateRailRef.current?.scrollTo({
+                              left: 0,
+                              behavior: 'smooth',
+                            });
+                          }}
+                        >
+                          {categories.map((category) => (
+                            <option key={category.id} value={category.id}>
+                              {category.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    ) : null}
                   </div>
                 </div>
 
-                <div className={pageStyles.toolsGrid}>
-                  {toolsToShow.length === 0 ? (
-                    <p className={pageStyles.emptyMessage}>
-                      {searchQuery.trim()
-                        ? `Nenhuma ferramenta corresponde a “${searchQuery.trim()}”.`
-                        : 'Ainda não existem ferramentas para estes filtros.'}
-                    </p>
-                  ) : (
-                    toolsToShow.map((tool, toolIndex) => {
-                      const icon = icons[tool.icon] || icons.document;
-                      const isLocked =
-                        tool.requiresProfessional && !hasProfessionalAccess;
-                      const actionUrl = isLocked
-                        ? premiumCtaUrl
-                        : tool.actionUrl;
-                      const isInternalAction = actionUrl?.startsWith('/');
-                      return (
-                        <article
-                          key={`${tool.id || tool.title}-${toolIndex}`}
-                          className={[
-                            pageStyles.toolCard,
-                            isLocked ? pageStyles.toolCardLocked : '',
-                          ]
-                            .filter(Boolean)
-                            .join(' ')}
-                        >
-                          <div className={pageStyles.toolCardBody}>
-                            <span className={pageStyles.toolIcon}>{icon}</span>
-                            <h3 className={pageStyles.toolTitle}>
-                              {tool.title}
+                <p
+                  className={pageStyles.srOnly}
+                  role="status"
+                  aria-live="polite"
+                  aria-atomic="true"
+                >
+                  {resourceStatus}
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <section id="modelos" className={pageStyles.section}>
+                <div className={pageStyles.container}>
+                  <div className={pageStyles.sectionHeader} data-reveal>
+                    <div className={pageStyles.sectionHeadingGroup}>
+                      <p className={pageStyles.kicker}>Descarregar</p>
+                      <h2 className={pageStyles.sectionTitle}>
+                        Modelos e <span>documentos</span>
+                      </h2>
+                      <p className={pageStyles.sectionDescription}>
+                        Estruturas profissionais prontas a usar.
+                      </p>
+                    </div>
+                    <div
+                      className={pageStyles.carouselControls}
+                      aria-label="Navegar pelos modelos"
+                    >
+                      <button
+                        type="button"
+                        aria-label="Modelos anteriores"
+                        onClick={() =>
+                          templateRailRef.current?.scrollBy({
+                            left: -460,
+                            behavior: 'smooth',
+                          })
+                        }
+                      >
+                        {icons.chevronLeft}
+                      </button>
+                      <button
+                        type="button"
+                        aria-label="Modelos seguintes"
+                        onClick={() =>
+                          templateRailRef.current?.scrollBy({
+                            left: 460,
+                            behavior: 'smooth',
+                          })
+                        }
+                      >
+                        {icons.chevronRight}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div
+                    ref={templateRailRef}
+                    data-reveal
+                    className={pageStyles.templatesGrid}
+                    role="list"
+                    aria-label="Modelos e documentos disponíveis"
+                  >
+                    {displayedTemplates.length === 0 ? (
+                      <p className={pageStyles.emptyMessage}>
+                        {searchQuery.trim()
+                          ? `Nenhum modelo corresponde a “${searchQuery.trim()}”.`
+                          : 'Ainda não existem modelos para estes filtros.'}
+                      </p>
+                    ) : (
+                      displayedTemplates.map((template, templateIndex) => {
+                        // F9.2: as descargas nunca foram contadas (os valores
+                        // guardados vinham do seed) e «Popular» era atribuído
+                        // ao primeiro da lista. Só fica o selo marcado no admin.
+                        const fileUrl = template.downloadUrl;
+                        const isPopular = normalizeBoolean(
+                          template.popular,
+                          false,
+                        );
+                        return (
+                          <article
+                            key={`${template.id || template.title}-${templateIndex}`}
+                            className={pageStyles.templateCard}
+                            role="listitem"
+                          >
+                            <div className={pageStyles.cardTopline}>
+                              <span className={pageStyles.templateIcon}>
+                                {icons.document}
+                              </span>
+                              {isPopular ? (
+                                <span className={pageStyles.popularBadge}>
+                                  Popular
+                                </span>
+                              ) : null}
+                            </div>
+                            <h3 className={pageStyles.templateTitle}>
+                              {template.title}
                             </h3>
-                            <p className={pageStyles.toolDescription}>
-                              {tool.description}
+                            <p className={pageStyles.templateDescription}>
+                              {template.description}
                             </p>
-                            {!isLocked && actionUrl ? (
-                              isInternalAction ? (
-                                <Link
-                                  href={actionUrl}
-                                  className={pageStyles.toolButton}
-                                  aria-label={`Usar ferramenta: ${tool.title}`}
-                                >
-                                  Usar ferramenta
-                                </Link>
-                              ) : (
-                                <a
-                                  href={actionUrl}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className={pageStyles.toolButton}
-                                  aria-label={`Usar ferramenta: ${tool.title} — abre numa nova janela`}
-                                >
-                                  Usar ferramenta
-                                </a>
-                              )
-                            ) : null}
-                            {!isLocked && !actionUrl ? (
+                            <div className={pageStyles.templateMeta}>
+                              <span>{icons.download}</span>
+                              Modelo pronto a usar
+                            </div>
+                            {fileUrl ? (
+                              <a
+                                href={fileUrl}
+                                className={pageStyles.templateButton}
+                                aria-label={`Descarregar ${template.title}`}
+                              >
+                                Descarregar
+                              </a>
+                            ) : (
                               <span className={pageStyles.disabledButton}>
                                 Em breve
                               </span>
-                            ) : null}
-                          </div>
-
-                          {isLocked ? (
-                            <div className={pageStyles.toolLockOverlay}>
-                              <span className={pageStyles.lockIcon}>
-                                {icons.lock}
-                              </span>
-                              <Link
-                                href={premiumCtaUrl}
-                                className={pageStyles.upgradeButton}
-                                aria-label={`Upgrade para aceder a ${tool.title}`}
-                              >
-                                Upgrade para Aceder
-                              </Link>
-                            </div>
-                          ) : null}
-                        </article>
-                      );
-                    })
-                  )}
+                            )}
+                          </article>
+                        );
+                      })
+                    )}
+                  </div>
                 </div>
-              </div>
-            </section>
+              </section>
 
-            <section id="faq" className={pageStyles.supportSection}>
-              <div className={pageStyles.container}>
-                <div className={pageStyles.supportGrid}>
-                  <div className={pageStyles.faqColumn}>
-                    <h2 className={pageStyles.sectionTitle}>
-                      Perguntas frequentes
-                    </h2>
-                    <div className={pageStyles.faqList}>
-                      {faqItems.map((faq, faqIndex) => {
-                        const faqBaseKey =
-                          slugifyFilename(faq.id) ||
-                          slugifyFilename(faq.question) ||
-                          'faq';
-                        const faqKey = `${faqBaseKey}-${faqIndex}`;
-                        const expanded = expandedFaq === faqKey;
-                        return (
-                          <div key={faqKey} className={pageStyles.faqItem}>
-                            <h3 className={pageStyles.faqHeading}>
-                              <button
-                                type="button"
-                                className={pageStyles.faqQuestion}
-                                id={`${faqKey}-button`}
-                                aria-controls={`${faqKey}-answer`}
-                                aria-expanded={expanded}
-                                onClick={() =>
-                                  setExpandedFaq(expanded ? null : faqKey)
-                                }
-                              >
-                                <span className={pageStyles.faqQuestionText}>
-                                  {faq.question}
+              <section id="guias" className={pageStyles.section}>
+                <div className={pageStyles.container}>
+                  <div className={pageStyles.sectionHeader} data-reveal>
+                    <div className={pageStyles.sectionHeadingGroup}>
+                      <p className={pageStyles.kicker}>Ler e aprender</p>
+                      <h2 className={pageStyles.sectionTitle}>
+                        Guias e <span>manuais</span>
+                      </h2>
+                      <p className={pageStyles.sectionDescription}>
+                        Conteúdo aprofundado para navegação na carreira.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className={pageStyles.guidesGrid} data-reveal>
+                    {guidesToShow.length === 0 ? (
+                      <p className={pageStyles.emptyMessage}>
+                        {searchQuery.trim()
+                          ? `Nenhum guia corresponde a “${searchQuery.trim()}”.`
+                          : 'Ainda não existem guias para estes filtros.'}
+                      </p>
+                    ) : (
+                      guidesToShow.map((guide, guideIndex) => (
+                        <article
+                          key={`${guide.id || guide.title}-${guideIndex}`}
+                          className={pageStyles.guideCard}
+                        >
+                          <span className={pageStyles.guideIcon}>
+                            {guideIndex % 2 === 0 ? icons.book : icons.trending}
+                          </span>
+                          <div className={pageStyles.guideContent}>
+                            <div className={pageStyles.guideTitleRow}>
+                              <h3 className={pageStyles.guideTitle}>
+                                {guide.title}
+                              </h3>
+                              {guide.popular ? (
+                                <span className={pageStyles.popularBadge}>
+                                  Popular
                                 </span>
-                                <span
+                              ) : null}
+                            </div>
+                            <p className={pageStyles.guideDescription}>
+                              {guide.description}
+                            </p>
+                            <div className={pageStyles.guideMeta}>
+                              <span>
+                                {icons.clock}
+                                {guide.readTime || 'Não indicado'}
+                              </span>
+                              <span>
+                                {icons.file}
+                                {guide.pages
+                                  ? `${guide.pages} páginas`
+                                  : 'Não indicado'}
+                              </span>
+                            </div>
+                            <div className={pageStyles.guideButtons}>
+                              {guide.readUrl ? (
+                                <Link
+                                  href={guide.readUrl}
+                                  className={pageStyles.guideReadButton}
+                                  aria-label={`Ler ${guide.title}`}
+                                >
+                                  Ler guia
+                                </Link>
+                              ) : null}
+                              {guide.downloadUrl ? (
+                                <a
+                                  href={guide.downloadUrl}
                                   className={[
-                                    pageStyles.faqIcon,
-                                    expanded ? pageStyles.faqIconOpen : '',
+                                    pageStyles.guideDownloadButton,
+                                    guide.popular
+                                      ? pageStyles.guideDownloadButtonAccent
+                                      : '',
                                   ]
                                     .filter(Boolean)
                                     .join(' ')}
+                                  aria-label={`Descarregar ${guide.title}`}
                                 >
-                                  {icons.chevronDown}
+                                  Descarregar anexo
+                                </a>
+                              ) : null}
+                              {!guide.readUrl && !guide.downloadUrl ? (
+                                <span className={pageStyles.disabledButton}>
+                                  Em breve
                                 </span>
-                              </button>
-                            </h3>
-                            {expanded ? (
-                              <div
-                                className={pageStyles.faqAnswer}
-                                id={`${faqKey}-answer`}
-                                role="region"
-                                aria-labelledby={`${faqKey}-button`}
-                              >
-                                {faq.answer}
-                              </div>
-                            ) : null}
+                              ) : null}
+                            </div>
                           </div>
-                        );
-                      })}
+                        </article>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </section>
+
+              <section
+                id="servicos"
+                className={`${pageStyles.section} ${pageStyles.sectionSoft}`}
+              >
+                <div className={pageStyles.container}>
+                  <div className={pageStyles.sectionHeader} data-reveal>
+                    <div className={pageStyles.sectionHeadingGroup}>
+                      <p className={pageStyles.kicker}>
+                        <span aria-hidden="true">{icons.award}</span>
+                        Plano Profissional
+                      </p>
+                      <h2 className={pageStyles.sectionTitle}>Ferramentas</h2>
+                      <p className={pageStyles.sectionDescription}>
+                        Funcionalidades avançadas para subscritores
+                        Profissionais.
+                      </p>
                     </div>
                   </div>
 
-                  <div className={pageStyles.linksColumn}>
-                    <h2 className={pageStyles.sectionTitle}>Links úteis</h2>
-                    <div className={pageStyles.linksGrid}>
-                      {LINKS.map((link) => {
-                        const linkIcon = icons[link.icon] || icons.link;
-                        const linkContent = (
-                          <>
-                            <span className={pageStyles.linkIcon}>
-                              {linkIcon}
-                            </span>
-                            <span className={pageStyles.linkTitle}>
-                              {link.title}
-                            </span>
-                            <span className={pageStyles.srOnly}>
-                              {link.description}
-                            </span>
-                          </>
-                        );
-                        return link.url.startsWith('/') ? (
-                          <Link
-                            key={link.id}
-                            href={link.url}
-                            className={pageStyles.linkCard}
-                            aria-label={`${link.title}: ${link.description}`}
+                  <div className={pageStyles.toolsGrid} data-reveal>
+                    {toolsToShow.length === 0 ? (
+                      <p className={pageStyles.emptyMessage}>
+                        {searchQuery.trim()
+                          ? `Nenhuma ferramenta corresponde a “${searchQuery.trim()}”.`
+                          : 'Ainda não existem ferramentas para estes filtros.'}
+                      </p>
+                    ) : (
+                      toolsToShow.map((tool, toolIndex) => {
+                        const icon = icons[tool.icon] || icons.document;
+                        const isLocked =
+                          tool.requiresProfessional && !hasProfessionalAccess;
+                        const actionUrl = isLocked
+                          ? premiumCtaUrl
+                          : tool.actionUrl;
+                        const isInternalAction = actionUrl?.startsWith('/');
+                        return (
+                          <article
+                            key={`${tool.id || tool.title}-${toolIndex}`}
+                            className={[
+                              pageStyles.toolCard,
+                              isLocked ? pageStyles.toolCardLocked : '',
+                            ]
+                              .filter(Boolean)
+                              .join(' ')}
                           >
-                            {linkContent}
-                          </Link>
-                        ) : (
-                          <a
-                            key={link.id}
-                            href={link.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={pageStyles.linkCard}
-                            aria-label={`${link.title}: ${link.description} — abre numa nova janela`}
-                          >
-                            {linkContent}
-                          </a>
+                            <div className={pageStyles.toolCardBody}>
+                              <span className={pageStyles.toolIcon}>
+                                {icon}
+                              </span>
+                              <h3 className={pageStyles.toolTitle}>
+                                {tool.title}
+                              </h3>
+                              <p className={pageStyles.toolDescription}>
+                                {tool.description}
+                              </p>
+                              {!isLocked && actionUrl ? (
+                                isInternalAction ? (
+                                  <Link
+                                    href={actionUrl}
+                                    className={pageStyles.toolButton}
+                                    aria-label={`Usar ferramenta: ${tool.title}`}
+                                  >
+                                    Usar ferramenta
+                                  </Link>
+                                ) : (
+                                  <a
+                                    href={actionUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className={pageStyles.toolButton}
+                                    aria-label={`Usar ferramenta: ${tool.title} — abre numa nova janela`}
+                                  >
+                                    Usar ferramenta
+                                  </a>
+                                )
+                              ) : null}
+                              {!isLocked && !actionUrl ? (
+                                <span className={pageStyles.disabledButton}>
+                                  Em breve
+                                </span>
+                              ) : null}
+                            </div>
+
+                            {isLocked ? (
+                              <div className={pageStyles.toolLockOverlay}>
+                                <span className={pageStyles.lockIcon}>
+                                  {icons.lock}
+                                </span>
+                                <Link
+                                  href={premiumCtaUrl}
+                                  className={pageStyles.upgradeButton}
+                                  aria-label={`Upgrade para aceder a ${tool.title}`}
+                                >
+                                  Upgrade para Aceder
+                                </Link>
+                              </div>
+                            ) : null}
+                          </article>
                         );
-                      })}
+                      })
+                    )}
+                  </div>
+                </div>
+              </section>
+
+              <section id="faq" className={pageStyles.section}>
+                <div className={pageStyles.container}>
+                  <div className={pageStyles.supportGrid}>
+                    <div className={pageStyles.faqColumn} data-reveal>
+                      <p className={pageStyles.kicker}>Dúvidas</p>
+                      <h2 className={pageStyles.sectionTitle}>
+                        Perguntas <span>frequentes</span>
+                      </h2>
+                      <div className={pageStyles.faqList}>
+                        {faqItems.map((faq, faqIndex) => {
+                          const faqBaseKey =
+                            slugifyFilename(faq.id) ||
+                            slugifyFilename(faq.question) ||
+                            'faq';
+                          const faqKey = `${faqBaseKey}-${faqIndex}`;
+                          const expanded = expandedFaq === faqKey;
+                          return (
+                            <div key={faqKey} className={pageStyles.faqItem}>
+                              <h3 className={pageStyles.faqHeading}>
+                                <button
+                                  type="button"
+                                  className={pageStyles.faqQuestion}
+                                  id={`${faqKey}-button`}
+                                  aria-controls={`${faqKey}-answer`}
+                                  aria-expanded={expanded}
+                                  onClick={() =>
+                                    setExpandedFaq(expanded ? null : faqKey)
+                                  }
+                                >
+                                  <span className={pageStyles.faqQuestionText}>
+                                    {faq.question}
+                                  </span>
+                                  <span
+                                    className={[
+                                      pageStyles.faqIcon,
+                                      expanded ? pageStyles.faqIconOpen : '',
+                                    ]
+                                      .filter(Boolean)
+                                      .join(' ')}
+                                  >
+                                    {icons.chevronDown}
+                                  </span>
+                                </button>
+                              </h3>
+                              {expanded ? (
+                                <div
+                                  className={pageStyles.faqAnswer}
+                                  id={`${faqKey}-answer`}
+                                  role="region"
+                                  aria-labelledby={`${faqKey}-button`}
+                                >
+                                  {faq.answer}
+                                </div>
+                              ) : null}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
 
                     <div
-                      className={pageStyles.newsletter}
-                      aria-labelledby="newsletter-title"
+                      className={pageStyles.linksColumn}
+                      data-reveal
+                      style={{ '--delay': '120ms' }}
                     >
-                      <span
-                        className={pageStyles.newsletterIcon}
-                        aria-hidden="true"
-                      >
-                        <FiMail />
-                      </span>
-                      <h2
-                        id="newsletter-title"
-                        className={pageStyles.newsletterTitle}
-                      >
-                        Receba novidades do mercado de trabalho
+                      <p className={pageStyles.kicker}>Ligações</p>
+                      <h2 className={pageStyles.sectionTitle}>
+                        Links <span>úteis</span>
                       </h2>
-                      <p className={pageStyles.newsletterText}>
-                        Inscreva-se na nossa newsletter semanal para receber
-                        as melhores dicas e vagas diretamente no seu email.
-                      </p>
-                      <form
-                        className={pageStyles.newsletterForm}
-                        onSubmit={handleNewsletterSubmit}
+                      <div className={pageStyles.linksGrid}>
+                        {LINKS.map((link) => {
+                          const linkIcon = icons[link.icon] || icons.link;
+                          const linkContent = (
+                            <>
+                              <span className={pageStyles.linkIcon}>
+                                {linkIcon}
+                              </span>
+                              <span className={pageStyles.linkTitle}>
+                                {link.title}
+                              </span>
+                              <span className={pageStyles.srOnly}>
+                                {link.description}
+                              </span>
+                            </>
+                          );
+                          return link.url.startsWith('/') ? (
+                            <Link
+                              key={link.id}
+                              href={link.url}
+                              className={pageStyles.linkCard}
+                              aria-label={`${link.title}: ${link.description}`}
+                            >
+                              {linkContent}
+                            </Link>
+                          ) : (
+                            <a
+                              key={link.id}
+                              href={link.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={pageStyles.linkCard}
+                              aria-label={`${link.title}: ${link.description} — abre numa nova janela`}
+                            >
+                              {linkContent}
+                            </a>
+                          );
+                        })}
+                      </div>
+
+                      <div
+                        className={pageStyles.newsletter}
+                        aria-labelledby="newsletter-title"
                       >
-                        <input
-                          type="email"
-                          placeholder="O seu email profissional"
-                          aria-label="Email para subscrever a newsletter"
-                          className={pageStyles.newsletterInput}
-                          value={newsletterEmail}
-                          onChange={(event) => {
-                            setNewsletterEmail(event.target.value);
-                            if (newsletterState.status !== 'idle') {
-                              setNewsletterState({
-                                status: 'idle',
-                                message: '',
-                              });
-                            }
-                          }}
-                          disabled={newsletterState.status === 'loading'}
-                        />
-                        <button
-                          type="submit"
-                          className={pageStyles.newsletterButton}
-                          disabled={newsletterState.status === 'loading'}
+                        <span
+                          className={pageStyles.newsletterIcon}
+                          aria-hidden="true"
                         >
-                          {newsletterState.status === 'loading'
-                            ? 'A subscrever…'
-                            : 'Subscrever'}
-                        </button>
-                        {newsletterState.message ? (
-                          <p
-                            className={`${pageStyles.newsletterFeedback} ${
-                              newsletterState.status === 'error'
-                                ? pageStyles.newsletterFeedbackError
-                                : pageStyles.newsletterFeedbackSuccess
-                            }`}
-                            role="status"
-                            aria-live="polite"
+                          <FiMail />
+                        </span>
+                        <h2
+                          id="newsletter-title"
+                          className={pageStyles.newsletterTitle}
+                        >
+                          Receba novidades do mercado de trabalho
+                        </h2>
+                        <p className={pageStyles.newsletterText}>
+                          Inscreva-se na nossa newsletter semanal para receber
+                          as melhores dicas e vagas diretamente no seu email.
+                        </p>
+                        <form
+                          className={pageStyles.newsletterForm}
+                          onSubmit={handleNewsletterSubmit}
+                        >
+                          <input
+                            type="email"
+                            placeholder="O seu email profissional"
+                            aria-label="Email para subscrever a newsletter"
+                            className={pageStyles.newsletterInput}
+                            value={newsletterEmail}
+                            onChange={(event) => {
+                              setNewsletterEmail(event.target.value);
+                              if (newsletterState.status !== 'idle') {
+                                setNewsletterState({
+                                  status: 'idle',
+                                  message: '',
+                                });
+                              }
+                            }}
+                            disabled={newsletterState.status === 'loading'}
+                          />
+                          <button
+                            type="submit"
+                            className={pageStyles.newsletterButton}
+                            disabled={newsletterState.status === 'loading'}
                           >
-                            {newsletterState.message}
-                          </p>
-                        ) : null}
-                      </form>
+                            {newsletterState.status === 'loading'
+                              ? 'A subscrever…'
+                              : 'Subscrever'}
+                          </button>
+                          {newsletterState.message ? (
+                            <p
+                              className={`${pageStyles.newsletterFeedback} ${
+                                newsletterState.status === 'error'
+                                  ? pageStyles.newsletterFeedbackError
+                                  : pageStyles.newsletterFeedbackSuccess
+                              }`}
+                              role="status"
+                              aria-live="polite"
+                            >
+                              {newsletterState.message}
+                            </p>
+                          ) : null}
+                        </form>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </section>
+              </section>
+            </div>
           </div>
         </div>
       </PublicPageShell>

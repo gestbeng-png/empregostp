@@ -14,7 +14,11 @@ const MAX_REASON_LENGTH = 500;
 
 function sanitizeReason(value) {
   if (typeof value !== 'string') return '';
-  return value.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim().slice(0, MAX_REASON_LENGTH);
+  return value
+    .replace(/<[^>]*>/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, MAX_REASON_LENGTH);
 }
 
 export default async function handler(req, res) {
@@ -26,23 +30,37 @@ export default async function handler(req, res) {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ message: 'Token de autorização ausente ou inválido' });
+      return res
+        .status(401)
+        .json({ message: 'Token de autorização ausente ou inválido' });
     }
 
-    const decodedToken = await admin.auth().verifyIdToken(authHeader.split('Bearer ')[1]);
-    const adminDoc = await admin.firestore().collection('users').doc(decodedToken.uid).get();
+    const decodedToken = await admin
+      .auth()
+      .verifyIdToken(authHeader.split('Bearer ')[1]);
+    const adminDoc = await admin
+      .firestore()
+      .collection('users')
+      .doc(decodedToken.uid)
+      .get();
     if (!adminDoc.exists || adminDoc.data().userType !== 'admin') {
-      return res.status(403).json({ message: 'Acesso negado. Apenas administradores.' });
+      return res
+        .status(403)
+        .json({ message: 'Acesso negado. Apenas administradores.' });
     }
 
     const { action } = req.body || {};
     if (action !== 'approve' && action !== 'reject') {
-      return res.status(400).json({ message: 'Ação inválida. Use approve ou reject.' });
+      return res
+        .status(400)
+        .json({ message: 'Ação inválida. Use approve ou reject.' });
     }
     const reason = sanitizeReason(req.body?.reason);
 
     const { id } = req.query;
     const jobRef = admin.firestore().collection('jobs').doc(id);
+    // Só alocado para vagas v2; uma vez, não em cada nova tentativa.
+    let historyRef = null;
     const now = admin.firestore.Timestamp.now();
 
     let jobData = null;
@@ -62,17 +80,50 @@ export default async function handler(req, res) {
           throw error;
         }
 
+        // D7: vagas já com estado v2 (backfill ou ocultação por denúncia)
+        // mudam os dois estados e o histórico na mesma transação.
+        const v2Update = (to) => {
+          if (typeof jobData.v2Status !== 'string') return {};
+          const version =
+            (Number.isSafeInteger(jobData.version) ? jobData.version : 0) + 1;
+          historyRef ||= admin
+            .firestore()
+            .collection('jobsStatusHistory')
+            .doc();
+          transaction.create(historyRef, {
+            entityId: id,
+            from: jobData.v2Status,
+            to,
+            actorId: decodedToken.uid,
+            actorType: 'ADMIN',
+            reason: to === 'REJECTED' ? reason || null : null,
+            at: now,
+            version,
+          });
+          return { v2Status: to, version, updatedBy: decodedToken.uid };
+        };
+
         if (action === 'approve') {
-          const closeDate = parseJobCloseDate(jobData.dataFecho || jobData.expiresAt);
+          const closeDate = parseJobCloseDate(
+            jobData.dataFecho || jobData.expiresAt,
+          );
           if (closeDate && closeDate.getTime() < now.toDate().getTime()) {
-            const error = new Error('A vaga expirou antes da aprovação. Peça à empresa para atualizar a data de fecho.');
+            const error = new Error(
+              'A vaga expirou antes da aprovação. Peça à empresa para atualizar a data de fecho.',
+            );
             error.code = 'JOB_EXPIRED_BEFORE_APPROVAL';
             throw error;
           }
 
           transaction.update(jobRef, {
+            ...v2Update('PUBLISHED'),
             status: 'active',
-            publishedAt: now,
+            // Vaga ocultada por denúncias e reaprovada mantém a data original;
+            // o resto mantém o comportamento anterior.
+            publishedAt:
+              jobData.autoHiddenAt && jobData.publishedAt
+                ? jobData.publishedAt
+                : now,
             moderatedAt: now,
             moderatedBy: decodedToken.uid,
             moderationDecision: 'approved',
@@ -81,6 +132,7 @@ export default async function handler(req, res) {
           });
         } else {
           transaction.update(jobRef, {
+            ...v2Update('REJECTED'),
             status: JOB_STATUS_REJECTED,
             moderatedAt: now,
             moderatedBy: decodedToken.uid,
@@ -95,8 +147,8 @@ export default async function handler(req, res) {
         return res.status(404).json({ message: transactionError.message });
       }
       if (
-        transactionError?.code === 'JOB_ALREADY_MODERATED'
-        || transactionError?.code === 'JOB_EXPIRED_BEFORE_APPROVAL'
+        transactionError?.code === 'JOB_ALREADY_MODERATED' ||
+        transactionError?.code === 'JOB_EXPIRED_BEFORE_APPROVAL'
       ) {
         return res.status(409).json({ message: transactionError.message });
       }
@@ -111,7 +163,11 @@ export default async function handler(req, res) {
     // nesse fluxo apenas a deixou pendente.
     if (approved) {
       try {
-        const publicada = await admin.firestore().collection('jobs').doc(id).get();
+        const publicada = await admin
+          .firestore()
+          .collection('jobs')
+          .doc(id)
+          .get();
         await broadcastNewJob(admin, {
           job: publicada.data(),
           jobId: id,
@@ -122,16 +178,19 @@ export default async function handler(req, res) {
       }
     }
 
-    await admin.firestore().collection('activities').add({
-      type: approved ? 'job_approved' : 'job_rejected',
-      description: approved
-        ? `Vaga "${jobTitle}" foi aprovada e publicada`
-        : `Vaga "${jobTitle}" foi rejeitada${reason ? ` (motivo: ${reason})` : ''}`,
-      jobId: id,
-      adminId: decodedToken.uid,
-      companyId: jobData?.companyId || null,
-      createdAt: new Date().toISOString(),
-    });
+    await admin
+      .firestore()
+      .collection('activities')
+      .add({
+        type: approved ? 'job_approved' : 'job_rejected',
+        description: approved
+          ? `Vaga "${jobTitle}" foi aprovada e publicada`
+          : `Vaga "${jobTitle}" foi rejeitada${reason ? ` (motivo: ${reason})` : ''}`,
+        jobId: id,
+        adminId: decodedToken.uid,
+        companyId: jobData?.companyId || null,
+        createdAt: new Date().toISOString(),
+      });
 
     // Notificação in-app + push e email à empresa; falhas de entrega não
     // revertem a decisão já persistida.
@@ -150,13 +209,22 @@ export default async function handler(req, res) {
           actionUrl: '/dashboard/empresa?tab=jobs',
         });
       } catch (notificationError) {
-        logServerWarning('jobs.moderation_notification_failed', notificationError);
+        logServerWarning(
+          'jobs.moderation_notification_failed',
+          notificationError,
+        );
       }
 
       if (isEmailConfigured()) {
         try {
-          const companyDoc = await admin.firestore().collection('users').doc(jobData.companyId).get();
-          const companyEmail = companyDoc.exists ? companyDoc.data()?.email : null;
+          const companyDoc = await admin
+            .firestore()
+            .collection('users')
+            .doc(jobData.companyId)
+            .get();
+          const companyEmail = companyDoc.exists
+            ? companyDoc.data()?.email
+            : null;
           if (companyEmail) {
             await sendEmail({
               to: companyEmail,

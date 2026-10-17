@@ -7,7 +7,10 @@ import { requireActiveApiUser } from '../../lib/apiUserAuth';
 export default async function handler(req, res) {
   // Rate limit: no máximo 30 pedidos por minuto por IP
   if (
-    !(await enforceApiRateLimit(req, res, { scope: 'notifications', limit: 30 }))
+    !(await enforceApiRateLimit(req, res, {
+      scope: 'notifications',
+      limit: 30,
+    }))
   ) {
     return;
   }
@@ -25,9 +28,16 @@ async function handleNotifications(req, res) {
     const isAdmin = actingUser.userType === 'admin';
 
     if (method === 'GET') {
-      const requestedUid = typeof req.query.uid === 'string' && req.query.uid ? req.query.uid : actingUid;
+      const requestedUid =
+        typeof req.query.uid === 'string' && req.query.uid
+          ? req.query.uid
+          : actingUid;
       if (!isAdmin && requestedUid !== actingUid) {
-        return res.status(403).json({ error: 'Você não tem permissão para ver estas notificações' });
+        return res
+          .status(403)
+          .json({
+            error: 'Você não tem permissão para ver estas notificações',
+          });
       }
 
       // NOTE: Avoid composite-index requirements in Firestore.
@@ -39,11 +49,14 @@ async function handleNotifications(req, res) {
         .where('userId', '==', requestedUid)
         .get();
 
-      const notifications = notificationsSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate?.()?.toISOString() || new Date().toISOString()
-      }))
+      const notifications = notificationsSnapshot.docs
+        .map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+          createdAt:
+            doc.data().createdAt?.toDate?.()?.toISOString() ||
+            new Date().toISOString(),
+        }))
         .sort((a, b) => {
           const ta = a.createdAt ? new Date(a.createdAt).getTime() : 0;
           const tb = b.createdAt ? new Date(b.createdAt).getTime() : 0;
@@ -63,7 +76,12 @@ async function handleNotifications(req, res) {
       }
 
       if (!isAdmin && userId !== actingUid) {
-        return res.status(403).json({ error: 'Você não tem permissão para criar notificações para outro usuário' });
+        return res
+          .status(403)
+          .json({
+            error:
+              'Você não tem permissão para criar notificações para outro usuário',
+          });
       }
 
       const notification = await createServerNotification(admin, {
@@ -72,13 +90,12 @@ async function handleNotifications(req, res) {
         message,
         type: type || 'info',
         icon: icon || '🔔',
-        relatedId: relatedId || null
+        relatedId: relatedId || null,
       });
 
-
-      return res.status(201).json({ 
+      return res.status(201).json({
         message: 'Notificação criada',
-        notificationId: notification.id
+        notificationId: notification.id,
       });
     }
 
@@ -100,19 +117,24 @@ async function handleNotifications(req, res) {
           .forEach((doc) => {
             batch.update(doc.ref, {
               read: true,
-              readAt: admin.firestore.FieldValue.serverTimestamp()
+              readAt: admin.firestore.FieldValue.serverTimestamp(),
             });
           });
         await batch.commit();
 
-        return res.status(200).json({ message: 'Todas as notificações foram marcadas como lidas' });
+        return res
+          .status(200)
+          .json({ message: 'Todas as notificações foram marcadas como lidas' });
       }
 
       if (!notificationId) {
         return res.status(400).json({ error: 'notificationId é obrigatório' });
       }
 
-      const notificationRef = admin.firestore().collection('notifications').doc(notificationId);
+      const notificationRef = admin
+        .firestore()
+        .collection('notifications')
+        .doc(notificationId);
       const notificationDoc = await notificationRef.get();
       if (!notificationDoc.exists) {
         return res.status(404).json({ error: 'Notificação não encontrada' });
@@ -120,12 +142,16 @@ async function handleNotifications(req, res) {
 
       const notificationData = notificationDoc.data();
       if (!isAdmin && notificationData.userId !== actingUid) {
-        return res.status(403).json({ error: 'Você não tem permissão para alterar esta notificação' });
+        return res
+          .status(403)
+          .json({
+            error: 'Você não tem permissão para alterar esta notificação',
+          });
       }
 
       await notificationRef.update({
         read: true,
-        readAt: admin.firestore.FieldValue.serverTimestamp()
+        readAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
       return res.status(200).json({ message: 'Notificação marcada como lida' });
@@ -133,7 +159,6 @@ async function handleNotifications(req, res) {
 
     res.setHeader('Allow', ['GET', 'POST', 'PATCH']);
     return res.status(405).json({ error: 'Método não permitido' });
-
   } catch (error) {
     logServerError('notifications.api_de_notificacoes_failed', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });

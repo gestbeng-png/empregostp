@@ -1,7 +1,10 @@
 import { admin } from '../../../lib/firebaseAdmin';
 import { enforceApiRateLimit, getClientIp } from '../../../lib/apiRateLimit';
 import { sendEmail, isEmailConfigured } from '../../../lib/email';
-import { filterPublishedJobs, buildJobAlertEmail } from '../../../lib/jobAlertEmail';
+import {
+  filterPublishedJobs,
+  buildJobAlertEmail,
+} from '../../../lib/jobAlertEmail';
 import {
   buildJobAlertFilterKey,
   buildJobAlertId,
@@ -12,10 +15,12 @@ import {
   hashJobAlertUnsubscribeToken,
 } from '../../../lib/jobAlertSubscription';
 import { logServerError } from '../../../lib/serverLog';
+import { requireActiveApiUser } from '../../../lib/apiUserAuth';
+import { isJobAlertActive } from '../../../lib/jobAlertDelivery';
 
 // Regista a subscrição do alerta e envia de imediato um email com todas as
-// vagas publicadas que correspondem aos filtros. O envio periódico de futuras
-// vagas continua a poder ser feito por um processo agendado à parte.
+// vagas publicadas que correspondem aos filtros. As vagas publicadas depois
+// chegam por lib/jobAlertDelivery.js, chamado em cada publicação.
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -52,16 +57,90 @@ async function fetchPublishedJobs() {
       }
     });
     jobs.forEach((job) => {
-      job.empresaNome = namesById.get(job.companyId) || job.empresaNome || job.companyName || 'Empresa';
+      job.empresaNome =
+        namesById.get(job.companyId) ||
+        job.empresaNome ||
+        job.companyName ||
+        'Empresa';
     });
   }
 
   return jobs;
 }
 
+function toIso(value) {
+  if (!value) return null;
+  const date =
+    typeof value.toDate === 'function' ? value.toDate() : new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+/**
+ * C08 — o titular gere os alertas do próprio email no painel.
+ *   GET            → alertas ativos
+ *   DELETE ?id=…   → cancela um alerta (o de outra pessoa responde 404)
+ */
+async function handleOwnAlerts(req, res) {
+  const authResult = await requireActiveApiUser(req, res, { adminApp: admin });
+  if (!authResult) return;
+  const email = String(
+    authResult.userData.email || authResult.decodedToken.email || '',
+  )
+    .trim()
+    .toLowerCase();
+  if (!email) return res.status(200).json({ alerts: [] });
+
+  try {
+    const alertsCollection = admin.firestore().collection('jobAlerts');
+    if (req.method === 'GET') {
+      const snapshot = await alertsCollection.where('email', '==', email).get();
+      const alerts = snapshot.docs
+        .map((doc) => ({ id: doc.id, data: doc.data() || {} }))
+        .filter(({ data }) => isJobAlertActive(data))
+        .map(({ id, data }) => ({
+          id,
+          filters: data.filters || {},
+          createdAt: toIso(data.createdAt),
+          lastNotifiedAt: toIso(data.lastNotifiedAt),
+        }));
+      return res.status(200).json({ alerts });
+    }
+
+    const id = String(req.query?.id || '').trim();
+    const alertRef = /^[A-Za-z0-9_-]{1,128}$/.test(id)
+      ? alertsCollection.doc(id)
+      : null;
+    const alertDoc = alertRef ? await alertRef.get() : null;
+    if (
+      !alertDoc?.exists ||
+      String(alertDoc.data()?.email || '').toLowerCase() !== email
+    ) {
+      return res.status(404).json({ error: 'Alerta não encontrado.' });
+    }
+    if (isJobAlertActive(alertDoc.data())) {
+      await alertRef.update({
+        active: false,
+        status: 'unsubscribed',
+        unsubscribedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+    return res.status(200).json({ id, cancelled: true });
+  } catch (error) {
+    logServerError('job_alerts.gerir_alertas_failed', error);
+    return res.status(500).json({
+      error: 'Não foi possível carregar os alertas. Tente novamente.',
+    });
+  }
+}
+
 export default async function handler(req, res) {
+  if (req.method === 'GET' || req.method === 'DELETE') {
+    res.setHeader('Cache-Control', 'no-store');
+    return handleOwnAlerts(req, res);
+  }
   if (req.method !== 'POST') {
-    res.setHeader('Allow', ['POST']);
+    res.setHeader('Allow', ['GET', 'POST', 'DELETE']);
     return res.status(405).json({ error: 'Método não permitido' });
   }
 
@@ -115,12 +194,10 @@ export default async function handler(req, res) {
     }
 
     const unsubscribeToken = createJobAlertUnsubscribeToken();
-    const unsubscribeTokenHash = hashJobAlertUnsubscribeToken(
-      unsubscribeToken,
-    );
-    let alertRef = equivalentAlert?.ref || alertsCollection.doc(
-      buildJobAlertId(email, filters),
-    );
+    const unsubscribeTokenHash = hashJobAlertUnsubscribeToken(unsubscribeToken);
+    let alertRef =
+      equivalentAlert?.ref ||
+      alertsCollection.doc(buildJobAlertId(email, filters));
     let duplicateCreatedConcurrently = false;
     const now = admin.firestore.FieldValue.serverTimestamp();
     const alertData = {
@@ -147,7 +224,8 @@ export default async function handler(req, res) {
           current.exists &&
           currentData.active !== false &&
           currentData.status !== 'unsubscribed' &&
-          (currentData.filterKey || buildJobAlertFilterKey(currentData.filters || {})) === filterKey;
+          (currentData.filterKey ||
+            buildJobAlertFilterKey(currentData.filters || {})) === filterKey;
 
         if (
           isEquivalentActive &&

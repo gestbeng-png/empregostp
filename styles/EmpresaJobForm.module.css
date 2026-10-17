@@ -81,7 +81,10 @@
   color: var(--job-muted);
   font-size: 0.78rem;
   font-weight: 800;
-  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
 }
 
 .stepActive .stepNumber {
@@ -170,7 +173,11 @@
   font-weight: 750;
   text-decoration: none;
   cursor: pointer;
-  transition: transform 160ms ease, border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .feedbackAction,
@@ -260,7 +267,10 @@
   color: var(--job-text);
   font: inherit;
   font-size: 0.88rem;
-  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease;
 }
 
 .input::placeholder,
@@ -392,7 +402,9 @@
   background: rgba(95, 184, 245, 0.05);
   text-align: center;
   cursor: pointer;
-  transition: border-color 160ms ease, background-color 160ms ease;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease;
 }
 
 .dropzone:hover {
@@ -723,7 +735,7 @@
 /* Workbridge fidelity layer. */
 .page {
   color: var(--text-1, #102441);
-  font-family: var(--font-instrument, "Instrument Sans"), Arial, sans-serif;
+  font-family: var(--font-instrument, 'Instrument Sans'), Arial, sans-serif;
 }
 
 .pageTitle,
