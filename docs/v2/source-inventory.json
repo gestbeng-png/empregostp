@@ -1,0 +1,7265 @@
+{
+  "generatedAt": "2026-10-11T11:10:16.076Z",
+  "branch": "feat/empregostp-marketplace-v2",
+  "commit": "88d35f49d86a32090674ebfd0025063167db75a4",
+  "sourceFilesScanned": 506,
+  "routes": [
+    {
+      "route": "/alertas/cancelar",
+      "file": "pages/alertas/cancelar.js",
+      "role": "público/condicional",
+      "rendering": "sem SSR de dados; confirmar CSR",
+      "authSignals": [],
+      "title": "Cancelar alerta de vagas - EmpregoSTP",
+      "robots": "declarado/condicional",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/api/admin",
+      "file": "pages/api/admin.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/admin/activities",
+      "file": "pages/api/admin/activities/index.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/admin/affiliates/[id]",
+      "file": "pages/api/admin/affiliates/[id].js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/admin/affiliates",
+      "file": "pages/api/admin/affiliates/index.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/admin/hr-services/[id]",
+      "file": "pages/api/admin/hr-services/[id].js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/admin/hr-services",
+      "file": "pages/api/admin/hr-services/index.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/admin/jobs/[id]",
+      "file": "pages/api/admin/jobs/[id].js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/admin/jobs/[id]/moderate",
+      "file": "pages/api/admin/jobs/[id]/moderate.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/admin/jobs",
+      "file": "pages/api/admin/jobs/index.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/admin/moderation-settings",
+      "file": "pages/api/admin/moderation-settings.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/admin/operations",
+      "file": "pages/api/admin/operations.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "requireActiveApiUser"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/admin/payment-settings",
+      "file": "pages/api/admin/payment-settings.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/admin/plans/[id]",
+      "file": "pages/api/admin/plans/[id].js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/admin/plans",
+      "file": "pages/api/admin/plans/index.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/admin/plans/setup",
+      "file": "pages/api/admin/plans/setup.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/admin/product-ads/[id]",
+      "file": "pages/api/admin/product-ads/[id].js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/admin/product-ads",
+      "file": "pages/api/admin/product-ads/index.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/admin/product-ads/upload",
+      "file": "pages/api/admin/product-ads/upload.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/admin/recruitment",
+      "file": "pages/api/admin/recruitment.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "requireActiveApiUser"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/admin/services/[id]",
+      "file": "pages/api/admin/services/[id].js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/admin/services",
+      "file": "pages/api/admin/services/index.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/admin/subscription-requests/[id]",
+      "file": "pages/api/admin/subscription-requests/[id].js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/admin/subscription-requests",
+      "file": "pages/api/admin/subscription-requests/index.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/admin/testimonials/[id]",
+      "file": "pages/api/admin/testimonials/[id].js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/admin/testimonials",
+      "file": "pages/api/admin/testimonials/index.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/admin/users/[id]",
+      "file": "pages/api/admin/users/[id].js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/admin/users",
+      "file": "pages/api/admin/users/index.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/admin/verifications",
+      "file": "pages/api/admin/verifications.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/admin/verify-action",
+      "file": "pages/api/admin/verify-action.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/affiliate/apply",
+      "file": "pages/api/affiliate/apply.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/analytics",
+      "file": "pages/api/analytics.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/applications/[id]/cv",
+      "file": "pages/api/applications/[id]/cv.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/applications/[id]/hire",
+      "file": "pages/api/applications/[id]/hire.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/applications/[id]",
+      "file": "pages/api/applications/[id]/index.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/applications/[id]/interview-ics",
+      "file": "pages/api/applications/[id]/interview-ics.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "requireActiveApiUser"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/applications/[id]/interview-response",
+      "file": "pages/api/applications/[id]/interview-response.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "requireActiveApiUser"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/applications/[id]/interviews",
+      "file": "pages/api/applications/[id]/interviews.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/applications/[id]/notes",
+      "file": "pages/api/applications/[id]/notes.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/applications/[id]/review",
+      "file": "pages/api/applications/[id]/review.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/applications/[id]/status",
+      "file": "pages/api/applications/[id]/status.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/applications/[id]/timeline",
+      "file": "pages/api/applications/[id]/timeline.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "requireActiveApiUser"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/applications/[id]/transition",
+      "file": "pages/api/applications/[id]/transition.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "requireActiveApiUser"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/applications/[id]/withdraw",
+      "file": "pages/api/applications/[id]/withdraw.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "requireActiveApiUser"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/applications/assignments",
+      "file": "pages/api/applications/assignments.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/applications",
+      "file": "pages/api/applications/index.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "requireActiveApiUser"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/auth/register",
+      "file": "pages/api/auth/register.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/auth/send-password-reset",
+      "file": "pages/api/auth/send-password-reset.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/auth/send-verification",
+      "file": "pages/api/auth/send-verification.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/auth/session",
+      "file": "pages/api/auth/session.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/auth/setup-user",
+      "file": "pages/api/auth/setup-user.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/bulk-actions/[id]/cancel",
+      "file": "pages/api/bulk-actions/[id]/cancel.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/bulk-actions/[id]/execute",
+      "file": "pages/api/bulk-actions/[id]/execute.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/bulk-actions",
+      "file": "pages/api/bulk-actions/index.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/candidate/plan-status",
+      "file": "pages/api/candidate/plan-status.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "requireActiveApiUser"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/candidate/plans",
+      "file": "pages/api/candidate/plans.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "requireActiveApiUser"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/candidate/settings",
+      "file": "pages/api/candidate/settings.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/career-advice",
+      "file": "pages/api/career-advice.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/contact",
+      "file": "pages/api/contact/index.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/cron/ats-daily",
+      "file": "pages/api/cron/ats-daily.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/cron/check-job-expiration",
+      "file": "pages/api/cron/check-job-expiration.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/cron/check-plan-expiration",
+      "file": "pages/api/cron/check-plan-expiration.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/cron/expire-offers",
+      "file": "pages/api/cron/expire-offers.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/cron/interview-reminders",
+      "file": "pages/api/cron/interview-reminders.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/cron/process-outbox",
+      "file": "pages/api/cron/process-outbox.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/cron/readiness",
+      "file": "pages/api/cron/readiness.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/drafts/[scope]",
+      "file": "pages/api/drafts/[scope].js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "requireActiveApiUser"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/empresa",
+      "file": "pages/api/empresa.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/export/applications",
+      "file": "pages/api/export/applications.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/files/application-document",
+      "file": "pages/api/files/application-document.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "requireActiveApiUser"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/files/candidate-certificate",
+      "file": "pages/api/files/candidate-certificate.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "requireActiveApiUser"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/files/candidate-cv",
+      "file": "pages/api/files/candidate-cv.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "requireActiveApiUser"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/health",
+      "file": "pages/api/health.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/hires/[id]/annul",
+      "file": "pages/api/hires/[id]/annul.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/hires/[id]/confirm",
+      "file": "pages/api/hires/[id]/confirm.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/hr-services",
+      "file": "pages/api/hr-services/index.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/interviews/[id]/[action]",
+      "file": "pages/api/interviews/[id]/[action].ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/interviews/[id]/ics",
+      "file": "pages/api/interviews/[id]/ics.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/invitations/[id]/accept",
+      "file": "pages/api/invitations/[id]/accept.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/invitations/[id]",
+      "file": "pages/api/invitations/[id]/index.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/invitations/[id]/preview",
+      "file": "pages/api/invitations/[id]/preview.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/invitations/[id]/revoke",
+      "file": "pages/api/invitations/[id]/revoke.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/job-alerts",
+      "file": "pages/api/job-alerts/index.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/job-alerts/unsubscribe",
+      "file": "pages/api/job-alerts/unsubscribe.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/jobs/[id]",
+      "file": "pages/api/jobs/[id].js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/jobs/[id]/close",
+      "file": "pages/api/jobs/[id]/close.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/jobs/[id]/closing-message",
+      "file": "pages/api/jobs/[id]/closing-message.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/jobs/[id]/destaque",
+      "file": "pages/api/jobs/[id]/destaque.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/jobs/[id]/fill",
+      "file": "pages/api/jobs/[id]/fill.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/jobs/[id]/hiring-team",
+      "file": "pages/api/jobs/[id]/hiring-team.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/jobs/active",
+      "file": "pages/api/jobs/active.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/jobs/categories",
+      "file": "pages/api/jobs/categories.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/jobs",
+      "file": "pages/api/jobs/index.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/me/organizations",
+      "file": "pages/api/me/organizations.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/messages/[conversationId]",
+      "file": "pages/api/messages/[conversationId].js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "requireActiveApiUser"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/messages",
+      "file": "pages/api/messages/index.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "requireActiveApiUser"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/news",
+      "file": "pages/api/news.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/newsletter/broadcast",
+      "file": "pages/api/newsletter/broadcast.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/newsletter/subscribe",
+      "file": "pages/api/newsletter/subscribe.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/notifications",
+      "file": "pages/api/notifications.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "requireActiveApiUser"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/organizations/[id]/invitations",
+      "file": "pages/api/organizations/[id]/invitations.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/organizations/[id]/members/[userId]",
+      "file": "pages/api/organizations/[id]/members/[userId].ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/organizations/[id]/message-templates",
+      "file": "pages/api/organizations/[id]/message-templates.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/organizations/[id]/ownership-transfer/accept",
+      "file": "pages/api/organizations/[id]/ownership-transfer/accept.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/organizations/[id]/ownership-transfer",
+      "file": "pages/api/organizations/[id]/ownership-transfer/index.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/profile",
+      "file": "pages/api/profile.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "requireActiveApiUser"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/profile/update",
+      "file": "pages/api/profile/update.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "requireActiveApiUser"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/profile/upload-cv",
+      "file": "pages/api/profile/upload-cv.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/push-subscriptions",
+      "file": "pages/api/push-subscriptions/index.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/recommendations",
+      "file": "pages/api/recommendations.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "requireActiveApiUser"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/reports",
+      "file": "pages/api/reports/index.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "requireActiveApiUser"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/resources/download",
+      "file": "pages/api/resources/download.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/saved-jobs",
+      "file": "pages/api/saved-jobs.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "requireActiveApiUser"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/subscribe-plan",
+      "file": "pages/api/subscribe-plan.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/subscription-requests/[id]/payment-proof",
+      "file": "pages/api/subscription-requests/[id]/payment-proof.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/subscription-requests/current",
+      "file": "pages/api/subscription-requests/current.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/talent-pool",
+      "file": "pages/api/talent-pool.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/testimonials",
+      "file": "pages/api/testimonials/index.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/track-view",
+      "file": "pages/api/track-view.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/verifications",
+      "file": "pages/api/verifications.js",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [
+        "requireActiveApiUser"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/api/workspace",
+      "file": "pages/api/workspace.ts",
+      "role": "API: autorização individual",
+      "rendering": "API",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": true,
+      "verified": false
+    },
+    {
+      "route": "/blog",
+      "file": "pages/blog.js",
+      "role": "público/condicional",
+      "rendering": "SSR",
+      "authSignals": [],
+      "title": "Blog \\| EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/blog/[id]",
+      "file": "pages/blog/[id].js",
+      "role": "público/condicional",
+      "rendering": "SSG/ISR",
+      "authSignals": [],
+      "title": "{post.title} \\| Blog EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/candidatos",
+      "file": "pages/candidatos.js",
+      "role": "público/condicional",
+      "rendering": "SSR",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/candidatos/[id]",
+      "file": "pages/candidatos/[id].js",
+      "role": "público/condicional",
+      "rendering": "SSR",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "{candidato.fullName} \\| Candidato — EmpregoSTP",
+      "robots": "declarado/condicional",
+      "dynamic": true,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/candidatos/internacional",
+      "file": "pages/candidatos/internacional.js",
+      "role": "público/condicional",
+      "rendering": "SSR",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/candidatos/nacional",
+      "file": "pages/candidatos/nacional.js",
+      "role": "público/condicional",
+      "rendering": "SSR",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/carreira",
+      "file": "pages/carreira.js",
+      "role": "público/condicional",
+      "rendering": "sem SSR de dados; confirmar CSR",
+      "authSignals": [],
+      "title": "Serviços de carreira \\| EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/contacto",
+      "file": "pages/contacto.js",
+      "role": "público/condicional",
+      "rendering": "sem SSR de dados; confirmar CSR",
+      "authSignals": [],
+      "title": "Contacto \\| EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/cookies",
+      "file": "pages/cookies.js",
+      "role": "público/condicional",
+      "rendering": "sem SSR de dados; confirmar CSR",
+      "authSignals": [],
+      "title": "Cookies \\| EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/admin/affiliates",
+      "file": "pages/dashboard/admin/affiliates.js",
+      "role": "ADMIN",
+      "rendering": "SSR",
+      "authSignals": [
+        "requireAdminPageAuth"
+      ],
+      "title": "Afiliados - Admin",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/admin/auditoria",
+      "file": "pages/dashboard/admin/auditoria.js",
+      "role": "ADMIN",
+      "rendering": "SSR",
+      "authSignals": [
+        "requireAdminPageAuth"
+      ],
+      "title": "Auditoria \\| Admin EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/admin/blog/[id]",
+      "file": "pages/dashboard/admin/blog/[id].js",
+      "role": "ADMIN",
+      "rendering": "SSR",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "{isNew ? 'Novo Artigo' : 'Editar Artigo'} \\| Admin EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/admin/blog",
+      "file": "pages/dashboard/admin/blog/index.js",
+      "role": "ADMIN",
+      "rendering": "SSR",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "Gerir blog \\| Admin EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/admin/hr-services",
+      "file": "pages/dashboard/admin/hr-services.js",
+      "role": "ADMIN",
+      "rendering": "SSR",
+      "authSignals": [
+        "requireAdminPageAuth"
+      ],
+      "title": "Serviços RH - Admin",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/admin",
+      "file": "pages/dashboard/admin/index.js",
+      "role": "ADMIN",
+      "rendering": "SSR",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "Dashboard Admin - EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/admin/jobs",
+      "file": "pages/dashboard/admin/jobs.js",
+      "role": "ADMIN",
+      "rendering": "SSR",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "Gerir vagas - Admin",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/admin/jobs/[id]/edit",
+      "file": "pages/dashboard/admin/jobs/[id]/edit.js",
+      "role": "ADMIN",
+      "rendering": "SSR",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "Editar Vaga - Admin Dashboard",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/admin/jobs/[id]",
+      "file": "pages/dashboard/admin/jobs/[id]/index.js",
+      "role": "ADMIN",
+      "rendering": "SSR",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "Vaga não encontrada - Admin; {job.titulo} - Admin",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/admin/jobs/create",
+      "file": "pages/dashboard/admin/jobs/create.js",
+      "role": "ADMIN",
+      "rendering": "SSR",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "Criar Vaga (Admin) \\| EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/admin/news/[id]",
+      "file": "pages/dashboard/admin/news/[id].js",
+      "role": "ADMIN",
+      "rendering": "SSR",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "{isNew ? 'Nova Notícia' : 'Editar Notícia'} \\| Admin EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/admin/news",
+      "file": "pages/dashboard/admin/news/index.js",
+      "role": "ADMIN",
+      "rendering": "SSR",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "Gerir notícias \\| Admin EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/admin/operations",
+      "file": "pages/dashboard/admin/operations.js",
+      "role": "ADMIN",
+      "rendering": "SSR",
+      "authSignals": [
+        "requireAdminPageAuth"
+      ],
+      "title": "Operações de recrutamento · EmpregoSTP",
+      "robots": "declarado/condicional",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/admin/payment-settings",
+      "file": "pages/dashboard/admin/payment-settings.js",
+      "role": "ADMIN",
+      "rendering": "SSR",
+      "authSignals": [
+        "requireAdminPageAuth"
+      ],
+      "title": "Configurações de Pagamento - Admin",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/admin/plans",
+      "file": "pages/dashboard/admin/plans.js",
+      "role": "ADMIN",
+      "rendering": "SSR",
+      "authSignals": [
+        "requireAdminPageAuth"
+      ],
+      "title": "Gerir planos - Admin",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/admin/product-ads",
+      "file": "pages/dashboard/admin/product-ads.js",
+      "role": "ADMIN",
+      "rendering": "SSR",
+      "authSignals": [
+        "requireAdminPageAuth"
+      ],
+      "title": "Anúncios de produtos - Administração",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/admin/reports",
+      "file": "pages/dashboard/admin/reports.js",
+      "role": "ADMIN",
+      "rendering": "SSR",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "Relatórios - Admin Dashboard",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/admin/resources/[id]",
+      "file": "pages/dashboard/admin/resources/[id].js",
+      "role": "ADMIN",
+      "rendering": "SSR",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "{isNew ? 'Novo Item' : 'Editar Item'} \\| Admin Recursos",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/admin/resources",
+      "file": "pages/dashboard/admin/resources/index.js",
+      "role": "ADMIN",
+      "rendering": "SSR",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "Gerir recursos \\| Admin EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/admin/services",
+      "file": "pages/dashboard/admin/services.js",
+      "role": "ADMIN",
+      "rendering": "SSR",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "Gerir serviços - Admin",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/admin/services/[id]",
+      "file": "pages/dashboard/admin/services/[id].js",
+      "role": "ADMIN",
+      "rendering": "SSR",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "Admin - Serviço {svc?.title \\|\\| svc?.id}",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/admin/subscription-requests",
+      "file": "pages/dashboard/admin/subscription-requests.js",
+      "role": "ADMIN",
+      "rendering": "SSR",
+      "authSignals": [
+        "requireAdminPageAuth"
+      ],
+      "title": "Solicitações de Assinatura - Admin",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/admin/testimonials",
+      "file": "pages/dashboard/admin/testimonials.js",
+      "role": "ADMIN",
+      "rendering": "SSR",
+      "authSignals": [
+        "requireAdminPageAuth"
+      ],
+      "title": "Moderar testemunhos - Admin",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/admin/users",
+      "file": "pages/dashboard/admin/users.js",
+      "role": "ADMIN",
+      "rendering": "SSR",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "Gerir utilizadores - Admin",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/admin/users/[id]/edit",
+      "file": "pages/dashboard/admin/users/[id]/edit.js",
+      "role": "ADMIN",
+      "rendering": "SSR",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "Editar utilizador - Admin",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/admin/users/[id]",
+      "file": "pages/dashboard/admin/users/[id]/index.js",
+      "role": "ADMIN",
+      "rendering": "SSR",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "Utilizador não encontrado - Admin; {user.name \\|\\| user.email} - Admin",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/admin/verificacoes",
+      "file": "pages/dashboard/admin/verificacoes.js",
+      "role": "ADMIN",
+      "rendering": "SSR",
+      "authSignals": [
+        "requireAdminPageAuth"
+      ],
+      "title": "Verificações \\| Admin EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/candidato/candidaturas",
+      "file": "pages/dashboard/candidato/candidaturas.js",
+      "role": "candidato",
+      "rendering": "SSR",
+      "authSignals": [],
+      "title": "Minhas Candidaturas - EmpregoSTP; Minhas Candidaturas - EmpregoSTP; Minhas Candidaturas - EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/candidato",
+      "file": "pages/dashboard/candidato/index.js",
+      "role": "candidato",
+      "rendering": "SSR",
+      "authSignals": [],
+      "title": "Dashboard Candidato \\| EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/candidato/vaga",
+      "file": "pages/dashboard/candidato/vaga/index.js",
+      "role": "candidato",
+      "rendering": "SSR",
+      "authSignals": [],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/empresa/candidato/[id]",
+      "file": "pages/dashboard/empresa/candidato/[id].js",
+      "role": "empresa",
+      "rendering": "SSR",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "Candidato não encontrado - EmpregoSTP; {candidato.fullName \\|\\| 'Candidato'} - EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/empresa",
+      "file": "pages/dashboard/empresa/index.js",
+      "role": "empresa",
+      "rendering": "SSR",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "Painel da empresa \\| EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/empresa/profile",
+      "file": "pages/dashboard/empresa/profile.js",
+      "role": "empresa",
+      "rendering": "SSR",
+      "authSignals": [],
+      "title": "Perfil da Empresa - EmpregoSTP; Perfil da Empresa - EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/empresa/vaga/[id]",
+      "file": "pages/dashboard/empresa/vaga/[id].js",
+      "role": "empresa",
+      "rendering": "SSR",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "Vaga nao encontrada - EmpregoSTP; {titulo} - EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/empresa/vaga/criar-vaga",
+      "file": "pages/dashboard/empresa/vaga/criar-vaga.js",
+      "role": "empresa",
+      "rendering": "SSR",
+      "authSignals": [],
+      "title": "{isEditMode ? \"Editar Vaga\" : \"Criar Vaga\"} - EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/empresa/vagas",
+      "file": "pages/dashboard/empresa/vagas.js",
+      "role": "empresa",
+      "rendering": "SSR",
+      "authSignals": [],
+      "title": "Gerir vagas - EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard",
+      "file": "pages/dashboard/index.js",
+      "role": "autenticado",
+      "rendering": "SSR",
+      "authSignals": [],
+      "title": "A abrir o seu painel \\| EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/dashboard/recrutamento",
+      "file": "pages/dashboard/recrutamento.js",
+      "role": "público/condicional",
+      "rendering": "SSR",
+      "authSignals": [],
+      "title": "Recrutamento · EmpregoSTP",
+      "robots": "declarado/condicional",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/empresas",
+      "file": "pages/empresas.js",
+      "role": "público/condicional",
+      "rendering": "SSR",
+      "authSignals": [],
+      "title": "Ferramentas de Recrutamento Profissional \\| EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/empresas/[id]",
+      "file": "pages/empresas/[id].js",
+      "role": "público/condicional",
+      "rendering": "SSR",
+      "authSignals": [],
+      "title": "{company.name} \\| Empresa — EmpregoSTP",
+      "robots": "declarado/condicional",
+      "dynamic": true,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/equipa/convite",
+      "file": "pages/equipa/convite.js",
+      "role": "público/condicional",
+      "rendering": "SSR",
+      "authSignals": [],
+      "title": "Convite de equipa · EmpregoSTP",
+      "robots": "declarado/condicional",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/",
+      "file": "pages/index.js",
+      "role": "público/condicional",
+      "rendering": "SSR",
+      "authSignals": [],
+      "title": "Empregos STP - Conectando Talentos ao Sucesso",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/login",
+      "file": "pages/login.js",
+      "role": "público/condicional",
+      "rendering": "SSR",
+      "authSignals": [],
+      "title": "Iniciar sessão \\| EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/offline",
+      "file": "pages/offline.js",
+      "role": "público/condicional",
+      "rendering": "sem SSR de dados; confirmar CSR",
+      "authSignals": [],
+      "title": "Sem ligação \\| EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/politica-privacidade",
+      "file": "pages/politica-privacidade.js",
+      "role": "público/condicional",
+      "rendering": "sem SSR de dados; confirmar CSR",
+      "authSignals": [],
+      "title": "Política de privacidade \\| EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/premium",
+      "file": "pages/premium.js",
+      "role": "público/condicional",
+      "rendering": "sem SSR de dados; confirmar CSR",
+      "authSignals": [],
+      "title": "A abrir os seus planos \\| EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/premium/candidatos",
+      "file": "pages/premium/candidatos.js",
+      "role": "público/condicional",
+      "rendering": "SSR",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/premium/empresa",
+      "file": "pages/premium/empresa.js",
+      "role": "público/condicional",
+      "rendering": "SSR",
+      "authSignals": [
+        "verifyIdToken"
+      ],
+      "title": "",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/profile",
+      "file": "pages/profile/index.js",
+      "role": "candidato",
+      "rendering": "SSR",
+      "authSignals": [],
+      "title": "A abrir o seu perfil \\| EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/recuperar-senha",
+      "file": "pages/recuperar-senha.js",
+      "role": "público/condicional",
+      "rendering": "sem SSR de dados; confirmar CSR",
+      "authSignals": [],
+      "title": "Recuperar senha \\| EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/recursos",
+      "file": "pages/recursos.js",
+      "role": "público/condicional",
+      "rendering": "SSR",
+      "authSignals": [],
+      "title": "Recursos gratuitos \\| EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/recursos/calculadora-impostos",
+      "file": "pages/recursos/calculadora-impostos.js",
+      "role": "público/condicional",
+      "rendering": "SSR",
+      "authSignals": [],
+      "title": "Calculadora de Impostos \\| Recursos EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/recursos/calculadora-salarial",
+      "file": "pages/recursos/calculadora-salarial.js",
+      "role": "público/condicional",
+      "rendering": "SSR",
+      "authSignals": [],
+      "title": "Calculadora Salarial \\| Recursos EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/recursos/gerador-cv",
+      "file": "pages/recursos/gerador-cv.js",
+      "role": "público/condicional",
+      "rendering": "SSR",
+      "authSignals": [],
+      "title": "{title}",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/recursos/guia/[id]",
+      "file": "pages/recursos/guia/[id].js",
+      "role": "público/condicional",
+      "rendering": "SSR",
+      "authSignals": [],
+      "title": "{guide.title} \\| Guia EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": true,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/redefinir-senha",
+      "file": "pages/redefinir-senha.js",
+      "role": "público/condicional",
+      "rendering": "sem SSR de dados; confirmar CSR",
+      "authSignals": [],
+      "title": "Redefinir senha \\| EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/register",
+      "file": "pages/register.js",
+      "role": "público/condicional",
+      "rendering": "sem SSR de dados; confirmar CSR",
+      "authSignals": [],
+      "title": "Confirmar email \\| EmpregoSTP; Criar conta \\| EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/setup/seed",
+      "file": "pages/setup/seed.js",
+      "role": "restrita: setup",
+      "rendering": "SSR",
+      "authSignals": [
+        "requireAdminPageAuth"
+      ],
+      "title": "Preparar dados de desenvolvimento \\| EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/sobre-nos",
+      "file": "pages/sobre-nos.js",
+      "role": "público/condicional",
+      "rendering": "sem SSR de dados; confirmar CSR",
+      "authSignals": [],
+      "title": "Sobre nós \\| Emprego STP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/termos",
+      "file": "pages/termos.js",
+      "role": "público/condicional",
+      "rendering": "sem SSR de dados; confirmar CSR",
+      "authSignals": [],
+      "title": "Termos de utilização \\| EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/vaga/[id]",
+      "file": "pages/vaga/[id].js",
+      "role": "público/condicional",
+      "rendering": "SSR",
+      "authSignals": [],
+      "title": "Vaga retirada \\| EmpregoSTP; {titulo} \\| EmpregoSTP",
+      "robots": "declarado/condicional",
+      "dynamic": true,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/vagas",
+      "file": "pages/vagas/index.js",
+      "role": "público/condicional",
+      "rendering": "SSR",
+      "authSignals": [],
+      "title": "Vagas de emprego \\| EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    },
+    {
+      "route": "/verificar-email",
+      "file": "pages/verificar-email.js",
+      "role": "público/condicional",
+      "rendering": "sem SSR de dados; confirmar CSR",
+      "authSignals": [],
+      "title": "Confirmar email \\| EmpregoSTP",
+      "robots": "não declarado na rota",
+      "dynamic": false,
+      "api": false,
+      "verified": false
+    }
+  ],
+  "collections": [
+    "activities",
+    "affiliateApplications",
+    "apiRateLimits",
+    "applicationAssignments",
+    "applicationInternals",
+    "applicationNotes",
+    "applications",
+    "applicationsStatusHistory",
+    "auditLogs",
+    "audit_logs",
+    "bulkActions",
+    "candidateProfileViews",
+    "contactMessages",
+    "conversations",
+    "cronLocks",
+    "eventProjections",
+    "featureFlags",
+    "formDrafts",
+    "hires",
+    "hiresStatusHistory",
+    "hiringProcesses",
+    "idempotencyKeys",
+    "interviewFeedback",
+    "interviews",
+    "jobAlerts",
+    "jobInternals",
+    "jobVersions",
+    "jobViews",
+    "jobs",
+    "jobsStatusHistory",
+    "messages",
+    "moderationCases",
+    "news",
+    "newsletterSubscribers",
+    "notifications",
+    "offers",
+    "operationalHeartbeats",
+    "orgMessageTemplates",
+    "organizationInvitations",
+    "organizationMemberships",
+    "organizations",
+    "outboxDeliveries",
+    "outboxEvents",
+    "ownershipTransfers",
+    "plans",
+    "posts",
+    "productAds",
+    "profiles",
+    "push-subscriptions",
+    "reportTargets",
+    "reports",
+    "resources_guides",
+    "resources_templates",
+    "savedJobs",
+    "scheduledTasks",
+    "services",
+    "settings",
+    "staffFollowUps",
+    "subscription-requests",
+    "subscriptions",
+    "testimonials",
+    "users",
+    "verifications"
+  ],
+  "tokens": [
+    {
+      "file": "styles/AdminPanel.module.css",
+      "name": "--dashboard-surface",
+      "value": "rgba(255, 255, 255, 0.96)"
+    },
+    {
+      "file": "styles/AdminPanel.module.css",
+      "name": "--dashboard-surface-soft",
+      "value": "rgba(248, 251, 255, 0.95)"
+    },
+    {
+      "file": "styles/AdminPanel.module.css",
+      "name": "--dashboard-border",
+      "value": "rgba(21, 37, 79, 0.08)"
+    },
+    {
+      "file": "styles/AdminPanel.module.css",
+      "name": "--dashboard-shadow",
+      "value": "0 24px 56px rgba(15, 23, 42, 0.08)"
+    },
+    {
+      "file": "styles/AdminPanel.module.css",
+      "name": "--admin-navy",
+      "value": "var(--navy, #1e2b4d)"
+    },
+    {
+      "file": "styles/AdminPanel.module.css",
+      "name": "--admin-navy-deep",
+      "value": "var(--dash-navy-deep, #14203a)"
+    },
+    {
+      "file": "styles/AdminPanel.module.css",
+      "name": "--admin-blue",
+      "value": "var(--blue, #2057d7)"
+    },
+    {
+      "file": "styles/AdminPanel.module.css",
+      "name": "--admin-sky",
+      "value": "var(--surface-3, #eef5fb)"
+    },
+    {
+      "file": "styles/AdminPanel.module.css",
+      "name": "--admin-lime",
+      "value": "var(--lime, #d9ff2f)"
+    },
+    {
+      "file": "styles/AdminPanel.module.css",
+      "name": "--admin-bg",
+      "value": "var(--bg, #f4f7fb)"
+    },
+    {
+      "file": "styles/AdminPanel.module.css",
+      "name": "--admin-surface",
+      "value": "var(--surface, #ffffff)"
+    },
+    {
+      "file": "styles/AdminPanel.module.css",
+      "name": "--admin-text",
+      "value": "var(--text-1, #17233b)"
+    },
+    {
+      "file": "styles/AdminPanel.module.css",
+      "name": "--admin-muted",
+      "value": "var(--text-3, #4a5568)"
+    },
+    {
+      "file": "styles/AdminPanel.module.css",
+      "name": "--admin-border",
+      "value": "var(--border, #dfe7f1)"
+    },
+    {
+      "file": "styles/AdminPanel.module.css",
+      "name": "--admin-radius",
+      "value": "var(--dash-radius, 10px)"
+    },
+    {
+      "file": "styles/AdminPanel.module.css",
+      "name": "--admin-shadow",
+      "value": "var(--shadow-card, 0 2px 8px rgba(15, 23, 42, 0.055))"
+    },
+    {
+      "file": "styles/AdminPanel.module.css",
+      "name": "--admin-navy",
+      "value": "var(--navy, #102441)"
+    },
+    {
+      "file": "styles/AdminPanel.module.css",
+      "name": "--admin-navy-deep",
+      "value": "var(--dash-navy-deep, #102441)"
+    },
+    {
+      "file": "styles/AdminPanel.module.css",
+      "name": "--admin-blue",
+      "value": "var(--blue, #064bb5)"
+    },
+    {
+      "file": "styles/AdminPanel.module.css",
+      "name": "--admin-sky",
+      "value": "var(--surface-3, #eef4f8)"
+    },
+    {
+      "file": "styles/AdminPanel.module.css",
+      "name": "--admin-lime",
+      "value": "var(--lime, #daff45)"
+    },
+    {
+      "file": "styles/AdminPanel.module.css",
+      "name": "--admin-bg",
+      "value": "var(--bg, #eef4f8)"
+    },
+    {
+      "file": "styles/AdminPanel.module.css",
+      "name": "--admin-surface",
+      "value": "var(--surface, #ffffff)"
+    },
+    {
+      "file": "styles/AdminPanel.module.css",
+      "name": "--admin-surface-soft",
+      "value": "var(--surface-2, #f8fafb)"
+    },
+    {
+      "file": "styles/AdminPanel.module.css",
+      "name": "--admin-text",
+      "value": "var(--text-1, #102441)"
+    },
+    {
+      "file": "styles/AdminPanel.module.css",
+      "name": "--admin-muted",
+      "value": "var(--text-3, #5f6874)"
+    },
+    {
+      "file": "styles/AdminPanel.module.css",
+      "name": "--admin-border",
+      "value": "var(--border, #e4e5e8)"
+    },
+    {
+      "file": "styles/AdminPanel.module.css",
+      "name": "--admin-primary-ink",
+      "value": "var(--dash-action-ink, #ffffff)"
+    },
+    {
+      "file": "styles/AdminPanel.module.css",
+      "name": "--admin-radius",
+      "value": "8px"
+    },
+    {
+      "file": "styles/AdminPanel.module.css",
+      "name": "--admin-shadow",
+      "value": "var(--shadow-card, none)"
+    },
+    {
+      "file": "styles/AuthPage.module.css",
+      "name": "--app-transition-fast",
+      "value": "200ms cubic-bezier(0.4, 0, 0.2, 1)"
+    },
+    {
+      "file": "styles/BlogPage.module.css",
+      "name": "--blog-navy",
+      "value": "#0b2147"
+    },
+    {
+      "file": "styles/BlogPage.module.css",
+      "name": "--blog-blue",
+      "value": "#2563eb"
+    },
+    {
+      "file": "styles/BlogPage.module.css",
+      "name": "--blog-lime",
+      "value": "#d9f96d"
+    },
+    {
+      "file": "styles/BlogPage.module.css",
+      "name": "--blog-lime-soft",
+      "value": "#d0ef65"
+    },
+    {
+      "file": "styles/BlogPage.module.css",
+      "name": "--blog-surface",
+      "value": "#f8fafc"
+    },
+    {
+      "file": "styles/BlogPage.module.css",
+      "name": "--blog-surface-soft",
+      "value": "#f2f4f6"
+    },
+    {
+      "file": "styles/BlogPage.module.css",
+      "name": "--blog-white",
+      "value": "#ffffff"
+    },
+    {
+      "file": "styles/BlogPage.module.css",
+      "name": "--blog-ink",
+      "value": "#191c1e"
+    },
+    {
+      "file": "styles/BlogPage.module.css",
+      "name": "--blog-copy",
+      "value": "#44474e"
+    },
+    {
+      "file": "styles/BlogPage.module.css",
+      "name": "--blog-muted",
+      "value": "#686c74"
+    },
+    {
+      "file": "styles/BlogPage.module.css",
+      "name": "--blog-border",
+      "value": "#e0e3e5"
+    },
+    {
+      "file": "styles/BlogPage.module.css",
+      "name": "--blog-border-strong",
+      "value": "#c5c6cf"
+    },
+    {
+      "file": "styles/BlogPage.module.css",
+      "name": "--blog-blue-soft",
+      "value": "#dbe1ff"
+    },
+    {
+      "file": "styles/BlogPage.module.css",
+      "name": "--blog-motion",
+      "value": "220ms cubic-bezier(0.4, 0, 0.2, 1)"
+    },
+    {
+      "file": "styles/BlogPostPage.module.css",
+      "name": "--blog-navy",
+      "value": "#0b2147"
+    },
+    {
+      "file": "styles/BlogPostPage.module.css",
+      "name": "--blog-text",
+      "value": "#1a1c1e"
+    },
+    {
+      "file": "styles/BlogPostPage.module.css",
+      "name": "--blog-copy",
+      "value": "#45474e"
+    },
+    {
+      "file": "styles/BlogPostPage.module.css",
+      "name": "--blog-muted",
+      "value": "#667085"
+    },
+    {
+      "file": "styles/BlogPostPage.module.css",
+      "name": "--blog-blue",
+      "value": "#2563eb"
+    },
+    {
+      "file": "styles/BlogPostPage.module.css",
+      "name": "--blog-blue-soft",
+      "value": "#dbe1ff"
+    },
+    {
+      "file": "styles/BlogPostPage.module.css",
+      "name": "--blog-lime",
+      "value": "#d9f96d"
+    },
+    {
+      "file": "styles/BlogPostPage.module.css",
+      "name": "--blog-sheet",
+      "value": "#f8fafc"
+    },
+    {
+      "file": "styles/BlogPostPage.module.css",
+      "name": "--blog-border",
+      "value": "#c5c6cf"
+    },
+    {
+      "file": "styles/BlogPostPage.module.css",
+      "name": "--blog-border-soft",
+      "value": "#e0e3e7"
+    },
+    {
+      "file": "styles/BlogPostPage.module.css",
+      "name": "--blog-motion",
+      "value": "180ms cubic-bezier(0.4, 0, 0.2, 1)"
+    },
+    {
+      "file": "styles/CandidatosStitchPage.module.css",
+      "name": "--candidate-navy",
+      "value": "#0b2147"
+    },
+    {
+      "file": "styles/CandidatosStitchPage.module.css",
+      "name": "--candidate-ink",
+      "value": "#000b25"
+    },
+    {
+      "file": "styles/CandidatosStitchPage.module.css",
+      "name": "--candidate-blue",
+      "value": "#2563eb"
+    },
+    {
+      "file": "styles/CandidatosStitchPage.module.css",
+      "name": "--candidate-lime",
+      "value": "#d9f96d"
+    },
+    {
+      "file": "styles/CandidatosStitchPage.module.css",
+      "name": "--candidate-surface",
+      "value": "#f7f9fb"
+    },
+    {
+      "file": "styles/CandidatosStitchPage.module.css",
+      "name": "--candidate-surface-low",
+      "value": "#f2f4f6"
+    },
+    {
+      "file": "styles/CandidatosStitchPage.module.css",
+      "name": "--candidate-white",
+      "value": "#ffffff"
+    },
+    {
+      "file": "styles/CandidatosStitchPage.module.css",
+      "name": "--candidate-text",
+      "value": "#191c1e"
+    },
+    {
+      "file": "styles/CandidatosStitchPage.module.css",
+      "name": "--candidate-muted",
+      "value": "#44474e"
+    },
+    {
+      "file": "styles/CandidatosStitchPage.module.css",
+      "name": "--candidate-outline",
+      "value": "#c5c6cf"
+    },
+    {
+      "file": "styles/CandidatosStitchPage.module.css",
+      "name": "--candidate-badge",
+      "value": "#dbe1ff"
+    },
+    {
+      "file": "styles/CandidatosStitchPage.module.css",
+      "name": "--candidate-badge-text",
+      "value": "#003ea8"
+    },
+    {
+      "file": "styles/CandidatosStitchPage.module.css",
+      "name": "--candidate-badge",
+      "value": "#cded62"
+    },
+    {
+      "file": "styles/CandidatosStitchPage.module.css",
+      "name": "--candidate-badge-text",
+      "value": "#566a00"
+    },
+    {
+      "file": "styles/CandidatosStitchPage.module.css",
+      "name": "--candidate-badge",
+      "value": "#dbe1ff"
+    },
+    {
+      "file": "styles/CandidatosStitchPage.module.css",
+      "name": "--candidate-badge-text",
+      "value": "#003ea8"
+    },
+    {
+      "file": "styles/CandidatosStitchPage.module.css",
+      "name": "--candidate-navy",
+      "value": "#0b2147"
+    },
+    {
+      "file": "styles/CandidaturasPage.module.css",
+      "name": "--stat-accent-current",
+      "value": "var(--stat-accent-dark, var(--stat-accent))"
+    },
+    {
+      "file": "styles/CandidaturasPage.module.css",
+      "name": "--card-accent-current",
+      "value": "var(--card-accent-dark, var(--card-accent))"
+    },
+    {
+      "file": "styles/CandidaturasPage.module.css",
+      "name": "--card-accent-bg-current",
+      "value": "var(--card-accent-bg-dark, var(--card-accent-bg))"
+    },
+    {
+      "file": "styles/CandidaturasPage.module.css",
+      "name": "--card-accent-border-current",
+      "value": "var(\n    --card-accent-border-dark,\n    var(--card-accent-border)\n  )"
+    },
+    {
+      "file": "styles/CandidaturasPage.module.css",
+      "name": "--badge-bg-current",
+      "value": "var(--badge-bg-dark, var(--badge-bg))"
+    },
+    {
+      "file": "styles/CandidaturasPage.module.css",
+      "name": "--badge-border-current",
+      "value": "var(--badge-border-dark, var(--badge-border))"
+    },
+    {
+      "file": "styles/CandidaturasPage.module.css",
+      "name": "--badge-color-current",
+      "value": "var(--badge-color-dark, var(--badge-color))"
+    },
+    {
+      "file": "styles/CarreiraPage.module.css",
+      "name": "--career-font-sm",
+      "value": "var(--app-font-size-sm, max(0.875rem, 14px))"
+    },
+    {
+      "file": "styles/CarreiraPage.module.css",
+      "name": "--career-font-body",
+      "value": "var(--app-font-size-body, max(0.92rem, 14px))"
+    },
+    {
+      "file": "styles/CarreiraPage.module.css",
+      "name": "--career-motion",
+      "value": "200ms cubic-bezier(0.4, 0, 0.2, 1)"
+    },
+    {
+      "file": "styles/CarreiraPage.module.css",
+      "name": "--career-tone",
+      "value": "#1748bc"
+    },
+    {
+      "file": "styles/CarreiraPage.module.css",
+      "name": "--career-tone-soft",
+      "value": "#eaf2ff"
+    },
+    {
+      "file": "styles/CarreiraPage.module.css",
+      "name": "--career-tone",
+      "value": "#17688f"
+    },
+    {
+      "file": "styles/CarreiraPage.module.css",
+      "name": "--career-tone-soft",
+      "value": "#e7f7ff"
+    },
+    {
+      "file": "styles/CarreiraPage.module.css",
+      "name": "--career-tone",
+      "value": "#1e2b4d"
+    },
+    {
+      "file": "styles/CarreiraPage.module.css",
+      "name": "--career-tone-soft",
+      "value": "#eef0f4"
+    },
+    {
+      "file": "styles/CarreiraPage.module.css",
+      "name": "--career-tone",
+      "value": "#157347"
+    },
+    {
+      "file": "styles/CarreiraPage.module.css",
+      "name": "--career-tone-soft",
+      "value": "#eaf8f1"
+    },
+    {
+      "file": "styles/CompactJobCard.module.css",
+      "name": "--job-card-background",
+      "value": "#ffffff"
+    },
+    {
+      "file": "styles/CompactJobCard.module.css",
+      "name": "--job-card-border",
+      "value": "#e4e5e8"
+    },
+    {
+      "file": "styles/CompactJobCard.module.css",
+      "name": "--job-card-title",
+      "value": "#102441"
+    },
+    {
+      "file": "styles/CompactJobCard.module.css",
+      "name": "--job-card-secondary",
+      "value": "#5f6874"
+    },
+    {
+      "file": "styles/CompactJobCard.module.css",
+      "name": "--job-card-company",
+      "value": "#102441"
+    },
+    {
+      "file": "styles/CompactJobCard.module.css",
+      "name": "--job-card-avatar-border",
+      "value": "#e4e5e8"
+    },
+    {
+      "file": "styles/CompactJobCard.module.css",
+      "name": "--job-card-focus",
+      "value": "#064bb5"
+    },
+    {
+      "file": "styles/CompactJobCard.module.css",
+      "name": "--job-card-focus-border",
+      "value": "#064bb5"
+    },
+    {
+      "file": "styles/CompactJobCard.module.css",
+      "name": "--job-card-background",
+      "value": "#ffffff"
+    },
+    {
+      "file": "styles/CompactJobCard.module.css",
+      "name": "--job-card-border",
+      "value": "#e4e5e8"
+    },
+    {
+      "file": "styles/CompactJobCard.module.css",
+      "name": "--job-card-title",
+      "value": "#102441"
+    },
+    {
+      "file": "styles/CompactJobCard.module.css",
+      "name": "--job-card-secondary",
+      "value": "#5f6874"
+    },
+    {
+      "file": "styles/CompactJobCard.module.css",
+      "name": "--job-card-company",
+      "value": "#102441"
+    },
+    {
+      "file": "styles/CompactJobCard.module.css",
+      "name": "--job-card-avatar-border",
+      "value": "#e4e5e8"
+    },
+    {
+      "file": "styles/CompactJobCard.module.css",
+      "name": "--job-card-focus",
+      "value": "#064bb5"
+    },
+    {
+      "file": "styles/CompactJobCard.module.css",
+      "name": "--job-card-focus-border",
+      "value": "#064bb5"
+    },
+    {
+      "file": "styles/CompactJobCard.module.css",
+      "name": "--job-card-background",
+      "value": "#1e2b4d"
+    },
+    {
+      "file": "styles/CompactJobCard.module.css",
+      "name": "--job-card-border",
+      "value": "rgba(228, 229, 232, 0.46)"
+    },
+    {
+      "file": "styles/CompactJobCard.module.css",
+      "name": "--job-card-title",
+      "value": "#ffffff"
+    },
+    {
+      "file": "styles/CompactJobCard.module.css",
+      "name": "--job-card-secondary",
+      "value": "#d9deea"
+    },
+    {
+      "file": "styles/CompactJobCard.module.css",
+      "name": "--job-card-company",
+      "value": "#ffffff"
+    },
+    {
+      "file": "styles/CompactJobCard.module.css",
+      "name": "--job-card-avatar-border",
+      "value": "rgba(228, 229, 232, 0.72)"
+    },
+    {
+      "file": "styles/CompactJobCard.module.css",
+      "name": "--job-card-focus",
+      "value": "#daff45"
+    },
+    {
+      "file": "styles/CompactJobCard.module.css",
+      "name": "--job-card-focus-border",
+      "value": "#daff45"
+    },
+    {
+      "file": "styles/ContactPage.module.css",
+      "name": "--contact-navy",
+      "value": "#0b2147"
+    },
+    {
+      "file": "styles/ContactPage.module.css",
+      "name": "--contact-blue",
+      "value": "#2563eb"
+    },
+    {
+      "file": "styles/ContactPage.module.css",
+      "name": "--contact-blue-dark",
+      "value": "#174da8"
+    },
+    {
+      "file": "styles/ContactPage.module.css",
+      "name": "--contact-lime",
+      "value": "#d9f96d"
+    },
+    {
+      "file": "styles/ContactPage.module.css",
+      "name": "--contact-bg",
+      "value": "#f7f9fc"
+    },
+    {
+      "file": "styles/ContactPage.module.css",
+      "name": "--contact-card",
+      "value": "#ffffff"
+    },
+    {
+      "file": "styles/ContactPage.module.css",
+      "name": "--contact-copy",
+      "value": "#414750"
+    },
+    {
+      "file": "styles/ContactPage.module.css",
+      "name": "--contact-muted",
+      "value": "#6a7280"
+    },
+    {
+      "file": "styles/ContactPage.module.css",
+      "name": "--contact-border",
+      "value": "#d9dee7"
+    },
+    {
+      "file": "styles/ContactPage.module.css",
+      "name": "--contact-border-strong",
+      "value": "#bfc6d2"
+    },
+    {
+      "file": "styles/DashboardCandidato.module.css",
+      "name": "--candidate-primary",
+      "value": "#2057d7"
+    },
+    {
+      "file": "styles/DashboardCandidato.module.css",
+      "name": "--dashboard-surface",
+      "value": "rgba(255, 255, 255, 0.96)"
+    },
+    {
+      "file": "styles/DashboardCandidato.module.css",
+      "name": "--dashboard-surface-soft",
+      "value": "rgba(248, 251, 255, 0.95)"
+    },
+    {
+      "file": "styles/DashboardCandidato.module.css",
+      "name": "--dashboard-border",
+      "value": "rgba(21, 37, 79, 0.08)"
+    },
+    {
+      "file": "styles/DashboardCandidato.module.css",
+      "name": "--dashboard-shadow",
+      "value": "0 22px 56px rgba(15, 23, 42, 0.08)"
+    },
+    {
+      "file": "styles/DashboardCandidato.module.css",
+      "name": "--candidate-primary-strong",
+      "value": "#1e2b4d"
+    },
+    {
+      "file": "styles/DashboardCandidato.module.css",
+      "name": "--candidate-secondary",
+      "value": "#5fb8f5"
+    },
+    {
+      "file": "styles/DashboardCandidato.module.css",
+      "name": "--candidate-accent",
+      "value": "#d9ff2f"
+    },
+    {
+      "file": "styles/DashboardCandidato.module.css",
+      "name": "--candidate-accent-strong",
+      "value": "#8ea800"
+    },
+    {
+      "file": "styles/DashboardCandidato.module.css",
+      "name": "--candidate-muted",
+      "value": "#465f85"
+    },
+    {
+      "file": "styles/DashboardCandidato.module.css",
+      "name": "--candidate-muted-strong",
+      "value": "#334869"
+    },
+    {
+      "file": "styles/DashboardCandidato.module.css",
+      "name": "--candidate-muted-soft",
+      "value": "#5a6f92"
+    },
+    {
+      "file": "styles/DashboardCandidato.module.css",
+      "name": "--candidate-primary",
+      "value": "var(--blue, #2057d7)"
+    },
+    {
+      "file": "styles/DashboardCandidato.module.css",
+      "name": "--candidate-primary-strong",
+      "value": "var(--text-1, #1e2b4d)"
+    },
+    {
+      "file": "styles/DashboardCandidato.module.css",
+      "name": "--candidate-secondary",
+      "value": "var(--sky, #5fb8f5)"
+    },
+    {
+      "file": "styles/DashboardCandidato.module.css",
+      "name": "--candidate-accent",
+      "value": "var(--lime, #d9ff2f)"
+    },
+    {
+      "file": "styles/DashboardCandidato.module.css",
+      "name": "--candidate-accent-strong",
+      "value": "var(--lime-text, #8ea800)"
+    },
+    {
+      "file": "styles/DashboardCandidato.module.css",
+      "name": "--candidate-muted",
+      "value": "var(--text-3, #465f85)"
+    },
+    {
+      "file": "styles/DashboardCandidato.module.css",
+      "name": "--candidate-muted-strong",
+      "value": "var(--text-2, #334869)"
+    },
+    {
+      "file": "styles/DashboardCandidato.module.css",
+      "name": "--candidate-muted-soft",
+      "value": "var(--text-3, #5a6f92)"
+    },
+    {
+      "file": "styles/DashboardCandidato.module.css",
+      "name": "--candidate-primary",
+      "value": "var(--blue, #064bb5)"
+    },
+    {
+      "file": "styles/DashboardCandidato.module.css",
+      "name": "--candidate-primary-strong",
+      "value": "var(--text-1, #102441)"
+    },
+    {
+      "file": "styles/DashboardCandidato.module.css",
+      "name": "--candidate-secondary",
+      "value": "var(--sky, #69c8ff)"
+    },
+    {
+      "file": "styles/DashboardCandidato.module.css",
+      "name": "--candidate-accent",
+      "value": "var(--lime, #daff45)"
+    },
+    {
+      "file": "styles/DashboardCandidato.module.css",
+      "name": "--candidate-accent-strong",
+      "value": "var(--lime-text, #102441)"
+    },
+    {
+      "file": "styles/DashboardCandidato.module.css",
+      "name": "--candidate-muted",
+      "value": "var(--text-3, #5f6874)"
+    },
+    {
+      "file": "styles/DashboardCandidato.module.css",
+      "name": "--candidate-muted-strong",
+      "value": "var(--text-2, #383750)"
+    },
+    {
+      "file": "styles/DashboardCandidato.module.css",
+      "name": "--candidate-muted-soft",
+      "value": "var(--text-3, #5f6874)"
+    },
+    {
+      "file": "styles/DashboardCandidato.module.css",
+      "name": "--candidate-stat-icon-shadow",
+      "value": "0 8px 18px rgba(0, 0, 0, 0.3)"
+    },
+    {
+      "file": "styles/DashboardCandidato.module.css",
+      "name": "--candidate-stat-icon-color",
+      "value": "#0d1526"
+    },
+    {
+      "file": "styles/EmpresaCandidateProfilePage.module.css",
+      "name": "--record-accent",
+      "value": "#2057d7"
+    },
+    {
+      "file": "styles/EmpresaCandidateProfilePage.module.css",
+      "name": "--record-accent",
+      "value": "#3dbb7a"
+    },
+    {
+      "file": "styles/EmpresaCandidateProfilePage.module.css",
+      "name": "--record-accent",
+      "value": "#b6db21"
+    },
+    {
+      "file": "styles/EmpresaDashboard.module.css",
+      "name": "--dashboard-surface",
+      "value": "rgba(255, 255, 255, 0.96)"
+    },
+    {
+      "file": "styles/EmpresaDashboard.module.css",
+      "name": "--dashboard-surface-soft",
+      "value": "rgba(248, 251, 255, 0.95)"
+    },
+    {
+      "file": "styles/EmpresaDashboard.module.css",
+      "name": "--dashboard-border",
+      "value": "rgba(21, 37, 79, 0.08)"
+    },
+    {
+      "file": "styles/EmpresaDashboard.module.css",
+      "name": "--dashboard-shadow",
+      "value": "0 22px 56px rgba(15, 23, 42, 0.08)"
+    },
+    {
+      "file": "styles/EmpresaJobDetail.module.css",
+      "name": "--stat-accent",
+      "value": "#2057d7"
+    },
+    {
+      "file": "styles/EmpresaJobDetail.module.css",
+      "name": "--stat-accent",
+      "value": "#b6db21"
+    },
+    {
+      "file": "styles/EmpresaJobDetail.module.css",
+      "name": "--stat-accent",
+      "value": "#3dbb7a"
+    },
+    {
+      "file": "styles/EmpresaJobDetail.module.css",
+      "name": "--stat-accent",
+      "value": "#dc6a7c"
+    },
+    {
+      "file": "styles/EmpresaJobForm.module.css",
+      "name": "--job-border",
+      "value": "var(--border, #dfe7f1)"
+    },
+    {
+      "file": "styles/EmpresaJobForm.module.css",
+      "name": "--job-surface",
+      "value": "var(--surface, #fff)"
+    },
+    {
+      "file": "styles/EmpresaJobForm.module.css",
+      "name": "--job-surface-soft",
+      "value": "var(--surface-2, #f7fbff)"
+    },
+    {
+      "file": "styles/EmpresaJobForm.module.css",
+      "name": "--job-text",
+      "value": "var(--text-1, #17233b)"
+    },
+    {
+      "file": "styles/EmpresaJobForm.module.css",
+      "name": "--job-muted",
+      "value": "var(--text-3, #64748b)"
+    },
+    {
+      "file": "styles/EmpresaJobForm.module.css",
+      "name": "--job-blue",
+      "value": "var(--blue, #2057d7)"
+    },
+    {
+      "file": "styles/EmpresaJobForm.module.css",
+      "name": "--job-lime",
+      "value": "var(--lime, #d9ff2f)"
+    },
+    {
+      "file": "styles/EmpresaVagasManagement.module.css",
+      "name": "--summary-accent",
+      "value": "#2057d7"
+    },
+    {
+      "file": "styles/EmpresaVagasManagement.module.css",
+      "name": "--summary-accent",
+      "value": "#3dbb7a"
+    },
+    {
+      "file": "styles/EmpresaVagasManagement.module.css",
+      "name": "--summary-accent",
+      "value": "#b6db21"
+    },
+    {
+      "file": "styles/EmpresaVagasManagement.module.css",
+      "name": "--summary-accent",
+      "value": "#5fb8f5"
+    },
+    {
+      "file": "styles/EmpresasStitchPage.module.css",
+      "name": "--company-navy",
+      "value": "#0b2147"
+    },
+    {
+      "file": "styles/EmpresasStitchPage.module.css",
+      "name": "--company-ink",
+      "value": "#000b25"
+    },
+    {
+      "file": "styles/EmpresasStitchPage.module.css",
+      "name": "--company-blue",
+      "value": "#2563eb"
+    },
+    {
+      "file": "styles/EmpresasStitchPage.module.css",
+      "name": "--company-lime",
+      "value": "#d9f96d"
+    },
+    {
+      "file": "styles/EmpresasStitchPage.module.css",
+      "name": "--company-lime-soft",
+      "value": "#cded62"
+    },
+    {
+      "file": "styles/EmpresasStitchPage.module.css",
+      "name": "--company-surface",
+      "value": "#f7f9fb"
+    },
+    {
+      "file": "styles/EmpresasStitchPage.module.css",
+      "name": "--company-surface-low",
+      "value": "#f2f4f6"
+    },
+    {
+      "file": "styles/EmpresasStitchPage.module.css",
+      "name": "--company-surface-mid",
+      "value": "#eceef0"
+    },
+    {
+      "file": "styles/EmpresasStitchPage.module.css",
+      "name": "--company-white",
+      "value": "#ffffff"
+    },
+    {
+      "file": "styles/EmpresasStitchPage.module.css",
+      "name": "--company-text",
+      "value": "#191c1e"
+    },
+    {
+      "file": "styles/EmpresasStitchPage.module.css",
+      "name": "--company-muted",
+      "value": "#44474e"
+    },
+    {
+      "file": "styles/EmpresasStitchPage.module.css",
+      "name": "--company-outline",
+      "value": "#c5c6cf"
+    },
+    {
+      "file": "styles/Footer.module.css",
+      "name": "--footer-atlantic",
+      "value": "#071a33"
+    },
+    {
+      "file": "styles/Footer.module.css",
+      "name": "--footer-navy",
+      "value": "#102b50"
+    },
+    {
+      "file": "styles/Footer.module.css",
+      "name": "--footer-frost",
+      "value": "#eff5fa"
+    },
+    {
+      "file": "styles/Footer.module.css",
+      "name": "--footer-ocean",
+      "value": "#61bff2"
+    },
+    {
+      "file": "styles/Footer.module.css",
+      "name": "--footer-lime",
+      "value": "#d9ff45"
+    },
+    {
+      "file": "styles/Footer.module.css",
+      "name": "--footer-muted",
+      "value": "rgba(239, 245, 250, 0.72)"
+    },
+    {
+      "file": "styles/Footer.module.css",
+      "name": "--footer-border",
+      "value": "rgba(239, 245, 250, 0.12)"
+    },
+    {
+      "file": "styles/Footer.module.css",
+      "name": "--footer-motion",
+      "value": "220ms cubic-bezier(0.4, 0, 0.2, 1)"
+    },
+    {
+      "file": "styles/GeradorCv.module.css",
+      "name": "--cv-navy",
+      "value": "#0b2147"
+    },
+    {
+      "file": "styles/GeradorCv.module.css",
+      "name": "--cv-navy-strong",
+      "value": "#000b25"
+    },
+    {
+      "file": "styles/GeradorCv.module.css",
+      "name": "--cv-blue",
+      "value": "#2563eb"
+    },
+    {
+      "file": "styles/GeradorCv.module.css",
+      "name": "--cv-blue-hover",
+      "value": "#1d4ed8"
+    },
+    {
+      "file": "styles/GeradorCv.module.css",
+      "name": "--cv-blue-soft",
+      "value": "#eaf1ff"
+    },
+    {
+      "file": "styles/GeradorCv.module.css",
+      "name": "--cv-lime",
+      "value": "#d9f96d"
+    },
+    {
+      "file": "styles/GeradorCv.module.css",
+      "name": "--cv-lime-hover",
+      "value": "#caec51"
+    },
+    {
+      "file": "styles/GeradorCv.module.css",
+      "name": "--cv-canvas",
+      "value": "#f7f9fb"
+    },
+    {
+      "file": "styles/GeradorCv.module.css",
+      "name": "--cv-surface",
+      "value": "#ffffff"
+    },
+    {
+      "file": "styles/GeradorCv.module.css",
+      "name": "--cv-surface-soft",
+      "value": "#f2f4f6"
+    },
+    {
+      "file": "styles/GeradorCv.module.css",
+      "name": "--cv-border",
+      "value": "#c5c6cf"
+    },
+    {
+      "file": "styles/GeradorCv.module.css",
+      "name": "--cv-border-soft",
+      "value": "#e0e3e5"
+    },
+    {
+      "file": "styles/GeradorCv.module.css",
+      "name": "--cv-copy",
+      "value": "#44474e"
+    },
+    {
+      "file": "styles/GeradorCv.module.css",
+      "name": "--cv-muted",
+      "value": "#626a76"
+    },
+    {
+      "file": "styles/GeradorCv.module.css",
+      "name": "--cv-danger",
+      "value": "#b42318"
+    },
+    {
+      "file": "styles/GeradorCv.module.css",
+      "name": "--cv-success",
+      "value": "#18794e"
+    },
+    {
+      "file": "styles/GeradorCv.module.css",
+      "name": "--cv-radius",
+      "value": "8px"
+    },
+    {
+      "file": "styles/GeradorCv.module.css",
+      "name": "--cv-shadow",
+      "value": "0 8px 24px rgba(11, 33, 71, 0.06)"
+    },
+    {
+      "file": "styles/GeradorCv.module.css",
+      "name": "--cv-motion",
+      "value": "180ms cubic-bezier(0.4, 0, 0.2, 1)"
+    },
+    {
+      "file": "styles/HomePage.module.css",
+      "name": "--home-motion",
+      "value": "200ms cubic-bezier(0.4, 0, 0.2, 1)"
+    },
+    {
+      "file": "styles/HomePage.module.css",
+      "name": "--home-ink",
+      "value": "#102441"
+    },
+    {
+      "file": "styles/HomePage.module.css",
+      "name": "--home-ink-soft",
+      "value": "#383750"
+    },
+    {
+      "file": "styles/HomePage.module.css",
+      "name": "--home-blue",
+      "value": "#064bb5"
+    },
+    {
+      "file": "styles/HomePage.module.css",
+      "name": "--home-blue-deep",
+      "value": "#0a65cc"
+    },
+    {
+      "file": "styles/HomePage.module.css",
+      "name": "--home-sky",
+      "value": "#69c8ff"
+    },
+    {
+      "file": "styles/HomePage.module.css",
+      "name": "--home-sky-soft",
+      "value": "#eef4f8"
+    },
+    {
+      "file": "styles/HomePage.module.css",
+      "name": "--home-lime",
+      "value": "#daff45"
+    },
+    {
+      "file": "styles/HomePage.module.css",
+      "name": "--home-cloud",
+      "value": "#eef4f8"
+    },
+    {
+      "file": "styles/HomePage.module.css",
+      "name": "--home-line",
+      "value": "#e4e5e8"
+    },
+    {
+      "file": "styles/HomePage.module.css",
+      "name": "--home-shadow",
+      "value": "none"
+    },
+    {
+      "file": "styles/HomePage.module.css",
+      "name": "--home-ink",
+      "value": "var(--app-text-primary)"
+    },
+    {
+      "file": "styles/HomePage.module.css",
+      "name": "--home-ink-soft",
+      "value": "var(--app-text-secondary)"
+    },
+    {
+      "file": "styles/HomePage.module.css",
+      "name": "--home-blue",
+      "value": "var(--app-brand-primary)"
+    },
+    {
+      "file": "styles/HomePage.module.css",
+      "name": "--home-blue-deep",
+      "value": "var(--app-brand-primary-hover)"
+    },
+    {
+      "file": "styles/HomePage.module.css",
+      "name": "--home-sky",
+      "value": "var(--app-brand-secondary)"
+    },
+    {
+      "file": "styles/HomePage.module.css",
+      "name": "--home-sky-soft",
+      "value": "var(--app-surface-3)"
+    },
+    {
+      "file": "styles/HomePage.module.css",
+      "name": "--home-lime",
+      "value": "var(--app-brand-lime)"
+    },
+    {
+      "file": "styles/HomePage.module.css",
+      "name": "--home-cloud",
+      "value": "var(--app-surface-2)"
+    },
+    {
+      "file": "styles/HomePage.module.css",
+      "name": "--home-line",
+      "value": "var(--app-border-subtle)"
+    },
+    {
+      "file": "styles/HomePage.module.css",
+      "name": "--home-shadow",
+      "value": "var(--app-shadow-lg)"
+    },
+    {
+      "file": "styles/HomePage.module.css",
+      "name": "--home-ink",
+      "value": "#102441"
+    },
+    {
+      "file": "styles/HomePage.module.css",
+      "name": "--home-ink-soft",
+      "value": "#383750"
+    },
+    {
+      "file": "styles/HomePage.module.css",
+      "name": "--home-blue",
+      "value": "#064bb5"
+    },
+    {
+      "file": "styles/HomePage.module.css",
+      "name": "--home-blue-deep",
+      "value": "#0a65cc"
+    },
+    {
+      "file": "styles/HomePage.module.css",
+      "name": "--home-sky",
+      "value": "#69c8ff"
+    },
+    {
+      "file": "styles/HomePage.module.css",
+      "name": "--home-sky-soft",
+      "value": "#eef4f8"
+    },
+    {
+      "file": "styles/HomePage.module.css",
+      "name": "--home-lime",
+      "value": "#daff45"
+    },
+    {
+      "file": "styles/HomePage.module.css",
+      "name": "--home-cloud",
+      "value": "#eef4f8"
+    },
+    {
+      "file": "styles/HomePage.module.css",
+      "name": "--home-line",
+      "value": "#e4e5e8"
+    },
+    {
+      "file": "styles/HomePage.module.css",
+      "name": "--home-shadow",
+      "value": "none"
+    },
+    {
+      "file": "styles/LandingHeader.module.css",
+      "name": "--header-motion",
+      "value": "180ms cubic-bezier(0.4, 0, 0.2, 1)"
+    },
+    {
+      "file": "styles/LandingHeader.module.css",
+      "name": "--header-bg",
+      "value": "rgba(255, 255, 255, 0.96)"
+    },
+    {
+      "file": "styles/LandingHeader.module.css",
+      "name": "--header-border",
+      "value": "rgba(16, 36, 65, 0.1)"
+    },
+    {
+      "file": "styles/LandingHeader.module.css",
+      "name": "--header-link",
+      "value": "#34445c"
+    },
+    {
+      "file": "styles/LandingHeader.module.css",
+      "name": "--header-link-active",
+      "value": "#064bb5"
+    },
+    {
+      "file": "styles/LandingHeader.module.css",
+      "name": "--header-link-hover-bg",
+      "value": "transparent"
+    },
+    {
+      "file": "styles/LandingHeader.module.css",
+      "name": "--header-surface",
+      "value": "#ffffff"
+    },
+    {
+      "file": "styles/LandingHeader.module.css",
+      "name": "--header-surface-soft",
+      "value": "#f4f8fc"
+    },
+    {
+      "file": "styles/PublicCandidateProfilePage.module.css",
+      "name": "--profile-font-sm",
+      "value": "var(--app-font-size-sm, max(0.875rem, 14px))"
+    },
+    {
+      "file": "styles/PublicCandidateProfilePage.module.css",
+      "name": "--profile-font-body",
+      "value": "var(--app-font-size-body, max(0.92rem, 14px))"
+    },
+    {
+      "file": "styles/PublicCandidateProfilePage.module.css",
+      "name": "--profile-motion",
+      "value": "200ms cubic-bezier(0.4, 0, 0.2, 1)"
+    },
+    {
+      "file": "styles/RecursosStitchPage.module.css",
+      "name": "--resource-bg",
+      "value": "#f7f9fb"
+    },
+    {
+      "file": "styles/RecursosStitchPage.module.css",
+      "name": "--resource-card",
+      "value": "#ffffff"
+    },
+    {
+      "file": "styles/RecursosStitchPage.module.css",
+      "name": "--resource-navy",
+      "value": "#102144"
+    },
+    {
+      "file": "styles/RecursosStitchPage.module.css",
+      "name": "--resource-blue",
+      "value": "#3565e3"
+    },
+    {
+      "file": "styles/RecursosStitchPage.module.css",
+      "name": "--resource-blue-soft",
+      "value": "#dae2fc"
+    },
+    {
+      "file": "styles/RecursosStitchPage.module.css",
+      "name": "--resource-lime",
+      "value": "#dff781"
+    },
+    {
+      "file": "styles/RecursosStitchPage.module.css",
+      "name": "--resource-text",
+      "value": "#45474d"
+    },
+    {
+      "file": "styles/RecursosStitchPage.module.css",
+      "name": "--resource-muted",
+      "value": "#666a72"
+    },
+    {
+      "file": "styles/RecursosStitchPage.module.css",
+      "name": "--resource-neutral",
+      "value": "#eceef0"
+    },
+    {
+      "file": "styles/RecursosStitchPage.module.css",
+      "name": "--resource-border",
+      "value": "#e1e3e5"
+    },
+    {
+      "file": "styles/RecursosStitchPage.module.css",
+      "name": "--resource-motion",
+      "value": "180ms cubic-bezier(0.4, 0, 0.2, 1)"
+    },
+    {
+      "file": "styles/RedirectGate.module.css",
+      "name": "--redirect-navy",
+      "value": "#102441"
+    },
+    {
+      "file": "styles/RedirectGate.module.css",
+      "name": "--redirect-blue",
+      "value": "#064bb5"
+    },
+    {
+      "file": "styles/RedirectGate.module.css",
+      "name": "--redirect-sky",
+      "value": "#5fb8f5"
+    },
+    {
+      "file": "styles/RedirectGate.module.css",
+      "name": "--redirect-text",
+      "value": "#102441"
+    },
+    {
+      "file": "styles/RedirectGate.module.css",
+      "name": "--redirect-muted",
+      "value": "#5f6878"
+    },
+    {
+      "file": "styles/ResourceCalculatorPage.module.css",
+      "name": "--calculator-accent",
+      "value": "var(--app-brand-primary)"
+    },
+    {
+      "file": "styles/ResourceCalculatorPage.module.css",
+      "name": "--calculator-accent-soft",
+      "value": "rgba(32, 87, 215, 0.08)"
+    },
+    {
+      "file": "styles/ResourceCalculatorPage.module.css",
+      "name": "--calculator-accent-border",
+      "value": "rgba(32, 87, 215, 0.18)"
+    },
+    {
+      "file": "styles/ResourceCalculatorPage.module.css",
+      "name": "--calculator-motion",
+      "value": "200ms cubic-bezier(0.4, 0, 0.2, 1)"
+    },
+    {
+      "file": "styles/ResourceCalculatorPage.module.css",
+      "name": "--calculator-accent",
+      "value": "#087a55"
+    },
+    {
+      "file": "styles/ResourceCalculatorPage.module.css",
+      "name": "--calculator-accent-soft",
+      "value": "rgba(8, 122, 85, 0.08)"
+    },
+    {
+      "file": "styles/ResourceCalculatorPage.module.css",
+      "name": "--calculator-accent-border",
+      "value": "rgba(8, 122, 85, 0.2)"
+    },
+    {
+      "file": "styles/ResourceCalculatorPage.module.css",
+      "name": "--calculator-accent",
+      "value": "#9a5b0a"
+    },
+    {
+      "file": "styles/ResourceCalculatorPage.module.css",
+      "name": "--calculator-accent-soft",
+      "value": "rgba(154, 91, 10, 0.08)"
+    },
+    {
+      "file": "styles/ResourceCalculatorPage.module.css",
+      "name": "--calculator-accent-border",
+      "value": "rgba(154, 91, 10, 0.2)"
+    },
+    {
+      "file": "styles/ResourceCalculatorPage.module.css",
+      "name": "--calculator-accent",
+      "value": "#064bb5"
+    },
+    {
+      "file": "styles/ResourceCalculatorPage.module.css",
+      "name": "--calculator-accent-soft",
+      "value": "#eef4f8"
+    },
+    {
+      "file": "styles/ResourceCalculatorPage.module.css",
+      "name": "--calculator-accent-border",
+      "value": "#e4e5e8"
+    },
+    {
+      "file": "styles/ResourceGuidePage.module.css",
+      "name": "--guide-motion",
+      "value": "200ms cubic-bezier(0.4, 0, 0.2, 1)"
+    },
+    {
+      "file": "styles/SobreNosPage.module.css",
+      "name": "--about-navy",
+      "value": "#0b2147"
+    },
+    {
+      "file": "styles/SobreNosPage.module.css",
+      "name": "--about-navy-strong",
+      "value": "#000b25"
+    },
+    {
+      "file": "styles/SobreNosPage.module.css",
+      "name": "--about-blue",
+      "value": "#2563eb"
+    },
+    {
+      "file": "styles/SobreNosPage.module.css",
+      "name": "--about-blue-soft",
+      "value": "#d8e2ff"
+    },
+    {
+      "file": "styles/SobreNosPage.module.css",
+      "name": "--about-lime",
+      "value": "#d9f96d"
+    },
+    {
+      "file": "styles/SobreNosPage.module.css",
+      "name": "--about-surface",
+      "value": "#f7f9fb"
+    },
+    {
+      "file": "styles/SobreNosPage.module.css",
+      "name": "--about-card",
+      "value": "#ffffff"
+    },
+    {
+      "file": "styles/SobreNosPage.module.css",
+      "name": "--about-text",
+      "value": "#191c1e"
+    },
+    {
+      "file": "styles/SobreNosPage.module.css",
+      "name": "--about-muted",
+      "value": "#555b65"
+    },
+    {
+      "file": "styles/SobreNosPage.module.css",
+      "name": "--about-border",
+      "value": "#d9dde4"
+    },
+    {
+      "file": "styles/VagaDetailPage.module.css",
+      "name": "--job-navy",
+      "value": "#073b82"
+    },
+    {
+      "file": "styles/VagaDetailPage.module.css",
+      "name": "--job-navy-deep",
+      "value": "#052e68"
+    },
+    {
+      "file": "styles/VagaDetailPage.module.css",
+      "name": "--job-blue",
+      "value": "#0751b5"
+    },
+    {
+      "file": "styles/VagaDetailPage.module.css",
+      "name": "--job-blue-hover",
+      "value": "#06479f"
+    },
+    {
+      "file": "styles/VagaDetailPage.module.css",
+      "name": "--job-sky",
+      "value": "#e8f1ff"
+    },
+    {
+      "file": "styles/VagaDetailPage.module.css",
+      "name": "--job-lime",
+      "value": "#b8ee00"
+    },
+    {
+      "file": "styles/VagaDetailPage.module.css",
+      "name": "--job-lime-soft",
+      "value": "#efffc2"
+    },
+    {
+      "file": "styles/VagaDetailPage.module.css",
+      "name": "--job-canvas",
+      "value": "#f4f7fa"
+    },
+    {
+      "file": "styles/VagaDetailPage.module.css",
+      "name": "--job-surface",
+      "value": "#ffffff"
+    },
+    {
+      "file": "styles/VagaDetailPage.module.css",
+      "name": "--job-surface-muted",
+      "value": "#e7eaed"
+    },
+    {
+      "file": "styles/VagaDetailPage.module.css",
+      "name": "--job-benefits",
+      "value": "#353d5a"
+    },
+    {
+      "file": "styles/VagaDetailPage.module.css",
+      "name": "--job-benefit-item",
+      "value": "#4a5473"
+    },
+    {
+      "file": "styles/VagaDetailPage.module.css",
+      "name": "--job-text",
+      "value": "#14233b"
+    },
+    {
+      "file": "styles/VagaDetailPage.module.css",
+      "name": "--job-muted",
+      "value": "#667085"
+    },
+    {
+      "file": "styles/VagaDetailPage.module.css",
+      "name": "--job-line",
+      "value": "#dfe4ea"
+    },
+    {
+      "file": "styles/VagaDetailPage.module.css",
+      "name": "--job-danger",
+      "value": "#bd4054"
+    },
+    {
+      "file": "styles/VagaDetailPage.module.css",
+      "name": "--job-warning",
+      "value": "#81570d"
+    },
+    {
+      "file": "styles/VagaDetailPage.module.css",
+      "name": "--job-shadow",
+      "value": "0 8px 22px rgba(16, 36, 65, 0.07)"
+    },
+    {
+      "file": "styles/VagaDetailPage.module.css",
+      "name": "--job-transition",
+      "value": "180ms ease"
+    },
+    {
+      "file": "styles/VagaDetailPage.module.css",
+      "name": "--job-navy",
+      "value": "#102441"
+    },
+    {
+      "file": "styles/VagaDetailPage.module.css",
+      "name": "--job-navy-deep",
+      "value": "#0b1a31"
+    },
+    {
+      "file": "styles/VagaDetailPage.module.css",
+      "name": "--job-blue",
+      "value": "#064bb5"
+    },
+    {
+      "file": "styles/VagaDetailPage.module.css",
+      "name": "--job-blue-hover",
+      "value": "#0a65cc"
+    },
+    {
+      "file": "styles/VagaDetailPage.module.css",
+      "name": "--job-sky",
+      "value": "#eaf1fc"
+    },
+    {
+      "file": "styles/VagaDetailPage.module.css",
+      "name": "--job-lime",
+      "value": "#daff45"
+    },
+    {
+      "file": "styles/VagaDetailPage.module.css",
+      "name": "--job-lime-soft",
+      "value": "#f6ffd6"
+    },
+    {
+      "file": "styles/VagaDetailPage.module.css",
+      "name": "--job-canvas",
+      "value": "#f4f7fb"
+    },
+    {
+      "file": "styles/VagaDetailPage.module.css",
+      "name": "--job-surface",
+      "value": "#ffffff"
+    },
+    {
+      "file": "styles/VagaDetailPage.module.css",
+      "name": "--job-surface-muted",
+      "value": "#f6f8fb"
+    },
+    {
+      "file": "styles/VagaDetailPage.module.css",
+      "name": "--job-text",
+      "value": "#1b2433"
+    },
+    {
+      "file": "styles/VagaDetailPage.module.css",
+      "name": "--job-muted",
+      "value": "#5f6874"
+    },
+    {
+      "file": "styles/VagaDetailPage.module.css",
+      "name": "--job-line",
+      "value": "#e3e8ef"
+    },
+    {
+      "file": "styles/VagaDetailPage.module.css",
+      "name": "--job-shadow",
+      "value": "0 1px 2px rgba(16, 36, 65, 0.04), 0 12px 32px -18px rgba(16, 36, 65, 0.16)"
+    },
+    {
+      "file": "styles/VagasPage.module.css",
+      "name": "--jobs-bg",
+      "value": "#f4f7fb"
+    },
+    {
+      "file": "styles/VagasPage.module.css",
+      "name": "--jobs-surface",
+      "value": "#ffffff"
+    },
+    {
+      "file": "styles/VagasPage.module.css",
+      "name": "--jobs-text",
+      "value": "#171b22"
+    },
+    {
+      "file": "styles/VagasPage.module.css",
+      "name": "--jobs-muted",
+      "value": "#69717e"
+    },
+    {
+      "file": "styles/VagasPage.module.css",
+      "name": "--jobs-primary",
+      "value": "#0052b9"
+    },
+    {
+      "file": "styles/VagasPage.module.css",
+      "name": "--jobs-primary-hover",
+      "value": "#003f91"
+    },
+    {
+      "file": "styles/VagasPage.module.css",
+      "name": "--jobs-border",
+      "value": "#dce3eb"
+    },
+    {
+      "file": "styles/VagasPage.module.css",
+      "name": "--jobs-lime",
+      "value": "#c8f700"
+    },
+    {
+      "file": "styles/VagasPage.module.css",
+      "name": "--jobs-bg",
+      "value": "#f4f7fb"
+    },
+    {
+      "file": "styles/VagasPage.module.css",
+      "name": "--jobs-surface",
+      "value": "#ffffff"
+    },
+    {
+      "file": "styles/VagasPage.module.css",
+      "name": "--jobs-text",
+      "value": "#102441"
+    },
+    {
+      "file": "styles/VagasPage.module.css",
+      "name": "--jobs-muted",
+      "value": "#5f6874"
+    },
+    {
+      "file": "styles/VagasPage.module.css",
+      "name": "--jobs-primary",
+      "value": "#064bb5"
+    },
+    {
+      "file": "styles/VagasPage.module.css",
+      "name": "--jobs-primary-hover",
+      "value": "#0a65cc"
+    },
+    {
+      "file": "styles/VagasPage.module.css",
+      "name": "--jobs-navy",
+      "value": "#102441"
+    },
+    {
+      "file": "styles/VagasPage.module.css",
+      "name": "--jobs-border",
+      "value": "#e0e7f0"
+    },
+    {
+      "file": "styles/VagasPage.module.css",
+      "name": "--jobs-lime",
+      "value": "#daff45"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-canvas",
+      "value": "#eef4f8"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-canvas-soft",
+      "value": "#f8fafb"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-canvas-muted",
+      "value": "#e4e5e8"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-surface",
+      "value": "#ffffff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-surface-subtle",
+      "value": "#f8fafb"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-surface-accent",
+      "value": "#eef5fb"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-border",
+      "value": "#e4e5e8"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-border-strong",
+      "value": "#cdd1d7"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink",
+      "value": "#102441"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink-secondary",
+      "value": "#383750"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink-muted",
+      "value": "#5f6874"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink-faint",
+      "value": "#626b77"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-navy",
+      "value": "#102441"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-navy-deep",
+      "value": "#1e2b4d"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-field-navy",
+      "value": "#1e2b4d"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-blue",
+      "value": "#064bb5"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-blue-hover",
+      "value": "#0a65cc"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-sky",
+      "value": "#0a6fa8"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-lime",
+      "value": "#daff45"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-lime-border",
+      "value": "#bddb40"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-lime-ink",
+      "value": "#102441"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-danger",
+      "value": "#a11d2f"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-success",
+      "value": "#0f6b41"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-warning",
+      "value": "#a96612"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-radius-sm",
+      "value": "4px"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-radius",
+      "value": "8px"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-radius-lg",
+      "value": "10px"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-control-height",
+      "value": "44px"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-sidebar-width",
+      "value": "264px"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-content-width",
+      "value": "1344px"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-duration",
+      "value": "220ms"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ease",
+      "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-focus",
+      "value": "0 0 0 3px rgba(105, 200, 255, 0.28)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-shadow-sm",
+      "value": "0 1px 3px rgba(16, 36, 65, 0.04)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-shadow-md",
+      "value": "0 4px 14px rgba(16, 36, 65, 0.07)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-shadow-lg",
+      "value": "0 10px 26px rgba(16, 36, 65, 0.1)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-shadow-card",
+      "value": "0 1px 3px rgba(16, 36, 65, 0.04)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--bg",
+      "value": "var(--dash-canvas)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--bg-soft",
+      "value": "var(--dash-canvas-soft)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--bg-muted",
+      "value": "var(--dash-canvas-muted)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--surface",
+      "value": "var(--dash-surface)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--surface-2",
+      "value": "var(--dash-surface-subtle)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--surface-3",
+      "value": "var(--dash-surface-accent)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--border",
+      "value": "var(--dash-border)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--border-strong",
+      "value": "var(--dash-border-strong)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--text-1",
+      "value": "var(--dash-ink)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--text-2",
+      "value": "var(--dash-ink-secondary)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--text-3",
+      "value": "var(--dash-ink-muted)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--text-4",
+      "value": "var(--dash-ink-faint)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--navy",
+      "value": "var(--dash-navy)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--blue",
+      "value": "var(--dash-blue)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--sky",
+      "value": "var(--dash-sky)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--lime",
+      "value": "var(--dash-lime)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--lime-text",
+      "value": "var(--dash-lime-ink)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--danger",
+      "value": "var(--dash-danger)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--success",
+      "value": "var(--dash-success)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--shadow-sm",
+      "value": "var(--dash-shadow-sm)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--shadow-md",
+      "value": "var(--dash-shadow-md)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--shadow-lg",
+      "value": "var(--dash-shadow-lg)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--shadow-card",
+      "value": "var(--dash-shadow-card)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--sidebar-bg",
+      "value": "var(--dash-navy)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--sidebar-border",
+      "value": "rgba(255, 255, 255, 0.1)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--header-bg",
+      "value": "#ffffff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--scrollbar-bg",
+      "value": "var(--dash-canvas-muted)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--scrollbar-thumb",
+      "value": "rgba(118, 127, 140, 0.64)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--particle-color",
+      "value": "rgba(6, 75, 181, 0.035)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--role",
+      "value": "var(--blue)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--role-2",
+      "value": "var(--sky)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--role-grad",
+      "value": "#064bb5"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-canvas",
+      "value": "#0d1526"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-canvas-soft",
+      "value": "#111d35"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-canvas-muted",
+      "value": "#162040"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-surface",
+      "value": "#1a2540"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-surface-subtle",
+      "value": "#1e2b4d"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-surface-accent",
+      "value": "#243355"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-border",
+      "value": "rgba(125, 206, 255, 0.12)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-border-strong",
+      "value": "rgba(125, 206, 255, 0.22)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink",
+      "value": "rgba(255, 255, 255, 0.95)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink-secondary",
+      "value": "rgba(219, 232, 255, 0.82)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink-muted",
+      "value": "#b7c8e8"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink-faint",
+      "value": "#a8b6d1"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-navy",
+      "value": "#111d35"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-navy-deep",
+      "value": "#0a1222"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-blue",
+      "value": "#6a9cff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-blue-hover",
+      "value": "#8eb4ff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-sky",
+      "value": "#7dceff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-lime",
+      "value": "#d9ff2f"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-lime-border",
+      "value": "#c4ea24"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-lime-ink",
+      "value": "#0d1526"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-danger",
+      "value": "#f87191"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-success",
+      "value": "#4ade80"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-shadow-sm",
+      "value": "0 8px 20px rgba(0, 0, 0, 0.2)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-shadow-md",
+      "value": "0 14px 30px rgba(0, 0, 0, 0.28)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-shadow-lg",
+      "value": "0 20px 42px rgba(0, 0, 0, 0.36)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-shadow-card",
+      "value": "0 10px 26px rgba(0, 0, 0, 0.22)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--sidebar-bg",
+      "value": "#102441"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--sidebar-border",
+      "value": "rgba(95, 184, 245, 0.08)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--header-bg",
+      "value": "rgba(13, 21, 38, 0.96)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--scrollbar-bg",
+      "value": "#111d35"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--scrollbar-thumb",
+      "value": "rgba(95, 184, 245, 0.3)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--particle-color",
+      "value": "rgba(95, 184, 245, 0.05)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--role",
+      "value": "#064bb5"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--role-2",
+      "value": "#0a6fa8"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--role-grad",
+      "value": "#064bb5"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--role",
+      "value": "#064bb5"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--role-2",
+      "value": "#daff45"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--role-grad",
+      "value": "#064bb5"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-canvas",
+      "value": "#ffffff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-canvas-soft",
+      "value": "#f8fbff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-canvas-muted",
+      "value": "#eef7ff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-surface",
+      "value": "#ffffff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-surface-subtle",
+      "value": "#f7fbff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-surface-accent",
+      "value": "#f1f7ff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-border",
+      "value": "rgba(30, 43, 77, 0.08)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-border-strong",
+      "value": "rgba(30, 43, 77, 0.14)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink",
+      "value": "#162a55"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink-secondary",
+      "value": "#46597a"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink-muted",
+      "value": "#607394"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink-faint",
+      "value": "#7788a7"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-navy",
+      "value": "#1e2b4d"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-blue",
+      "value": "#2057d7"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-blue-hover",
+      "value": "#1749bb"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-sky",
+      "value": "#5fb8f5"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-lime",
+      "value": "#d9ff2f"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-lime-border",
+      "value": "#b8d900"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-lime-ink",
+      "value": "#162a55"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-danger",
+      "value": "#dc6a7c"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-success",
+      "value": "#3dbb7a"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-warning",
+      "value": "#f59e0b"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-info-text",
+      "value": "#176b9b"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-success-text",
+      "value": "#237a50"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-warning-text",
+      "value": "#985800"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-danger-text",
+      "value": "#b83d55"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-company-text",
+      "value": "#667700"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-focus-color",
+      "value": "#287fbd"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-radius-sm",
+      "value": "8px"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-radius",
+      "value": "12px"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-radius-lg",
+      "value": "20px"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-control-height",
+      "value": "38px"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-sidebar-width",
+      "value": "272px"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-content-width",
+      "value": "none"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-focus",
+      "value": "0 0 0 3px rgba(95, 184, 245, 0.18)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-shadow-sm",
+      "value": "0 8px 20px rgba(15, 23, 42, 0.05)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-shadow-md",
+      "value": "0 14px 30px rgba(15, 23, 42, 0.07)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-shadow-lg",
+      "value": "0 20px 42px rgba(15, 23, 42, 0.1)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-shadow-card",
+      "value": "0 14px 28px rgba(15, 23, 42, 0.06)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--bg",
+      "value": "var(--dash-canvas)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--bg-soft",
+      "value": "var(--dash-canvas-soft)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--bg-muted",
+      "value": "var(--dash-canvas-muted)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--surface",
+      "value": "var(--dash-surface)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--surface-2",
+      "value": "var(--dash-surface-subtle)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--surface-3",
+      "value": "var(--dash-surface-accent)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--border",
+      "value": "var(--dash-border)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--border-strong",
+      "value": "var(--dash-border-strong)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--text-1",
+      "value": "var(--dash-ink)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--text-2",
+      "value": "var(--dash-ink-secondary)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--text-3",
+      "value": "var(--dash-ink-muted)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--text-4",
+      "value": "var(--dash-ink-faint)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--navy",
+      "value": "var(--dash-navy)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--blue",
+      "value": "var(--dash-blue)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--sky",
+      "value": "var(--dash-sky)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--lime",
+      "value": "var(--dash-lime)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--lime-text",
+      "value": "var(--dash-lime-ink)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--danger",
+      "value": "var(--dash-danger)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--success",
+      "value": "var(--dash-success)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--shadow-sm",
+      "value": "var(--dash-shadow-sm)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--shadow-md",
+      "value": "var(--dash-shadow-md)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--shadow-lg",
+      "value": "var(--dash-shadow-lg)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--shadow-card",
+      "value": "var(--dash-shadow-card)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--sidebar-bg",
+      "value": "linear-gradient(180deg, #ffffff 0%, #f8fbff 100%)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--sidebar-border",
+      "value": "rgba(21, 37, 79, 0.08)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--header-bg",
+      "value": "rgba(255, 255, 255, 0.92)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--scrollbar-bg",
+      "value": "#eef7ff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--scrollbar-thumb",
+      "value": "rgba(95, 184, 245, 0.72)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--role",
+      "value": "#2057d7"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--role-2",
+      "value": "#5fb8f5"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--role-grad",
+      "value": "linear-gradient(135deg, #2057d7, #5fb8f5)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-canvas",
+      "value": "#0d1526"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-canvas-soft",
+      "value": "#111d35"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-canvas-muted",
+      "value": "#162040"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-surface",
+      "value": "#1a2540"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-surface-subtle",
+      "value": "#1e2b4d"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-surface-accent",
+      "value": "#243355"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-border",
+      "value": "rgba(95, 184, 245, 0.1)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-border-strong",
+      "value": "rgba(95, 184, 245, 0.18)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink",
+      "value": "rgba(255, 255, 255, 0.95)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink-secondary",
+      "value": "rgba(200, 220, 255, 0.78)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink-muted",
+      "value": "rgba(160, 190, 240, 0.65)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink-faint",
+      "value": "rgba(130, 165, 220, 0.5)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-blue",
+      "value": "#4f8ef7"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-blue-hover",
+      "value": "#6ba3ff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-sky",
+      "value": "#7dceff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-lime",
+      "value": "#d9ff2f"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-lime-ink",
+      "value": "#0d1526"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-danger",
+      "value": "#f87191"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-success",
+      "value": "#4ade80"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-info-text",
+      "value": "#8bd7ff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-success-text",
+      "value": "#74e5a5"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-warning-text",
+      "value": "#ffc36b"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-danger-text",
+      "value": "#ff9bad"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-company-text",
+      "value": "#d9ff2f"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-focus-color",
+      "value": "#8bd7ff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-shadow-sm",
+      "value": "0 8px 20px rgba(0, 0, 0, 0.2)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-shadow-md",
+      "value": "0 14px 30px rgba(0, 0, 0, 0.28)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-shadow-lg",
+      "value": "0 20px 42px rgba(0, 0, 0, 0.36)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-shadow-card",
+      "value": "0 14px 28px rgba(0, 0, 0, 0.22)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--sidebar-bg",
+      "value": "linear-gradient(180deg, #111d35 0%, #0d1526 100%)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--sidebar-border",
+      "value": "rgba(95, 184, 245, 0.08)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--header-bg",
+      "value": "rgba(13, 21, 38, 0.96)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--scrollbar-bg",
+      "value": "#111d35"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--scrollbar-thumb",
+      "value": "rgba(95, 184, 245, 0.3)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--role",
+      "value": "#d9ff2f"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--role-2",
+      "value": "#b8d900"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--role-grad",
+      "value": "linear-gradient(135deg, #d9ff2f, #b8d900)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-canvas",
+      "value": "#eef4f8"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-canvas-soft",
+      "value": "#f8fafb"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-canvas-muted",
+      "value": "#e4e5e8"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-surface",
+      "value": "#ffffff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-surface-subtle",
+      "value": "#f8fafb"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-surface-accent",
+      "value": "#eef4f8"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-border",
+      "value": "#e4e5e8"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-border-strong",
+      "value": "#cdd1d7"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink",
+      "value": "#102441"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink-secondary",
+      "value": "#383750"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink-muted",
+      "value": "#5f6874"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink-faint",
+      "value": "#626b77"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-navy",
+      "value": "#102441"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-navy-deep",
+      "value": "#1e2b4d"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-blue",
+      "value": "#064bb5"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-blue-hover",
+      "value": "#0a65cc"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-sky",
+      "value": "#0a6fa8"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-lime",
+      "value": "#daff45"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-lime-border",
+      "value": "#bddb40"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-lime-ink",
+      "value": "#102441"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-danger",
+      "value": "#a11d2f"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-success",
+      "value": "#0f6b41"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-warning",
+      "value": "#a96612"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-radius-sm",
+      "value": "4px"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-radius",
+      "value": "8px"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-radius-lg",
+      "value": "10px"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-control-height",
+      "value": "44px"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-sidebar-width",
+      "value": "264px"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-content-width",
+      "value": "1344px"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-focus",
+      "value": "0 0 0 3px rgba(105, 200, 255, 0.28)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-shadow-sm",
+      "value": "0 1px 3px rgba(16, 36, 65, 0.04)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-shadow-md",
+      "value": "0 4px 14px rgba(16, 36, 65, 0.07)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-shadow-lg",
+      "value": "0 10px 26px rgba(16, 36, 65, 0.1)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-shadow-card",
+      "value": "0 1px 3px rgba(16, 36, 65, 0.04)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--bg",
+      "value": "var(--dash-canvas)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--bg-soft",
+      "value": "var(--dash-canvas-soft)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--bg-muted",
+      "value": "var(--dash-canvas-muted)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--surface",
+      "value": "var(--dash-surface)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--surface-2",
+      "value": "var(--dash-surface-subtle)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--surface-3",
+      "value": "var(--dash-surface-accent)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--border",
+      "value": "var(--dash-border)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--border-strong",
+      "value": "var(--dash-border-strong)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--text-1",
+      "value": "var(--dash-ink)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--text-2",
+      "value": "var(--dash-ink-secondary)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--text-3",
+      "value": "var(--dash-ink-muted)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--text-4",
+      "value": "var(--dash-ink-faint)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--navy",
+      "value": "var(--dash-navy)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--blue",
+      "value": "var(--dash-blue)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--sky",
+      "value": "var(--dash-sky)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--lime",
+      "value": "var(--dash-lime)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--lime-text",
+      "value": "var(--dash-lime-ink)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--danger",
+      "value": "var(--dash-danger)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--success",
+      "value": "var(--dash-success)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--shadow-sm",
+      "value": "var(--dash-shadow-sm)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--shadow-md",
+      "value": "var(--dash-shadow-md)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--shadow-lg",
+      "value": "var(--dash-shadow-lg)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--shadow-card",
+      "value": "var(--dash-shadow-card)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--sidebar-bg",
+      "value": "#102441"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--sidebar-border",
+      "value": "rgba(255, 255, 255, 0.1)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--header-bg",
+      "value": "#ffffff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--role",
+      "value": "var(--dash-blue)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--role-2",
+      "value": "var(--dash-sky)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--role-grad",
+      "value": "#064bb5"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--role",
+      "value": "#064bb5"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--role-2",
+      "value": "#0a6fa8"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--role-grad",
+      "value": "#064bb5"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-canvas",
+      "value": "#ffffff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-canvas-soft",
+      "value": "#f8fbff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-canvas-muted",
+      "value": "#eef7ff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-surface",
+      "value": "#ffffff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-surface-subtle",
+      "value": "#f7fbff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-surface-accent",
+      "value": "#f1f7ff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-border",
+      "value": "rgba(30, 43, 77, 0.08)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-border-strong",
+      "value": "rgba(30, 43, 77, 0.14)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink",
+      "value": "#162a55"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink-secondary",
+      "value": "#46597a"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink-muted",
+      "value": "#607394"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink-faint",
+      "value": "#7788a7"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-blue",
+      "value": "#2057d7"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-blue-hover",
+      "value": "#1749bb"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-sky",
+      "value": "#5fb8f5"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-lime",
+      "value": "#d9ff2f"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-lime-border",
+      "value": "#b8d900"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-lime-ink",
+      "value": "#162a55"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-danger",
+      "value": "#dc6a7c"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-success",
+      "value": "#3dbb7a"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-info-text",
+      "value": "#176b9b"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-success-text",
+      "value": "#237a50"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-warning-text",
+      "value": "#985800"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-danger-text",
+      "value": "#b83d55"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-company-text",
+      "value": "#667700"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-focus-color",
+      "value": "#287fbd"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-shadow-sm",
+      "value": "0 8px 20px rgba(15, 23, 42, 0.05)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-shadow-md",
+      "value": "0 14px 30px rgba(15, 23, 42, 0.07)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-shadow-card",
+      "value": "0 14px 28px rgba(15, 23, 42, 0.06)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--bg",
+      "value": "var(--dash-canvas)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--bg-soft",
+      "value": "var(--dash-canvas-soft)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--bg-muted",
+      "value": "var(--dash-canvas-muted)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--surface",
+      "value": "var(--dash-surface)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--surface-2",
+      "value": "var(--dash-surface-subtle)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--surface-3",
+      "value": "var(--dash-surface-accent)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--border",
+      "value": "var(--dash-border)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--border-strong",
+      "value": "var(--dash-border-strong)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--text-1",
+      "value": "var(--dash-ink)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--text-2",
+      "value": "var(--dash-ink-secondary)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--text-3",
+      "value": "var(--dash-ink-muted)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--text-4",
+      "value": "var(--dash-ink-faint)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--blue",
+      "value": "var(--dash-blue)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--sky",
+      "value": "var(--dash-sky)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--lime",
+      "value": "var(--dash-lime)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--lime-text",
+      "value": "var(--dash-lime-ink)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--danger",
+      "value": "var(--dash-danger)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--success",
+      "value": "var(--dash-success)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--shadow-sm",
+      "value": "var(--dash-shadow-sm)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--shadow-md",
+      "value": "var(--dash-shadow-md)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--shadow-card",
+      "value": "var(--dash-shadow-card)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--sidebar-bg",
+      "value": "linear-gradient(180deg, #ffffff 0%, #f8fbff 100%)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--sidebar-border",
+      "value": "rgba(21, 37, 79, 0.08)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--header-bg",
+      "value": "rgba(255, 255, 255, 0.94)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--scrollbar-bg",
+      "value": "#eef7ff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--scrollbar-thumb",
+      "value": "rgba(95, 184, 245, 0.72)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--role",
+      "value": "#2057d7"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--role-2",
+      "value": "#5fb8f5"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--role-grad",
+      "value": "linear-gradient(135deg, #2057d7, #5fb8f5)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-canvas",
+      "value": "#0d1526"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-canvas-soft",
+      "value": "#111d35"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-canvas-muted",
+      "value": "#162040"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-surface",
+      "value": "#1a2540"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-surface-subtle",
+      "value": "#1e2b4d"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-surface-accent",
+      "value": "#243355"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-border",
+      "value": "rgba(125, 206, 255, 0.12)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-border-strong",
+      "value": "rgba(125, 206, 255, 0.22)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink",
+      "value": "rgba(255, 255, 255, 0.95)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink-secondary",
+      "value": "rgba(219, 232, 255, 0.82)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink-muted",
+      "value": "#b7c8e8"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink-faint",
+      "value": "#a8b6d1"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-blue",
+      "value": "#6a9cff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-blue-hover",
+      "value": "#8eb4ff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-sky",
+      "value": "#7dceff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-lime",
+      "value": "#d9ff2f"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-lime-border",
+      "value": "#c4ea24"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-lime-ink",
+      "value": "#0d1526"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-danger",
+      "value": "#f87191"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-success",
+      "value": "#4ade80"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-info-text",
+      "value": "#8bd7ff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-success-text",
+      "value": "#74e5a5"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-warning-text",
+      "value": "#ffc36b"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-danger-text",
+      "value": "#ff9bad"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-company-text",
+      "value": "#d9ff2f"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-focus-color",
+      "value": "#8bd7ff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-shadow-sm",
+      "value": "0 8px 20px rgba(0, 0, 0, 0.2)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-shadow-md",
+      "value": "0 14px 30px rgba(0, 0, 0, 0.28)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-shadow-card",
+      "value": "0 14px 28px rgba(0, 0, 0, 0.22)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--sidebar-bg",
+      "value": "linear-gradient(180deg, #111d35 0%, #0d1526 100%)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--sidebar-border",
+      "value": "rgba(125, 206, 255, 0.1)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--header-bg",
+      "value": "rgba(13, 21, 38, 0.96)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--scrollbar-bg",
+      "value": "#111d35"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--scrollbar-thumb",
+      "value": "rgba(125, 206, 255, 0.32)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--role",
+      "value": "#d9ff2f"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--role-2",
+      "value": "#b8d900"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--role-grad",
+      "value": "linear-gradient(135deg, #d9ff2f, #b8d900)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-canvas",
+      "value": "#eef4f8"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-canvas-soft",
+      "value": "#f8fafb"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-canvas-muted",
+      "value": "#e4e5e8"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-surface",
+      "value": "#ffffff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-surface-subtle",
+      "value": "#f8fafb"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-surface-accent",
+      "value": "#eef4f8"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-border",
+      "value": "#e4e5e8"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-border-strong",
+      "value": "#cdd1d7"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink",
+      "value": "#102441"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink-secondary",
+      "value": "#383750"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink-muted",
+      "value": "#5f6874"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink-faint",
+      "value": "#626b77"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-blue",
+      "value": "#064bb5"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-blue-hover",
+      "value": "#0a65cc"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-sky",
+      "value": "#0a6fa8"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-lime",
+      "value": "#daff45"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-lime-border",
+      "value": "#bddb40"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-lime-ink",
+      "value": "#102441"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-danger",
+      "value": "#a11d2f"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-success",
+      "value": "#0f6b41"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-info-text",
+      "value": "#064bb5"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-success-text",
+      "value": "#0f6b41"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-warning-text",
+      "value": "#985800"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-danger-text",
+      "value": "#b83d55"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-company-text",
+      "value": "#5c6d00"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-focus-color",
+      "value": "#064bb5"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-shadow-sm",
+      "value": "none"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-shadow-md",
+      "value": "none"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-shadow-card",
+      "value": "none"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--sidebar-bg",
+      "value": "#102441"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--sidebar-border",
+      "value": "rgba(255, 255, 255, 0.12)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--header-bg",
+      "value": "#ffffff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--scrollbar-bg",
+      "value": "#e4e5e8"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--scrollbar-thumb",
+      "value": "rgba(118, 127, 140, 0.64)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--role",
+      "value": "#064bb5"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--role-2",
+      "value": "#0a6fa8"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--role-grad",
+      "value": "#064bb5"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-canvas",
+      "value": "#0d1526"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-canvas-soft",
+      "value": "#111d35"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-canvas-muted",
+      "value": "#162040"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-surface",
+      "value": "#1a2540"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-surface-subtle",
+      "value": "#1e2b4d"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-surface-accent",
+      "value": "#243355"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-border",
+      "value": "rgba(125, 206, 255, 0.14)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-border-strong",
+      "value": "rgba(125, 206, 255, 0.24)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink",
+      "value": "rgba(255, 255, 255, 0.95)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink-secondary",
+      "value": "rgba(219, 232, 255, 0.84)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink-muted",
+      "value": "#b7c8e8"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-ink-faint",
+      "value": "#a8b6d1"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-blue",
+      "value": "#6a9cff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-blue-hover",
+      "value": "#8eb4ff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-sky",
+      "value": "#7dceff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-lime",
+      "value": "#daff45"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-lime-border",
+      "value": "#c4ea24"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-lime-ink",
+      "value": "#0d1526"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-danger",
+      "value": "#f87191"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-success",
+      "value": "#4ade80"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-info-text",
+      "value": "#8bd7ff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-success-text",
+      "value": "#74e5a5"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-warning-text",
+      "value": "#ffc36b"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-danger-text",
+      "value": "#ff9bad"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-company-text",
+      "value": "#daff45"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-focus-color",
+      "value": "#8bd7ff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--sidebar-bg",
+      "value": "#102441"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--sidebar-border",
+      "value": "rgba(125, 206, 255, 0.12)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--header-bg",
+      "value": "#111d35"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--scrollbar-bg",
+      "value": "#111d35"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--scrollbar-thumb",
+      "value": "rgba(125, 206, 255, 0.32)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-action-ink",
+      "value": "#0d1526"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-border",
+      "value": "#3d5475"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-border-strong",
+      "value": "#5b769c"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-focus-color",
+      "value": "#8bd7ff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-focus",
+      "value": "0 0 0 3px rgba(139, 215, 255, 0.32)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--sidebar-border",
+      "value": "rgba(183, 200, 232, 0.24)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--header-bg",
+      "value": "rgba(13, 21, 38, 0.98)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-border",
+      "value": "#3d5475"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-border-strong",
+      "value": "#5b769c"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-focus-color",
+      "value": "#8bd7ff"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--dash-focus",
+      "value": "0 0 0 3px rgba(139, 215, 255, 0.32)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--sidebar-border",
+      "value": "rgba(183, 200, 232, 0.24)"
+    },
+    {
+      "file": "styles/dashboard-shell.css",
+      "name": "--header-bg",
+      "value": "rgba(13, 21, 38, 0.98)"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--color-canvas",
+      "value": "#eef4f8"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--color-surface",
+      "value": "#ffffff"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--color-ink",
+      "value": "#102441"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--color-muted",
+      "value": "#5f6874"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--color-brand",
+      "value": "#064bb5"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--color-success",
+      "value": "#168a55"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--color-warning",
+      "value": "#a96612"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--color-danger",
+      "value": "#c23d4f"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--ease-premium",
+      "value": "cubic-bezier(0.4, 0, 0.2, 1)"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--duration-premium",
+      "value": "240ms"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-bg",
+      "value": "#ffffff"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-bg-soft",
+      "value": "#f8fafb"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-bg-muted",
+      "value": "#eef4f8"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-surface-1",
+      "value": "#ffffff"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-surface-2",
+      "value": "#f8fafb"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-surface-3",
+      "value": "#eef4f8"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-surface-dark",
+      "value": "#102441"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-border-subtle",
+      "value": "#e4e5e8"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-border-strong",
+      "value": "#cdd1d7"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-border-accent",
+      "value": "rgba(6, 75, 181, 0.32)"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-text-primary",
+      "value": "#102441"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-text-secondary",
+      "value": "#383750"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-text-muted",
+      "value": "#5f6874"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-text-faint",
+      "value": "#9aa1ab"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-text-on-dark",
+      "value": "rgba(255, 255, 255, 0.92)"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-text-on-dark-muted",
+      "value": "rgba(236, 243, 255, 0.72)"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-brand-dark",
+      "value": "#102441"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-brand-primary",
+      "value": "#064bb5"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-brand-primary-hover",
+      "value": "#0a65cc"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-brand-secondary",
+      "value": "#69c8ff"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-brand-lime",
+      "value": "#daff45"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-danger",
+      "value": "#c23d4f"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-success",
+      "value": "#168a55"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-warning",
+      "value": "#daff45"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-primary-light",
+      "value": "#eef4f8"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-secondary-light",
+      "value": "#eefabf"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-gray",
+      "value": "#767f8c"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-light-gray",
+      "value": "#e4e5e8"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-shadow-sm",
+      "value": "0 2px 8px rgba(16, 36, 65, 0.06)"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-shadow-md",
+      "value": "0 6px 18px rgba(16, 36, 65, 0.08)"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-shadow-lg",
+      "value": "0 12px 28px rgba(16, 36, 65, 0.1)"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-shadow-card",
+      "value": "0 2px 10px rgba(16, 36, 65, 0.06)"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-shadow-card-hover",
+      "value": "0 6px 18px rgba(16, 36, 65, 0.1)"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-radius-xs",
+      "value": "2px"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-radius-sm",
+      "value": "4px"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-radius-md",
+      "value": "4px"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-radius-lg",
+      "value": "6px"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-radius-xl",
+      "value": "8px"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-radius-2xl",
+      "value": "12px"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-space-xs",
+      "value": "0.25rem"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-space-sm",
+      "value": "0.5rem"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-space-md",
+      "value": "1rem"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-space-lg",
+      "value": "1.5rem"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-space-xl",
+      "value": "2rem"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-space-2xl",
+      "value": "3rem"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-space-3xl",
+      "value": "4rem"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-section-space-md",
+      "value": "clamp(3.5rem, 6vw, 5rem)"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-section-space-lg",
+      "value": "clamp(5rem, 8.333vw, 7.5rem)"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-page-inline",
+      "value": "clamp(1rem, 2vw, 2rem)"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-public-width",
+      "value": "1200px"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-public-width-narrow",
+      "value": "1120px"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--font-instrument",
+      "value": "'Plus Jakarta Sans'"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--font-inter",
+      "value": "'Plus Jakarta Sans'"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-font-sans",
+      "value": "var(--font-instrument), Arial, sans-serif"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-font-display",
+      "value": "var(--font-instrument), Arial, sans-serif"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-font-utility",
+      "value": "var(--font-inter), Arial, sans-serif"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-font-size-sm",
+      "value": "max(0.875rem, 14px)"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-font-size-body",
+      "value": "1rem"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-transition-fast",
+      "value": "180ms ease"
+    },
+    {
+      "file": "styles/globals.css",
+      "name": "--app-transition-normal",
+      "value": "350ms ease"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--workbridge-primary-dark",
+      "value": "#102441"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--workbridge-paragraph",
+      "value": "#383750"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--workbridge-primary",
+      "value": "#064bb5"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--workbridge-primary-bright",
+      "value": "#0a65cc"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--workbridge-secondary",
+      "value": "#daff45"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--workbridge-secondary-light",
+      "value": "#eefabf"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--workbridge-light-gray",
+      "value": "#e4e5e8"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--workbridge-gray",
+      "value": "#767f8c"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--workbridge-primary-light",
+      "value": "#eef4f8"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--workbridge-white",
+      "value": "#ffffff"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-bg",
+      "value": "#ffffff"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-bg-soft",
+      "value": "#ffffff"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-bg-muted",
+      "value": "#eef4f8"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-surface-1",
+      "value": "#ffffff"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-surface-2",
+      "value": "#ffffff"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-surface-3",
+      "value": "#eef4f8"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-surface-dark",
+      "value": "#102441"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-border-subtle",
+      "value": "#e4e5e8"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-border-strong",
+      "value": "#cdd1d7"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-border-accent",
+      "value": "rgba(6, 75, 181, 0.32)"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-text-primary",
+      "value": "#102441"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-text-secondary",
+      "value": "#383750"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-text-muted",
+      "value": "#596371"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-text-faint",
+      "value": "#5f6874"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-brand-dark",
+      "value": "#102441"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-brand-primary",
+      "value": "#064bb5"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-brand-primary-hover",
+      "value": "#0a65cc"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-brand-secondary",
+      "value": "#69c8ff"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-brand-lime",
+      "value": "#daff45"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-primary-light",
+      "value": "#eef4f8"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-secondary-light",
+      "value": "#eefabf"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-gray",
+      "value": "#767f8c"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-light-gray",
+      "value": "#e4e5e8"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-shadow-sm",
+      "value": "none"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-shadow-md",
+      "value": "none"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-shadow-lg",
+      "value": "none"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-shadow-card",
+      "value": "none"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-shadow-card-hover",
+      "value": "0 0 5px rgba(218, 255, 69, 0.72), 0 0 26px rgba(218, 255, 69, 0.42)"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-radius-xs",
+      "value": "2px"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-radius-sm",
+      "value": "4px"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-radius-md",
+      "value": "4px"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-radius-lg",
+      "value": "6px"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-radius-xl",
+      "value": "8px"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-radius-2xl",
+      "value": "8px"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-section-space-md",
+      "value": "clamp(3.75rem, 6vw, 5rem)"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-section-space-lg",
+      "value": "clamp(5rem, 8vw, 7.5rem)"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-public-width",
+      "value": "1200px"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-public-width-narrow",
+      "value": "1120px"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--font-instrument",
+      "value": "'Instrument Sans'"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--font-inter",
+      "value": "'Instrument Sans'"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-font-sans",
+      "value": "'Instrument Sans', Arial, sans-serif"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-font-display",
+      "value": "'Instrument Sans', Arial, sans-serif"
+    },
+    {
+      "file": "styles/workbridge-theme.css",
+      "name": "--app-font-utility",
+      "value": "'Instrument Sans', Arial, sans-serif"
+    }
+  ],
+  "componentFiles": [
+    "components/AnnouncementBar.js",
+    "components/AnnouncementDetailModal.js",
+    "components/ApplicationModal.js",
+    "components/CandidatePremiumPlansExperience.js",
+    "components/EmpresaPlansCatalog.js",
+    "components/LandingHeader.js",
+    "components/ManualPaymentProofCard.js",
+    "components/PublicPageShell.js",
+    "components/PwaInstallPrompt.js",
+    "components/UpgradeModal.js",
+    "components/VerificationBadge.js",
+    "components/WebPushManager.js",
+    "components/affiliate/AffiliateSection.js",
+    "components/auth/AuthShell.js",
+    "components/auth/RedirectGate.js",
+    "components/candidates/CandidateMarketPage.js",
+    "components/candidates/CandidateSettings.tsx",
+    "components/charts/AdminSystemFlowChart.js",
+    "components/charts/EmpresaApplicationsChart.js",
+    "components/dashboard/CandidateDashboardOverview.js",
+    "components/dashboard/DashboardRouteFrame.js",
+    "components/dashboard/DashboardShell.js",
+    "components/dashboard/dashboardNav.js",
+    "components/design/DesignGallery.js",
+    "components/empresa/ApplicationSubmission.js",
+    "components/empresa/CandidateRecruitmentActions.js",
+    "components/empresa/RecruitmentControls.js",
+    "components/empresa/RecruitmentWorkspace.js",
+    "components/empresa/TeamWorkspace.js",
+    "components/forms/AutoSaveStatus.js",
+    "components/home/CompactJobCard.js",
+    "components/home/Footer.js",
+    "components/home/ProductAdsCarousel.js",
+    "components/home/VerifiedCandidatesCarousel.js",
+    "components/jobs/JobReportPanel.js"
+  ]
+}

@@ -62,8 +62,19 @@
   order: 5;
 }
 
+/* Mesmo valor que os planos: aparecem logo a seguir, pela ordem do código.
+   Sem isto ficavam com 0 e subiam para cima do hero. */
+.toolkitSection,
+.visibilitySection {
+  order: 5;
+}
+
 .closingSection {
   order: 6;
+}
+
+.extrasSection {
+  order: 7;
 }
 
 .page.page.page .hero {
@@ -2236,4 +2247,388 @@
 
 .page.page .planCardPopular .planAction {
   color: var(--company-navy);
+}
+
+/* ---------- Proposta comercial 2026-10: planos, comparação, visibilidade e
+   serviços. Camada final: só rem e tokens da página; texto ≥ 0.875rem. ---------- */
+.srOnly {
+  position: absolute;
+  width: 0.0625rem;
+  height: 0.0625rem;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.page.page .planBadge,
+.page.page .planAction,
+.page.page .closingAction {
+  font-size: 0.875rem;
+}
+
+/* Tudo o que a empresa precisa */
+.toolkitSection {
+  padding: 5.5rem 0;
+  background: var(--company-white);
+}
+
+.toolkitLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  align-items: center;
+  gap: clamp(2rem, 5vw, 4.5rem);
+}
+
+.toolkitList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.page .toolkitList li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.95rem 1rem;
+  border: 0.0625rem solid var(--company-outline);
+  border-radius: 0.875rem;
+  background: var(--company-surface);
+  color: var(--company-ink);
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.toolkitList svg,
+.enterpriseFeatures svg,
+.rulesList svg {
+  flex: 0 0 auto;
+  margin-top: 0.15rem;
+  color: var(--company-blue);
+}
+
+/* Grelha dos 4 planos com subscrição */
+.page.page .plansGrid {
+  width: 100%;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.page.page .plansGrid .planCard:nth-child(3) {
+  width: auto;
+  justify-self: stretch;
+  grid-column: auto;
+}
+
+.page.page .planPrice {
+  font-size: clamp(2rem, 2.6vw, 2.5rem);
+}
+
+/* Plano Empresarial */
+.enterpriseCard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+  gap: clamp(1.5rem, 4vw, 3rem);
+  margin-top: 1.75rem;
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+  border: 0.0625rem solid var(--company-navy);
+  border-radius: 1rem;
+  background: var(--company-white);
+}
+
+.enterprisePrice {
+  margin-top: 0.6rem;
+  color: var(--company-ink);
+  font-family: var(--app-font-display);
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.page.page .enterpriseAction,
+.page.page .servicesAction {
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 1.25rem;
+  padding: 0 1.25rem;
+  border: 0.0625rem solid var(--company-navy);
+  border-radius: 0.6rem;
+  background: var(--company-navy);
+  color: var(--company-white);
+  font-size: 0.875rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.page.page .enterpriseAction:hover,
+.page.page .servicesAction:hover {
+  border-color: var(--company-blue);
+  background: var(--company-blue);
+  color: var(--company-white);
+}
+
+.enterpriseFeatures {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: center;
+  gap: 0.75rem 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.page .enterpriseFeatures li,
+.page .rulesList li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+/* Comparação */
+.compareBlock {
+  margin-top: 3.5rem;
+}
+
+.page .compareTitle {
+  color: var(--company-ink);
+  font-size: clamp(1.4rem, 2.2vw, 1.75rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.compareScroll {
+  margin-top: 1.25rem;
+  overflow-x: auto;
+  border: 0.0625rem solid var(--company-outline);
+  border-radius: 1rem;
+  background: var(--company-white);
+}
+
+.compareTable {
+  width: 100%;
+  min-width: 46rem;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.compareTable :is(th, td) {
+  padding: 0.85rem 1rem;
+  border-bottom: 0.0625rem solid var(--company-surface-mid);
+  color: var(--company-text);
+  text-align: center;
+  vertical-align: middle;
+}
+
+.compareTable tbody tr:last-child :is(th, td) {
+  border-bottom: 0;
+}
+
+.compareTable thead th {
+  background: var(--company-navy);
+  color: var(--company-white);
+  font-family: var(--app-font-display);
+  font-weight: 800;
+}
+
+.compareTable :is(thead th, tbody th):first-child {
+  text-align: left;
+}
+
+.compareTable tbody th {
+  color: var(--company-ink);
+  font-weight: 650;
+}
+
+.compareTable tbody tr:nth-child(even) {
+  background: var(--company-surface);
+}
+
+.compareYes,
+.compareNo {
+  display: inline-grid;
+  width: 1.6rem;
+  height: 1.6rem;
+  place-items: center;
+  border-radius: 50%;
+}
+
+.compareYes {
+  background: var(--company-lime);
+  color: var(--company-navy);
+}
+
+.compareNo {
+  background: var(--company-surface-mid);
+  color: var(--company-muted);
+}
+
+/* Visibilidade e patrocínio */
+.visibilitySection {
+  padding: 5.5rem 0;
+  background: var(--company-white);
+}
+
+.visibilityGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.visibilityCard {
+  display: flex;
+  flex-direction: column;
+  padding: 1.75rem;
+  border: 0.0625rem solid var(--company-outline);
+  border-radius: 1rem;
+  background: var(--company-surface);
+}
+
+.page .visibilityCard h3 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.page .visibilityCard p {
+  margin: 0.6rem 0 1.25rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.priceList,
+.servicesList {
+  display: grid;
+  margin: auto 0 0;
+}
+
+.priceList > div,
+.servicesList > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 0;
+  border-top: 0.0625rem solid var(--company-outline);
+}
+
+.page :is(.priceList, .servicesList) dt {
+  color: var(--company-text);
+  font-size: 0.95rem;
+}
+
+.page :is(.priceList, .servicesList) dd {
+  margin: 0;
+  color: var(--company-ink);
+  font-family: var(--app-font-display);
+  font-size: 1rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.rulesPanel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-top: 1.75rem;
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+  border-radius: 1rem;
+  background: var(--company-navy);
+}
+
+.page .rulesPanel h3 {
+  color: var(--company-white);
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.rulesList {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem 1.5rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.page .rulesList li {
+  color: var(--company-white);
+}
+
+.page .rulesList svg {
+  color: var(--company-lime);
+}
+
+.servicesBlock {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  margin-top: 3.5rem;
+}
+
+.servicesList > div:first-child {
+  border-top: 0;
+}
+
+/* Regras do patrocínio e serviços adicionais, no fim da página. */
+.extrasSection {
+  padding: 5.5rem 0;
+  background: var(--company-white);
+}
+
+.extrasSection .servicesBlock {
+  margin-top: 0;
+}
+
+.extrasSection .rulesPanel {
+  margin-top: 3.5rem;
+}
+
+@media (max-width: 63.9375em) {
+  .page.page .plansGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .toolkitLayout,
+  .enterpriseCard,
+  .servicesBlock {
+    grid-template-columns: 1fr;
+  }
+
+  .visibilityGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .rulesPanel {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .rulesList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 47.9375em) {
+  .page.page .plansGrid,
+  .toolkitList,
+  .enterpriseFeatures,
+  .rulesList {
+    grid-template-columns: 1fr;
+  }
+
+  .toolkitSection,
+  .visibilitySection,
+  .extrasSection {
+    padding: 3.5rem 0;
+  }
 }

@@ -1,6 +1,9 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from 'firebase/auth';
 
 import Register from '../../../pages/register';
 
@@ -58,7 +61,9 @@ describe('confirmação de email após o registo', () => {
   });
 
   test('mostra o ecrã de confirmação quando o email é enviado com sucesso', async () => {
-    global.fetch = jest.fn().mockResolvedValue({ ok: true, status: 200 }) as typeof fetch;
+    global.fetch = jest
+      .fn()
+      .mockResolvedValue({ ok: true, status: 200 }) as typeof fetch;
     const user = userEvent.setup();
     render(<Register />);
     await fillCandidateForm(user);
@@ -98,6 +103,9 @@ describe('confirmação de email após o registo', () => {
       /Não foi possível enviar o email de confirmação/i,
     );
     expect(
+      screen.queryByText(/Enviámos um link de confirmação/),
+    ).not.toBeInTheDocument();
+    expect(
       screen.getByRole('button', { name: /Reenviar email/i }),
     ).toBeEnabled();
   });
@@ -123,6 +131,55 @@ describe('confirmação de email após o registo', () => {
     expect(screen.getByRole('alert')).toHaveTextContent(
       /Não foi possível enviar o email de confirmação/i,
     );
+    expect(
+      screen.queryByText(/Enviámos um link de confirmação/),
+    ).not.toBeInTheDocument();
+  });
+
+  test('preserva o destino no pedido de email e na ligação de login', async () => {
+    mockRouter.query = { returnTo: '/vaga/abc#candidatura' };
+    global.fetch = jest
+      .fn()
+      .mockResolvedValue({ ok: true, status: 200 }) as typeof fetch;
+    const user = userEvent.setup();
+    render(<Register />);
+    await fillCandidateForm(user);
+    await user.click(
+      screen.getByRole('button', { name: 'Criar conta de candidato' }),
+    );
+    expect(
+      await screen.findByRole('link', { name: 'Iniciar sessão' }),
+    ).toHaveAttribute('href', '/login?redirect=%2Fvaga%2Fabc%23candidatura');
+    const request = (global.fetch as jest.Mock).mock.calls.find(
+      ([url]) => url === '/api/auth/send-verification',
+    )[1];
+    expect(JSON.parse(request.body).returnTo).toBe('/vaga/abc#candidatura');
+  });
+
+  test('depois de um envio falhado só anuncia envio quando o reenvio é aceite', async () => {
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce({ ok: true })
+      .mockResolvedValueOnce({ ok: false, status: 503 })
+      .mockResolvedValueOnce({ ok: true }) as typeof fetch;
+    jest.mocked(signInWithEmailAndPassword).mockResolvedValue({
+      user: { getIdToken: async () => 'id-token' },
+    } as never);
+    const user = userEvent.setup();
+    render(<Register />);
+    await fillCandidateForm(user);
+    await user.click(
+      screen.getByRole('button', { name: 'Criar conta de candidato' }),
+    );
+    await screen.findByText('Confirme o seu email');
+    expect(
+      screen.queryByText(/Enviámos um link de confirmação/),
+    ).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Reenviar email/ }));
+    expect(
+      await screen.findByText(/Enviámos um link de confirmação/),
+    ).toBeVisible();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
   test('falha de setup não mostra sucesso e permite concluir sem criar outra conta', async () => {
@@ -145,9 +202,7 @@ describe('confirmação de email após o registo', () => {
     );
     expect(screen.queryByText('Confirme o seu email')).not.toBeInTheDocument();
 
-    await user.click(
-      screen.getByRole('button', { name: 'Concluir registo' }),
-    );
+    await user.click(screen.getByRole('button', { name: 'Concluir registo' }));
 
     await waitFor(() =>
       expect(screen.getByText('Confirme o seu email')).toBeVisible(),

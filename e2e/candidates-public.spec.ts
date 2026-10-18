@@ -10,21 +10,21 @@ const candidateRoutes = [
   {
     path: '/candidatos',
     heading: /Construa a sua carreira em São Tomé com mais confiança/i,
-    currentMarket: 'Talento Nacional',
+    currentMarket: 'Para nacional',
     assurance: 'Plano gratuito disponível, sem compromisso',
     serviceHeading: 'Perfil profissional para o mercado nacional',
   },
   {
     path: '/candidatos/nacional',
     heading: /Construa a sua carreira em São Tomé com mais confiança/i,
-    currentMarket: 'Talento Nacional',
+    currentMarket: 'Para nacional',
     assurance: 'Plano gratuito disponível, sem compromisso',
     serviceHeading: 'Perfil profissional para o mercado nacional',
   },
   {
     path: '/candidatos/internacional',
-    heading: /Encontre o seu próximo emprego em São Tomé e Príncipe/i,
-    currentMarket: 'Talento Internacional',
+    heading: /Descubra novas oportunidades em São Tomé e Príncipe/i,
+    currentMarket: 'Para internacional',
     assurance:
       'Apoio para candidatos internacionais que querem trabalhar em STP',
     serviceHeading: 'Preparação para trabalhar em São Tomé e Príncipe',

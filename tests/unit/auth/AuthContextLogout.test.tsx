@@ -12,7 +12,7 @@ jest.mock('firebase/auth', () => ({
   signOut: jest.fn(),
 }));
 
-jest.mock('../../../lib/firebase', () => ({
+jest.mock('../../../lib/firebaseAuth', () => ({
   auth: {
     currentUser: { getIdToken: jest.fn().mockResolvedValue('logout-token') },
     name: 'auth',

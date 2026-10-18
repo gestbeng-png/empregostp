@@ -1,0 +1,36 @@
+name: V2 Foundations
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  foundations:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - name: Legacy design contract (colors and spacing)
+        run: node --test tests/contracts/*.test.mjs
+      - name: Unit tests and domain coverage >=90%
+        run: >-
+          npx jest --runInBand --no-cache --coverage
+          --collectCoverageFrom='domain/**/*.ts'
+          --coverageReporters=text-summary --coverageReporters=json-summary
+          --coverageThreshold='{"global":{"statements":90,"branches":90,"functions":90,"lines":90}}'
+
+# No deploy, cloud database credentials, production seeds or flag activation.
+# J1 is not fully met: clean-main visual baselines, legacy critical E2E,
+# staging URLs, other public bundle routes and snapshot migrations remain separate gates.

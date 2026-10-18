@@ -4,7 +4,13 @@ import Dashboard from '../../../pages/dashboard';
 
 const replace = jest.fn();
 const useAuth = jest.fn();
-const getDoc = jest.fn();
+const fetchMock = jest.fn();
+const getIdToken = jest.fn(async () => 'id-token');
+const profileResponse = (userType: string) => ({
+  ok: true,
+  status: 200,
+  json: async () => ({ profile: { data: { userType } } }),
+});
 
 jest.mock('next/router', () => ({
   useRouter: () => ({ replace }),
@@ -14,20 +20,12 @@ jest.mock('../../../context/AuthContext', () => ({
   useAuth: () => useAuth(),
 }));
 
-jest.mock('firebase/firestore', () => ({
-  doc: jest.fn(() => 'user-reference'),
-  getDoc: (...args: unknown[]) => getDoc(...args),
-}));
-
-jest.mock('../../../lib/firebase', () => ({
-  db: {},
-}));
-
 describe('encaminhamento do dashboard', () => {
   beforeEach(() => {
     replace.mockReset();
     useAuth.mockReset();
-    getDoc.mockReset();
+    fetchMock.mockReset();
+    global.fetch = fetchMock as unknown as typeof fetch;
   });
 
   afterEach(() => {
@@ -62,24 +60,31 @@ describe('encaminhamento do dashboard', () => {
     ['candidato', '/dashboard/candidato'],
     ['admin', '/dashboard/admin'],
   ])('encaminha uma conta %s para %s', async (userType, destination) => {
-    useAuth.mockReturnValue({ loading: false, user: { uid: 'user-id' } });
-    getDoc.mockResolvedValue({
-      exists: () => true,
-      data: () => ({ userType }),
+    useAuth.mockReturnValue({
+      loading: false,
+      user: { uid: 'user-id', getIdToken },
     });
+    fetchMock.mockResolvedValue(profileResponse(userType));
 
     render(<Dashboard />);
 
     await waitFor(() => expect(replace).toHaveBeenCalledWith(destination));
+    // A /api/profile exige o token: sem ele, todas as contas iam para «/».
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/profile?uid=user-id',
+      expect.objectContaining({
+        headers: expect.objectContaining({ Authorization: 'Bearer id-token' }),
+      }),
+    );
   });
 
   test('encaminha um perfil sem tipo reconhecido para a página inicial', async () => {
     jest.spyOn(console, 'error').mockImplementation(() => undefined);
-    useAuth.mockReturnValue({ loading: false, user: { uid: 'user-id' } });
-    getDoc.mockResolvedValue({
-      exists: () => true,
-      data: () => ({ userType: 'desconhecido' }),
+    useAuth.mockReturnValue({
+      loading: false,
+      user: { uid: 'user-id', getIdToken },
     });
+    fetchMock.mockResolvedValue(profileResponse('desconhecido'));
 
     render(<Dashboard />);
 

@@ -75,6 +75,20 @@
   gap: 0;
 }
 
+/* Links ao centro do header; logótipo à esquerda e conta à direita. */
+@media (min-width: 65.0625em) {
+  .inner {
+    position: relative;
+  }
+
+  .navLinks {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+
 .navItemWithDropdown {
   position: relative;
 }

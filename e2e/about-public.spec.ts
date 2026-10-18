@@ -40,17 +40,21 @@ test.describe('página sobre o Emprego STP', () => {
       }),
     ).toBeVisible();
 
-    await expect(
-      page.getByRole('heading', { level: 2, name: 'Cada vaga, uma árvore' }),
-    ).toBeVisible();
+    const missionRegion = page.getByRole('region', { name: 'A nossa missão' });
+    await expect(missionRegion).toContainText(
+      'Conectar talento e oportunidade',
+    );
+    await expect(missionRegion.getByRole('listitem')).toHaveCount(5);
 
     const teamRegion = page.getByRole('region', { name: 'A Nossa Equipa' });
     await expect(teamRegion.getByRole('article')).toHaveCount(3);
-    const joelCard = teamRegion
-      .getByRole('article')
-      .filter({ hasText: 'Joel Almeida' });
-    await expect(joelCard).toBeVisible();
-    await expect(joelCard.getByText('Gestor', { exact: true })).toBeVisible();
+    // Mesma grelha de /carreira: só a foto e as redes de cada membro.
+    await expect(
+      teamRegion.getByRole('img', { name: 'Joel Almeida' }),
+    ).toBeVisible();
+    await expect(
+      teamRegion.getByRole('link', { name: 'LinkedIn de Joel Almeida' }),
+    ).toHaveAttribute('target', '_blank');
 
     const audienceRegion = page.getByRole('region', {
       name: 'Uma plataforma para todos',
@@ -87,22 +91,9 @@ test.describe('página sobre o Emprego STP', () => {
       page.getByRole('status').getByText('Indique o seu nome'),
     ).toBeVisible();
 
-    const joinTrigger = page.getByRole('button', {
-      name: 'Junte-se à nossa equipa',
-    });
-    await joinTrigger.click();
-    const dialog = page.getByRole('dialog', {
-      name: 'Junte-se à nossa equipa',
-    });
-    await expect(dialog).toBeVisible();
-    await expect(dialog.getByLabel('Nome')).toBeVisible();
-    await expect(dialog.getByLabel('Email')).toBeVisible();
     await expect(
-      dialog.getByRole('button', { name: 'Fechar formulário' }),
-    ).toBeFocused();
-    await page.keyboard.press('Escape');
-    await expect(dialog).toBeHidden();
-    await expect(joinTrigger).toBeFocused();
+      page.getByRole('link', { name: 'Junte-se à nossa equipa' }),
+    ).toHaveAttribute('href', '/carreira');
 
     const metrics = await collectVisibleUiMetrics(page);
     expect(metrics.horizontalOverflow).toBeLessThanOrEqual(0);

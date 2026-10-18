@@ -169,6 +169,7 @@ async function handleSubscription(req, res) {
     ]);
     const allowedCompanyPlans = new Set([
       'basic_empresa',
+      'essential_empresa',
       'professional_empresa',
       'unlimited_empresa',
     ]);
@@ -290,8 +291,12 @@ async function handleSubscription(req, res) {
           requestedPlanIdForRules === 'unlimited_candidato')) ||
       (currentPlanId === 'professional_candidato' &&
         requestedPlanIdForRules === 'unlimited_candidato') ||
-      // Empresas
+      // Empresas: Gratuito -> Essencial -> Profissional -> Ouro
       (currentPlanId === 'basic_empresa' &&
+        (requestedPlanIdForRules === 'essential_empresa' ||
+          requestedPlanIdForRules === 'professional_empresa' ||
+          requestedPlanIdForRules === 'unlimited_empresa')) ||
+      (currentPlanId === 'essential_empresa' &&
         (requestedPlanIdForRules === 'professional_empresa' ||
           requestedPlanIdForRules === 'unlimited_empresa')) ||
       (currentPlanId === 'professional_empresa' &&

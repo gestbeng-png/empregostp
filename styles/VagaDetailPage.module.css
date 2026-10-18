@@ -948,9 +948,9 @@
   gap: 0.4rem;
   max-width: 100%;
   padding: 0.55rem 1rem;
-  border: 1px solid color-mix(in srgb, var(--job-blue) 16%, #ffffff);
+  border: 1px solid color-mix(in srgb, var(--job-blue) 16%, var(--color-surface));
   border-radius: 0.65rem;
-  background: color-mix(in srgb, var(--job-blue) 6%, #ffffff);
+  background: color-mix(in srgb, var(--job-blue) 6%, var(--color-surface));
   color: var(--job-blue);
   font-size: 0.95rem;
   font-weight: 600;

@@ -19,7 +19,7 @@ jest.mock('../../../lib/empresaPlansCatalog', () => {
   const actual = jest.requireActual('../../../lib/empresaPlansCatalog');
   return {
     ...actual,
-    fetchActiveEmpresaPlans: (...args: unknown[]) =>
+    fetchEmpresaPlans: (...args: unknown[]) =>
       mockFetchActiveEmpresaPlans(...args),
   };
 });
@@ -86,11 +86,19 @@ describe('planos públicos para empresas', () => {
     const companyPlans = result.props.companyPlans;
 
     expect(mockFetchActiveEmpresaPlans).toHaveBeenCalledTimes(1);
-    expect(companyPlans).toHaveLength(3);
+    // O Essencial ainda não existe no Firestore: entra com os valores padrão.
+    // O plano gratuito chamado «Essencial» continua a ser o escalão básico.
+    expect(companyPlans).toHaveLength(4);
     expect(companyPlans.map((plan: { price: number }) => plan.price)).toEqual([
-      0, 375, 950,
+      0, 250, 375, 950,
     ]);
+    expect(companyPlans[0]).toMatchObject({ id: 'basic_empresa' });
     expect(companyPlans[1]).toMatchObject({
+      id: 'essential_empresa',
+      name: 'Essencial',
+      priceLabel: '250 STD',
+    });
+    expect(companyPlans[2]).toMatchObject({
       id: 'professional_empresa',
       sourcePlanId: 'empresa-profissional-real',
       name: 'Profissional',

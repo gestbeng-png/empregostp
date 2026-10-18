@@ -67,7 +67,11 @@ describe('uso de console nas rotas de API', () => {
       .filter(({ absolutePath }) => {
         const source = fs.readFileSync(absolutePath, 'utf8');
         const catchesErrors = /catch\s*\(\s*[A-Za-z_$][\w$]*\s*\)/.test(source);
-        const usesLogger = /logServer(Error|Warning)\s*\(/.test(source);
+        // `logEvent` (infrastructure/observability/logger.ts) também conta: só
+        // aceita campos de uma allowlist e põe o utilizador em hash.
+        const usesLogger = /logServer(Error|Warning)\s*\(|\blogEvent\s*\(/.test(
+          source,
+        );
         const rethrowsOnly = /catch\s*\([^)]*\)\s*\{\s*throw\b/.test(source);
         return catchesErrors && !usesLogger && !rethrowsOnly;
       })
@@ -80,12 +84,11 @@ describe('uso de console nas rotas de API', () => {
       'admin/moderation-settings.js',
       'auth/send-password-reset.js',
       'auth/send-verification.js',
-      'admin/migrate-verifications.js',
     ]);
 
-    expect(
-      offenders.filter((file) => !SILENT_DEGRADATION.has(file)),
-    ).toEqual([]);
+    expect(offenders.filter((file) => !SILENT_DEGRADATION.has(file))).toEqual(
+      [],
+    );
   });
 
   test('os logs de cron não interpolam dados pessoais', () => {

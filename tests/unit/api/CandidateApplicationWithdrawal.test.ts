@@ -52,12 +52,14 @@ function configureFirestore({
   };
   const applicationRef = { id: 'application-1' };
   const transactionUpdate = jest.fn();
+  const transactionCreate = jest.fn();
   const transaction = {
     get: jest.fn().mockResolvedValue({
       exists: true,
       data: () => applicationData,
     }),
     update: transactionUpdate,
+    create: transactionCreate,
   };
   const runTransaction = jest.fn(async (callback) => callback(transaction));
   const activityAdd = jest.fn().mockResolvedValue(undefined);
@@ -78,17 +80,19 @@ function configureFirestore({
         return { doc: jest.fn(() => applicationRef) };
       }
       if (name === 'activities') return { add: activityAdd };
+      if (name === 'applicationsStatusHistory' || name === 'outboxEvents')
+        return { doc: jest.fn(() => ({ id: `${name}-ref` })) };
       throw new Error(`Coleção inesperada: ${name}`);
     }),
     runTransaction,
   });
 
-  return { activityAdd, runTransaction, transactionUpdate };
+  return { activityAdd, runTransaction, transactionUpdate, transactionCreate };
 }
 
-function request() {
+function request(body: Record<string, unknown> = {}) {
   return {
-    body: {},
+    body,
     headers: { authorization: 'Bearer valid-token' },
     method: 'POST',
     query: { id: 'application-1' },
@@ -199,5 +203,94 @@ describe('retirada de candidatura pelo candidato', () => {
     );
     expect(transactionUpdate).not.toHaveBeenCalled();
     expect(activityAdd).not.toHaveBeenCalled();
+  });
+
+  describe('candidaturas v2 (F2.6)', () => {
+    test.each(['SUBMITTED', 'SHORTLISTED', 'INTERVIEW', 'OFFER'])(
+      'retira em %s: estados legado+v2, versão, histórico e outbox',
+      async (v2Status) => {
+        const { transactionUpdate, transactionCreate } = configureFirestore({
+          application: { v2Status, version: 3, status: 'interview' },
+        });
+        const response = createResponse();
+
+        await withdrawHandler(
+          request({ reason: 'ACCEPTED_OTHER_OFFER' }),
+          response,
+        );
+
+        expect(response.status).toHaveBeenCalledWith(200);
+        expect(transactionUpdate).toHaveBeenCalledWith(
+          expect.anything(),
+          expect.objectContaining({
+            status: 'withdrawn',
+            v2Status: 'WITHDRAWN',
+            version: 4,
+            withdrawalReason: 'ACCEPTED_OTHER_OFFER',
+          }),
+        );
+        expect(transactionCreate).toHaveBeenCalledWith(
+          { id: 'applicationsStatusHistory-ref' },
+          expect.objectContaining({
+            from: v2Status,
+            to: 'WITHDRAWN',
+            actorType: 'CANDIDATE',
+            reason: 'ACCEPTED_OTHER_OFFER',
+            version: 4,
+          }),
+        );
+        expect(transactionCreate).toHaveBeenCalledWith(
+          { id: 'outboxEvents-ref' },
+          expect.objectContaining({
+            type: 'entity_status_changed',
+            payload: {
+              entityId: 'application-1',
+              entityKind: 'Application',
+              version: 4,
+            },
+          }),
+        );
+      },
+    );
+
+    test('motivo fora da lista é ignorado (nunca texto livre)', async () => {
+      const { transactionUpdate } = configureFirestore({
+        application: { v2Status: 'SUBMITTED', version: 1 },
+      });
+      await withdrawHandler(
+        request({ reason: 'o meu chefe é horrível' }),
+        createResponse(),
+      );
+      expect(transactionUpdate).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ withdrawalReason: null }),
+      );
+    });
+
+    test.each(['HIRED', 'REJECTED'])(
+      'estado terminal %s não pode ser retirado',
+      async (v2Status) => {
+        const { transactionUpdate } = configureFirestore({
+          application: { v2Status, version: 2 },
+        });
+        const response = createResponse();
+        await withdrawHandler(request(), response);
+        expect(response.status).toHaveBeenCalledWith(409);
+        expect(transactionUpdate).not.toHaveBeenCalled();
+      },
+    );
+
+    test('já retirada é idempotente', async () => {
+      const { transactionUpdate } = configureFirestore({
+        application: { v2Status: 'WITHDRAWN', version: 2 },
+      });
+      const response = createResponse();
+      await withdrawHandler(request(), response);
+      expect(response.status).toHaveBeenCalledWith(200);
+      expect(response.json).toHaveBeenCalledWith(
+        expect.objectContaining({ alreadyWithdrawn: true }),
+      );
+      expect(transactionUpdate).not.toHaveBeenCalled();
+    });
   });
 });

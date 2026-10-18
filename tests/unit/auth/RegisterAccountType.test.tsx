@@ -137,4 +137,12 @@ describe('formulário de registo por tipo de conta', () => {
     expect(screen.getByLabelText('Nome da empresa')).toBeVisible();
     expect(screen.getByLabelText('NIF da empresa')).toBeVisible();
   });
+
+  test('aceita tipo=empresa sem alterar os links type existentes', async () => {
+    mockRouter.query = { tipo: 'empresa' };
+    render(<Register />);
+    await waitFor(() =>
+      expect(screen.getByLabelText(/Sou uma empresa/i)).toBeChecked(),
+    );
+  });
 });

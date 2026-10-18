@@ -102,6 +102,32 @@ const config = [
       'react-hooks/set-state-in-effect': 'off',
     },
   },
+  {
+    // C3: nada de árvores paralelas de UI ("components/v2", "NewButton"…).
+    // Componente novo entra em components/ com os tokens existentes.
+    files: ['**/*.{js,jsx,ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['**/components/v2/**', '**/components/new/**'],
+              message:
+                'Não criar componentes paralelos: estender o componente existente (docs/v2, C3).',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // D3/D11: o domínio é puro (sem I/O). Logs passam por lib/structuredLog.
+    files: ['domain/**/*.{ts,tsx}'],
+    rules: {
+      'no-console': 'error',
+    },
+  },
   eslintConfigPrettier,
 ];
 

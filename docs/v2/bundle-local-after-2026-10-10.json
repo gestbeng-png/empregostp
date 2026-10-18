@@ -1,0 +1,61 @@
+{
+  "method": "build-manifest-modern-initial-v1",
+  "budgetBytes": 170000,
+  "routes": {
+    "/": {
+      "gzipBytes": 142319,
+      "files": [
+        "static/chunks/webpack-0ab4a07500a40282.js",
+        "static/chunks/framework-9ddc88f7ee4d19da.js",
+        "static/chunks/main-a6616f00e485e525.js",
+        "static/chunks/pages/_app-9bc184a81d7e4cb4.js",
+        "static/chunks/a7e16ef1-51c34f4b73372582.js",
+        "static/chunks/b258f366-38c85393e5a58593.js",
+        "static/chunks/8230-f869215c8f2d97eb.js",
+        "static/chunks/4587-662ebc62f44421dd.js",
+        "static/chunks/2674-1010560fca9f6953.js",
+        "static/chunks/pages/index-96d8da140add524c.js",
+        "static/DS6X_46s1SiPKSc-4E-KS/_buildManifest.js",
+        "static/DS6X_46s1SiPKSc-4E-KS/_ssgManifest.js"
+      ]
+    },
+    "/vagas": {
+      "gzipBytes": 137632,
+      "files": [
+        "static/chunks/webpack-0ab4a07500a40282.js",
+        "static/chunks/framework-9ddc88f7ee4d19da.js",
+        "static/chunks/main-a6616f00e485e525.js",
+        "static/chunks/pages/_app-9bc184a81d7e4cb4.js",
+        "static/chunks/a7e16ef1-51c34f4b73372582.js",
+        "static/chunks/8230-f869215c8f2d97eb.js",
+        "static/chunks/4587-662ebc62f44421dd.js",
+        "static/chunks/2674-1010560fca9f6953.js",
+        "static/chunks/pages/vagas-3dd752f333e6feca.js",
+        "static/DS6X_46s1SiPKSc-4E-KS/_buildManifest.js",
+        "static/DS6X_46s1SiPKSc-4E-KS/_ssgManifest.js"
+      ]
+    },
+    "/vaga/[id]": {
+      "gzipBytes": 156664,
+      "files": [
+        "static/chunks/webpack-0ab4a07500a40282.js",
+        "static/chunks/framework-9ddc88f7ee4d19da.js",
+        "static/chunks/main-a6616f00e485e525.js",
+        "static/chunks/pages/_app-9bc184a81d7e4cb4.js",
+        "static/chunks/a7e16ef1-51c34f4b73372582.js",
+        "static/chunks/8230-f869215c8f2d97eb.js",
+        "static/chunks/4587-662ebc62f44421dd.js",
+        "static/chunks/2674-1010560fca9f6953.js",
+        "static/chunks/9822-818ac68332f5e6cc.js",
+        "static/chunks/9069-e0fa35c7a61c853c.js",
+        "static/chunks/7511-d4ded674808cedff.js",
+        "static/chunks/pages/vaga/[id]-9812ae53e183e267.js",
+        "static/DS6X_46s1SiPKSc-4E-KS/_buildManifest.js",
+        "static/DS6X_46s1SiPKSc-4E-KS/_ssgManifest.js"
+      ]
+    }
+  },
+  "regressions": [],
+  "capturedAt": "2026-10-10",
+  "scope": "Isolated local build after optimization; not clean main or slow-4G network metrics"
+}

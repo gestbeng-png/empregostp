@@ -147,4 +147,28 @@ describe('barra de avisos com links da notícia', () => {
       screen.getByRole('link', { name: /preencher o formulário/i }),
     ).toHaveAttribute('href', 'https://forms.gle/inscricao');
   });
+
+  test('modal lazy continua a sanitizar HTML e devolve foco ao botão ao fechar', async () => {
+    mockNews([
+      {
+        id: 'noticia-html',
+        title: 'Aviso de teste',
+        category: 'NOVIDADE',
+        date: '',
+        content:
+          '<p>Texto seguro</p><img src="x" onerror="alert(1)"><script>alert(1)</script><a href="javascript:alert(1)">Link perigoso</a>',
+      },
+    ]);
+    const { container } = render(<AnnouncementBar />);
+    expect(screen.queryByRole('dialog')).toBeNull();
+    const opener = await screen.findByRole('button', { name: /saiba mais/i });
+    const user = await abrirModal();
+    expect(screen.getByText('Texto seguro')).toBeVisible();
+    expect(container.querySelector('script')).toBeNull();
+    expect(container.querySelector('[onerror]')).toBeNull();
+    expect(screen.getByText('Link perigoso')).not.toHaveAttribute('href');
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(opener).toHaveFocus();
+  });
 });

@@ -58,6 +58,8 @@ function baseVerificationData(overrides: Record<string, unknown> = {}) {
 describe('aprovação de verificação exige CV e plano de verificação confirmados', () => {
   const verificationSet = jest.fn().mockResolvedValue(undefined);
   const activitiesAdd = jest.fn().mockResolvedValue({ id: 'act-1' });
+  const userSet = jest.fn().mockResolvedValue(undefined);
+  const profileSet = jest.fn().mockResolvedValue(undefined);
   let verificationData: Record<string, unknown>;
   let candidateUserData: Record<string, unknown>;
 
@@ -74,19 +76,19 @@ describe('aprovação de verificação exige CV e plano de verificação confirm
       if (name === 'users') {
         return {
           doc: jest.fn((uid: string) => ({
-            get: jest.fn().mockResolvedValue(
-              uid === 'admin-1'
-                ? { data: () => ({ userType: 'admin' }), exists: true }
-                : { data: () => candidateUserData, exists: true },
-            ),
-            set: jest.fn().mockResolvedValue(undefined),
+            get: jest
+              .fn()
+              .mockResolvedValue(
+                uid === 'admin-1'
+                  ? { data: () => ({ userType: 'admin' }), exists: true }
+                  : { data: () => candidateUserData, exists: true },
+              ),
+            set: userSet,
           })),
         };
       }
       if (name === 'profiles') {
-        return {
-          doc: jest.fn(() => ({ set: jest.fn().mockResolvedValue(undefined) })),
-        };
+        return { doc: jest.fn(() => ({ set: profileSet })) };
       }
       if (name === 'verifications') {
         return { doc: jest.fn(() => verificationRef) };
@@ -185,9 +187,62 @@ describe('aprovação de verificação exige CV e plano de verificação confirm
     installFirestore();
     candidateUserData = { currentPlan: 'basic_candidato', cvUrl: '' };
 
-    const response = await postAction({ action: 'reject', reason: 'Documento ilegível' });
+    const response = await postAction({
+      action: 'reject',
+      reason: 'Documento ilegível',
+    });
 
     expect(response.status).toHaveBeenCalledWith(200);
     expect(verificationSet).toHaveBeenCalled();
+  });
+
+  test('desativa uma verificação aprovada e retira o selo em todos os campos', async () => {
+    installFirestore();
+    verificationData = baseVerificationData({
+      status: 'approved',
+      verificationItems: {
+        identity: {
+          checklist: [],
+          label: 'Identidade',
+          requested: true,
+          status: 'approved',
+        },
+      },
+    });
+    // O registo gravado é relido depois do `set`; reflectir a escrita.
+    verificationSet.mockImplementation(async (update) => {
+      verificationData = { ...verificationData, ...update };
+    });
+    candidateUserData = { currentPlan: 'basic_candidato', cvUrl: '' };
+
+    const response = await postAction({ action: 'revoke' });
+
+    expect(response.status).toHaveBeenCalledWith(200);
+    const saved = verificationSet.mock.calls[0][0];
+    expect(saved.verificationItems.identity).toEqual(
+      expect.objectContaining({ status: 'rejected', revokedBy: 'admin-1' }),
+    );
+    for (const setter of [userSet, profileSet]) {
+      expect(setter).toHaveBeenCalledWith(
+        expect.objectContaining({
+          verified: false,
+          verificado: false,
+          isVerified: false,
+          verificationStatus: 'rejected',
+        }),
+        { merge: true },
+      );
+    }
+    verificationSet.mockReset();
+    verificationSet.mockResolvedValue(undefined);
+  });
+
+  test('recusa desativar quando não há nada aprovado', async () => {
+    installFirestore();
+
+    const response = await postAction({ action: 'revoke' });
+
+    expect(response.status).toHaveBeenCalledWith(400);
+    expect(verificationSet).not.toHaveBeenCalled();
   });
 });

@@ -6,7 +6,6 @@ const requiredEnvironment = {
   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: '123456789',
   NEXT_PUBLIC_FIREBASE_APP_ID: '1:123456789:web:fake',
   NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: 'G-FAKE123',
-  NEXT_PUBLIC_USE_FIREBASE_EMULATORS: 'false',
 };
 
 type FirebaseMocks = ReturnType<typeof installFirebaseMocks>;
@@ -23,25 +22,19 @@ function installFirebaseMocks(existingApp = false) {
   const getFirestore = jest.fn(() => db);
   const getStorage = jest.fn(() => storage);
   const getAnalytics = jest.fn();
-  const connectAuthEmulator = jest.fn();
-  const connectFirestoreEmulator = jest.fn();
-  const connectStorageEmulator = jest.fn();
   const setPersistence = jest.fn();
 
   jest.doMock('firebase/app', () => ({ initializeApp, getApp, getApps }));
   jest.doMock('firebase/analytics', () => ({ getAnalytics }));
   jest.doMock('firebase/auth', () => ({
     browserLocalPersistence: 'local',
-    connectAuthEmulator,
     getAuth,
     setPersistence,
   }));
   jest.doMock('firebase/firestore', () => ({
-    connectFirestoreEmulator,
     getFirestore,
   }));
   jest.doMock('firebase/storage', () => ({
-    connectStorageEmulator,
     getStorage,
   }));
 
@@ -56,9 +49,6 @@ function installFirebaseMocks(existingApp = false) {
     getAnalytics,
     getFirestore,
     getStorage,
-    connectAuthEmulator,
-    connectFirestoreEmulator,
-    connectStorageEmulator,
     setPersistence,
   };
 }
@@ -84,11 +74,6 @@ describe('bootstrap Firebase do cliente', () => {
     jest.resetModules();
     jest.clearAllMocks();
     process.env = { ...originalEnvironment, ...requiredEnvironment };
-    delete (
-      window as Window & {
-        __EMPREGOSTP_FIREBASE_EMULATORS_CONNECTED__?: boolean;
-      }
-    ).__EMPREGOSTP_FIREBASE_EMULATORS_CONNECTED__;
   });
 
   afterAll(() => {
@@ -118,6 +103,7 @@ describe('bootstrap Firebase do cliente', () => {
       appId: '1:123456789:web:fake',
       measurementId: 'G-FAKE123',
     });
+    expect(mocks.setPersistence).toHaveBeenCalledWith(mocks.auth, 'local');
     expect(loadedModule).toMatchObject({
       app: mocks.app,
       auth: mocks.auth,
@@ -135,31 +121,17 @@ describe('bootstrap Firebase do cliente', () => {
     expect(mocks.getApp).toHaveBeenCalledTimes(1);
   });
 
-  test('isola Auth, Firestore e Storage e não inicia Analytics/Installations no modo emulador', () => {
-    process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS = 'true';
-    process.env.NEXT_PUBLIC_FIREBASE_AUTH_EMULATOR_HOST = 'localhost:19099';
-    process.env.NEXT_PUBLIC_FIRESTORE_EMULATOR_HOST = 'localhost:18080';
-    process.env.NEXT_PUBLIC_FIREBASE_STORAGE_EMULATOR_HOST = 'localhost:19199';
+  test('autenticação isolada partilha app e persistência sem inicializar Firestore/Storage', () => {
     const mocks: FirebaseMocks = installFirebaseMocks();
-
-    loadFirebaseModule();
-
-    expect(mocks.connectAuthEmulator).toHaveBeenCalledWith(
-      mocks.auth,
-      'http://localhost:19099',
-      { disableWarnings: true },
-    );
-    expect(mocks.connectFirestoreEmulator).toHaveBeenCalledWith(
-      mocks.db,
-      'localhost',
-      18080,
-    );
-    expect(mocks.connectStorageEmulator).toHaveBeenCalledWith(
-      mocks.storage,
-      'localhost',
-      19199,
-    );
-    expect(mocks.getAnalytics).not.toHaveBeenCalled();
+    let authOnly: Record<string, unknown> = {};
+    jest.isolateModules(() => {
+      authOnly = jest.requireActual('../../../lib/firebaseAuth');
+    });
+    expect(authOnly.default).toBe(mocks.auth);
+    expect(authOnly.auth).toBe(mocks.auth);
+    expect(mocks.initializeApp).toHaveBeenCalledTimes(1);
     expect(mocks.setPersistence).toHaveBeenCalledWith(mocks.auth, 'local');
+    expect(mocks.getFirestore).not.toHaveBeenCalled();
+    expect(mocks.getStorage).not.toHaveBeenCalled();
   });
 });

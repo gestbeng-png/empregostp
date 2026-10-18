@@ -3,7 +3,7 @@
  */
 import { unregisterCurrentPushToken } from '../../../lib/webPushClient';
 
-jest.mock('../../../lib/firebase', () => ({
+jest.mock('../../../lib/firebaseApp', () => ({
   app: {},
   auth: {},
 }));

@@ -104,12 +104,15 @@ describe('carrossel de candidatos verificados', () => {
     expect(screen.getAllByText('Ver mais')).toHaveLength(3);
   });
 
-  test('mantém um estado vazio seguro quando não há perfis disponíveis', () => {
+  test('convida a ser verificado quando não há perfis disponíveis', () => {
     render(<VerifiedCandidatesCarousel candidates={[]} />);
 
     expect(screen.getByRole('status')).toHaveTextContent(
-      'Ainda não existem perfis públicos em destaque',
+      'O próximo perfil em destaque pode ser o seu',
     );
+    expect(
+      screen.getByRole('link', { name: /Seja verificado/i }),
+    ).toHaveAttribute('href', '/candidatos#planos');
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 });

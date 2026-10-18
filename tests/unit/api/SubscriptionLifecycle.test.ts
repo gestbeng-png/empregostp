@@ -1,6 +1,7 @@
 import { admin } from '../../../lib/firebaseAdmin';
 import { createServerNotification } from '../../../lib/serverNotifications';
 import {
+  assertPaymentProofHashAvailable,
   assertPaymentProofUploadEligible,
   buildPlanActivationVersion,
   buildPlanExpirationTaskId,
@@ -491,5 +492,52 @@ describe('escritas concorrentes no ciclo de vida da subscrição', () => {
       },
       success: true,
     }));
+  });
+});
+
+describe('assertPaymentProofHashAvailable', () => {
+  test('aceita um hash novo ou já ligado ao mesmo pedido', () => {
+    expect(() =>
+      assertPaymentProofHashAvailable(null, null, 'request-1'),
+    ).not.toThrow();
+    expect(() =>
+      assertPaymentProofHashAvailable(
+        { requestId: 'request-1' },
+        null,
+        'request-1',
+      ),
+    ).not.toThrow();
+  });
+
+  test.each(['pending', 'payment_submitted', 'approved'])(
+    'recusa o hash de outro pedido em estado %s',
+    (status) => {
+      expect(() =>
+        assertPaymentProofHashAvailable(
+          { requestId: 'request-0' },
+          { status },
+          'request-1',
+        ),
+      ).toThrow(
+        expect.objectContaining({ code: 'PAYMENT_PROOF_DUPLICATE' }),
+      );
+    },
+  );
+
+  test('liberta o hash de um pedido rejeitado ou que já não existe', () => {
+    expect(() =>
+      assertPaymentProofHashAvailable(
+        { requestId: 'request-0' },
+        { status: 'rejected' },
+        'request-1',
+      ),
+    ).not.toThrow();
+    expect(() =>
+      assertPaymentProofHashAvailable(
+        { requestId: 'request-0' },
+        null,
+        'request-1',
+      ),
+    ).not.toThrow();
   });
 });

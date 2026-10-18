@@ -1,6 +1,7 @@
 import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useEffect, useRef } from 'react';
 import {
   FiArrowRight,
   FiBriefcase,
@@ -286,27 +287,52 @@ const MARKET_CONFIGS = {
   },
 };
 
-function CandidateServiceCard({ service }) {
+// A luz do cartão segue o cursor (posição guardada em variáveis CSS).
+function trackSpotlight(event) {
+  const card = event.currentTarget;
+  const rect = card.getBoundingClientRect();
+  card.style.setProperty('--spot-x', `${event.clientX - rect.left}px`);
+  card.style.setProperty('--spot-y', `${event.clientY - rect.top}px`);
+}
+
+function CandidateServiceCard({ service, index }) {
   const Icon = service.Icon;
+  const isLead = index === 0;
 
   return (
     <article
-      className={`${styles.serviceCard} ${service.featured ? styles.serviceCardFeatured : ''}`}
+      className={`${styles.serviceCard} ${isLead ? styles.serviceCardLead : ''}`}
+      style={{ '--card-index': index }}
+      onPointerMove={trackSpotlight}
     >
+      <span className={styles.serviceNumber} aria-hidden="true">
+        {String(index + 1).padStart(2, '0')}
+      </span>
+
       <div className={styles.serviceTopline}>
         <span className={styles.serviceIcon}>
           <Icon aria-hidden="true" />
         </span>
+        <p className={styles.serviceCategory}>{service.category}</p>
       </div>
 
-      <p className={styles.serviceCategory}>{service.category}</p>
       <h3 className={styles.serviceTitle}>{service.title}</h3>
       <p className={styles.serviceDescription}>{service.description}</p>
+
+      {service.highlights?.length ? (
+        <ul className={styles.serviceHighlights}>
+          {service.highlights.map((highlight) => (
+            <li key={highlight}>{highlight}</li>
+          ))}
+        </ul>
+      ) : null}
 
       <div className={styles.serviceFooter}>
         <Link href={service.href} className={styles.serviceLinkButton}>
           {service.cta}
-          <FiArrowRight aria-hidden="true" />
+          <span className={styles.serviceLinkArrow}>
+            <FiArrowRight aria-hidden="true" />
+          </span>
         </Link>
       </div>
     </article>
@@ -373,6 +399,28 @@ export default function CandidateMarketPage({
 }) {
   const config = MARKET_CONFIGS[market] || MARKET_CONFIGS.national;
   const isNational = market === 'national';
+  const servicesRef = useRef(null);
+
+  // Os cartões entram em sequência quando a secção aparece no ecrã. Sem
+  // JavaScript, ou com movimento reduzido, ficam simplesmente visíveis.
+  useEffect(() => {
+    const grid = servicesRef.current;
+    if (!grid || typeof IntersectionObserver === 'undefined') return undefined;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return undefined;
+    }
+    grid.dataset.reveal = 'pending';
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        grid.dataset.reveal = 'shown';
+        observer.disconnect();
+      },
+      { threshold: 0.15 },
+    );
+    observer.observe(grid);
+    return () => observer.disconnect();
+  }, [market]);
   const photos = isNational
     ? CANDIDATE_PHOTOS.national
     : CANDIDATE_PHOTOS.international;
@@ -502,9 +550,13 @@ export default function CandidateMarketPage({
                 </p>
               </div>
 
-              <div className={styles.servicesGrid}>
-                {config.offers.map((service) => (
-                  <CandidateServiceCard key={service.id} service={service} />
+              <div className={styles.servicesGrid} ref={servicesRef}>
+                {config.offers.map((service, index) => (
+                  <CandidateServiceCard
+                    key={service.id}
+                    service={service}
+                    index={index}
+                  />
                 ))}
               </div>
             </div>

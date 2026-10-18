@@ -9,7 +9,7 @@ jest.mock('firebase/auth', () => ({
   signOut: jest.fn(),
 }));
 
-jest.mock('../../../lib/firebase', () => ({
+jest.mock('../../../lib/firebaseAuth', () => ({
   auth: { currentUser: null, name: 'auth' },
 }));
 
@@ -59,6 +59,7 @@ describe('renovação do cookie de sessão', () => {
       </AuthProvider>,
     );
 
+    await waitFor(() => expect(mockedTokenChanged).toHaveBeenCalledTimes(1));
     await act(async () => {
       obterObservador()(utilizadorCom('token-restaurado'));
     });
@@ -77,6 +78,7 @@ describe('renovação do cookie de sessão', () => {
       </AuthProvider>,
     );
 
+    await waitFor(() => expect(mockedTokenChanged).toHaveBeenCalledTimes(1));
     const observador = obterObservador();
     await act(async () => observador(utilizadorCom('token-1')));
     await waitFor(() => expect(mockedCreateSession).toHaveBeenCalledTimes(1));
@@ -97,6 +99,7 @@ describe('renovação do cookie de sessão', () => {
       </AuthProvider>,
     );
 
+    await waitFor(() => expect(mockedTokenChanged).toHaveBeenCalledTimes(1));
     await act(async () => obterObservador()(null));
 
     expect(await screen.findByText('sem sessão')).toBeVisible();
@@ -112,6 +115,7 @@ describe('renovação do cookie de sessão', () => {
       </AuthProvider>,
     );
 
+    await waitFor(() => expect(mockedTokenChanged).toHaveBeenCalledTimes(1));
     const observador = obterObservador();
     await act(async () => observador(utilizadorCom('token-1')));
     await waitFor(() => expect(mockedCreateSession).toHaveBeenCalledTimes(1));

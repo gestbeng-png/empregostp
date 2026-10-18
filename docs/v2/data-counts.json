@@ -1,0 +1,43 @@
+{
+  "measuredAt": "2026-10-11T11:26:27.781Z",
+  "source": "Firestore configurado; leitura agregada sem alterações",
+  "capPerCollection": 5000,
+  "totals": {
+    "jobs": 7,
+    "applications": 9,
+    "profiles": 4,
+    "users": 17,
+    "posts": 5,
+    "news": 3
+  },
+  "complete": true,
+  "sampled": {
+    "jobs": 7,
+    "applications": 9,
+    "profiles": 4,
+    "users": 17,
+    "posts": 5,
+    "news": 3
+  },
+  "jobsByStatus": {
+    "closed": 5,
+    "active": 2
+  },
+  "multiRoleTitleSignals": 0,
+  "jobsWithoutDeadline": 0,
+  "salarySuspicionSignals": 0,
+  "locationReviewSignals": 1,
+  "duplicateApplicationGroups": 0,
+  "applicationsWithoutCvReference": 9,
+  "profilesWithoutExplicitVisibility": 2,
+  "permanentCvUrls": 4,
+  "usersWithMultipleOrganizationIds": 0,
+  "testContentTitleSignals": 0,
+  "limitations": [
+    "Sinais heurísticos não são decisões de moderação nem conversões automáticas.",
+    "Salários com separadores ambíguos ou data desconhecida requerem revisão adicional.",
+    "Ausência de referência ao CV na candidatura não prova que o candidato não possua CV no perfil.",
+    "Contagens de organizationIds não substituem auditoria de memberships legadas.",
+    "Tokens de download sinalizam URL permanente; acesso anónimo e IAM do bucket não foram testados."
+  ]
+}

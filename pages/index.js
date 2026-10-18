@@ -877,8 +877,9 @@ export default function HomePage({
                     Anúncios de empresas em destaque
                   </h2>
                   <p className={styles.aboutText}>
-                    Apresente os seus produtos e serviços a candidatos e
-                    empresas que já fazem parte da comunidade Empregos STP.
+                    Apresente os seus produtos e serviços a candidatos
+                    <br className={styles.aboutTextBreak} />e empresas que já
+                    fazem parte da comunidade Empregos STP.
                   </p>
                   <div className={styles.aboutActions}>
                     <Link href="/contacto" className={styles.aboutPrimary}>

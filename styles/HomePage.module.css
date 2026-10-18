@@ -5022,6 +5022,34 @@
   padding: 3rem 4rem 3rem 0;
 }
 
+/* Entre 1041px e 1240px a coluna é estreita: menos folga à direita para a
+   frase continuar em duas linhas. */
+@media (min-width: 65.0625em) and (max-width: 77.5em) {
+  .aboutContent {
+    padding-right: 1.5rem;
+  }
+}
+
+/* Em ecrãs estreitos o texto corre livre, sem a quebra forçada. */
+@media (max-width: 45em) {
+  .aboutTextBreak {
+    display: none;
+  }
+}
+
+/* O carrossel de anúncios fica com a mesma margem à direita que o texto
+   tem à esquerda, em vez de encostar à borda do ecrã. */
+.aboutGrid > :last-child {
+  margin-right: max(1.5rem, calc((100vw - 73.125rem) / 2));
+}
+
+/* Em ecrãs largos o cartão estica um pouco para a esquerda. */
+@media (min-width: 77.5625em) {
+  .aboutGrid > :last-child {
+    margin-left: -2rem;
+  }
+}
+
 .talentsContent {
   width: min(585px, calc(100% - 48px));
   justify-self: end;
@@ -5155,6 +5183,10 @@
 
   .aboutGrid {
     min-height: auto;
+  }
+
+  .aboutGrid > :last-child {
+    margin-right: 0;
   }
 
   .networkPanel,

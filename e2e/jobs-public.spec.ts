@@ -39,7 +39,7 @@ test.describe('página pública de vagas', () => {
       await mobileFilters.click();
     }
 
-    const firstFilter = page.getByRole('checkbox').first();
+    const firstFilter = page.getByRole('radio').first();
     if (await firstFilter.count()) {
       await firstFilter.check();
       await expect(firstFilter).toBeChecked();

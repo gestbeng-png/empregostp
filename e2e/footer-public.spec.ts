@@ -25,8 +25,8 @@ const footerGroups = [
     links: [
       ['Sobre nós', '/sobre-nos'],
       ['Blog', '/blog'],
+      ['Carreira', '/carreira'],
       ['Contactos', '/contacto'],
-      ['Privacidade', '/politica-privacidade'],
     ],
   },
 ] as const;
@@ -47,14 +47,7 @@ test.describe('footer público', () => {
     await expect(footer).toHaveCount(1);
     await footer.scrollIntoViewIfNeeded();
     await expect(footer).toBeVisible();
-    await expect(
-      footer.getByText('São Tomé e Príncipe · Linha do Equador', {
-        exact: true,
-      }),
-    ).toBeVisible();
-    await expect(
-      footer.getByText('Talento local. Impacto global.', { exact: true }),
-    ).toBeVisible();
+    await expect(footer.getByText('Linha do Equador')).toHaveCount(0);
 
     expect(
       await page.evaluate(() => {

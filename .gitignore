@@ -1,97 +1,59 @@
-# dependencies
-/node_modules
+# Dependências
+/node_modules/
 /.pnp
 .pnp.js
 
-# testing
-/coverage
-/playwright-report
-/test-results
-
-# next.js
+# Builds, caches e resultados gerados
 /.next/
-/.next-e2e/
+/.next-*/
+/.swc/
+/.cache/
 /out/
+/build/
+/coverage/
+/playwright-report/
+/test-results/
+/tmp/
+/private/
+*.tsbuildinfo
+next-env.d.ts
+/public/firebase-sw-config.js
 
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-*.key
-*.p12
-*.pfx
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# local env files
-.env*.local
+# Ambiente local e credenciais
 .env
 .env.*
 !.env.example
 !.env.*.example
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-# Firebase
-.firebase/
-firebase-debug.log
-firebase-debug.*.log
-firestore-debug.log
-firestore-debug.*.log
+*.env
+*.pem
+*.key
+*.p12
+*.pfx
+ADMIN-CREDENTIALS.txt
 lib/firebase-admin-credentials.json
 *service-account*.json
 *serviceaccount*.json
 *firebase-admin*.json
-/public/firebase-sw-config.js
 
-# IDE
+# Estado local das ferramentas
+/.vercel/
+/.firebase/
 .idea/
 .vscode/
+.claude/skills/
+.claude/settings.local.json
+.DS_Store
 *.swp
 *.swo
 
-# Local development
-.next/
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+firebase-debug*.log
+firestore-debug*.log
 
-# Environment variables
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-.env.production
-
-# Environment variables
-vercel-env-vars.env
-*.env
-.env.vercel.generated
-ADMIN-CREDENTIALS.txt
-
-# Registo das contas de teste da auditoria (contém UIDs e password de QA)
+# Artefactos locais de auditoria e registo de contas de teste
 docs/audits/qa-accounts.json
-
-# Ferramentas locais do agente — sem relação com o produto
-.claude/skills/
-.claude/settings.local.json
-
-# Capturas da auditoria de UI: 135 MB de binários.
-# Mantidas localmente de propósito. O Git guarda binários no histórico de
-# forma permanente, pelo que entrarem aqui tornaria cada clone futuro 135 MB
-# mais pesado para sempre, mesmo depois de removidos. Se forem para preservar,
-# usar Git LFS ou um bucket.
 docs/audits/screenshots/
-
-# Artefactos de execuções de auditoria (builds Next descartáveis)
-tmp/
-private/
-# Dist dirs alternativos do Next (NEXT_DIST_DIR): E2E, auditorias, etc.
-.next-*/
+docs/audits/data/

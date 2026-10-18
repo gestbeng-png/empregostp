@@ -62,7 +62,7 @@ describe('configuração Firebase do cliente', () => {
 
   test('o bootstrap e o service worker não contêm configuração inline', () => {
     const clientSource = readFileSync(
-      resolve(process.cwd(), 'lib/firebase.js'),
+      resolve(process.cwd(), 'lib/firebaseApp.js'),
       'utf8',
     );
     const serviceWorkerSource = readFileSync(

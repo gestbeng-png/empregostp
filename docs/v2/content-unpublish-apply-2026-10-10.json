@@ -1,0 +1,83 @@
+{
+  "mode": "APPLY",
+  "at": "2026-10-10T13:45:54.013Z",
+  "items": [
+    {
+      "collection": "resources_guides",
+      "id": "g8rBWnDmdu6nnjsiPNlF",
+      "action": "archive",
+      "reason": "PLACEHOLDER",
+      "outcome": "ARCHIVED"
+    },
+    {
+      "collection": "resources_premium",
+      "id": "ol4l7Akp0rZtbuqnnWl8",
+      "action": "archive",
+      "reason": "PLACEHOLDER",
+      "outcome": "ARCHIVED"
+    },
+    {
+      "collection": "resources_templates",
+      "id": "Tytf5c7WF79FPVFvEOz7",
+      "action": "archive",
+      "reason": "NO_FILE_NO_CONTENT",
+      "outcome": "ARCHIVED"
+    },
+    {
+      "collection": "news",
+      "id": "2hF4jGej0qoPDqctmEcS",
+      "action": "set",
+      "reason": "EMPTY_PLACEHOLDER",
+      "outcome": "SET"
+    },
+    {
+      "collection": "news",
+      "id": "trfshDvaHI1VR5G1IlZ3",
+      "action": "set",
+      "reason": "UNVERIFIED_PARTNERSHIP_NO_INFO",
+      "outcome": "SET"
+    },
+    {
+      "collection": "resources_templates",
+      "id": "carta-motivacao",
+      "action": "set",
+      "reason": "FAKE_COUNTER_FROM_SEED",
+      "outcome": "SET"
+    },
+    {
+      "collection": "resources_templates",
+      "id": "contrato-freelancer",
+      "action": "set",
+      "reason": "FAKE_COUNTER_FROM_SEED",
+      "outcome": "SET"
+    },
+    {
+      "collection": "resources_templates",
+      "id": "cv-classico",
+      "action": "set",
+      "reason": "FAKE_COUNTER_FROM_SEED",
+      "outcome": "SET"
+    },
+    {
+      "collection": "resources_templates",
+      "id": "cv-moderno",
+      "action": "set",
+      "reason": "FAKE_COUNTER_FROM_SEED",
+      "outcome": "SET"
+    },
+    {
+      "collection": "resources_templates",
+      "id": "job-description",
+      "action": "set",
+      "reason": "FAKE_COUNTER_FROM_SEED",
+      "outcome": "SET"
+    },
+    {
+      "collection": "resources_templates",
+      "id": "proposta-salarial",
+      "action": "set",
+      "reason": "FAKE_COUNTER_FROM_SEED",
+      "outcome": "SET"
+    }
+  ]
+}

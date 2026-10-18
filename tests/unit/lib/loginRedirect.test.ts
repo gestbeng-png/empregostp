@@ -2,7 +2,34 @@ import {
   buildLoginUrl,
   redirectToLogin,
   sanitizeLoginRedirect,
+  readLoginRedirect,
+  buildRegisterUrl,
 } from '../../../lib/loginRedirect';
+
+describe('continuação entre login e registo', () => {
+  test('aceita returnTo e preserva os links redirect existentes', () => {
+    expect(readLoginRedirect({ returnTo: '/vaga/abc#candidatura' })).toBe(
+      '/vaga/abc#candidatura',
+    );
+    expect(
+      readLoginRedirect({ redirect: '/vagas', returnTo: '/empresas' }),
+    ).toBe('/vagas');
+    expect(readLoginRedirect({ returnTo: ['/vagas', '/empresas'] })).toBe(
+      '/vagas',
+    );
+    expect(buildRegisterUrl('/vaga/abc#candidatura')).toBe(
+      '/register?redirect=%2Fvaga%2Fabc%23candidatura',
+    );
+  });
+
+  test.each(['//evil.test', 'https://evil.test', '/%255Cevil.test', '/login'])(
+    'recusa o destino inseguro %s nos dois percursos',
+    (returnTo) => {
+      expect(readLoginRedirect({ returnTo })).toBeNull();
+      expect(buildRegisterUrl(returnTo)).toBe('/register');
+    },
+  );
+});
 
 describe('buildLoginUrl', () => {
   test('preserva o destino codificado', () => {
@@ -42,7 +69,9 @@ describe('buildLoginUrl', () => {
   });
 
   test('aceita caminhos internos com query e fragmento', () => {
-    expect(buildLoginUrl('/vaga/abc123')).toBe('/login?redirect=%2Fvaga%2Fabc123');
+    expect(buildLoginUrl('/vaga/abc123')).toBe(
+      '/login?redirect=%2Fvaga%2Fabc123',
+    );
     expect(buildLoginUrl('/recursos/gerador-cv')).toBe(
       '/login?redirect=%2Frecursos%2Fgerador-cv',
     );
@@ -72,7 +101,9 @@ describe('redirectToLogin', () => {
   });
 
   test('aceita o contexto do getServerSideProps e usa o resolvedUrl', () => {
-    expect(redirectToLogin({ resolvedUrl: '/dashboard/empresa?tab=plans' })).toEqual({
+    expect(
+      redirectToLogin({ resolvedUrl: '/dashboard/empresa?tab=plans' }),
+    ).toEqual({
       redirect: {
         destination: '/login?redirect=%2Fdashboard%2Fempresa%3Ftab%3Dplans',
         permanent: false,

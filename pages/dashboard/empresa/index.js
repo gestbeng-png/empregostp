@@ -39,7 +39,7 @@ import {
   getEmpresaPlanFeatures,
   normalizeEmpresaPlanId,
 } from '../../../lib/empresaPlanFeatures';
-import { fetchActiveEmpresaPlans } from '../../../lib/empresaPlansCatalog';
+import { fetchEmpresaPlans } from '../../../lib/empresaPlansCatalog';
 import {
   fetchVerifiedCandidates,
   summarizeVerifiedCandidates,
@@ -109,6 +109,8 @@ const formatInterviewDateTime = (value) => {
   });
 };
 
+const SPONSORSHIP_SERVICE_TYPE = 'Vaga em destaque ou patrocinada';
+
 const HR_SERVICE_TYPES = [
   'Recrutamento e seleção',
   'Triagem de candidatos',
@@ -116,6 +118,8 @@ const HR_SERVICE_TYPES = [
   'Entrevistas técnicas',
   'Consultoria RH',
   'Documentação laboral',
+  'Criação de descrição de vaga',
+  SPONSORSHIP_SERVICE_TYPE,
   'Outro serviço RH',
 ];
 
@@ -273,7 +277,7 @@ const icons = {
 
 const normalizePlan = (plan) => {
   const normalizedPlanId = normalizeEmpresaPlanId(plan);
-  return getEmpresaPlanFeatures(normalizedPlanId).name || 'Básico';
+  return getEmpresaPlanFeatures(normalizedPlanId).name || 'Gratuito';
 };
 
 const EmptyState = ({ icon, title, message, action }) => (
@@ -554,6 +558,12 @@ export default function EmpresaDashboard({
       currentTab === requestedTab ? currentTab : requestedTab,
     );
   }, [router.isReady, router.query.tab]);
+
+  // «Patrocinar uma vaga» (/empresas) abre o pedido já com o tipo certo.
+  useEffect(() => {
+    if (!router.isReady || router.query.servico !== 'patrocinio') return;
+    setHrForm((prev) => ({ ...prev, serviceType: SPONSORSHIP_SERVICE_TYPE }));
+  }, [router.isReady, router.query.servico]);
 
   useEffect(() => {
     if (!user) return;
@@ -2162,7 +2172,7 @@ export default function EmpresaDashboard({
                   className="dash-muted"
                   style={{ marginBottom: 14, fontSize: '0.84rem' }}
                 >
-                  Plano Básico: visualização limitada aos candidatos que já se
+                  O seu plano mostra apenas os candidatos que já se
                   candidataram.{' '}
                   <Link
                     href="/premium/empresa"
@@ -2562,8 +2572,8 @@ export default function EmpresaDashboard({
                                 <button
                                   type="button"
                                   className="btn btn-ghost btn-sm"
-                                  title="Agendar entrevista está disponível nos planos Profissional e PRO"
-                                  aria-label="Agendar entrevista (requer plano Profissional ou PRO)"
+                                  title="Agendar entrevista não está incluído no seu plano"
+                                  aria-label="Agendar entrevista (não incluído no seu plano)"
                                   onClick={() => openTab('plans')}
                                 >
                                   <FiCalendar />
@@ -2583,8 +2593,8 @@ export default function EmpresaDashboard({
                                 <button
                                   type="button"
                                   className="btn btn-ghost btn-sm"
-                                  title="Enviar mensagem direta está disponível no plano PRO"
-                                  aria-label="Enviar mensagem (requer plano PRO)"
+                                  title="Mensagens diretas disponíveis a partir do plano Profissional"
+                                  aria-label="Enviar mensagem (requer plano Profissional)"
                                   onClick={() => openTab('plans')}
                                 >
                                   <FiMail />
@@ -2800,8 +2810,8 @@ export default function EmpresaDashboard({
             {!companyPlanFeatures.canSendDirectMessages ? (
               <EmptyState
                 icon={icons.messages}
-                title="Mensagens diretas disponíveis apenas no plano PRO"
-                message="Faça upgrade para o plano PRO para iniciar conversas com candidatos e acelerar o processo de recrutamento."
+                title="Mensagens diretas disponíveis a partir do plano Profissional"
+                message="Faça upgrade para o plano Profissional para iniciar conversas com candidatos e acelerar o processo de recrutamento."
                 action={
                   <Link href="/premium/empresa" className={styles.actionLink}>
                     Ver planos
@@ -2990,7 +3000,7 @@ export default function EmpresaDashboard({
               </div>
               <div className="empty-state">
                 <div className="empty-state-icon">📊</div>
-                <p>Analytics disponível apenas no plano PRO.</p>
+                <p>Analytics disponíveis a partir do plano Essencial.</p>
                 <div style={{ marginTop: 16 }}>
                   <Link href="/premium/empresa" className="btn btn-primary">
                     Ver planos
@@ -4106,7 +4116,7 @@ export async function getServerSideProps(context) {
           .collection('applications')
           .where('companyId', '==', uid)
           .get(),
-        fetchActiveEmpresaPlans(admin),
+        fetchEmpresaPlans(admin),
         fetchVerifiedCandidates(admin, publicViewerAccess),
       ]);
     const jobs = jobsSnapshot.docs.map((doc) => {

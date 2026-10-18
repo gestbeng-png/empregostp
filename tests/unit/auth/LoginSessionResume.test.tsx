@@ -4,7 +4,7 @@ import { onIdTokenChanged } from 'firebase/auth';
 import { createServerSession } from '../../../lib/authSessionClient';
 import Login from '../../../pages/login';
 
-const routerQuery: { redirect?: string } = {};
+const routerQuery: { redirect?: string; returnTo?: string } = {};
 const replaceMock = jest.fn();
 jest.mock('next/router', () => ({
   useRouter: () => ({ query: routerQuery, replace: replaceMock }),
@@ -52,6 +52,7 @@ describe('retoma da sessão guardada no login', () => {
     jest.clearAllMocks();
     window.sessionStorage.clear();
     delete routerQuery.redirect;
+    delete routerQuery.returnTo;
     mockedCreateSession.mockResolvedValue(undefined);
   });
 
@@ -75,6 +76,20 @@ describe('retoma da sessão guardada no login', () => {
     await act(async () => obterObservador()(utilizadorGuardado));
 
     await waitFor(() => expect(replaceMock).toHaveBeenCalledWith('/dashboard'));
+  });
+
+  test('returnTo também retoma o destino e acompanha a ligação de registo', async () => {
+    routerQuery.returnTo = '/vaga/abc#candidatura';
+    const obterObservador = capturarObservador();
+    render(<Login />);
+    expect(screen.getByRole('link', { name: 'Criar conta' })).toHaveAttribute(
+      'href',
+      '/register?redirect=%2Fvaga%2Fabc%23candidatura',
+    );
+    await act(async () => obterObservador()(utilizadorGuardado));
+    await waitFor(() =>
+      expect(replaceMock).toHaveBeenCalledWith('/vaga/abc#candidatura'),
+    );
   });
 
   test('um destino externo não é seguido', async () => {
