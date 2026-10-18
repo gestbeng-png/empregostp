@@ -685,7 +685,6 @@
 }
 
 .mobileResultsLabel,
-.mobilePublishedMeta,
 .mobileLoadMore,
 .mobileResultsFoot {
   display: none;
@@ -907,35 +906,6 @@
   color: var(--jobs-primary);
 }
 
-.jobPrimaryMeta {
-  display: flex;
-  margin-top: 14px;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px 18px;
-}
-
-.jobPrimaryMeta > span {
-  display: inline-flex;
-  min-width: 0;
-  align-items: center;
-  gap: 6px;
-  color: var(--jobs-muted);
-  font-size: 14px;
-  line-height: 20px;
-}
-
-.jobPrimaryMeta svg {
-  width: 18px;
-  height: 18px;
-  color: #6d7d93;
-  flex: 0 0 auto;
-}
-
-.statusMeta {
-  gap: 7px;
-}
-
 .statusBadge,
 .statusBadgeClosed {
   display: inline-flex;
@@ -1040,21 +1010,6 @@
   border-left: 1px solid #edf1f6;
 }
 
-.jobTiming {
-  display: grid;
-  margin-bottom: auto;
-  justify-items: end;
-  gap: 3px;
-  color: #75777f;
-  font-size: 14px;
-  line-height: 16px;
-}
-
-.jobTiming small {
-  color: #75777f;
-  font: inherit;
-}
-
 .applyAction,
 .detailsAction,
 .closedAction {
@@ -1149,10 +1104,6 @@
     padding-left: 0;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     border-left: 0;
-  }
-
-  .jobTiming {
-    display: none;
   }
 }
 
@@ -1366,26 +1317,6 @@
     font-size: 14px;
   }
 
-  .jobPrimaryMeta {
-    display: grid;
-    margin-top: 9px;
-    gap: 5px;
-  }
-
-  .jobPrimaryMeta > span {
-    font-size: 14px;
-    line-height: 20px;
-  }
-
-  .jobPrimaryMeta svg {
-    width: 15px;
-    height: 15px;
-  }
-
-  .mobilePublishedMeta {
-    display: inline-flex;
-  }
-
   .jobTags {
     margin-top: 10px;
     gap: 6px;
@@ -1411,10 +1342,6 @@
     padding-top: 0;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
-  }
-
-  .jobTiming {
-    display: none;
   }
 
   .applyAction,
@@ -2046,7 +1973,9 @@
 
 @keyframes jobsWordIn {
   from {
-    opacity: 0;
+    /* Visível desde a primeira pintura (antes 0): o título conta logo
+       como LCP em vez de esperar o fim da entrada. */
+    opacity: 0.2;
     transform: translateY(0.6em) rotate(4deg);
     filter: blur(0.4rem);
   }
@@ -2199,14 +2128,6 @@
 
 .jobCardSponsored .companyName span {
   color: var(--app-brand-lime);
-}
-
-.jobCardSponsored .jobPrimaryMeta > span {
-  color: color-mix(in srgb, white 72%, transparent);
-}
-
-.jobCardSponsored .jobPrimaryMeta svg {
-  color: color-mix(in srgb, white 55%, transparent);
 }
 
 .jobCardSponsored .statusBadge {

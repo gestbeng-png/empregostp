@@ -6284,3 +6284,194 @@
     padding: 22px 16px 18px;
   }
 }
+
+/* ------------------------------------------------------------------
+   Identidade das outras rotas (carreira, sobre-nós, contacto, recursos):
+   cartões com cantos de 24px, painéis grandes com 32px, botões, etiquetas
+   e pesquisa em pílula, ícones em círculo e campos com 12px. Só mudam os
+   cantos; cores, contornos, tamanhos e espaçamentos ficam iguais.
+   ------------------------------------------------------------------ */
+
+.page .heroFloatingCard,
+.page .categoryCard,
+.page .postCard,
+.page .newsletterCard,
+.page .processStep,
+.page .candidatesEmpty,
+.page .compactJobsGrid > a {
+  border-radius: 1.5rem;
+}
+
+.page .processPanel {
+  border-radius: 2rem;
+}
+
+/* Estes dois têm regras antigas `.page.page.page …`; precisam de mais peso. */
+.page.page.page.page .heroFloatingCard,
+.page.page.page.page .candidatesEmpty {
+  border-radius: 1.5rem;
+}
+
+.page .heroFloatingIcon,
+.page .categoryIcon,
+.page .processStepIcon {
+  border-radius: 50%;
+}
+
+/* O logótipo da empresa fica em quadrado arredondado: num círculo, os
+   logótipos largos seriam cortados. */
+.page .compactJobsGrid > a :is([class*='avatar']) {
+  border-radius: 0.75rem;
+}
+
+.page .heroFloatingTag,
+.page .compactJobsGrid > a :is([class*='badge']),
+.page .aboutPrimary,
+.page .candidatesEmptyButton,
+.page .newsletterButton,
+.page .searchForm,
+.page .searchInput,
+.page .searchButton {
+  border-radius: 999rem;
+}
+
+.page .newsletterInput {
+  border-radius: 0.75rem;
+}
+
+/* ------------------------------------------------------------------
+   Movimento das outras rotas (carreira, sobre-nós, contacto, recursos):
+   título palavra a palavra, blocos que sobem ao entrar no ecrã, cartões que
+   se elevam com o ícone a rodar e botões que sobem com brilho e seta.
+   Sem JavaScript ou com movimento reduzido, tudo fica estático e visível.
+   ------------------------------------------------------------------ */
+
+.page {
+  --home-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Título: cada palavra entra (começa já visível a 20% — ver LCP). */
+.heroWord {
+  display: inline-block;
+  animation: homeWordIn 0.9s var(--home-ease) both;
+  animation-delay: calc(0.15s + var(--i, 0) * 0.06s);
+}
+
+@keyframes homeWordIn {
+  from {
+    opacity: 0.2;
+    transform: translateY(0.6em) rotate(4deg);
+    filter: blur(0.4rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+/* Revelação ao entrar no ecrã (useScrollReveal). */
+.page[data-motion='on'] [data-reveal] {
+  opacity: 0;
+  transform: translateY(2rem);
+  transition:
+    opacity 0.8s var(--home-ease),
+    transform 0.8s var(--home-ease);
+  transition-delay: var(--delay, 0ms);
+}
+
+.page[data-motion='on'] [data-reveal][data-visible='true'] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Cartões: elevam-se e ganham sombra. */
+.page.page.page.page
+  :is(
+    .heroFloatingCard,
+    .categoryCard,
+    .postCard,
+    .newsletterCard,
+    .processStep,
+    .dualCard
+  ),
+.page.page.page.page .compactJobsGrid > a {
+  transition:
+    opacity 0.8s var(--home-ease),
+    transform 0.45s var(--home-ease),
+    border-color 0.3s ease,
+    box-shadow 0.45s ease;
+}
+
+.page.page.page.page
+  :is(.heroFloatingCard, .categoryCard, .postCard, .newsletterCard):hover {
+  transform: translateY(-0.5rem);
+  box-shadow: 0 1.5rem 3rem
+    color-mix(in srgb, var(--app-brand-dark) 18%, transparent);
+}
+
+/* Em fundo escuro a sombra não se vê: o contorno acende. */
+.page.page.page.page :is(.processStep, .dualCard):hover,
+.page.page.page.page .compactJobsGrid > a:hover {
+  transform: translateY(-0.5rem);
+  border-color: color-mix(in srgb, var(--app-brand-lime) 60%, transparent);
+  box-shadow: 0 1.5rem 3rem
+    color-mix(in srgb, var(--app-brand-dark) 35%, transparent);
+}
+
+/* Ícones: rodam e crescem um pouco. */
+.page.page.page.page :is(.categoryIcon, .processStepIcon, .heroFloatingIcon) {
+  transition: transform 0.5s var(--home-ease);
+}
+
+.page.page.page.page .categoryCard:hover .categoryIcon,
+.page.page.page.page .processStep:hover .processStepIcon,
+.page.page.page.page .heroFloatingCard:hover .heroFloatingIcon {
+  transform: rotate(-8deg) scale(1.08);
+}
+
+/* Botões: sobem com brilho; a seta avança. */
+.page.page.page.page
+  :is(.searchButton, .aboutPrimary, .newsletterButton, .candidatesEmptyButton) {
+  transition:
+    transform 0.25s var(--home-ease),
+    box-shadow 0.25s ease,
+    background-color 0.25s ease,
+    color 0.25s ease;
+}
+
+.page.page.page.page .searchButton:hover {
+  transform: translateY(-0.15rem);
+  box-shadow: 0 0.8rem 1.8rem
+    color-mix(in srgb, var(--app-brand-lime) 40%, transparent);
+}
+
+.page.page.page.page
+  :is(.aboutPrimary, .newsletterButton, .candidatesEmptyButton):hover {
+  transform: translateY(-0.15rem);
+  box-shadow: 0 0.8rem 1.8rem
+    color-mix(in srgb, var(--app-brand-primary) 30%, transparent);
+}
+
+.page.page.page.page :is(a, button) svg {
+  transition: transform 0.25s var(--home-ease);
+}
+
+.page.page.page.page :is(a, button):hover > svg:last-child {
+  transform: translateX(0.25rem);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page *,
+  .page *::before,
+  .page *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .page.page.page.page :is(a, button, article, div, span):hover,
+  .page.page.page.page :is(a, article):hover :is(span, svg) {
+    transform: none !important;
+  }
+}

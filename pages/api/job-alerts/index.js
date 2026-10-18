@@ -4,7 +4,7 @@ import { sendEmail, isEmailConfigured } from '../../../lib/email';
 import {
   filterPublishedJobs,
   buildJobAlertEmail,
-} from '../../../lib/jobAlertEmail';
+} from '../../../lib/email/jobAlertEmail';
 import {
   buildJobAlertFilterKey,
   buildJobAlertId,

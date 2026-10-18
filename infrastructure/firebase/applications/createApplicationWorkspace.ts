@@ -4,20 +4,12 @@ import { requireActiveApiUser } from '@/lib/apiUserAuth';
 import { admin } from '@/lib/firebaseAdmin';
 import { findExistingStorageFile } from '@/lib/storageBucket';
 
-import { getFeatureEnvironment } from '../marketplace/environment';
-import { FirestoreFeatureFlags } from '../marketplace/FirestoreFeatureFlags';
-
 import { FirestoreApplicationWorkspace } from './FirestoreApplicationWorkspace';
 import { FirestoreBulkActionService } from './FirestoreBulkActionService';
 
-let flags: FirestoreFeatureFlags | null = null;
-
 export function getApplicationWorkspace(): FirestoreApplicationWorkspace {
   const db = admin.firestore();
-  flags ||= new FirestoreFeatureFlags(db);
-  return new FirestoreApplicationWorkspace(db, flags, {
-    environment: getFeatureEnvironment(),
-  });
+  return new FirestoreApplicationWorkspace(db);
 }
 
 export async function authenticateApiUser(
@@ -48,8 +40,5 @@ export async function signSnapshotFile(
 
 export function getBulkActionService(): FirestoreBulkActionService {
   const db = admin.firestore();
-  flags ||= new FirestoreFeatureFlags(db);
-  return new FirestoreBulkActionService(db, flags, {
-    environment: getFeatureEnvironment(),
-  });
+  return new FirestoreBulkActionService(db);
 }

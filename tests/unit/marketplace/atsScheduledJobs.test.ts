@@ -16,8 +16,6 @@ jest.mock('firebase-admin/firestore', () => ({
   },
 }));
 
-const flags = { enabled: async () => true };
-const ctx = { environment: 'production' as const };
 const H = 3_600_000;
 const ts = (ms: number) => ({ toDate: () => new Date(ms) });
 const events = (docs: Map<string, Record<string, unknown>>) =>
@@ -48,14 +46,14 @@ describe('D12 — lembretes de entrevista', () => {
         remindersSent: [],
       },
     });
-    expect(await runInterviewReminders(db, flags, ctx, () => now)).toEqual({
+    expect(await runInterviewReminders(db, () => now)).toEqual({
       queued: 1,
     });
-    expect(await runInterviewReminders(db, flags, ctx, () => now)).toEqual({
+    expect(await runInterviewReminders(db, () => now)).toEqual({
       queued: 0,
     });
     now += 21.5 * H;
-    expect(await runInterviewReminders(db, flags, ctx, () => now)).toEqual({
+    expect(await runInterviewReminders(db, () => now)).toEqual({
       queued: 1,
     });
     expect(docs.get('interviews/i1')?.remindersSent).toEqual(['24H', '2H']);
@@ -93,16 +91,19 @@ describe('F2.8 — silêncio do empregador', () => {
   test('D+5 lembra uma vez; D+15 cria alerta interno sem penalizar', async () => {
     const { db, docs } = seed();
     const d5 = Date.parse('2026-10-12T09:00:00Z');
-    expect(await runEmployerSilenceReminders(db, flags, ctx, () => d5)).toEqual(
-      { reminders: 1, staffFlags: 0 },
-    );
-    expect(await runEmployerSilenceReminders(db, flags, ctx, () => d5)).toEqual(
-      { reminders: 0, staffFlags: 0 },
-    );
+    expect(await runEmployerSilenceReminders(db, () => d5)).toEqual({
+      reminders: 1,
+      staffFlags: 0,
+    });
+    expect(await runEmployerSilenceReminders(db, () => d5)).toEqual({
+      reminders: 0,
+      staffFlags: 0,
+    });
     const d15 = Date.parse('2026-10-26T09:00:00Z');
-    expect(
-      await runEmployerSilenceReminders(db, flags, ctx, () => d15),
-    ).toEqual({ reminders: 0, staffFlags: 1 });
+    expect(await runEmployerSilenceReminders(db, () => d15)).toEqual({
+      reminders: 0,
+      staffFlags: 1,
+    });
     expect(docs.get('jobInternals/j1')?.silenceStagesSent).toEqual([
       'REMINDER_D5',
       'REMINDER_D10',
@@ -125,12 +126,12 @@ describe('F2.8 — silêncio do empregador', () => {
       silenceSnoozedUntilMs: Date.parse('2026-10-30T00:00:00Z'),
     });
     expect(
-      await runEmployerSilenceReminders(db, flags, ctx, () =>
+      await runEmployerSilenceReminders(db, () =>
         Date.parse('2026-10-19T09:00:00Z'),
       ),
     ).toEqual({ reminders: 0, staffFlags: 0 });
     expect(
-      await runEmployerSilenceReminders(db, flags, ctx, () =>
+      await runEmployerSilenceReminders(db, () =>
         Date.parse('2026-10-26T09:00:00Z'),
       ),
     ).toEqual({ reminders: 0, staffFlags: 1 });

@@ -2,7 +2,6 @@ import { Timestamp } from 'firebase-admin/firestore';
 import type { Firestore } from 'firebase-admin/firestore';
 
 import { createApplicationTransitionPolicy } from '@/application/applications/applicationTransitionPolicy';
-import type { FeatureFlagReader } from '@/application/marketplace/ports';
 import {
   candidateStatusLabel,
   CLOSED_REASONS,
@@ -13,7 +12,6 @@ import {
 } from '@/domain/applications/jobEnd';
 import type { ApplicationStatus } from '@/domain/applications/states';
 import { canUseFeature } from '@/domain/entitlements/canUseFeature';
-import type { FeatureContext } from '@/domain/feature-flags/flags';
 import { can } from '@/domain/permissions/can';
 import { failure, success } from '@/domain/shared/Result';
 import type { Result } from '@/domain/shared/Result';
@@ -48,8 +46,6 @@ export interface BulkPreview {
 export class FirestoreBulkActionService {
   constructor(
     private readonly db: Firestore,
-    private readonly flags: FeatureFlagReader,
-    private readonly context: FeatureContext,
     private readonly now: () => number = Date.now,
   ) {}
 
@@ -170,14 +166,6 @@ export class FirestoreBulkActionService {
     )
       return failure('NOT_FOUND');
     const organizationId = String([...organizations][0]);
-    if (
-      !(await this.flags.enabled('V2_EMPLOYER_ATS', {
-        ...this.context,
-        organizationId,
-        userId,
-      }))
-    )
-      return failure('FEATURE_DISABLED');
     if (!(await this.member(userId, organizationId)))
       return failure('FORBIDDEN');
     const entitlement = canUseFeature(
@@ -186,7 +174,6 @@ export class FirestoreBulkActionService {
       [],
       {
         now: this.now(),
-        v2Enabled: true,
         requested: ids.length,
       },
     );

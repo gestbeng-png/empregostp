@@ -10,7 +10,7 @@ import { CONSENT_KINDS, LEGAL_DOCUMENTS } from '@/domain/privacy/Consent';
 import { RATE_LIMIT_POLICIES } from '@/domain/rate-limits/policies';
 
 const now = 1_000_000;
-const options = { now, v2Enabled: true };
+const options = { now };
 const organization: Subject = {
   type: 'ORGANIZATION',
   id: 'org-a',

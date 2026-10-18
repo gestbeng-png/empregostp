@@ -2,98 +2,33 @@ import Image from 'next/image';
 import Link from 'next/link';
 import styles from '../../styles/AuthPage.module.css';
 
-export default function AuthShell({
-  tone = 'blue',
-  minimal = false,
-  wide = false,
-  eyebrow,
-  panelTitle,
-  panelDescription,
-  chips = [],
-  children,
-}) {
-  const toneClass =
-    tone === 'green' ? styles.brandPanelGreen : styles.brandPanelBlue;
-
+// Autenticação: só o logótipo e o formulário, com a linguagem visual atual
+// (cartão arredondado, botões em pílula, lima da marca).
+export default function AuthShell({ wide = false, children }) {
   return (
     <div className={styles.page}>
       <main className={styles.main}>
-        {minimal ? (
-          <section
-            className={`${styles.shellMinimal} ${
-              wide ? styles.shellMinimalWide : ''
-            }`}
+        <div
+          className={`${styles.formPanelInner} ${
+            wide ? styles.formPanelInnerWide : ''
+          }`}
+        >
+          <Link
+            href="/"
+            className={styles.brandLink}
+            aria-label="Voltar à página inicial"
           >
-            <section className={styles.formPanelCompact}>
-              <Link
-                href="/"
-                className={styles.brandLinkMinimal}
-                aria-label="Voltar à página inicial"
-              >
-                <Image
-                  src="/assets/Emprego STP Logo.png"
-                  alt="EmpregoSTP"
-                  width={619}
-                  height={169}
-                  priority
-                  className={styles.brandLogo}
-                />
-              </Link>
+            <Image
+              src="/assets/Logo header.png"
+              alt="EmpregoSTP"
+              width={1896}
+              height={511}
+              priority
+            />
+          </Link>
 
-              <div
-                className={`${styles.formPanelInner} ${
-                  wide ? styles.formPanelInnerWide : ''
-                }`}
-              >
-                {children}
-              </div>
-            </section>
-          </section>
-        ) : (
-          <section className={styles.shell}>
-            <aside className={`${styles.brandPanel} ${toneClass}`}>
-              <Link
-                href="/"
-                className={styles.brandLink}
-                aria-label="Voltar à página inicial"
-              >
-                <Image
-                  src="/assets/Emprego STP Logo.png"
-                  alt="EmpregoSTP"
-                  width={619}
-                  height={169}
-                  priority
-                  className={styles.brandLogo}
-                />
-              </Link>
-
-              {eyebrow ? (
-                <span className={styles.eyebrow}>{eyebrow}</span>
-              ) : null}
-
-              <div className={styles.brandCopy}>
-                <h1 className={styles.brandTitle}>{panelTitle}</h1>
-                {panelDescription ? (
-                  <p className={styles.brandDescription}>{panelDescription}</p>
-                ) : null}
-              </div>
-
-              {chips.length ? (
-                <div className={styles.brandChips}>
-                  {chips.map((chip) => (
-                    <span key={chip} className={styles.brandChip}>
-                      {chip}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
-            </aside>
-
-            <section className={styles.formPanel}>
-              <div className={styles.formPanelInner}>{children}</div>
-            </section>
-          </section>
-        )}
+          {children}
+        </div>
       </main>
     </div>
   );

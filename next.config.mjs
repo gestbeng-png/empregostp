@@ -52,8 +52,24 @@ if (process.env.VERCEL_ENV === 'production') {
   assertProductionEnv(process.env);
 }
 
+// Imagens do Firebase Storage do próprio projeto podem passar pelo otimizador
+// do `next/image` (redimensionadas e em WebP/AVIF). Só este bucket: um padrão
+// aberto deixaria terceiros usar o otimizador com imagens alheias.
+const STORAGE_BUCKET = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
+
 const nextConfig = {
   distDir: process.env.NEXT_DIST_DIR || '.next',
+  images: {
+    remotePatterns: STORAGE_BUCKET
+      ? [
+          {
+            protocol: 'https',
+            hostname: 'firebasestorage.googleapis.com',
+            pathname: `/v0/b/${STORAGE_BUCKET}/o/**`,
+          },
+        ]
+      : [],
+  },
   async headers() {
     return [
       {

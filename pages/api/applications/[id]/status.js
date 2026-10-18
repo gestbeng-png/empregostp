@@ -248,11 +248,9 @@ export default async function handler(req, res) {
     const canManageAsAdmin = isAdminActor && isAdminPublishedJob(jobData, uid);
 
     if (!canManageAsCompany && !canManageAsAdmin) {
-      return res
-        .status(403)
-        .json({
-          error: 'Voce nao tem permissao para atualizar esta candidatura',
-        });
+      return res.status(403).json({
+        error: 'Voce nao tem permissao para atualizar esta candidatura',
+      });
     }
 
     const previousStatus = applicationData.status;
@@ -323,13 +321,15 @@ export default async function handler(req, res) {
     });
 
     // Referências v2 alocadas uma vez (fora das novas tentativas da transação).
-    const v2Refs = { history: [], event: null, hire: null };
-    const allocateV2Refs = (count) => {
+    const lifecycleRefs = { history: [], event: null, hire: null };
+    const allocateLifecycleRefs = (count) => {
       const db = adminApp.firestore();
-      while (v2Refs.history.length < count)
-        v2Refs.history.push(db.collection('applicationsStatusHistory').doc());
-      v2Refs.event ||= db.collection('outboxEvents').doc();
-      return v2Refs;
+      while (lifecycleRefs.history.length < count)
+        lifecycleRefs.history.push(
+          db.collection('applicationsStatusHistory').doc(),
+        );
+      lifecycleRefs.event ||= db.collection('outboxEvents').doc();
+      return lifecycleRefs;
     };
 
     try {
@@ -351,7 +351,7 @@ export default async function handler(req, res) {
         const nextTimeline = [...currentTimeline, timelineEvent].slice(-40);
         // D7: candidatura v2 — a mesma decisão expressa como transições E4,
         // com histórico por passo, para o candidato ver o que a empresa fez.
-        let v2Update = {};
+        let lifecycleUpdate = {};
         if (typeof freshData.v2Status === 'string') {
           const plan = planLegacyAtsTransition(freshData.v2Status, status);
           if (!plan.ok) {
@@ -361,7 +361,7 @@ export default async function handler(req, res) {
             );
           }
           if (plan.steps.length) {
-            const refs = allocateV2Refs(plan.steps.length);
+            const refs = allocateLifecycleRefs(plan.steps.length);
             let from = freshData.v2Status;
             let version = Number.isSafeInteger(freshData.version)
               ? freshData.version
@@ -416,7 +416,7 @@ export default async function handler(req, res) {
                 createdBy: uid,
               });
             }
-            v2Update = {
+            lifecycleUpdate = {
               v2Status: from,
               version,
               lastStatusChangeAt: at,
@@ -430,14 +430,14 @@ export default async function handler(req, res) {
         }
         transaction.update(applicationRef, {
           ...updateData,
-          ...v2Update,
+          ...lifecycleUpdate,
           timeline: nextTimeline,
         });
       });
     } catch (transactionError) {
       if (
         transactionError?.code === 'APPLICATION_WITHDRAWN' ||
-        transactionError?.code === 'V2_TRANSITION_NOT_ALLOWED'
+        transactionError?.code === 'TRANSITION_NOT_ALLOWED'
       ) {
         return res.status(409).json({
           code: transactionError.code,

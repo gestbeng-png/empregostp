@@ -1,10 +1,8 @@
 import { Timestamp } from 'firebase-admin/firestore';
 import type { Firestore, Transaction } from 'firebase-admin/firestore';
 
-import type { FeatureFlagReader } from '@/application/marketplace/ports';
 import { assertTransition as assertApplication } from '@/domain/applications/states';
 import type { ApplicationStatus } from '@/domain/applications/states';
-import type { FeatureContext } from '@/domain/feature-flags/flags';
 import {
   CANDIDATE_ANSWERS,
   hireFollowUpStage,
@@ -57,8 +55,6 @@ const PATHS: Partial<Record<ApplicationStatus, ApplicationStatus[]>> = {
 export class FirestoreHireService {
   constructor(
     private readonly db: Firestore,
-    private readonly flags: FeatureFlagReader,
-    private readonly context: FeatureContext,
     private readonly now: () => number = Date.now,
   ) {}
 
@@ -114,14 +110,6 @@ export class FirestoreHireService {
     )
       return failure('NOT_FOUND');
     const organizationId = app.organizationId;
-    if (
-      !(await this.flags.enabled('V2_EMPLOYER_ATS', {
-        ...this.context,
-        organizationId,
-        userId,
-      }))
-    )
-      return failure('FEATURE_DISABLED');
     const identity = await resolveIdentity(
       this.db,
       { get: (r: { get: () => unknown }) => r.get() } as never,

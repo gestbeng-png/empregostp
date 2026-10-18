@@ -48,13 +48,13 @@ describe('revalidação do formulário no servidor', () => {
     expect(erros.consentDataProcessing).toBeDefined();
   });
 
-  test('um pedido sem referências é recusado', () => {
+  test('um pedido sem referências é aceite (são opcionais)', () => {
     const erros = validateApplicationForm({
       ...formularioCompleto(),
       references: [],
     });
 
-    expect(erros.references).toBeDefined();
+    expect(erros).toEqual({});
   });
 
   test('campos de escolha só aceitam valores da lista', () => {
@@ -66,7 +66,6 @@ describe('revalidação do formulário no servidor', () => {
 
     expect(dados.workAuthorization).toBe('');
     expect(dados.referralSource).toBe('');
-    expect(validateApplicationForm(dados).workAuthorization).toBeDefined();
   });
 
   test('o texto é cortado no limite antes de ser gravado', () => {
@@ -82,13 +81,14 @@ describe('revalidação do formulário no servidor', () => {
     expect(dados.references[0]?.name.length).toBeLessThanOrEqual(80);
   });
 
-  test('sem o plano da carta, um formulário sem carta é aceite', () => {
-    const erros = validateApplicationForm(
-      { ...formularioCompleto(), coverLetter: '' },
-      { coverLetterEnabled: false },
-    );
+  test('sem carta é aceite, salvo se a vaga a pedir', () => {
+    const semCarta = { ...formularioCompleto(), coverLetter: '' };
 
-    expect(erros).toEqual({});
+    expect(validateApplicationForm(semCarta)).toEqual({});
+    expect(
+      validateApplicationForm(semCarta, { requireCoverLetter: true })
+        .coverLetter,
+    ).toBeDefined();
   });
 
   test('um formulário completo passa a revalidação', () => {

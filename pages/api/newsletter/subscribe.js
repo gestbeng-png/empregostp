@@ -1,7 +1,7 @@
 import { admin } from '../../../lib/firebaseAdmin';
 import { enforceApiRateLimit, getClientIp } from '../../../lib/apiRateLimit';
 import { sendEmail, isEmailConfigured } from '../../../lib/email';
-import { welcomeEmail } from '../../../lib/newsletterEmails';
+import { welcomeEmail } from '../../../lib/email/newsletterEmails';
 import { logServerError } from '../../../lib/serverLog';
 
 // Regista subscritores da newsletter e envia um email de boas-vindas.

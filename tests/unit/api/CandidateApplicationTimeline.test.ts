@@ -2,22 +2,10 @@ import { admin } from '@/lib/firebaseAdmin';
 import { logServerError } from '@/lib/serverLog';
 import handler from '@/pages/api/applications/[id]/timeline';
 
-const mockEnabled = jest.fn();
 jest.mock('@/lib/firebaseAdmin', () => ({
   admin: { auth: jest.fn(), firestore: jest.fn() },
 }));
 jest.mock('@/lib/serverLog', () => ({ logServerError: jest.fn() }));
-jest.mock(
-  '@/infrastructure/firebase/marketplace/FirestoreFeatureFlags',
-  () => ({
-    FirestoreFeatureFlags: jest
-      .fn()
-      .mockImplementation(() => ({ enabled: mockEnabled })),
-  }),
-);
-jest.mock('@/infrastructure/firebase/marketplace/environment', () => ({
-  getFeatureEnvironment: () => 'development',
-}));
 
 const mockVerify = jest.fn();
 const mockCollection = jest.fn();
@@ -47,7 +35,6 @@ beforeEach(() => {
   jest.clearAllMocks();
   mockUser = { userType: 'candidato', status: 'active' };
   mockVerify.mockReset().mockResolvedValue({ uid: 'candidate-1' });
-  mockEnabled.mockReset().mockResolvedValue(true);
   mockApplicationGet.mockReset().mockResolvedValue(
     doc({
       candidateUserId: 'candidate-1',
@@ -121,15 +108,6 @@ test('owner receives only candidate-visible fields and private no-store caching'
   );
 });
 
-test('flag off returns 404 before reading the application or history', async () => {
-  mockEnabled.mockResolvedValue(false);
-  const res = response();
-  await handler(request(), res);
-  expect(res.status).toHaveBeenCalledWith(404);
-  expect(mockApplicationGet).not.toHaveBeenCalled();
-  expect(mockHistoryGet).not.toHaveBeenCalled();
-});
-
 test.each([
   null,
   { candidateUserId: 'other-candidate', v2Status: 'SUBMITTED' },
@@ -183,7 +161,6 @@ test('revoked session cannot read application data', async () => {
   const res = response();
   await handler(request(), res);
   expect(res.status).toHaveBeenCalledWith(401);
-  expect(mockEnabled).not.toHaveBeenCalled();
   expect(mockApplicationGet).not.toHaveBeenCalled();
 });
 
@@ -192,7 +169,6 @@ test('blocked account cannot read application data', async () => {
   const res = response();
   await handler(request(), res);
   expect(res.status).toHaveBeenCalledWith(403);
-  expect(mockEnabled).not.toHaveBeenCalled();
   expect(mockApplicationGet).not.toHaveBeenCalled();
 });
 

@@ -21,7 +21,7 @@ export interface PublicJobPage {
 
 const NOINDEX_AFTER_CLOSE_MS = 30 * 86_400_000;
 
-const FROM_V2: Readonly<Record<string, PublicJobPageKind>> = {
+const FROM_LIFECYCLE: Readonly<Record<string, PublicJobPageKind>> = {
   PUBLISHED: 'OPEN',
   CLOSED: 'CLOSED',
   EXPIRED: 'CLOSED',
@@ -51,7 +51,7 @@ export function resolvePublicJobPage(input: {
   now: Date;
 }): PublicJobPage {
   const kind =
-    (input.v2Status && FROM_V2[input.v2Status]) ||
+    (input.v2Status && FROM_LIFECYCLE[input.v2Status]) ||
     FROM_LEGACY[String(input.legacyStatus || '').toLowerCase()] ||
     'NOT_FOUND';
   if (kind === 'NOT_FOUND')

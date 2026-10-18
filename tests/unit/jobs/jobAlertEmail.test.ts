@@ -1,4 +1,4 @@
-import { filterPublishedJobs } from '../../../lib/jobAlertEmail';
+import { filterPublishedJobs } from '../../../lib/email/jobAlertEmail';
 
 const jobs = [
   {
@@ -45,9 +45,7 @@ describe('filtros de alertas de vagas', () => {
 
   test('a pesquisa inclui o nome da empresa', () => {
     expect(
-      filterPublishedJobs(jobs, { search: 'studio azul' }).map(
-        (job) => job.id,
-      ),
+      filterPublishedJobs(jobs, { search: 'studio azul' }).map((job) => job.id),
     ).toEqual(['hybrid-junior']);
   });
 });

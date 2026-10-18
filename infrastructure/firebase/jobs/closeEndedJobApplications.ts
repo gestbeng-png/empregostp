@@ -1,7 +1,6 @@
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import type { Firestore } from 'firebase-admin/firestore';
 
-import type { FeatureFlagReader } from '@/application/marketplace/ports';
 import {
   DEFAULT_REJECTION_TEMPLATES,
   planJobEndClosures,
@@ -11,9 +10,6 @@ import type { CloseOutcome, JobEndState } from '@/domain/applications/jobEnd';
 import { assertTransition } from '@/domain/applications/states';
 import type { ApplicationStatus } from '@/domain/applications/states';
 import { legacyStatusUpdate } from '@/domain/lifecycle/legacyStatus';
-
-import { getFeatureEnvironment } from '../marketplace/environment';
-import { FirestoreFeatureFlags } from '../marketplace/FirestoreFeatureFlags';
 
 /** Estados legados ainda abertos → equivalente v2 (só para decidir). */
 const LEGACY_OPEN: Readonly<Record<string, ApplicationStatus>> = {
@@ -56,9 +52,8 @@ export interface JobEndRunResult {
 export async function closeEndedJobApplications(
   db: Firestore,
   now: Date,
-  options: { flags?: FeatureFlagReader; limit?: number } = {},
+  options: { limit?: number } = {},
 ): Promise<JobEndRunResult> {
-  const flags = options.flags ?? new FirestoreFeatureFlags(db);
   const result: JobEndRunResult = {
     jobsScanned: 0,
     jobsCompleted: 0,
@@ -73,15 +68,6 @@ export async function closeEndedJobApplications(
   for (const jobDoc of jobs.docs) {
     result.jobsScanned++;
     const job = jobDoc.data();
-    const organizationId = String(job.organizationId ?? job.companyId ?? '');
-    if (
-      !(await flags.enabled('V2_JOB_LIFECYCLE', {
-        environment: getFeatureEnvironment(),
-        organizationId: organizationId || undefined,
-        userId: organizationId || undefined,
-      }))
-    )
-      continue;
     const state = END_STATES.has(job.jobEndState)
       ? (job.jobEndState as JobEndState)
       : 'CLOSED';

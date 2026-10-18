@@ -39,12 +39,7 @@ function setup(
   const fake = createFakeFirestore(seed);
   return {
     ...fake,
-    service: new FirestoreBulkActionService(
-      fake.db,
-      { enabled: async () => true },
-      { environment: 'production' },
-      () => NOW,
-    ),
+    service: new FirestoreBulkActionService(fake.db, () => NOW),
   };
 }
 const ids = (n: number) => Array.from({ length: n }, (_, i) => `app-${i + 1}`);

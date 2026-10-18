@@ -155,23 +155,13 @@ describe('R57/R58 — remover membro transferindo responsabilidades', () => {
 
     // R105/R112: o membro removido deixa de entrar logo; Ana vê o que herdou.
     expect(
-      await readRecruitmentWorkspace(
-        db,
-        { enabled: async () => true },
-        { environment: 'production' },
-        'joao',
-        org,
-        [{ organizationId: org, role: 'RECRUITER' }],
-      ),
+      await readRecruitmentWorkspace(db, 'joao', org, [
+        { organizationId: org, role: 'RECRUITER' },
+      ]),
     ).toMatchObject({ ok: false, error: { code: 'FORBIDDEN' } });
-    const ana = await readRecruitmentWorkspace(
-      db,
-      { enabled: async () => true },
-      { environment: 'production' },
-      'ana',
-      org,
-      [{ organizationId: org, role: 'RECRUITER' }],
-    );
+    const ana = await readRecruitmentWorkspace(db, 'ana', org, [
+      { organizationId: org, role: 'RECRUITER' },
+    ]);
     if (!ana.ok) throw new Error('unexpected');
     expect(ana.value.applications.map((row) => row.id)).toEqual(['a1']);
   });

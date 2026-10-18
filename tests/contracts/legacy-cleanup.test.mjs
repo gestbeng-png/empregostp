@@ -126,10 +126,21 @@ test('obsolete paid application limits and restrictions are absent from the subm
   for (const guard of [
     'requireActiveApiUser',
     'validateApplicationForm',
-    'runTransaction',
-    'APPLICATION_ALREADY_EXISTS',
+    // Caminho único: a duplicação é impedida numa transação dentro do caso
+    // de uso (FirestoreApplicationSubmissionStore) e chega aqui como 409.
+    'getSubmitApplication',
+    'ALREADY_APPLIED: 409',
   ])
     assert.ok(source.includes(guard), guard);
+  const store = fs.readFileSync(
+    path.join(
+      root,
+      'infrastructure/firebase/applications/FirestoreApplicationSubmissionStore.ts',
+    ),
+    'utf8',
+  );
+  assert.ok(store.includes('runTransaction'), 'runTransaction');
+  assert.ok(store.includes("'ALREADY_APPLIED'"), 'ALREADY_APPLIED');
 });
 
 test('data adapters and rollback/rollout guards remain until an explicitly verified migration', () => {

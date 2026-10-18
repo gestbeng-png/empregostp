@@ -1,4 +1,5 @@
 import { admin } from '../../../lib/firebaseAdmin';
+import { countJobsByCategory } from '../../../lib/jobCategoryCounts';
 import { logServerError } from '../../../lib/serverLog';
 
 export default async function handler(req, res) {
@@ -15,27 +16,9 @@ export default async function handler(req, res) {
       .where('status', '==', 'active')
       .get();
 
-    // Contar vagas por categoria
-    const categoryCounts = {};
-
-    jobsSnapshot.docs.forEach((doc) => {
-      const job = doc.data();
-      const categoria = job.categoria || job.category || 'Outros';
-
-      if (categoryCounts[categoria]) {
-        categoryCounts[categoria]++;
-      } else {
-        categoryCounts[categoria] = 1;
-      }
-    });
-
-    // Ordenar categorias por número de vagas (decrescente)
-    const sortedCategories = Object.entries(categoryCounts)
-      .sort(([, a], [, b]) => b - a)
-      .map(([name, count]) => ({
-        name,
-        count,
-      }));
+    const sortedCategories = countJobsByCategory(
+      jobsSnapshot.docs.map((doc) => doc.data()),
+    );
 
     return res.status(200).json({
       categories: sortedCategories,

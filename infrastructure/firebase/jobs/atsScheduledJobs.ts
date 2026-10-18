@@ -1,10 +1,8 @@
 import { Timestamp } from 'firebase-admin/firestore';
 import type { Firestore } from 'firebase-admin/firestore';
 
-import type { FeatureFlagReader } from '@/application/marketplace/ports';
 import { employerSilenceStage } from '@/domain/applications/jobEnd';
 import type { SilenceStage } from '@/domain/applications/jobEnd';
-import type { FeatureContext } from '@/domain/feature-flags/flags';
 import { dueInterviewReminders } from '@/domain/interviews/schedule';
 
 type Plain = Record<string, unknown>;
@@ -54,8 +52,6 @@ export async function withCronLock<T>(
 /** E6 — lembretes 24 h e 2 h: marca a janela e cria o evento na mesma transação. */
 export async function runInterviewReminders(
   db: Firestore,
-  flags: FeatureFlagReader,
-  context: FeatureContext,
   now: () => number = Date.now,
 ): Promise<{ queued: number }> {
   const result = { queued: 0 };
@@ -88,14 +84,6 @@ export async function runInterviewReminders(
     new Date(now()),
   );
   for (const { interviewId, window } of due) {
-    const interview = candidates.find((item) => item.id === interviewId);
-    if (
-      !(await flags.enabled('V2_INTERVIEWS_OFFERS', {
-        ...context,
-        organizationId: String(interview?.organizationId ?? ''),
-      }))
-    )
-      continue;
     const ref = db.collection('interviews').doc(interviewId);
     const queued = await db.runTransaction(async (tx) => {
       const fresh = (await tx.get(ref)).data();
@@ -132,8 +120,6 @@ export async function runInterviewReminders(
  */
 export async function runEmployerSilenceReminders(
   db: Firestore,
-  flags: FeatureFlagReader,
-  context: FeatureContext,
   now: () => number = Date.now,
 ): Promise<{ reminders: number; staffFlags: number }> {
   const result = { reminders: 0, staffFlags: 0 };
@@ -157,11 +143,7 @@ export async function runEmployerSilenceReminders(
   }
   for (const [jobId, { at, organizationId }] of oldest) {
     const stage = employerSilenceStage(at, new Date(now()));
-    if (
-      !stage ||
-      !(await flags.enabled('V2_EMPLOYER_ATS', { ...context, organizationId }))
-    )
-      continue;
+    if (!stage) continue;
     const ref = db.collection('jobInternals').doc(jobId);
     const outcome = await db.runTransaction(async (tx) => {
       const internals = (await tx.get(ref)).data() ?? {};

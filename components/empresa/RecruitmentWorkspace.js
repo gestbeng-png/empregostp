@@ -999,15 +999,9 @@ export default function RecruitmentWorkspace({
   const row = workspace?.applications.find((item) => item.id === opened);
   const tabs = workspace
     ? [
-        ...(workspace.capabilities.ats
-          ? [['applications', 'Candidaturas', workspace.applications.length]]
-          : []),
-        ...(workspace.capabilities.jobs
-          ? [['jobs', 'Vagas', workspace.jobs.length]]
-          : []),
-        ...(workspace.capabilities.interviews
-          ? [['interviews', 'Entrevistas', workspace.interviews.length]]
-          : []),
+        ['applications', 'Candidaturas', workspace.applications.length],
+        ['jobs', 'Vagas', workspace.jobs.length],
+        ['interviews', 'Entrevistas', workspace.interviews.length],
         ...(workspace.capabilities.manageTeam
           ? [
               ['team', 'Equipa', workspace.members.length],

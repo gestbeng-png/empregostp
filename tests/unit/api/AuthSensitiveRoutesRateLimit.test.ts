@@ -2,7 +2,7 @@ import { enforceApiRateLimit } from '../../../lib/apiRateLimit';
 import {
   sendResetPasswordEmail,
   sendVerificationEmail,
-} from '../../../lib/authEmails';
+} from '../../../lib/email/authEmails';
 import { admin } from '../../../lib/firebaseAdmin';
 import passwordResetHandler from '../../../pages/api/auth/send-password-reset';
 import verificationHandler from '../../../pages/api/auth/send-verification';
@@ -19,7 +19,7 @@ jest.mock('../../../lib/firebaseAdmin', () => ({
   },
 }));
 
-jest.mock('../../../lib/authEmails', () => ({
+jest.mock('../../../lib/email/authEmails', () => ({
   resolveBaseUrl: jest.fn(() => 'https://empregostp.example'),
   sendResetPasswordEmail: jest.fn(),
   sendVerificationEmail: jest.fn(),
@@ -51,10 +51,12 @@ function createResponse() {
 describe('rate limit fechado nas rotas sensíveis de autenticação', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockedRateLimit.mockImplementation(async (_req, res: ReturnType<typeof createResponse>) => {
-      res.status(503).json({ error: 'limitador indisponível' });
-      return false;
-    });
+    mockedRateLimit.mockImplementation(
+      async (_req, res: ReturnType<typeof createResponse>) => {
+        res.status(503).json({ error: 'limitador indisponível' });
+        return false;
+      },
+    );
   });
 
   test.each([
@@ -70,27 +72,30 @@ describe('rate limit fechado nas rotas sensíveis de autenticação', () => {
       handler: setupUserHandler,
       scope: 'auth_setup_user',
     },
-  ])('$scope não executa o efeito se o guard falhar', async ({ handler, scope }) => {
-    const response = createResponse();
-    await handler(
-      {
-        body: { email: 'candidate@example.test' },
-        headers: { authorization: 'Bearer token' },
-        method: 'POST',
-      } as never,
-      response as never,
-    );
+  ])(
+    '$scope não executa o efeito se o guard falhar',
+    async ({ handler, scope }) => {
+      const response = createResponse();
+      await handler(
+        {
+          body: { email: 'candidate@example.test' },
+          headers: { authorization: 'Bearer token' },
+          method: 'POST',
+        } as never,
+        response as never,
+      );
 
-    expect(mockedRateLimit).toHaveBeenCalledWith(
-      expect.anything(),
-      response,
-      expect.objectContaining({ failClosed: true, scope }),
-    );
-    expect(response.status).toHaveBeenCalledWith(503);
-    expect(authMock).not.toHaveBeenCalled();
-    expect(sendResetPasswordEmail).not.toHaveBeenCalled();
-    expect(sendVerificationEmail).not.toHaveBeenCalled();
-  });
+      expect(mockedRateLimit).toHaveBeenCalledWith(
+        expect.anything(),
+        response,
+        expect.objectContaining({ failClosed: true, scope }),
+      );
+      expect(response.status).toHaveBeenCalledWith(503);
+      expect(authMock).not.toHaveBeenCalled();
+      expect(sendResetPasswordEmail).not.toHaveBeenCalled();
+      expect(sendVerificationEmail).not.toHaveBeenCalled();
+    },
+  );
 
   test('password reset aplica limite por IP e por hash do email antes de enviar', async () => {
     mockedRateLimit.mockResolvedValue(true);

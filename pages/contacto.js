@@ -14,13 +14,13 @@ import {
   FiSend,
 } from 'react-icons/fi';
 import PublicPageShell from '../components/PublicPageShell';
-import useScrollReveal from '../lib/useScrollReveal';
+import useScrollReveal from '../hooks/useScrollReveal';
 import styles from '../styles/ContactPage.module.css';
 
-const PHOTOS = '/assets/imagens/Fotos para usar no site';
+const PHOTOS = '/assets/fotos';
 const HERO_PHOTOS = {
-  main: `${PHOTOS}/06092026-EmpregoSTP Sequência nº (002)-20.jpg`,
-  float: `${PHOTOS}/06092026-EmpregoSTP Sequência nº (002)-6.jpg`,
+  main: `${PHOTOS}/sequencia-002-20.webp`,
+  float: `${PHOTOS}/sequencia-002-6.webp`,
 };
 
 // O nome acessível do h1 tem de continuar a ser «Vamos falar sobre o seu

@@ -20,10 +20,8 @@ import {
 import styles from '../styles/EmpresasStitchPage.module.css';
 
 const COMPANY_PHOTOS = {
-  collaboration:
-    '/assets/imagens/Fotos para usar no site/06092026-EmpregoSTP Sequência nº (002)-45.jpg',
-  professional:
-    '/assets/imagens/Fotos para usar no site/06092026-EmpregoSTP Sequência nº (002)-34.jpg',
+  collaboration: '/assets/fotos/sequencia-002-45.webp',
+  professional: '/assets/fotos/sequencia-002-34.webp',
 };
 
 const RECRUITING_TOOLS = [

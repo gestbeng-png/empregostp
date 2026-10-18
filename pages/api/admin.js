@@ -30,12 +30,9 @@ export default async function handler(req, res) {
 
     const userData = userDoc.data();
     if (userData.userType !== 'admin') {
-      return res
-        .status(403)
-        .json({
-          message:
-            'Acesso negado. Apenas administradores podem acessar esta API',
-        });
+      return res.status(403).json({
+        message: 'Acesso negado. Apenas administradores podem acessar esta API',
+      });
     }
 
     // Buscar estatísticas do sistema
@@ -46,19 +43,23 @@ export default async function handler(req, res) {
       jobsSnapshot,
       applicationsSnapshot,
     ] = await Promise.all([
-      admin.firestore().collection('users').get(),
+      // Utilizadores, candidatos, empresas e candidaturas só entram como
+      // totais: `count()` evita transferir os documentos.
+      admin.firestore().collection('users').count().get(),
       admin
         .firestore()
         .collection('users')
         .where('userType', '==', 'candidato')
+        .count()
         .get(),
       admin
         .firestore()
         .collection('users')
         .where('userType', '==', 'empresa')
+        .count()
         .get(),
       admin.firestore().collection('jobs').get(),
-      admin.firestore().collection('applications').get(),
+      admin.firestore().collection('applications').count().get(),
     ]);
 
     // Estatísticas de vagas
@@ -79,14 +80,14 @@ export default async function handler(req, res) {
     // Retornar os dados
     return res.status(200).json({
       stats: {
-        totalUsers: usersSnapshot.size,
-        totalCandidatos: candidatosSnapshot.size,
-        totalEmpresas: empresasSnapshot.size,
+        totalUsers: usersSnapshot.data().count,
+        totalCandidatos: candidatosSnapshot.data().count,
+        totalEmpresas: empresasSnapshot.data().count,
         totalJobs: jobsSnapshot.size,
         activeJobs,
         closedJobs,
         disabledJobs,
-        totalApplications: applicationsSnapshot.size,
+        totalApplications: applicationsSnapshot.data().count,
       },
       lastJobs: jobsData.slice(0, 5), // Últimas 5 vagas
     });

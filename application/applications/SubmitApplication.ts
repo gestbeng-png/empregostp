@@ -1,4 +1,3 @@
-import type { FeatureFlagReader } from '@/application/marketplace/ports';
 import {
   alreadyAppliedFailure,
   checkApplicationEligibility,
@@ -11,7 +10,6 @@ import {
   deepFreeze,
   selectSharedContacts,
 } from '@/domain/applications/snapshot';
-import type { FeatureContext } from '@/domain/feature-flags/flags';
 import { mapLegacyLocation } from '@/domain/geo/districts';
 import { readJobLifecycle } from '@/domain/jobs/legacyView';
 import {
@@ -22,7 +20,7 @@ import { can } from '@/domain/permissions/can';
 import { permissionRoleOf } from '@/domain/permissions/legacyRole';
 
 /**
- * F2 — submissão de candidatura v2 (atrás de `V2_APPLICATION_SNAPSHOT`).
+ * F2 — submissão de candidatura.
  *
  * Gratuita (F2.1/G2.1): nenhum passo consulta plano ou pagamento. O limite é
  * só anti-spam (D13). A decisão final (vaga aberta, prazo, unicidade,
@@ -155,7 +153,6 @@ function normalizeUtm(value: unknown): Record<string, string> {
 
 export class SubmitApplication {
   constructor(
-    private readonly flags: FeatureFlagReader,
     private readonly store: ApplicationSubmissionStore,
     private readonly cv: CvSnapshotter,
     private readonly rateLimit: ApplicationRateLimiter,
@@ -168,19 +165,11 @@ export class SubmitApplication {
 
   async execute(
     command: SubmitApplicationCommand,
-    context: FeatureContext,
   ): Promise<SubmitApplicationResult> {
     const fail = (
       code: Exclude<SubmitApplicationResult, { ok: true }>['code'],
       failures: EligibilityFailure[] = [],
     ): SubmitApplicationResult => ({ ok: false, code, failures });
-    if (
-      !(await this.flags.enabled('V2_APPLICATION_SNAPSHOT', {
-        ...context,
-        userId: command.candidateUserId,
-      }))
-    )
-      return fail('FEATURE_DISABLED');
 
     const [candidate, job] = await Promise.all([
       this.store.loadCandidate(command.candidateUserId),

@@ -4,7 +4,7 @@ import {
   isEmailConfigured,
   getDefaultFrom,
 } from '../../../lib/email';
-import { announcementEmail } from '../../../lib/newsletterEmails';
+import { announcementEmail } from '../../../lib/email/newsletterEmails';
 import { isContentPublished } from '../../../lib/contentPublication';
 import { logServerError } from '../../../lib/serverLog';
 

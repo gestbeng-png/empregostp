@@ -1,8 +1,6 @@
 import type { Firestore } from 'firebase-admin/firestore';
 
-import type { FeatureFlagReader } from '@/application/marketplace/ports';
 import { canUseFeature } from '@/domain/entitlements/canUseFeature';
-import type { FeatureContext } from '@/domain/feature-flags/flags';
 import { buildWorkload } from '@/domain/hiring/assignment';
 import type { WorkloadRow } from '@/domain/hiring/assignment';
 import {
@@ -39,9 +37,6 @@ export interface RecruitmentWorkspaceView {
   userId: string;
   limit: number;
   capabilities: {
-    ats: boolean;
-    interviews: boolean;
-    jobs: boolean;
     manageTeam: boolean;
   };
   applications: {
@@ -142,8 +137,6 @@ const iso = (value: unknown): string | null => {
 /** Read-only bootstrap. Every list is organization-scoped and projected by allowlist. */
 export async function readRecruitmentWorkspace(
   db: Firestore,
-  flags: FeatureFlagReader,
-  context: FeatureContext,
   uid: string,
   organizationId: string,
   organizations: { organizationId: string; role: MemberRole }[],
@@ -170,13 +163,7 @@ export async function readRecruitmentWorkspace(
   const resource = (jobId?: string) => ({ organizationId, jobId });
   const allowed = (action: PermissionAction, jobId?: string) =>
     can(identity.permission, action, resource(jobId));
-  const rollout = { ...context, organizationId, userId: uid };
-  const [ats, interviewsEnabled, jobsEnabled] = await Promise.all([
-    flags.enabled('V2_EMPLOYER_ATS', rollout),
-    flags.enabled('V2_INTERVIEWS_OFFERS', rollout),
-    flags.enabled('V2_JOB_LIFECYCLE', rollout),
-  ]);
-  const manageTeam = ats && allowed('manage_members');
+  const manageTeam = allowed('manage_members');
   const list = async (collection: string, field = 'organizationId') =>
     (
       await db
@@ -187,8 +174,8 @@ export async function readRecruitmentWorkspace(
     ).docs.map((doc) => ({ ...doc.data(), id: doc.id }) as Plain);
   const [
     apps,
-    jobsV2,
-    jobsLegacy,
+    jobsByOrganization,
+    jobsByCompany,
     interviews,
     members,
     invitations,
@@ -199,27 +186,27 @@ export async function readRecruitmentWorkspace(
     activeIds,
     assignments,
   ] = await Promise.all([
-    ats ? list('applications') : [],
-    jobsEnabled || ats ? list('jobs') : [],
-    jobsEnabled || ats ? list('jobs', 'companyId') : [],
-    interviewsEnabled ? list('interviews') : [],
+    list('applications'),
+    list('jobs'),
+    list('jobs', 'companyId'),
+    list('interviews'),
     manageTeam ? list('organizationMemberships') : [],
     manageTeam ? list('organizationInvitations') : [],
     manageTeam
       ? db.collection('ownershipTransfers').doc(organizationId).get()
       : null,
-    ats ? list('hiringProcesses') : [],
-    interviewsEnabled ? list('interviewFeedback') : [],
-    interviewsEnabled ? list('offers') : [],
-    ats ? activeOrganizationMemberIds(db, organizationId) : new Set<string>(),
-    ats ? list('applicationAssignments') : [],
+    list('hiringProcesses'),
+    list('interviewFeedback'),
+    list('offers'),
+    activeOrganizationMemberIds(db, organizationId),
+    list('applicationAssignments'),
   ]);
   const permissions = (jobId: string) => ({
-    transition: ats && allowed('change_application_status', jobId),
-    notes: ats && allowed('internal_notes', jobId),
-    cv: ats && allowed('download_application_cv', jobId),
-    hire: ats && allowed('confirm_hire', jobId),
-    interview: interviewsEnabled && allowed('interview_offer', jobId),
+    transition: allowed('change_application_status', jobId),
+    notes: allowed('internal_notes', jobId),
+    cv: allowed('download_application_cv', jobId),
+    hire: allowed('confirm_hire', jobId),
+    interview: allowed('interview_offer', jobId),
   });
   const visible = (row: Plain) =>
     allowed('view_application', text(row.jobId || row.id));
@@ -269,7 +256,9 @@ export async function readRecruitmentWorkspace(
     lastStatusChangeAt: iso(row.lastStatusChangeAt),
   });
   const jobRows = [
-    ...new Map([...jobsV2, ...jobsLegacy].map((row) => [row.id, row])).values(),
+    ...new Map(
+      [...jobsByOrganization, ...jobsByCompany].map((row) => [row.id, row]),
+    ).values(),
   ].filter(visible);
   const deadlineOf = (row: Plain) =>
     iso(row.applicationDeadline) ||
@@ -325,9 +314,6 @@ export async function readRecruitmentWorkspace(
     userId: uid,
     limit: 100,
     capabilities: {
-      ats,
-      interviews: interviewsEnabled,
-      jobs: jobsEnabled,
       manageTeam,
     },
     applications: visibleApps.map((row) => {
@@ -362,7 +348,7 @@ export async function readRecruitmentWorkspace(
         status: text(row.v2Status || row.status),
         fillProposed: Boolean(row.fillProposedAt),
         closingPending: row.jobEndPending === true,
-        canClose: jobsEnabled && allowed('publish_close_job', jobId),
+        canClose: allowed('publish_close_job', jobId),
         applicationDeadline: deadlineOf(row),
         closingSummary: summarizeOpenApplications(
           visibleApps
@@ -377,12 +363,10 @@ export async function readRecruitmentWorkspace(
             ...member,
             name: names.get(member.userId) || 'Membro da equipa',
           })),
-          canManage:
-            ats &&
-            canManageHiringTeam(
-              { userId: uid, role: memberRole },
-              team.leadRecruiterId,
-            ),
+          canManage: canManageHiringTeam(
+            { userId: uid, role: memberRole },
+            team.leadRecruiterId,
+          ),
         },
       };
     }),
@@ -405,7 +389,7 @@ export async function readRecruitmentWorkspace(
       })),
     }),
     workload:
-      ats && (memberRole === 'OWNER' || memberRole === 'ADMIN')
+      memberRole === 'OWNER' || memberRole === 'ADMIN'
         ? buildWorkload(
             visibleApps.map((row) => ({
               status: text(row.v2Status),
@@ -418,7 +402,7 @@ export async function readRecruitmentWorkspace(
           )
         : null,
     teamCandidates:
-      ats && (memberRole === 'OWNER' || memberRole === 'ADMIN' || leadsSomeTeam)
+      memberRole === 'OWNER' || memberRole === 'ADMIN' || leadsSomeTeam
         ? [...activeIds].map((userId) => ({
             userId,
             name:
@@ -475,13 +459,13 @@ export async function readRecruitmentWorkspace(
     }),
     team: {
       inviteConfigured: Boolean(process.env.TEAM_INVITE_SECRET?.trim()),
-      emailProcessorEnabled: process.env.V2_OUTBOX_PROCESSOR_ENABLED === 'true',
+      emailProcessorEnabled: true,
       usedSeats: memberViews.length + activeInvitations.length,
       seatLimit: canUseFeature(
         { type: 'ORGANIZATION', id: organizationId },
         'SEATS',
         [],
-        { now: Date.now(), v2Enabled: true },
+        { now: Date.now() },
       ).limit,
     },
     invitations: activeInvitations.map((row) => ({

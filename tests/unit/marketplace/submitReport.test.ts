@@ -6,14 +6,9 @@ import type {
 
 const NOW = new Date('2026-10-09T10:00:00Z');
 
-function setup(
-  options: { flag?: boolean; allowed?: boolean; outcome?: ReportOutcome } = {},
-) {
+function setup(options: { allowed?: boolean; outcome?: ReportOutcome } = {}) {
   const submitted: NewReport[] = [];
   const useCase = new SubmitReport(
-    {
-      enabled: async (key) => key === 'V2_MODERATION' && options.flag !== false,
-    },
     {
       submit: async (report) => {
         submitted.push(report);
@@ -31,7 +26,6 @@ function setup(
   );
   return { useCase, submitted };
 }
-const ctx = { environment: 'production' as const };
 const valid = {
   reporterUserId: 'u1',
   reporterRole: 'CANDIDATE' as const,
@@ -42,18 +36,9 @@ const valid = {
 };
 
 describe('E9 — SubmitReport', () => {
-  test('flag desligada: nada é gravado', async () => {
-    const { useCase, submitted } = setup({ flag: false });
-    expect(await useCase.execute(valid, ctx)).toEqual({
-      ok: false,
-      code: 'FEATURE_DISABLED',
-    });
-    expect(submitted).toHaveLength(0);
-  });
-
   test('grava com prioridade, SLA e detalhes aparados; nunca revela a ocultação', async () => {
     const { useCase, submitted } = setup();
-    const result = await useCase.execute(valid, ctx);
+    const result = await useCase.execute(valid);
     expect(result).toEqual({
       ok: true,
       reportId: 'r1',
@@ -75,7 +60,7 @@ describe('E9 — SubmitReport', () => {
     [{ details: { html: '<b>' } }],
   ])('entrada inválida %p', async (patch) => {
     const { useCase, submitted } = setup();
-    expect(await useCase.execute({ ...valid, ...patch }, ctx)).toEqual({
+    expect(await useCase.execute({ ...valid, ...patch })).toEqual({
       ok: false,
       code: 'INVALID_INPUT',
     });
@@ -83,16 +68,13 @@ describe('E9 — SubmitReport', () => {
   });
 
   test('limite diário (D13) e alvo inexistente', async () => {
-    expect(await setup({ allowed: false }).useCase.execute(valid, ctx)).toEqual(
-      {
-        ok: false,
-        code: 'RATE_LIMITED',
-      },
-    );
+    expect(await setup({ allowed: false }).useCase.execute(valid)).toEqual({
+      ok: false,
+      code: 'RATE_LIMITED',
+    });
     expect(
       await setup({ outcome: { kind: 'TARGET_NOT_FOUND' } }).useCase.execute(
         valid,
-        ctx,
       ),
     ).toEqual({ ok: false, code: 'NOT_FOUND' });
   });
@@ -101,7 +83,7 @@ describe('E9 — SubmitReport', () => {
     expect(
       await setup({
         outcome: { kind: 'ALREADY_REPORTED', reportId: 'r1' },
-      }).useCase.execute(valid, ctx),
+      }).useCase.execute(valid),
     ).toEqual({ ok: true, reportId: 'r1', alreadyReported: true });
   });
 
@@ -109,7 +91,7 @@ describe('E9 — SubmitReport', () => {
     'H3: %s não abre denúncias',
     async (reporterRole) => {
       const { useCase, submitted } = setup();
-      expect(await useCase.execute({ ...valid, reporterRole }, ctx)).toEqual({
+      expect(await useCase.execute({ ...valid, reporterRole })).toEqual({
         ok: false,
         code: 'FORBIDDEN',
       });
@@ -124,8 +106,8 @@ describe('E9 — SubmitReport', () => {
     'RECRUITER',
     'ORG_REVIEWER',
   ] as const)('H3: %s pode denunciar', async (reporterRole) => {
-    expect(
-      (await setup().useCase.execute({ ...valid, reporterRole }, ctx)).ok,
-    ).toBe(true);
+    expect((await setup().useCase.execute({ ...valid, reporterRole })).ok).toBe(
+      true,
+    );
   });
 });

@@ -14,5 +14,6 @@ docs/audits/
 next-env.d.ts
 *.tsbuildinfo
 public/sw.js
+vendor/
 public/firebase-sw-config.js
 .env*

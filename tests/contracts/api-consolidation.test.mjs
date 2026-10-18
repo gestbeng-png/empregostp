@@ -5,7 +5,7 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import config from '../../next.config.mjs';
-import { PRODUCTION_PROBES } from '../../scripts/v2/activate-recruitment.mjs';
+import { PRODUCTION_PROBES } from '../../scripts/ops/published-api-probes.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const apiRoot = path.join(root, 'pages/api');

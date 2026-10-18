@@ -11,6 +11,18 @@ import {
 } from 'react-icons/fi';
 import styles from '../../styles/ProductAdsCarousel.module.css';
 
+// Ficheiros do Storage do projeto (e os locais) passam pelo otimizador do
+// `next/image` — ver `images.remotePatterns` no next.config. Outros links
+// externos continuam a ser mostrados tal como estão.
+const STORAGE_PREFIX = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+  ? `https://firebasestorage.googleapis.com/v0/b/${process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET}/o/`
+  : '';
+
+function isOptimizable(src) {
+  if (!/^https?:\/\//i.test(src)) return true;
+  return Boolean(STORAGE_PREFIX) && src.startsWith(STORAGE_PREFIX);
+}
+
 // Ícones das condições, pela ordem em que a empresa as escreve.
 const FEATURE_ICONS = [
   { Icon: FiShield, tone: 'brand' },
@@ -149,7 +161,7 @@ export default function ProductAdsCarousel({
                   fill
                   sizes="(max-width: 1023px) 100vw, 30vw"
                   className={styles.imageBackdrop}
-                  unoptimized={/^https?:\/\//i.test(activeAd.imageUrl)}
+                  unoptimized={!isOptimizable(activeAd.imageUrl)}
                 />
                 <Image
                   src={activeAd.imageUrl}
@@ -157,7 +169,7 @@ export default function ProductAdsCarousel({
                   fill
                   sizes="(max-width: 1023px) 100vw, 30vw"
                   className={styles.image}
-                  unoptimized={/^https?:\/\//i.test(activeAd.imageUrl)}
+                  unoptimized={!isOptimizable(activeAd.imageUrl)}
                   onError={markImageFailed}
                 />
               </>

@@ -3,7 +3,6 @@ import { useRouter } from 'next/router';
 import DashboardShell from '../../components/dashboard/DashboardShell';
 import RecruitmentWorkspace from '../../components/empresa/RecruitmentWorkspace';
 import { useAuth } from '../../context/AuthContext';
-import { isRecruitmentWorkspaceEnabled } from '../../lib/recruitmentAvailability';
 import { requireSessionAccount } from '../../lib/serverSession';
 
 // A página é partilhada: a empresa dona e os membros convidados (contas de
@@ -71,9 +70,6 @@ export default function RecruitmentPage({ accountType = 'empresa' }) {
 export async function getServerSideProps(context) {
   context.res.setHeader('Cache-Control', 'private, no-store');
   context.res.setHeader('X-Robots-Tag', 'noindex, nofollow');
-  // ADR-019: área retirada do site por agora.
-  if (!isRecruitmentWorkspaceEnabled())
-    return { redirect: { destination: '/dashboard', permanent: false } };
   const session = await requireSessionAccount(context);
   if (session.redirect) return session;
   return { props: { accountType: session.accountType || 'candidato' } };

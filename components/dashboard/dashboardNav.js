@@ -1,9 +1,3 @@
-import { isRecruitmentWorkspaceEnabled } from '../../lib/recruitmentAvailability';
-
-// ADR-019: itens de «Recrutamento e equipa» só com a área ativa.
-const recruitmentItem = (item) =>
-  isRecruitmentWorkspaceEnabled() ? [item] : [];
-
 /**
  * Navigation config for the dashboard shell, per role.
  * `icon` values are keys resolved to react-icons inside DashboardShell.
@@ -33,12 +27,12 @@ export const DASHBOARD_NAV = {
           href: '/dashboard/admin/jobs',
           icon: 'briefcase',
         },
-        ...recruitmentItem({
+        {
           key: 'operations',
           label: 'Operações de recrutamento',
           href: '/dashboard/admin/operations',
           icon: 'chart',
-        }),
+        },
         {
           key: 'verificacoes',
           label: 'Verificações',
@@ -217,12 +211,12 @@ export const DASHBOARD_NAV = {
     {
       label: 'Explorar',
       items: [
-        ...recruitmentItem({
+        {
           key: 'recruitment',
           label: 'As minhas organizações',
           href: '/dashboard/recrutamento',
           icon: 'users',
-        }),
+        },
         {
           key: 'vagas',
           label: 'Procurar vagas',
@@ -261,12 +255,12 @@ export const DASHBOARD_NAV = {
           href: '/dashboard/empresa?tab=applications',
           icon: 'inbox',
         },
-        ...recruitmentItem({
+        {
           key: 'recruitment',
           label: 'Recrutamento e equipa',
           href: '/dashboard/recrutamento',
           icon: 'users',
-        }),
+        },
         {
           key: 'candidates',
           label: 'Banco de talentos',

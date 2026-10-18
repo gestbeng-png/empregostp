@@ -13,7 +13,7 @@ const NETWORKS = [
 const TEAM = [
   {
     name: 'Edmir dos Santos',
-    image: '/assets/imagens/edmir.jpeg',
+    image: '/assets/equipa/edmir.webp',
     imagePosition: 'center 22%',
     // Links provisórios: substituir pelos perfis reais.
     social: {
@@ -24,7 +24,7 @@ const TEAM = [
   },
   {
     name: 'Joel Almeida',
-    image: '/assets/imagens/joel.jpeg',
+    image: '/assets/equipa/joel.webp',
     imagePosition: 'center 22%',
     // Links provisórios: substituir pelos perfis reais.
     social: {
@@ -35,7 +35,7 @@ const TEAM = [
   },
   {
     name: 'Mauro Viegas',
-    image: '/assets/imagens/mauro.jpeg',
+    image: '/assets/equipa/mauro.webp',
     imagePosition: 'center 18%',
     // Links provisórios: substituir pelos perfis reais.
     social: {

@@ -17,7 +17,6 @@ jobs:
     timeout-minutes: 5
     env:
       CRON_SECRET: ${{ secrets.EMPREGOSTP_CRON_SECRET }}
-      OUTBOX_ENABLED: ${{ vars.EMPREGOSTP_OUTBOX_ENABLED }}
       EVENT_NAME: ${{ github.event_name }}
       EVENT_SCHEDULE: ${{ github.event.schedule }}
     steps:
@@ -29,8 +28,7 @@ jobs:
           const daily = process.env.EVENT_SCHEDULE === '13 9 * * *';
           const paths = manual || !daily ? ['/api/cron/interview-reminders', '/api/cron/expire-offers'] : [];
           if (manual || daily) paths.push('/api/cron/ats-daily');
-          if (process.env.OUTBOX_ENABLED === 'true') paths.push('/api/cron/process-outbox');
-          else console.log(JSON.stringify({ path: '/api/cron/process-outbox', skipped: true, code: 'EMAIL_NOT_READY' }));
+          paths.push('/api/cron/process-outbox');
           let failed = false;
           for (const path of paths) {
             try {

@@ -1,8 +1,14 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import {
   createServerSession,
   destroyServerSession,
 } from '../lib/authSessionClient';
+import { runOnFirstInteraction, whenIdle } from '../lib/runOnFirstInteraction';
+
+// Nas páginas públicas o Firebase Auth (e, em telemóveis, o iframe do Google
+// que ele arrasta) arranca na primeira interação ou quando o browser fica
+// livre — fora do carregamento inicial. Painéis e autenticação arrancam logo.
+const PUBLIC_AUTH_IDLE_TIMEOUT_MS = 2000;
 
 const AuthContext = createContext();
 
@@ -16,6 +22,8 @@ const AuthContext = createContext();
 export function AuthProvider({ children, renderWhileLoading = false }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const deferInitialConnect = useRef(renderWhileLoading);
+  const connectRef = useRef(() => {});
 
   // O cookie `token` que as páginas protegidas lêem no servidor é o próprio
   // ID token do Firebase e por isso expira ao fim de uma hora. O SDK renova o
@@ -69,14 +77,27 @@ export function AuthProvider({ children, renderWhileLoading = false }) {
         connecting = false;
       }
     };
-    void connect();
+    connectRef.current = connect;
+    const cancelDeferred = deferInitialConnect.current
+      ? runOnFirstInteraction(
+          () => void connect(),
+          whenIdle(PUBLIC_AUTH_IDLE_TIMEOUT_MS),
+        )
+      : () => {};
+    if (!deferInitialConnect.current) void connect();
     window.addEventListener('online', connect);
     return () => {
       active = false;
+      cancelDeferred();
       unsubscribe();
       window.removeEventListener('online', connect);
     };
   }, []);
+
+  // Ao passar de uma página pública para um painel, a sessão é precisa já.
+  useEffect(() => {
+    if (!renderWhileLoading) void connectRef.current();
+  }, [renderWhileLoading]);
 
   const logout = async () => {
     let serverError = null;

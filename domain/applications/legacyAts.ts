@@ -18,7 +18,7 @@ export type LegacyAtsPlan =
       closedReason: 'NOT_SELECTED' | null;
       createsHire: boolean;
     }
-  | { ok: false; code: 'V2_TRANSITION_NOT_ALLOWED' };
+  | { ok: false; code: 'TRANSITION_NOT_ALLOWED' };
 
 const PATHS: Readonly<
   Record<
@@ -26,7 +26,7 @@ const PATHS: Readonly<
     Partial<Record<ApplicationStatus, ApplicationStatus[]>>
   >
 > = {
-  // Voltar a «pendente» não existe no v2 (não se desfaz a 1.ª leitura).
+  // Voltar a «pendente» não existe (não se desfaz a 1.ª leitura).
   pending: { SUBMITTED: [] },
   analysis: {
     SUBMITTED: ['UNDER_REVIEW'],
@@ -66,14 +66,14 @@ export function planLegacyAtsTransition(
   target: LegacyAtsStatus,
 ): LegacyAtsPlan {
   const steps = PATHS[target]?.[current];
-  if (!steps) return { ok: false, code: 'V2_TRANSITION_NOT_ALLOWED' };
+  if (!steps) return { ok: false, code: 'TRANSITION_NOT_ALLOWED' };
   let from = current;
   for (const to of steps) {
     const check = assertTransition(from, to, 'EMPLOYER', {
       reason: LEGACY_ATS_REASON,
       guards: { hireConfirmed: true, hasClosedReason: true },
     });
-    if (!check.ok) return { ok: false, code: 'V2_TRANSITION_NOT_ALLOWED' };
+    if (!check.ok) return { ok: false, code: 'TRANSITION_NOT_ALLOWED' };
     from = to;
   }
   return {

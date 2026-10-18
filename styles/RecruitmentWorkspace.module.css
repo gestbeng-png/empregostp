@@ -88,16 +88,6 @@
   border-inline-start: medium solid var(--dash-lime);
   padding: var(--app-space-md);
 }
-.checks {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--app-space-md);
-}
-.checks label {
-  display: flex;
-  align-items: center;
-  gap: var(--app-space-xs);
-}
 .snapshot {
   display: grid;
   gap: var(--app-space-sm);
@@ -110,7 +100,6 @@
   overflow-wrap: anywhere;
 }
 
-.workspaceHeader,
 .sectionHeading,
 .contextBar {
   display: flex;
@@ -119,14 +108,6 @@
   flex-wrap: wrap;
   gap: var(--app-space-md);
 }
-.workspaceHeader {
-  padding-block: var(--app-space-lg);
-}
-.workspaceHeader h1 {
-  margin: var(--app-space-xs) 0;
-  letter-spacing: -0.035em;
-}
-.workspaceHeader p,
 .contextBar p,
 .sectionHeading p {
   margin: var(--app-space-xs) 0;
@@ -193,18 +174,6 @@
   font-size: clamp(1.75rem, 4vw, 2.75rem);
   letter-spacing: -0.06em;
   line-height: 1;
-}
-.quickActions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--app-space-sm);
-}
-.eyebrow {
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--dash-ink-muted);
 }
 .contextBar {
   border: thin solid var(--dash-border);

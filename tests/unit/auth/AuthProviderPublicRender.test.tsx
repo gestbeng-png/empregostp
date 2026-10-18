@@ -66,6 +66,10 @@ describe('AuthProvider em rotas públicas (SEO-01)', () => {
       'Vaga (sessão a carregar)',
     );
 
+    // A sessão arranca na primeira interação (ou quando o browser fica livre).
+    await act(async () => {
+      window.dispatchEvent(new Event('pointerdown'));
+    });
     await waitFor(() => expect(mockedAuthState).toHaveBeenCalledTimes(1));
 
     await act(async () => {

@@ -1,5 +1,8 @@
-import { collectPublicSitemap, renderPublicSitemap } from '../lib/publicSitemap';
-import { resolveBaseUrl } from '../lib/authEmails';
+import {
+  collectPublicSitemap,
+  renderPublicSitemap,
+} from '../lib/publicSitemap';
+import { resolveBaseUrl } from '../lib/email/authEmails';
 import { logServerError } from '../lib/serverLog';
 
 export async function getServerSideProps({ res }) {
@@ -21,4 +24,6 @@ export async function getServerSideProps({ res }) {
   return { props: {} };
 }
 
-export default function SitemapXml() { return null; }
+export default function SitemapXml() {
+  return null;
+}

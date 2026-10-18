@@ -10,9 +10,9 @@ import { loadEnv } from './loadEnv.mjs';
 
 loadEnv();
 
-const { isEmailConfigured } = await import('../lib/email.js');
+const { isEmailConfigured } = await import('../lib/email/index.js');
 const { sendVerificationEmail, sendResetPasswordEmail } =
-  await import('../lib/authEmails.js');
+  await import('../lib/email/authEmails.js');
 
 const destino = process.argv[2];
 const site = process.env.NEXT_PUBLIC_SITE_URL || 'https://empregostp.com';

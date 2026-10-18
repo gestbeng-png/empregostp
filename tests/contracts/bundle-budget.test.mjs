@@ -5,7 +5,7 @@ import {
   BUNDLE_METHOD,
   bundleRegressions,
   initialJavascriptFiles,
-} from '../../scripts/v2/bundle-budget.mjs';
+} from '../../scripts/quality/bundle-budget.mjs';
 
 const report = (gzipBytes) => ({
   method: BUNDLE_METHOD,

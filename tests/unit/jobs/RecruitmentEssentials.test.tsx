@@ -20,7 +20,7 @@ const workspace = {
   role: 'OWNER',
   userId: 'org',
   limit: 100,
-  capabilities: { ats: true, jobs: true, interviews: true, manageTeam: true },
+  capabilities: { manageTeam: true },
   applications: [
     {
       id: 'a',

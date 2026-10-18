@@ -1,8 +1,4 @@
-import type {
-  FeatureFlagReader,
-  SystemLifecycleStore,
-} from '@/application/marketplace/ports';
-import type { FeatureContext } from '@/domain/feature-flags/flags';
+import type { SystemLifecycleStore } from '@/application/marketplace/ports';
 import { planOfferExpirations } from '@/domain/offers/expiry';
 import type { OfferDateValue } from '@/domain/offers/expiry';
 import { failure, success } from '@/domain/shared/Result';
@@ -17,14 +13,12 @@ export interface ExpiryOffer {
 /** Cada transição relê prazo, estado e organização dentro da transação. */
 export class ExpireOffers {
   constructor(
-    private readonly flags: FeatureFlagReader,
     private readonly store: SystemLifecycleStore,
     private readonly clock: () => Date = () => new Date(),
   ) {}
 
   async execute(
     offers: readonly ExpiryOffer[],
-    context: FeatureContext,
   ): Promise<{ expired: number; skipped: number; failed: number }> {
     const result = { expired: 0, skipped: 0, failed: 0 };
     for (const offer of offers) {
@@ -33,11 +27,7 @@ export class ExpireOffers {
         !Number.isSafeInteger(offer.version) ||
         offer.version < 0 ||
         !planOfferExpirations([{ ...offer, status: 'SENT' }], this.clock()).due
-          .length ||
-        !(await this.flags.enabled('V2_INTERVIEWS_OFFERS', {
-          ...context,
-          organizationId: offer.organizationId,
-        }))
+          .length
       ) {
         result.skipped++;
         continue;
@@ -54,11 +44,7 @@ export class ExpireOffers {
         async (record) => {
           if (
             record.organizationId !== offer.organizationId ||
-            record.v2Status !== 'SENT' ||
-            !(await this.flags.enabled('V2_INTERVIEWS_OFFERS', {
-              ...context,
-              organizationId: offer.organizationId,
-            }))
+            record.v2Status !== 'SENT'
           )
             return failure('FEATURE_DISABLED');
           const due =

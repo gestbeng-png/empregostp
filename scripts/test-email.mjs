@@ -1,7 +1,11 @@
 // Envia um email de teste com a configuração atual (Brevo ou fallback Gmail).
 // Uso: npm run test:email -- destinatario@exemplo.com
 import { loadEnv } from './loadEnv.mjs';
-import { isEmailConfigured, sendEmail, getDefaultFrom } from '../lib/email.js';
+import {
+  isEmailConfigured,
+  sendEmail,
+  getDefaultFrom,
+} from '../lib/email/index.js';
 
 const API_BREVO = 'https://api.brevo.com/v3';
 

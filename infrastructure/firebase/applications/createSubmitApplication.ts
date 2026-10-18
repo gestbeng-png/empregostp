@@ -5,7 +5,6 @@ import { findExistingStorageFile } from '@/lib/storageBucket';
 import { resolveOwnedStorageObjectPath } from '@/lib/storageObjectPath';
 
 import { consumeRateLimit } from '../marketplace/consumeRateLimit';
-import { FirestoreFeatureFlags } from '../marketplace/FirestoreFeatureFlags';
 
 import {
   FirestoreApplicationSubmissionStore,
@@ -32,7 +31,6 @@ export function getSubmitApplication(): SubmitApplication {
   if (instance) return instance;
   const db = admin.firestore();
   instance = new SubmitApplication(
-    new FirestoreFeatureFlags(db),
     new FirestoreApplicationSubmissionStore(db),
     new StorageCvSnapshotter(
       async (path) =>

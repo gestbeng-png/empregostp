@@ -42,7 +42,7 @@ describe('D7 — ATS atual sobre candidaturas v2', () => {
   ] as const)('%s + %s é recusado', (current, target) => {
     expect(planLegacyAtsTransition(current, target)).toEqual({
       ok: false,
-      code: 'V2_TRANSITION_NOT_ALLOWED',
+      code: 'TRANSITION_NOT_ALLOWED',
     });
   });
 });

@@ -134,4 +134,51 @@ describe('bootstrap Firebase do cliente', () => {
     expect(mocks.getFirestore).not.toHaveBeenCalled();
     expect(mocks.getStorage).not.toHaveBeenCalled();
   });
+
+  describe('Google Analytics adiado', () => {
+    // O `import()` dinâmico resolve em microtarefas; esperar algumas voltas.
+    const flush = async () => {
+      for (let i = 0; i < 5; i += 1) await Promise.resolve();
+    };
+
+    beforeEach(() => jest.useFakeTimers());
+    afterEach(() => {
+      jest.useRealTimers();
+      window.history.replaceState(null, '', '/');
+    });
+
+    test('não carrega antes de interação nem do tempo de reserva', async () => {
+      const mocks: FirebaseMocks = installFirebaseMocks();
+      loadFirebaseModule();
+      jest.advanceTimersByTime(4000);
+      await flush();
+      expect(mocks.getAnalytics).not.toHaveBeenCalled();
+    });
+
+    test('carrega na primeira interação', async () => {
+      const mocks: FirebaseMocks = installFirebaseMocks();
+      loadFirebaseModule();
+      window.dispatchEvent(new Event('pointerdown'));
+      await flush();
+      expect(mocks.getAnalytics).toHaveBeenCalledWith(mocks.app);
+    });
+
+    test('sem interação, carrega ao fim de 5 s', async () => {
+      const mocks: FirebaseMocks = installFirebaseMocks();
+      loadFirebaseModule();
+      jest.advanceTimersByTime(5000);
+      await flush();
+      expect(mocks.getAnalytics).toHaveBeenCalledTimes(1);
+    });
+
+    test('nunca carrega na página de convite da equipa', async () => {
+      window.history.replaceState(null, '', '/equipa/convite');
+      const mocks: FirebaseMocks = installFirebaseMocks();
+      loadFirebaseModule();
+      window.dispatchEvent(new Event('pointerdown'));
+      jest.advanceTimersByTime(5000);
+      await flush();
+      expect(mocks.getAnalytics).not.toHaveBeenCalled();
+    });
+  });
 });

@@ -1,5 +1,3 @@
-import type { FeatureFlagReader } from '@/application/marketplace/ports';
-import type { FeatureContext } from '@/domain/feature-flags/flags';
 import { can } from '@/domain/permissions/can';
 import type { PermissionRole } from '@/domain/permissions/can';
 import {
@@ -16,8 +14,7 @@ import type {
 } from '@/domain/reports/policy';
 
 /**
- * E9/F1.8 — «Pediram-me dinheiro» e denúncias em geral (atrás de
- * `V2_MODERATION`). Exige sessão: a independência das denúncias (regra de
+ * E9/F1.8 — «Pediram-me dinheiro» e denúncias em geral. Exige sessão: a independência das denúncias (regra de
  * ocultação automática) só se mede com identidades distintas (ADR-011).
  */
 export interface SubmitReportCommand {
@@ -63,23 +60,12 @@ const TARGET_ID = /^[A-Za-z0-9_-]{1,200}$/;
 
 export class SubmitReport {
   constructor(
-    private readonly flags: FeatureFlagReader,
     private readonly store: ReportStore,
     private readonly rateLimit: ReportRateLimiter,
     private readonly clock: () => Date = () => new Date(),
   ) {}
 
-  async execute(
-    command: SubmitReportCommand,
-    context: FeatureContext,
-  ): Promise<SubmitReportResult> {
-    if (
-      !(await this.flags.enabled('V2_MODERATION', {
-        ...context,
-        userId: command.reporterUserId,
-      }))
-    )
-      return { ok: false, code: 'FEATURE_DISABLED' };
+  async execute(command: SubmitReportCommand): Promise<SubmitReportResult> {
     // D14/H3: a equipa da plataforma decide denúncias, não as abre.
     if (
       !can(

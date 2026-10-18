@@ -19,7 +19,6 @@ jest.mock('firebase-admin/firestore', () => ({
 
 const NOW = 1_960_000_000_000;
 const company = 'company-1';
-const flagsOn = { enabled: async () => true };
 
 function setup(
   app: Record<string, unknown> = {},
@@ -62,12 +61,7 @@ function setup(
     },
     ...extra,
   });
-  const workspace = new FirestoreApplicationWorkspace(
-    fake.db,
-    flagsOn,
-    { environment: 'production' },
-    () => NOW,
-  );
+  const workspace = new FirestoreApplicationWorkspace(fake.db, () => NOW);
   return { ...fake, workspace };
 }
 
@@ -115,19 +109,6 @@ describe('Fase 3 — espaço de trabalho da empresa (F3.1/F3.5/H4)', () => {
     expect(await legacy.workspace.view(company, 'app-1')).toMatchObject({
       ok: false,
       error: { code: 'NOT_FOUND' },
-    });
-  });
-
-  test('flag desligada para a organização → indisponível', async () => {
-    const { db } = setup();
-    const off = new FirestoreApplicationWorkspace(
-      db,
-      { enabled: async () => false },
-      { environment: 'production' },
-    );
-    expect(await off.view(company, 'app-1')).toMatchObject({
-      ok: false,
-      error: { code: 'FEATURE_DISABLED' },
     });
   });
 

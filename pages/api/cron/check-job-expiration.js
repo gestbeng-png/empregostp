@@ -76,9 +76,8 @@ export default async function handler(req, res) {
       }
     }
 
-    // F2.8: candidaturas que ficaram abertas em vagas terminadas há ≥ 7 dias
-    // (atrás de V2_JOB_LIFECYCLE por organização). Falhar aqui não desfaz o
-    // fecho das vagas.
+    // F2.8: candidaturas que ficaram abertas em vagas terminadas há ≥ 7 dias.
+    // Falhar aqui não desfaz o fecho das vagas.
     let jobEnd = null;
     try {
       jobEnd = await closeEndedJobApplications(admin.firestore(), now);

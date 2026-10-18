@@ -10,15 +10,15 @@ import { loadEnv } from './loadEnv.mjs';
 
 loadEnv();
 
-const { isEmailConfigured, sendEmail } = await import('../lib/email.js');
-const { decisionEmail } = await import('../lib/jobModerationEmail.js');
+const { isEmailConfigured, sendEmail } = await import('../lib/email/index.js');
+const { decisionEmail } = await import('../lib/email/jobModerationEmail.js');
 const { buildNewApplicationEmail } =
-  await import('../lib/applicationEmails.js');
-const { buildNewJobEmail } = await import('../lib/newJobEmail.js');
-const { buildJobAlertEmail } = await import('../lib/jobAlertEmail.js');
+  await import('../lib/email/applicationEmails.js');
+const { buildNewJobEmail } = await import('../lib/email/newJobEmail.js');
+const { buildJobAlertEmail } = await import('../lib/email/jobAlertEmail.js');
 const { welcomeEmail, announcementEmail } =
-  await import('../lib/newsletterEmails.js');
-const { notificationEmail } = await import('../lib/contactEmails.js');
+  await import('../lib/email/newsletterEmails.js');
+const { notificationEmail } = await import('../lib/email/contactEmails.js');
 
 const destino = process.argv[2] || process.env.EMAIL_FROM_ADDRESS;
 const site = process.env.NEXT_PUBLIC_SITE_URL || 'https://empregostp.com';

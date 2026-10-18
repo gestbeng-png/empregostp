@@ -4,7 +4,6 @@ import {
   authenticateWithEmail,
   getTeamService,
 } from '@/infrastructure/firebase/team/createTeamService';
-import { recruitmentApi } from '@/presentation/applications/recruitmentApi';
 
 /** POST — aceitar convite com o email verificado igual ao convidado. */
 async function handler(
@@ -37,4 +36,4 @@ async function handler(
   res.status(200).json(result.value);
 }
 
-export default recruitmentApi(handler);
+export default handler;

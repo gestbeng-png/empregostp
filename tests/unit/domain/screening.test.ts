@@ -20,7 +20,7 @@ describe('F3.3 — perguntas de triagem', () => {
       { type: 'ORGANIZATION', id: 'o' },
       'SCREENING_QUESTIONS',
       [],
-      { now: 0, v2Enabled: true },
+      { now: 0 },
     );
     expect(free.limit).toBe(3);
     expect(
@@ -91,7 +91,9 @@ describe('F3.3 — perguntas de triagem', () => {
       ok: true,
       questions: [{ knockout: { expected: { min: 2 } }, required: true }],
     });
-    expect(validateScreeningQuestions([q({ id: 'a' }), q({ id: 'a' })], 8)).toMatchObject({
+    expect(
+      validateScreeningQuestions([q({ id: 'a' }), q({ id: 'a' })], 8),
+    ).toMatchObject({
       ok: false,
     });
   });

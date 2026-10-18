@@ -69,9 +69,7 @@ class MemoryStore implements ApplicationSubmissionStore {
   }
 }
 
-function setup(
-  options: { flag?: boolean; rateLimit?: boolean; cvCopy?: string | null } = {},
-) {
+function setup(options: { rateLimit?: boolean; cvCopy?: string | null } = {}) {
   const store = new MemoryStore();
   store.jobs.set('job1', {
     status: 'active',
@@ -95,10 +93,6 @@ function setup(
   const copies: string[][] = [];
   const rateLimited: string[] = [];
   const useCase = new SubmitApplication(
-    {
-      enabled: async (key) =>
-        key === 'V2_APPLICATION_SNAPSHOT' && options.flag !== false,
-    },
     store,
     {
       copy: async (source, applicationId, attempt) => {
@@ -137,27 +131,15 @@ const command = (
   legacyFields: { candidateName: 'Maria Costa', jobTitle: 'Contabilista' },
   ...overrides,
 });
-const ctx = { environment: 'production' as const };
 function only<T>(items: readonly T[]): T {
   if (items.length !== 1) throw new Error(`esperava 1, recebi ${items.length}`);
   return items[0] as T;
 }
 
 describe('F2 — SubmitApplication', () => {
-  test('flag desligada: nada é lido nem gravado (comportamento atual)', async () => {
-    const { store, useCase } = setup({ flag: false });
-    const result = await useCase.execute(command(), ctx);
-    expect(result).toEqual({
-      ok: false,
-      code: 'FEATURE_DISABLED',
-      failures: [],
-    });
-    expect(store.persisted).toHaveLength(0);
-  });
-
   test('candidatura gratuita grava snapshot completo, id determinístico e estado SUBMITTED', async () => {
     const { store, useCase, copies } = setup();
-    const result = await useCase.execute(command(), ctx);
+    const result = await useCase.execute(command());
     expect(result).toEqual({
       ok: true,
       applicationId: 'job1_cand1',
@@ -186,8 +168,8 @@ describe('F2 — SubmitApplication', () => {
 
   test('duplo clique (mesma chave) devolve a mesma candidatura sem segunda gravação', async () => {
     const { store, useCase, copies, rateLimited } = setup();
-    const first = await useCase.execute(command(), ctx);
-    const second = await useCase.execute(command(), ctx);
+    const first = await useCase.execute(command());
+    const second = await useCase.execute(command());
     expect(first).toMatchObject({ ok: true, applicationId: 'job1_cand1' });
     expect(second).toEqual({
       ok: true,
@@ -202,10 +184,9 @@ describe('F2 — SubmitApplication', () => {
 
   test('nova chave para a mesma vaga → «Já se candidatou» com data', async () => {
     const { useCase } = setup();
-    await useCase.execute(command(), ctx);
+    await useCase.execute(command());
     const again = await useCase.execute(
       command({ idempotencyKey: 'f1b2c3d4-0000-4000-8000-000000000002' }),
-      ctx,
     );
     expect(again).toMatchObject({
       ok: false,
@@ -226,7 +207,7 @@ describe('F2 — SubmitApplication', () => {
       ...store.jobs.get('job1'),
       dataFecho: '2026-10-09',
     });
-    const result = await useCase.execute(command(), ctx);
+    const result = await useCase.execute(command());
     expect(result).toMatchObject({
       ok: false,
       failures: [{ code: 'JOB_NOT_ACCEPTING' }],
@@ -241,7 +222,7 @@ describe('F2 — SubmitApplication', () => {
       store.jobs.set('job1', { ...store.jobs.get('job1'), status: 'closed' });
       return original(input, now);
     };
-    expect(await useCase.execute(command(), ctx)).toMatchObject({
+    expect(await useCase.execute(command())).toMatchObject({
       ok: false,
       failures: [{ code: 'JOB_NOT_ACCEPTING' }],
     });
@@ -251,7 +232,6 @@ describe('F2 — SubmitApplication', () => {
     const { useCase } = setup();
     const result = await useCase.execute(
       command({ idempotencyKey: 'curta', emailVerified: false, answers: [] }),
-      ctx,
     );
     expect(result.ok).toBe(false);
     expect(!result.ok && result.failures.map((f) => f.code)).toEqual([
@@ -263,7 +243,7 @@ describe('F2 — SubmitApplication', () => {
 
   test('limite anti-spam (D13) devolve RATE_LIMITED; nunca há opção paga', async () => {
     const { useCase } = setup({ rateLimit: false });
-    expect(await useCase.execute(command(), ctx)).toMatchObject({
+    expect(await useCase.execute(command())).toMatchObject({
       ok: false,
       failures: [{ code: 'RATE_LIMITED' }],
     });
@@ -275,7 +255,7 @@ describe('F2 — SubmitApplication', () => {
       user: { userType: 'candidato', fullName: 'Rui', email: 'r@x.st' },
       profile: { city: 'Neves', experience: [{ cargo: 'Motorista' }] },
     });
-    expect(await useCase.execute(command(), ctx)).toMatchObject({ ok: true });
+    expect(await useCase.execute(command())).toMatchObject({ ok: true });
     expect(copies).toHaveLength(0);
     expect(only(store.persisted).document).toMatchObject({
       cvSnapshotKey: null,
@@ -288,7 +268,7 @@ describe('F2 — SubmitApplication', () => {
       user: { userType: 'candidato', fullName: 'Rui', email: 'r@x.st' },
       profile: {},
     });
-    expect(await useCase.execute(command(), ctx)).toMatchObject({
+    expect(await useCase.execute(command())).toMatchObject({
       ok: false,
       failures: [{ code: 'PROFILE_INCOMPLETE' }],
     });
@@ -296,7 +276,7 @@ describe('F2 — SubmitApplication', () => {
 
   test('falha na cópia do CV não grava uma candidatura sem snapshot íntegro', async () => {
     const { store, useCase } = setup({ cvCopy: null });
-    expect(await useCase.execute(command(), ctx)).toEqual({
+    expect(await useCase.execute(command())).toEqual({
       ok: false,
       code: 'CV_SNAPSHOT_FAILED',
       failures: [],
@@ -314,19 +294,17 @@ describe('F2 — SubmitApplication', () => {
         education: 'Licenciatura em Gestão',
       },
     });
-    expect(await useCase.execute(command(), ctx)).toMatchObject({ ok: true });
+    expect(await useCase.execute(command())).toMatchObject({ ok: true });
     expect(copies).toHaveLength(0);
   });
 
   test('empresas e vagas inexistentes', async () => {
     const { store, useCase } = setup();
-    expect(
-      await useCase.execute(command({ jobId: 'nope' }), ctx),
-    ).toMatchObject({
+    expect(await useCase.execute(command({ jobId: 'nope' }))).toMatchObject({
       code: 'NOT_FOUND',
     });
     store.users.set('cand1', { user: { userType: 'empresa' }, profile: {} });
-    expect(await useCase.execute(command(), ctx)).toMatchObject({
+    expect(await useCase.execute(command())).toMatchObject({
       code: 'NOT_CANDIDATE',
     });
   });
@@ -341,7 +319,6 @@ describe('F2 — SubmitApplication', () => {
           'lixo sem formato',
         ],
       }),
-      ctx,
     );
     expect(result.ok).toBe(true);
     expect(only(store.persisted).document).toMatchObject({
@@ -366,7 +343,6 @@ describe('F2 — SubmitApplication', () => {
     });
     const result = await useCase.execute(
       command({ answers: [{ questionId: 'q1', value: false }] }),
-      ctx,
     );
     expect(result.ok).toBe(true);
     expect(only(store.persisted).document).toMatchObject({

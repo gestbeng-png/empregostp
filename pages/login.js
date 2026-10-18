@@ -306,7 +306,7 @@ export default function Login() {
         <title>Iniciar sessão | EmpregoSTP</title>
       </Head>
 
-      <AuthShell minimal>
+      <AuthShell>
         <div className={styles.formHeader}>
           <h1>Iniciar sessão</h1>
           <p>Use o seu email e a sua senha para continuar.</p>

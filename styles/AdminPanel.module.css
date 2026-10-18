@@ -60,9 +60,6 @@
 .statCard,
 .surface,
 .panel,
-.chartPanel,
-.advisorPanel,
-.actionCard,
 .emptyState,
 .loadingState {
   border: 1px solid var(--dashboard-border);
@@ -147,18 +144,6 @@
   gap: 1.5rem;
 }
 
-.gridActions {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-}
-
-.gridInsights {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 1.5rem;
-}
-
 .statCard {
   width: 100%;
   padding: 1.5rem;
@@ -208,17 +193,7 @@
   box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
 }
 
-.surfaceSoft {
-  border-radius: 18px;
-  border: 1px solid rgba(148, 163, 184, 0.1);
-  background: rgba(255, 255, 255, 0.88);
-}
-
 .panel {
-  padding: 1.75rem;
-}
-
-.chartPanel {
   padding: 1.75rem;
 }
 
@@ -227,88 +202,6 @@
   color: #162a55;
   font-size: 1.2rem;
   font-weight: 800;
-}
-
-.chartWrap {
-  height: 260px;
-}
-
-.advisorPanel {
-  padding: 1.75rem;
-  display: flex;
-  flex-direction: column;
-  border-radius: 24px;
-  border: 1px solid rgba(96, 165, 250, 0.18);
-  background:
-    linear-gradient(180deg, #ffffff, #f8fbff),
-    linear-gradient(135deg, rgba(95, 184, 245, 0.14), rgba(217, 255, 47, 0.12));
-  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
-}
-
-.advisorHeader {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1.25rem;
-}
-
-.advisorIcon {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #2057d7 0%, #5fb8f5 100%);
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-}
-
-.advisorTitle {
-  margin: 0;
-  color: #162a55;
-  font-size: 1.1rem;
-  font-weight: 800;
-}
-
-.advisorList {
-  display: flex;
-  flex-direction: column;
-  gap: 0.9rem;
-  flex: 1;
-}
-
-.advisorSkeleton {
-  height: 80px;
-  border-radius: 14px;
-  background: rgba(248, 251, 255, 0.88);
-}
-
-.advisorItem {
-  padding: 0.9rem;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(248, 251, 255, 0.88);
-}
-
-.advisorCategory {
-  font-size: 0.65rem;
-  font-weight: 800;
-  letter-spacing: 0.15em;
-  color: #818cf8;
-}
-
-.advisorItemTitle {
-  margin: 0.35rem 0 0;
-  color: #162a55;
-  font-size: 0.95rem;
-  font-weight: 700;
-}
-
-.advisorItemText {
-  margin: 0.35rem 0 0;
-  color: #607394;
-  font-size: 0.85rem;
 }
 
 .tableShell {
@@ -509,36 +402,6 @@
   flex-wrap: wrap;
 }
 
-.actionCard {
-  display: block;
-  padding: 1.1rem 1.5rem;
-  border-radius: 18px;
-  border: 2px solid
-    color-mix(in srgb, var(--accent-color, #2057d7) 40%, transparent);
-  background:
-    linear-gradient(180deg, #ffffff, #f8fbff),
-    color-mix(in srgb, var(--accent-color, #2057d7) 12%, transparent);
-  color: var(--accent-color, #162a55);
-  text-decoration: none;
-  text-align: center;
-  font-weight: 700;
-  font-size: 0.95rem;
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease,
-    background 0.15s ease,
-    border-color 0.15s ease;
-  box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
-}
-
-.actionCard:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px
-    color-mix(in srgb, var(--accent-color, #2057d7) 28%, transparent);
-  background: color-mix(in srgb, var(--accent-color, #2057d7) 18%, #ffffff);
-  border-color: var(--accent-color, #2057d7);
-}
-
 .inlineControls {
   display: flex;
   gap: 0.75rem;
@@ -693,11 +556,6 @@
   font-weight: 700;
 }
 
-.infoText {
-  margin: 0.5rem 0;
-  color: #4b5d7f;
-}
-
 .formGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -767,13 +625,6 @@
   color: #ffffff;
   background: linear-gradient(135deg, #2057d7 0%, #5fb8f5 100%);
   box-shadow: 0 4px 15px rgba(32, 87, 215, 0.24);
-}
-
-.toggleRow {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-  margin-bottom: 2rem;
 }
 
 .proofStack {
@@ -1077,10 +928,6 @@
     font-size: 2.1rem;
   }
 
-  .gridInsights {
-    grid-template-columns: 1fr;
-  }
-
   .formGrid {
     grid-template-columns: 1fr;
   }
@@ -1099,8 +946,6 @@
 
   .headerCard,
   .panel,
-  .chartPanel,
-  .advisorPanel,
   .modalCard {
     padding: 1.25rem;
   }
@@ -1113,8 +958,7 @@
     font-size: 1.4rem;
   }
 
-  .gridStats,
-  .gridActions {
+  .gridStats {
     grid-template-columns: 1fr;
   }
 
@@ -1357,8 +1201,6 @@
 
 .surface,
 .panel,
-.chartPanel,
-.advisorPanel,
 .tableShell,
 .emptyState,
 .loadingState,
@@ -1369,9 +1211,7 @@
   box-shadow: var(--admin-shadow);
 }
 
-.panel,
-.chartPanel,
-.advisorPanel {
+.panel {
   padding: 1.25rem;
 }
 
@@ -1755,9 +1595,7 @@
     width: 100%;
   }
 
-  .panel,
-  .chartPanel,
-  .advisorPanel {
+  .panel {
     padding: 1rem;
   }
 
@@ -1836,7 +1674,6 @@
 .headerCard .headerSubtitle,
 .statLabel,
 .metaText,
-.infoText,
 .loadingText,
 .emptyText {
   color: var(--admin-muted);
@@ -1844,11 +1681,7 @@
 
 .statCard,
 .surface,
-.surfaceSoft,
 .panel,
-.chartPanel,
-.advisorPanel,
-.actionCard,
 .tableShell,
 .emptyState,
 .loadingState,
@@ -1863,8 +1696,7 @@
 }
 
 .statCard:hover,
-.reportCard:hover,
-.actionCard:hover {
+.reportCard:hover {
   transform: none;
   border-color: var(--sky, #0a6fa8);
   box-shadow: var(--admin-shadow);
@@ -1908,7 +1740,6 @@
   border-radius: 0;
 }
 
-.advisorIcon,
 .reportCardIcon,
 .activityIcon {
   border-radius: 4px;
@@ -2114,10 +1945,6 @@
 
 .legacyPage tbody tr:hover td {
   background: var(--admin-surface-soft) !important;
-}
-
-.surfaceSoft {
-  background: var(--admin-surface-soft);
 }
 
 .alertSuccess {

@@ -2,12 +2,9 @@ import type { Firestore } from 'firebase-admin/firestore';
 
 import type { FeatureFlagReader } from '@/application/marketplace/ports';
 import { DEFAULT_FLAGS, isEnabled } from '@/domain/feature-flags/flags';
-import type {
-  FeatureContext,
-  FeatureFlag,
-  FeatureKey,
-} from '@/domain/feature-flags/flags';
+import type { FeatureFlag, FeatureKey } from '@/domain/feature-flags/flags';
 
+/** Interruptores de emergência guardados em `featureFlags/<KILL_*>`. */
 export class FirestoreFeatureFlags implements FeatureFlagReader {
   private readonly cache = new Map<
     FeatureKey,
@@ -23,39 +20,26 @@ export class FirestoreFeatureFlags implements FeatureFlagReader {
     else this.cache.clear();
   }
 
-  async enabled(key: FeatureKey, context: FeatureContext): Promise<boolean> {
+  async enabled(key: FeatureKey): Promise<boolean> {
     const cached = this.cache.get(key);
-    if (cached && cached.expiresAt > this.now())
-      return isEnabled(key, cached.value, context);
+    if (cached && cached.expiresAt > this.now()) return isEnabled(cached.value);
     try {
       const snapshot = await this.db.collection('featureFlags').doc(key).get();
       const data = snapshot.data();
-      // Missing flags keep the specified default off. Invalid persisted
-      // emergency switches must stop outbound effects, not silently allow them.
+      // Um interruptor guardado mas inválido trava os efeitos para fora em
+      // vez de os deixar passar em silêncio.
       const value: FeatureFlag =
-        data &&
-        typeof data.enabled === 'boolean' &&
-        (data.rolloutPercent === undefined ||
-          (typeof data.rolloutPercent === 'number' &&
-            Number.isFinite(data.rolloutPercent) &&
-            data.rolloutPercent >= 0 &&
-            data.rolloutPercent <= 100)) &&
-        ['allowOrgIds', 'allowUserIds', 'environments'].every(
-          (field) =>
-            data[field] === undefined ||
-            (Array.isArray(data[field]) &&
-              data[field].every((item: unknown) => typeof item === 'string')),
-        )
-          ? (data as FeatureFlag)
-          : snapshot.exists && key.startsWith('KILL_')
+        data && typeof data.enabled === 'boolean'
+          ? { enabled: data.enabled }
+          : snapshot.exists
             ? { enabled: true }
             : DEFAULT_FLAGS[key];
       this.cache.set(key, { value, expiresAt: this.now() + 60_000 });
-      return isEnabled(key, value, context);
+      return isEnabled(value);
     } catch {
-      // Fail closed: unavailable config stops new features and all outbound
-      // AI/WhatsApp/marketing. Never reuse an expired "on" value.
-      return key.startsWith('KILL_');
+      // Configuração indisponível: falha fechado — os interruptores ficam
+      // ligados e nada sai (IA, WhatsApp, email de marketing).
+      return true;
     }
   }
 }

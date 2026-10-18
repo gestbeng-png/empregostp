@@ -1,438 +1,430 @@
+/* Autenticação (/login, /register, recuperar/redefinir senha, verificar
+   email) — só o logótipo e o formulário, com a linguagem de /contacto:
+   cartão arredondado, lima da marca e botões em pílula.
+   Texto nunca abaixo de 0.875rem (14px) e alvos com pelo menos 2.75rem
+   (44px) — e2e/register.spec.ts. */
 .page {
-  --app-transition-fast: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --ink: var(--app-text-primary);
+  --navy: var(--app-brand-dark);
+  --blue: var(--app-brand-primary);
+  --blue-hover: var(--app-brand-primary-hover);
+  --lime: var(--app-brand-lime);
+  --lime-soft: var(--app-secondary-light);
+  --muted: var(--app-text-muted);
+  --line: var(--app-border-subtle);
+  --line-strong: var(--app-border-strong);
+  --surface: var(--app-surface-3);
+  --white: #ffffff;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   min-height: 100vh;
-  overflow: clip;
-  color: var(--app-text-primary);
-  background: #eef4f8;
+  min-height: 100dvh;
+  color: var(--ink);
+  color-scheme: light;
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      color-mix(in srgb, var(--lime) 22%, transparent),
+      transparent 26rem
+    ),
+    radial-gradient(
+      circle at 0% 100%,
+      color-mix(in srgb, var(--blue) 8%, transparent),
+      transparent 30rem
+    ),
+    var(--surface);
+  font-family: var(--app-font-sans), Arial, sans-serif;
+  overflow-wrap: break-word;
 }
 
-.page::before,
-.page::after {
-  content: '';
-  position: absolute;
-  pointer-events: none;
+.page,
+.page *,
+.page *::before,
+.page *::after {
+  box-sizing: border-box;
 }
 
-.page::before {
-  top: 0;
-  right: 0;
-  width: clamp(90px, 16vw, 240px);
-  height: clamp(90px, 16vw, 240px);
-  background: #daff45;
+.page :is(h1, h2, h3, p, ul) {
+  margin: 0;
 }
 
-.page::after {
-  bottom: 0;
-  left: 0;
-  width: clamp(120px, 22vw, 340px);
-  height: clamp(80px, 13vw, 200px);
-  background: #69c8ff;
+.page :is(h1, h2, h3) {
+  font-family: var(--app-font-display), Arial, sans-serif;
 }
 
-.page :is(a, button, input, select):focus-visible {
-  outline: 3px solid #4f8ff7;
-  outline-offset: 3px;
+.page :is(a, button, input, select, textarea):focus-visible {
+  outline: 0.1875rem solid var(--blue);
+  outline-offset: 0.2rem;
 }
 
-.page :is(a, button):active {
-  transform: translateY(1px);
-}
-
-.main {
-  position: relative;
-  z-index: 1;
-  min-height: 100vh;
+/* `.page .main` vence a regra antiga `.workbridgeAuthRoute main`, que pinta o
+   fundo de azul. */
+.page .main {
   display: flex;
+  min-height: 100vh;
+  min-height: 100dvh;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: clamp(1rem, 3vw, 2.5rem);
-}
-
-.shell {
-  width: min(1140px, 100%);
-  display: grid;
-  grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
-  border: 1px solid #e4e5e8;
-  border-radius: var(--app-radius-md);
-  overflow: hidden;
-  background: #ffffff;
-  box-shadow: var(--app-shadow-md);
-}
-
-.shellMinimal {
-  width: min(100%, 520px);
-  display: block;
-}
-
-.shellMinimalWide {
-  width: min(100%, 760px);
-}
-
-.brandPanel {
-  position: relative;
-  overflow: hidden;
-  padding: clamp(2rem, 4vw, 3.5rem);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 1.75rem;
-  min-height: 720px;
-  background: #102441;
-}
-
-.brandPanel::before {
-  content: '';
-  position: absolute;
-  inset: auto 0 0;
-  height: 18px;
-  background: #69c8ff;
-  pointer-events: none;
-}
-
-.brandPanelBlue::after,
-.brandPanelGreen::after {
-  content: '';
-  position: absolute;
-  inset: 0 0 auto auto;
-  width: 42%;
-  height: 12px;
-  pointer-events: none;
-  border-radius: 0;
-  opacity: 1;
-}
-
-.brandPanelBlue::after {
-  background: #69c8ff;
-}
-
-.brandPanelGreen::after {
-  background: #daff45;
-}
-
-.brandLink,
-.brandCopy,
-.brandChips {
-  position: relative;
-  z-index: 1;
+  gap: clamp(1.25rem, 3vh, 2rem);
+  padding: clamp(1.5rem, 5vh, 3.5rem) 1rem;
+  background: transparent;
 }
 
 .brandLink {
   display: inline-flex;
-  width: min(100%, 270px);
+  align-self: center;
+  width: min(100%, 11rem);
+  min-height: 2.75rem;
+  align-items: center;
 }
 
-.brandLogo {
+.brandLink img {
   width: 100%;
   height: auto;
 }
 
-.eyebrow {
-  position: relative;
-  z-index: 1;
-  display: inline-flex;
-  align-self: flex-start;
-  padding: 0.5rem 0.8rem;
-  border-radius: 4px;
-  border: 0;
-  background: #daff45;
-  color: #102441;
-  font-size: var(--app-font-size-sm);
-  font-weight: 800;
-  letter-spacing: 0;
-}
-
-.brandCopy {
-  display: grid;
-  gap: 1rem;
-  max-width: 28rem;
-  margin-top: auto;
-}
-
-.brandTitle {
-  font-size: clamp(2.1rem, 5vw, 3.6rem);
-  line-height: 1.08;
-  letter-spacing: 0;
-}
-
-.brandDescription {
-  max-width: 34rem;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 1.02rem;
-  line-height: 1.8;
-}
-
-.brandChips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-
-.brandChip {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.72rem 0.95rem;
-  border-radius: var(--app-radius-sm);
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  background: transparent;
-  color: #ffffff;
-  font-size: max(0.93rem, 14px);
-  font-weight: 700;
-}
-
-.formPanel {
-  padding: clamp(1.5rem, 4vw, 3.5rem);
-  background: #ffffff;
-}
-
-.formPanelCompact {
-  width: 100%;
-  display: grid;
-  gap: 1rem;
-  justify-items: center;
-  padding: clamp(1.35rem, 3vw, 2rem);
-  border: 1px solid #e4e5e8;
-  border-radius: var(--app-radius-md);
-  background: #ffffff;
-  box-shadow: var(--app-shadow-md);
-}
-
-.brandLinkMinimal {
-  display: inline-flex;
-  width: min(100%, 250px);
-}
-
 .formPanelInner {
-  width: min(100%, 430px);
-  margin: 0 auto;
+  width: min(100%, 30rem);
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  min-height: 100%;
   gap: 1.5rem;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border: 1px solid var(--line);
+  border-radius: 1.75rem;
+  background: var(--white);
+  box-shadow: var(--app-shadow-lg);
+  animation: rise 0.8s var(--ease-out) 0.1s both;
 }
 
 .formPanelInnerWide {
-  width: 100%;
+  width: min(100%, 46rem);
 }
 
 .formHeader {
   display: grid;
-  gap: 0.6rem;
+  gap: 0.65rem;
 }
 
 .formHeader h1 {
-  font-size: clamp(1.8rem, 4vw, 2.35rem);
-  line-height: 1.15;
-  letter-spacing: 0;
+  color: var(--ink);
+  font-size: clamp(2rem, 3.4vw, 2.6rem);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
 }
 
 .formHeader p {
-  color: var(--app-text-secondary);
-  font-size: 0.98rem;
-  line-height: 1.7;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.6;
 }
 
 .form {
   display: grid;
-  gap: 1rem;
+  gap: 1.15rem;
 }
 
 .field {
   display: grid;
-  gap: 0.55rem;
+  min-width: 0;
+  gap: 0.5rem;
 }
 
 .fieldLabel {
-  color: var(--app-text-secondary);
-  font-size: var(--app-font-size-sm);
-  font-weight: 700;
+  color: var(--navy);
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
-.input {
+.page .input {
   width: 100%;
-  min-height: 56px;
-  padding: 0.95rem 1.05rem;
-  border-radius: var(--app-radius-sm);
-  border: 1px solid #cdd1d7;
-  background: #ffffff;
-  color: var(--app-text-primary);
+  min-width: 0;
+  min-height: 3.25rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 0.75rem;
+  background: var(--white);
+  color: var(--ink);
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1.45;
   transition:
-    border-color var(--app-transition-fast),
-    background var(--app-transition-fast),
-    box-shadow var(--app-transition-fast),
-    transform var(--app-transition-fast);
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-.input:hover {
-  border-color: #767f8c;
-  background: #ffffff;
+.page select.input {
+  appearance: none;
+  padding-right: 3rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='m5 7.5 5 5 5-5' stroke='%235f6874' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1.25rem 1.25rem;
+  cursor: pointer;
 }
 
-.input:focus {
-  border-color: #064bb5;
-  background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(105, 200, 255, 0.24);
+.input::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
+.page .input:hover {
+  border-color: var(--muted);
+}
+
+.page .input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--blue) 15%, transparent);
+  outline: none;
+}
+
+.labelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.forgotLink,
+.forgotLink:hover {
+  color: var(--blue);
+}
+
+.forgotLink {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.forgotLink:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2rem;
 }
 
 .passwordRules {
-  list-style: none;
-  margin: 0.15rem 0 0;
-  padding: 0.75rem 0.9rem;
-  border-radius: 14px;
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  background: rgba(95, 184, 245, 0.06);
   display: grid;
   gap: 0.4rem;
+  margin: 0.15rem 0 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--surface);
+  list-style: none;
 }
 
 .passwordRule {
   display: flex;
   align-items: center;
   gap: 0.55rem;
-  font-size: var(--app-font-size-sm);
-  color: var(--app-text-secondary);
-  transition: color var(--app-transition-fast);
+  color: var(--muted);
+  font-size: 0.875rem;
+  transition: color 0.2s ease;
 }
 
 .passwordRuleIcon {
-  flex: none;
+  display: inline-flex;
   width: 1.15rem;
   height: 1.15rem;
-  display: inline-flex;
+  flex: none;
   align-items: center;
   justify-content: center;
-  border-radius: 999px;
-  font-size: var(--app-font-size-sm);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--muted) 14%, transparent);
+  color: var(--muted);
+  font-size: 0.875rem;
   font-weight: 800;
-  color: #94a3b8;
-  background: rgba(148, 163, 184, 0.14);
 }
 
 .passwordRuleMet {
-  color: #1f7a4d;
+  color: color-mix(in srgb, var(--app-success) 80%, black);
   font-weight: 600;
 }
 
 .passwordRuleMet .passwordRuleIcon {
-  color: #ffffff;
-  background: #22a06b;
+  background: var(--app-success);
+  color: var(--white);
+}
+
+/* ---------- Avisos ---------- */
+.error,
+.info {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.5;
+  animation: rise 0.4s var(--ease-out) both;
 }
 
 .error {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  padding: 0.95rem 1rem;
-  border-radius: var(--app-radius-sm);
-  border: 1px solid rgba(192, 57, 77, 0.18);
-  background: rgba(192, 57, 77, 0.08);
-  color: #a22b3d;
-  font-size: 0.95rem;
+  border-color: color-mix(in srgb, var(--app-danger) 35%, transparent);
+  background: color-mix(in srgb, var(--app-danger) 8%, var(--white));
+  color: color-mix(in srgb, var(--app-danger) 75%, black);
+}
+
+.info {
+  border-color: color-mix(in srgb, var(--app-success) 35%, transparent);
+  background: color-mix(in srgb, var(--app-success) 9%, var(--white));
+  color: color-mix(in srgb, var(--app-success) 70%, black);
 }
 
 .errorIcon {
-  flex: none;
-  width: 20px;
-  height: 20px;
-  font-size: 1rem;
-  line-height: 1.4;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: 0 0 1.25rem;
+  margin-top: 0.1rem;
 }
 
+/* ---------- Botões ---------- */
 .primaryButton,
 .socialButton {
-  width: 100%;
-  min-height: 56px;
-  border-radius: var(--app-radius-sm);
-  font-size: 1rem;
-  font-weight: 800;
   display: inline-flex;
+  width: 100%;
+  min-height: 3.25rem;
   align-items: center;
   justify-content: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1.5rem;
+  border: 1px solid transparent;
+  border-radius: 999rem !important;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.3;
   text-align: center;
   text-decoration: none;
   cursor: pointer;
   transition:
-    transform var(--app-transition-fast),
-    box-shadow var(--app-transition-fast),
-    border-color var(--app-transition-fast),
-    background var(--app-transition-fast),
-    opacity var(--app-transition-fast);
+    transform 0.25s var(--ease-out),
+    background 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
-.primaryButton {
-  border: 0;
-  color: #fff;
-  background: var(--app-brand-primary);
-  box-shadow: none;
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
+/* A cor repete-se no :hover porque o `a:hover` do globals.css é mais
+   específico do que a regra de base (o ecrã de confirmação usa um Link). */
+.page .primaryButton,
+.page .primaryButton:hover {
+  border-color: var(--lime);
+  background: var(--lime);
+  color: var(--navy);
 }
 
-.primaryButton:hover:not(:disabled),
-.socialButton:hover:not(:disabled) {
-  transform: translateY(-1px);
+.page .primaryButton:hover:not(:disabled) {
+  transform: translateY(-0.15rem);
+  box-shadow: 0 0.8rem 1.8rem color-mix(in srgb, var(--lime) 40%, transparent);
 }
 
-.primaryButton:hover:not(:disabled) {
-  background: var(--app-brand-primary-hover);
-  box-shadow: none;
+.page .socialButton {
+  border-color: var(--line-strong);
+  background: var(--white);
+  color: var(--ink);
+}
+
+.page .socialButton:hover:not(:disabled) {
+  border-color: var(--navy);
+  transform: translateY(-0.15rem);
 }
 
 .primaryButton:disabled,
 .socialButton:disabled {
-  cursor: not-allowed;
-  opacity: 0.68;
-}
-
-.divider {
-  display: flex;
-  align-items: center;
-  gap: 0.9rem;
-  color: var(--app-text-secondary);
-  font-size: var(--app-font-size-sm);
-  font-weight: 800;
-  letter-spacing: 0;
-}
-
-.dividerLine {
-  flex: 1;
-  height: 1px;
-  background: #e4e5e8;
-}
-
-.socialButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.8rem;
-  border: 1px solid #cdd1d7;
-  background: #eef4f8;
-  color: var(--app-text-primary);
+  cursor: progress;
+  opacity: 0.6;
 }
 
 .socialIcon {
   flex: none;
 }
 
+.linkButton {
+  align-self: center;
+  min-height: 2.75rem;
+  padding: 0.35rem 0.5rem;
+  border: 0;
+  background: none;
+  color: var(--blue);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.linkButton:hover:not(:disabled) {
+  text-decoration: underline;
+  text-underline-offset: 0.2rem;
+}
+
+.linkButton:disabled {
+  cursor: progress;
+  opacity: 0.6;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.dividerLine {
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
 .footerNote {
-  color: var(--app-text-muted);
-  text-align: center;
+  color: var(--muted) !important;
   font-size: 0.95rem;
+  text-align: center;
+}
+
+.footerLink,
+.footerLink:hover {
+  color: var(--blue);
 }
 
 .footerLink {
   display: inline-flex;
-  min-height: 44px;
+  min-height: 2.75rem;
   align-items: center;
-  padding: 0.35rem 0.4rem;
-  border-radius: var(--app-radius-xs);
-  color: var(--app-brand-primary-hover);
-  font-weight: 800;
+  padding: 0 0.25rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--blue) 35%, transparent);
+  text-underline-offset: 0.25rem;
 }
 
 .footerLink:hover {
-  color: var(--app-brand-primary);
+  text-decoration-color: currentColor;
+}
+
+/* ---------- Registo: tipo de conta e dados ---------- */
+.accountTypeField {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.accountTypeLegend {
+  margin-bottom: 0.75rem;
+  padding: 0;
+  color: var(--navy);
+  font-size: 1rem;
+  font-weight: 700;
 }
 
 .optionGrid {
@@ -444,191 +436,189 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.accountTypeField {
-  min-width: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-.accountTypeLegend {
-  margin-bottom: 0.75rem;
-  color: var(--app-text-primary);
-  font-size: 1.05rem;
-  font-weight: 800;
-}
-
-.optionCard {
+.page .optionCard {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 0.9rem;
   align-items: center;
-  min-height: 116px;
-  padding: 1rem;
-  border-radius: var(--app-radius-sm);
-  border: 1px solid #cdd1d7;
-  background: #ffffff;
-  transition:
-    transform var(--app-transition-fast),
-    border-color var(--app-transition-fast),
-    background var(--app-transition-fast),
-    box-shadow var(--app-transition-fast);
+  gap: 0.9rem;
+  min-height: 7rem;
+  padding: 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: 1.25rem;
+  background: var(--white);
+  box-shadow: none;
   cursor: pointer;
+  transition:
+    transform 0.35s var(--ease-out),
+    border-color 0.25s ease,
+    background 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
-.optionCard:hover {
-  transform: translateY(-1px);
-  border-color: rgba(148, 163, 184, 0.24);
+.page .optionCard:hover {
+  border-color: var(--navy);
+  transform: translateY(-0.2rem);
 }
 
 .optionIcon {
-  width: 42px;
-  height: 42px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--app-radius-xs);
-  background: #eef4f8;
-  color: #064bb5;
-  font-size: 1.25rem;
+  display: inline-grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  border-radius: 0.85rem;
+  background: var(--lime-soft);
+  color: var(--blue);
+  font-size: 1.2rem;
+  transition:
+    transform 0.4s var(--ease-out),
+    background 0.25s ease,
+    color 0.25s ease;
 }
 
+.page .optionCardActiveBlue,
+.page .optionCardActiveGreen {
+  border-color: var(--blue);
+  background: color-mix(in srgb, var(--blue) 4%, var(--white));
+  box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--blue) 14%, transparent);
+}
+
+.optionCardActiveBlue .optionIcon,
 .optionCardActiveGreen .optionIcon {
-  background: #102441;
-  color: #daff45;
-}
-
-.optionCardActiveBlue {
-  border-color: #064bb5;
-  background: #eef4f8;
-  box-shadow: inset 4px 0 0 #064bb5;
-}
-
-.optionCardActiveGreen {
-  border-color: #102441;
-  background: #eefabf;
-  box-shadow: inset 4px 0 0 #daff45;
+  background: var(--navy);
+  color: var(--lime);
+  transform: rotate(-6deg);
 }
 
 .optionInput {
-  width: 20px;
-  height: 20px;
+  width: 1.25rem;
+  height: 1.25rem;
   margin: 0;
-  accent-color: var(--app-brand-primary);
-}
-
-.optionCardActiveGreen .optionInput {
-  accent-color: var(--app-brand-primary);
+  accent-color: var(--blue);
 }
 
 .optionText {
   display: grid;
-  gap: 0.18rem;
+  gap: 0.2rem;
   min-width: 0;
 }
 
 .optionTitle {
-  color: var(--app-text-primary);
-  font-size: 0.98rem;
-  font-weight: 800;
+  color: var(--ink);
+  font-size: 1rem;
+  font-weight: 700;
 }
 
 .optionMeta {
-  color: var(--app-text-muted);
-  font-size: var(--app-font-size-sm);
+  color: var(--muted);
+  font-size: 0.875rem;
   line-height: 1.5;
 }
 
 .accountDetails {
   display: grid;
-  gap: 1rem;
-  padding-top: 0.25rem;
-  border-top: 1px solid #e4e5e8;
+  gap: 1.15rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
 }
 
 .accountDetailsHeader {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
-  padding-top: 0.85rem;
+  gap: 0.85rem;
 }
 
 .accountDetailsIcon {
+  display: inline-grid;
+  width: 2.75rem;
+  height: 2.75rem;
   flex: none;
-  width: 38px;
-  height: 38px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--app-radius-xs);
-  background: #102441;
-  color: #daff45;
-  font-size: 1.1rem;
+  place-items: center;
+  border-radius: 0.85rem;
+  background: var(--navy);
+  color: var(--lime);
+  font-size: 1.15rem;
 }
 
 .accountDetailsHeader h2 {
-  color: var(--app-text-primary);
-  font-size: 1rem;
+  color: var(--ink);
+  font-size: 1.1rem;
+  font-weight: 700;
   line-height: 1.3;
+  letter-spacing: -0.02em;
 }
 
 .accountDetailsHeader p {
-  margin-top: 0.18rem;
-  color: var(--app-text-muted);
-  font-size: var(--app-font-size-sm);
-  line-height: 1.45;
+  margin-top: 0.2rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.5;
 }
 
 .registrationFieldsGrid,
 .companyFields {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.15rem;
+}
+
+/* ---------- Confirmação de email ---------- */
+.verifyScreen,
+.verifyState {
+  display: grid;
+  justify-items: center;
   gap: 1rem;
+  text-align: center;
 }
 
-@media (max-width: 1024px) {
-  .shell {
-    grid-template-columns: 1fr;
-  }
+.verifyIcon {
+  width: 4rem;
+  height: 4rem;
+  padding: 1rem;
+  border-radius: 1.25rem;
+  background: var(--lime);
+  color: var(--navy);
+  transform: rotate(-6deg);
+}
 
-  .brandPanel {
-    min-height: 0;
-  }
+.verifyTitle {
+  color: var(--ink);
+  font-size: clamp(1.6rem, 3vw, 2rem);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+}
 
-  .formPanelInner {
-    width: min(100%, 520px);
-  }
+.verifyText {
+  max-width: 42ch;
+  color: var(--muted) !important;
+  font-size: 1rem;
+  line-height: 1.6;
+}
 
-  .formPanelInnerWide {
-    width: 100%;
+.verifyScreen .primaryButton {
+  margin-top: 0.4rem;
+}
+
+/* ---------- Animações ---------- */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(1.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 
-@media (max-width: 640px) {
-  .main {
-    padding: 0.9rem;
+/* ---------- Responsivo ---------- */
+@media (max-width: 40em) {
+  .page .main {
+    justify-content: flex-start;
   }
 
-  .shell {
-    border-radius: var(--app-radius-md);
-  }
-
-  .brandPanel,
-  .formPanel {
-    padding: 1.35rem;
-  }
-
-  .brandChips {
-    gap: 0.55rem;
-  }
-
-  .brandChip {
-    padding: 0.64rem 0.82rem;
-    font-size: var(--app-font-size-sm);
-  }
-
-  .shellMinimal {
-    width: 100%;
+  .brandLink {
+    width: 9.5rem;
   }
 
   .registerOptionGrid,
@@ -637,115 +627,17 @@
     grid-template-columns: 1fr;
   }
 
-  .brandLinkMinimal {
-    width: min(100%, 220px);
+  .optionCard {
+    min-height: 0;
   }
-
-  .formPanelCompact {
-    gap: 0.85rem;
-    padding: 1.15rem;
-    border-radius: var(--app-radius-md);
-  }
-}
-
-/* --- Autenticação: verificação de email, campos de empresa e recuperação --- */
-
-.info {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  padding: 0.95rem 1rem;
-  border-radius: var(--app-radius-sm);
-  border: 1px solid rgba(34, 139, 87, 0.18);
-  background: rgba(34, 139, 87, 0.08);
-  color: #1f7a4d;
-  font-size: 0.95rem;
-}
-
-.companyFields {
-  padding-top: 0.25rem;
-}
-
-.labelRow {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.75rem;
-}
-
-.forgotLink {
-  display: inline-flex;
-  min-height: 44px;
-  align-items: center;
-  padding: 0.3rem 0.4rem;
-  border-radius: var(--app-radius-xs);
-  color: var(--app-brand-primary-hover);
-  font-size: var(--app-font-size-sm);
-  font-weight: 700;
-}
-
-.linkButton {
-  align-self: center;
-  border: 0;
-  background: none;
-  color: var(--app-brand-primary-hover);
-  min-height: 44px;
-  font-size: var(--app-font-size-sm);
-  font-weight: 800;
-  cursor: pointer;
-  padding: 0.35rem 0.25rem;
-}
-
-.linkButton:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.verifyScreen {
-  display: grid;
-  justify-items: center;
-  text-align: center;
-  gap: 1rem;
-}
-
-.verifyState {
-  display: grid;
-  justify-items: center;
-  gap: 1rem;
-}
-
-.verifyIcon {
-  width: 48px;
-  height: 48px;
-  color: var(--app-brand-primary);
-  font-size: 3rem;
-  line-height: 1;
-}
-
-.verifyTitle {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: var(--app-text-primary);
-}
-
-.verifyText {
-  color: var(--app-text-muted);
-  font-size: 0.98rem;
-  line-height: 1.55;
-  max-width: 42ch;
-}
-
-.verifyScreen .primaryButton {
-  margin-top: 0.4rem;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .page *,
   .page *::before,
   .page *::after {
+    animation: none !important;
+    transition: none !important;
     scroll-behavior: auto !important;
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
   }
 }

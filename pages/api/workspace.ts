@@ -3,12 +3,9 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { success } from '@/domain/shared/Result';
 import { authenticateApiUser } from '@/infrastructure/firebase/applications/createApplicationWorkspace';
 import { readRecruitmentWorkspace } from '@/infrastructure/firebase/applications/readRecruitmentWorkspace';
-import { getFeatureEnvironment } from '@/infrastructure/firebase/marketplace/environment';
-import { FirestoreFeatureFlags } from '@/infrastructure/firebase/marketplace/FirestoreFeatureFlags';
 import { getTeamService } from '@/infrastructure/firebase/team/createTeamService';
 import { organizationLabels } from '@/infrastructure/firebase/team/organizationLabels';
 import { admin } from '@/lib/firebaseAdmin';
-import { recruitmentApi } from '@/presentation/applications/recruitmentApi';
 import { workspaceRoute } from '@/presentation/applications/workspaceRoute';
 
 function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
@@ -22,8 +19,6 @@ function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
     const db = admin.firestore();
     const result = await readRecruitmentWorkspace(
       db,
-      new FirestoreFeatureFlags(db),
-      { environment: getFeatureEnvironment() },
       uid,
       organizationId,
       organizations,
@@ -37,4 +32,4 @@ function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
   })(req, res);
 }
 
-export default recruitmentApi(handler);
+export default handler;

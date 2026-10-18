@@ -60,19 +60,9 @@ export function canUseFeature(
     now: number;
     used?: number;
     requested?: number;
-    v2Enabled: boolean;
-    legacyDecision?: FeatureDecision;
     employmentType?: string;
   },
 ): FeatureDecision {
-  if (!options.v2Enabled)
-    return (
-      options.legacyDecision || {
-        allowed: false,
-        limit: 0,
-        code: 'FEATURE_DISABLED',
-      }
-    );
   const used = options.used ?? 0;
   const requested = options.requested ?? 1;
   if (

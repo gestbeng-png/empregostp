@@ -5,7 +5,6 @@ import { createFakeFirestore } from '../../helpers/fakeFirestore';
 jest.mock('firebase-admin/firestore', () => ({ Timestamp: {} }));
 const org = 'company-1';
 const organizations = [{ organizationId: org, role: 'OWNER' as const }];
-const context = { environment: 'production' as const };
 function setup() {
   return createFakeFirestore({
     [`users/${org}`]: { userType: 'empresa' },
@@ -57,63 +56,14 @@ test('foreign organization is rejected before any database access', async () => 
   const { db } = setup();
   const spy = jest.spyOn(db, 'collection');
   expect(
-    await readRecruitmentWorkspace(
-      db,
-      { enabled: async () => true },
-      context,
-      org,
-      'foreign',
-      organizations,
-    ),
+    await readRecruitmentWorkspace(db, org, 'foreign', organizations),
   ).toMatchObject({ ok: false, error: { code: 'FORBIDDEN' } });
   expect(spy).not.toHaveBeenCalled();
-});
-test('disabled features perform identity reads only, with no resource queries or mutations', async () => {
-  const { db, docs } = setup();
-  const before = JSON.stringify([...docs]);
-  const spy = jest.spyOn(db, 'collection');
-  const result = await readRecruitmentWorkspace(
-    db,
-    { enabled: async () => false },
-    context,
-    org,
-    org,
-    organizations,
-  );
-  expect(result).toMatchObject({
-    ok: true,
-    value: {
-      applications: [],
-      jobs: [],
-      interviews: [],
-      members: [],
-      invitations: [],
-      capabilities: {
-        ats: false,
-        jobs: false,
-        interviews: false,
-        manageTeam: false,
-      },
-    },
-  });
-  expect(
-    spy.mock.calls
-      .flat()
-      .every((name) => ['users', 'organizationMemberships'].includes(name)),
-  ).toBe(true);
-  expect(JSON.stringify([...docs])).toBe(before);
 });
 test('read bootstrap has canonical IDs, deduplicated jobs, allowlisted projections and no automatic first-view mutation', async () => {
   const { db, docs } = setup();
   const before = JSON.stringify([...docs]);
-  const result = await readRecruitmentWorkspace(
-    db,
-    { enabled: async () => true },
-    context,
-    org,
-    org,
-    organizations,
-  );
+  const result = await readRecruitmentWorkspace(db, org, org, organizations);
   expect(result).toMatchObject({
     ok: true,
     value: {
@@ -148,14 +98,9 @@ test('recruiter sees only assigned applications/jobs/interviews and cannot manag
     jobId: 'unassigned',
     v2Status: 'SUBMITTED',
   });
-  const result = await readRecruitmentWorkspace(
-    db,
-    { enabled: async () => true },
-    context,
-    'recruiter',
-    org,
-    [{ organizationId: org, role: 'RECRUITER' }],
-  );
+  const result = await readRecruitmentWorkspace(db, 'recruiter', org, [
+    { organizationId: org, role: 'RECRUITER' },
+  ]);
   expect(result).toMatchObject({
     ok: true,
     value: {
@@ -177,13 +122,8 @@ test('revoked memberships cannot bootstrap even if organization list is stale', 
     role: 'ADMIN',
   });
   expect(
-    await readRecruitmentWorkspace(
-      db,
-      { enabled: async () => true },
-      context,
-      'invited',
-      org,
-      [{ organizationId: org, role: 'ADMIN' }],
-    ),
+    await readRecruitmentWorkspace(db, 'invited', org, [
+      { organizationId: org, role: 'ADMIN' },
+    ]),
   ).toMatchObject({ ok: false, error: { code: 'FORBIDDEN' } });
 });

@@ -260,13 +260,12 @@ export const interviewBody = (values) => ({
   interviewerUserIds: [],
 });
 
-/** @param {{interview: Record<string, any>, candidate?: boolean, onSuccess?: (value: any) => void, request?: typeof apiRequest, enabled?: boolean}} props */
+/** @param {{interview: Record<string, any>, candidate?: boolean, onSuccess?: (value: any) => void, request?: typeof apiRequest}} props */
 export function InterviewControls({
   interview,
   candidate = false,
   onSuccess,
   request,
-  enabled = true,
 }) {
   const calendar = useAction(request);
   const [now, setNow] = useState(() => Date.now());
@@ -309,7 +308,7 @@ export function InterviewControls({
         Adicionar ao calendário
       </button>
       <ActionStatus action={calendar} />
-      {candidate && enabled && interview.status === 'SCHEDULED' ? (
+      {candidate && interview.status === 'SCHEDULED' ? (
         <ActionForm
           title="Confirmar presença"
           path={`${base}/confirm`}
@@ -318,9 +317,7 @@ export function InterviewControls({
           submit="Confirmar presença"
         />
       ) : null}
-      {candidate &&
-      enabled &&
-      ['SCHEDULED', 'CONFIRMED'].includes(interview.status) ? (
+      {candidate && ['SCHEDULED', 'CONFIRMED'].includes(interview.status) ? (
         <ActionForm
           title="Pedir reagendamento"
           path={`${base}/request-reschedule`}
@@ -351,7 +348,7 @@ export function InterviewControls({
           />
         </details>
       ) : null}
-      {enabled && active && (candidate || interview.canManage) ? (
+      {active && (candidate || interview.canManage) ? (
         <details>
           <summary>Cancelar entrevista</summary>
           <ActionForm

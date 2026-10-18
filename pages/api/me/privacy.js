@@ -5,7 +5,7 @@ import {
   evaluateDeletionRequest,
   getPendingDeletion,
 } from '../../../lib/accountDeletion';
-import { accountDeletionRequestedEmail } from '../../../lib/accountDeletionEmails';
+import { accountDeletionRequestedEmail } from '../../../lib/email/accountDeletionEmails';
 import { collectCandidateExport } from '../../../lib/candidateDataExport';
 import { sendEmail } from '../../../lib/email';
 import { logServerError, logServerWarning } from '../../../lib/serverLog';

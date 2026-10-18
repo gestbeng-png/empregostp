@@ -22,15 +22,15 @@ import {
 } from 'react-icons/lu';
 import PublicPageShell from '../components/PublicPageShell';
 import CareerTeam from '../components/careers/CareerTeam';
-import useScrollReveal from '../lib/useScrollReveal';
+import useScrollReveal from '../hooks/useScrollReveal';
 import styles from '../styles/SobreNosPage.module.css';
 
 const TESTIMONIAL_AUTOPLAY_MS = 4000;
 
-const PHOTOS = '/assets/imagens/Fotos para usar no site';
+const PHOTOS = '/assets/fotos';
 const HERO_PHOTOS = {
-  main: `${PHOTOS}/06092026-EmpregoSTP Sequência nº (002)-68.jpg`,
-  float: `${PHOTOS}/06092026-EmpregoSTP Sequência nº (002)-7.jpg`,
+  main: `${PHOTOS}/sequencia-002-68.webp`,
+  float: `${PHOTOS}/sequencia-002-7.webp`,
 };
 
 const HERO_WORDS = [

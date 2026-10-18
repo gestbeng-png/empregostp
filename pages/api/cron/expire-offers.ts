@@ -2,8 +2,6 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { ExpireOffers } from '@/application/offers/ExpireOffers';
 import type { OfferDateValue } from '@/domain/offers/expiry';
-import { getFeatureEnvironment } from '@/infrastructure/firebase/marketplace/environment';
-import { FirestoreFeatureFlags } from '@/infrastructure/firebase/marketplace/FirestoreFeatureFlags';
 import { FirestoreLifecycleStore } from '@/infrastructure/firebase/marketplace/FirestoreLifecycleStore';
 import { logEvent } from '@/infrastructure/observability/logger';
 import { admin } from '@/lib/firebaseAdmin';
@@ -21,10 +19,6 @@ export default async function handler(
   }
   if (!matchesCronSecret(req.headers.authorization, process.env.CRON_SECRET)) {
     res.status(401).json({ code: 'UNAUTHORIZED' });
-    return;
-  }
-  if (process.env.V2_OFFER_EXPIRY_ENABLED !== 'true') {
-    res.status(200).json({ status: 'disabled' });
     return;
   }
   const cursor = req.body?.cursor;
@@ -45,7 +39,6 @@ export default async function handler(
     if (cursor) query = query.startAfter(cursor);
     const page = await query.get();
     const result = await new ExpireOffers(
-      new FirestoreFeatureFlags(db),
       new FirestoreLifecycleStore(db),
     ).execute(
       page.docs.map((doc) => {
@@ -58,7 +51,6 @@ export default async function handler(
           expiresAt: data.expiresAt as OfferDateValue,
         };
       }),
-      { environment: getFeatureEnvironment() },
     );
     res.status(200).json({
       status: 'processed',

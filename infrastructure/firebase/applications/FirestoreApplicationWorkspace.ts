@@ -1,10 +1,7 @@
 import { Timestamp } from 'firebase-admin/firestore';
 import type { Firestore } from 'firebase-admin/firestore';
 
-import type {
-  FeatureFlagReader,
-  ResolvedIdentity,
-} from '@/application/marketplace/ports';
+import type { ResolvedIdentity } from '@/application/marketplace/ports';
 import {
   buildEmployerApplicationView,
   isValidRating,
@@ -12,7 +9,6 @@ import {
   parseInternalNote,
 } from '@/domain/applications/employerWorkspace';
 import type { EmployerApplicationView } from '@/domain/applications/employerWorkspace';
-import type { FeatureContext } from '@/domain/feature-flags/flags';
 import { can } from '@/domain/permissions/can';
 import type { PermissionAction } from '@/domain/permissions/can';
 import { failure, success } from '@/domain/shared/Result';
@@ -41,8 +37,6 @@ export interface SignedUrlFactory {
 export class FirestoreApplicationWorkspace {
   constructor(
     private readonly db: Firestore,
-    private readonly flags: FeatureFlagReader,
-    private readonly context: FeatureContext,
     private readonly now: () => number = Date.now,
   ) {}
 
@@ -65,14 +59,6 @@ export class FirestoreApplicationWorkspace {
     )
       return failure('NOT_FOUND');
     const organizationId = app.organizationId;
-    if (
-      !(await this.flags.enabled('V2_EMPLOYER_ATS', {
-        ...this.context,
-        organizationId,
-        userId,
-      }))
-    )
-      return failure('FEATURE_DISABLED');
     const identity = await resolveIdentity(
       this.db,
       { get: (ref: { get: () => unknown }) => ref.get() } as never,

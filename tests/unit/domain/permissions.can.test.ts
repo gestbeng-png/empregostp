@@ -7,7 +7,7 @@ import type {
 import { can } from '@/domain/permissions/can';
 
 /**
- * Matriz H3 de regranegocio.md, transcrita à mão e independente da tabela do
+ * Matriz H3 de docs/regranegocio.md, transcrita à mão e independente da tabela do
  * código: se as duas divergirem, este teste falha. Cada célula é um caso.
  *
  * ✓ sim · P próprio · O da organização · O* organização + entitlement ·

@@ -108,10 +108,12 @@ export class FirestoreReportStore implements ReportStore {
           // D7: `v2Status` só é escrito em vagas que já o têm (expand feito
           // pelo backfill). Numa vaga legada, a moderação atual — que só
           // conhece `status` — tem de continuar a ser a fonte de verdade.
-          const hasV2 = typeof targetData.v2Status === 'string';
+          const hasLifecycleStatus = typeof targetData.v2Status === 'string';
           tx.update(targetRef, {
             ...(legacy.ok ? legacy.value : {}),
-            ...(hasV2 ? { v2Status: 'PENDING_REVIEW', version } : {}),
+            ...(hasLifecycleStatus
+              ? { v2Status: 'PENDING_REVIEW', version }
+              : {}),
             destaque: false,
             autoHiddenAt: at,
             autoHiddenReason: 'REPORTS_FRAUD',

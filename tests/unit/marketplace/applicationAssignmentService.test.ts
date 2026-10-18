@@ -10,7 +10,6 @@ jest.mock('firebase-admin/firestore', () => ({
 }));
 
 const org = 'company-1';
-const context = { environment: 'production' as const };
 const member = (userId: string, role: string, extra = {}) => ({
   userId,
   organizationId: org,
@@ -27,7 +26,7 @@ const app = (jobId: string, v2Status = 'SUBMITTED', organizationId = org) => ({
   candidateSnapshot: { fullName: 'Candidata' },
 });
 
-function setup(enabled = true) {
+function setup() {
   const fake = createFakeFirestore({
     [`users/${org}`]: { userType: 'empresa', name: 'Empresa Alfa' },
     'users/ana': { userType: 'candidato', name: 'Ana Silva' },
@@ -63,20 +62,12 @@ function setup(enabled = true) {
     'applications/done': app('j1', 'HIRED'),
     'applications/foreign': app('jx', 'SUBMITTED', 'other-org'),
   });
-  const flags = { enabled: async () => enabled };
   const now = () => Date.parse('2026-10-20T12:00:00Z');
   return {
     ...fake,
-    service: new FirestoreApplicationAssignmentService(
-      fake.db,
-      flags,
-      context,
-      now,
-    ),
+    service: new FirestoreApplicationAssignmentService(fake.db, now),
     teams: new FirestoreHiringTeamService(
       fake.db,
-      flags,
-      context,
       {
         roleOf: async (userId: string) =>
           ({
@@ -208,13 +199,7 @@ describe('R24/R25/R88 — responsável pela análise', () => {
     ).toMatchObject({ ok: true, value: { updated: 0 } });
   });
 
-  test('flag desligada e pessoas de fora são recusadas', async () => {
-    expect(
-      await setup(false).service.assign(org, {
-        organizationId: org,
-        applicationIds: ['a1'],
-      }),
-    ).toMatchObject({ ok: false, error: { code: 'FEATURE_DISABLED' } });
+  test('pessoas de fora são recusadas', async () => {
     expect(
       await setup().service.assign('estranho', {
         organizationId: org,
@@ -230,14 +215,9 @@ describe('R24/R25/R88 — responsável pela análise', () => {
       applicationIds: ['a1'],
       assigneeUserId: 'ana',
     });
-    const result = await readRecruitmentWorkspace(
-      db,
-      { enabled: async () => true },
-      context,
-      org,
-      org,
-      [{ organizationId: org, role: 'OWNER' }],
-    );
+    const result = await readRecruitmentWorkspace(db, org, org, [
+      { organizationId: org, role: 'OWNER' },
+    ]);
     if (!result.ok) throw new Error('unexpected');
     expect(
       result.value.applications.find((row) => row.id === 'a1'),

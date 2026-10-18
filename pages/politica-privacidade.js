@@ -8,7 +8,7 @@ import {
   FiShield,
 } from 'react-icons/fi';
 import PublicPageShell from '../components/PublicPageShell';
-import useScrollReveal from '../lib/useScrollReveal';
+import useScrollReveal from '../hooks/useScrollReveal';
 // O hero, a faixa, as secções e os botões vêm de /carreira para as duas
 // páginas manterem o mesmo desenho; o módulo próprio só tem o que é da
 // política (índice, cartões numerados, painel do hero).

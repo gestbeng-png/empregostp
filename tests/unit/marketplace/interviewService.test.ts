@@ -16,7 +16,7 @@ let NOW = Date.parse('2026-10-10T10:00:00Z');
 const company = 'company-1';
 const KEY = 'interview-key-0000000001';
 
-function setup(app: Record<string, unknown> = {}, flag = true) {
+function setup(app: Record<string, unknown> = {}) {
   const fake = createFakeFirestore({
     [`users/${company}`]: { userType: 'empresa' },
     'users/other': { userType: 'empresa' },
@@ -32,12 +32,7 @@ function setup(app: Record<string, unknown> = {}, flag = true) {
       ...app,
     },
   });
-  const service = new FirestoreInterviewService(
-    fake.db,
-    { enabled: async () => flag },
-    { environment: 'production' },
-    () => NOW,
-  );
+  const service = new FirestoreInterviewService(fake.db, () => NOW);
   return { ...fake, service };
 }
 const valid = {
@@ -77,13 +72,10 @@ describe('Fase 3 — entrevistas (E6)', () => {
     expect(entries(docs, 'outboxEvents/')).toHaveLength(2);
   });
 
-  test('outra empresa, flag desligada, dados inválidos e candidatura terminal', async () => {
+  test('outra empresa, dados inválidos e candidatura terminal', async () => {
     expect(
       await setup().service.schedule('other', 'app-1', valid, KEY),
     ).toMatchObject({ ok: false, error: { code: 'FORBIDDEN' } });
-    expect(
-      await setup({}, false).service.schedule(company, 'app-1', valid, KEY),
-    ).toMatchObject({ ok: false, error: { code: 'FEATURE_DISABLED' } });
     expect(
       await setup().service.schedule(
         company,

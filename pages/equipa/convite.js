@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import DashboardShell from '../../components/dashboard/DashboardShell';
 import { ActionForm } from '../../components/empresa/RecruitmentControls';
-import { isRecruitmentWorkspaceEnabled } from '../../lib/recruitmentAvailability';
 import { requireSession } from '../../lib/serverSession';
 import { useEffect, useState } from 'react';
 import { apiRequest } from '../../lib/apiClient';
@@ -244,10 +243,6 @@ export async function getServerSideProps(context) {
   context.res.setHeader('Cache-Control', 'private, no-store');
   context.res.setHeader('Referrer-Policy', 'no-referrer');
   context.res.setHeader('X-Robots-Tag', 'noindex, nofollow');
-  // ADR-019: área retirada — encaminha para o painel SEM a query, para o
-  // token do convite não seguir para outra página (nem para analytics).
-  if (!isRecruitmentWorkspaceEnabled())
-    return { redirect: { destination: '/dashboard', permanent: false } };
   const guard = await requireSession(context);
   return guard || { props: {} };
 }

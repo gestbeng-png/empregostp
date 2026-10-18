@@ -1,5 +1,5 @@
-import { sendVerificationEmail } from '../../../lib/authEmails';
 import { sendEmail } from '../../../lib/email';
+import { sendVerificationEmail } from '../../../lib/email/authEmails';
 
 jest.mock('../../../lib/firebaseAdmin', () => ({
   admin: {

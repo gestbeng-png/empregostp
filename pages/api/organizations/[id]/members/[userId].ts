@@ -3,7 +3,6 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { authenticateApiUser } from '@/infrastructure/firebase/applications/createApplicationWorkspace';
 import { getMemberOffboardingService } from '@/infrastructure/firebase/hiring/createMemberOffboardingService';
 import { getTeamService } from '@/infrastructure/firebase/team/createTeamService';
-import { recruitmentApi } from '@/presentation/applications/recruitmentApi';
 import { workspaceRoute } from '@/presentation/applications/workspaceRoute';
 
 /**
@@ -32,4 +31,4 @@ function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
   )(req, res);
 }
 
-export default recruitmentApi(handler);
+export default handler;

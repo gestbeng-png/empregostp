@@ -453,12 +453,6 @@
   font-weight: 800;
 }
 
-.panelDescription {
-  margin: 6px 0 0;
-  color: var(--cv-muted);
-  font-size: max(0.9rem, 14px);
-}
-
 .sectionBlock {
   display: grid;
   gap: 24px;
@@ -477,11 +471,6 @@
   color: var(--cv-navy);
   font-size: 1.12rem;
   font-weight: 800;
-}
-
-.sectionHint {
-  color: var(--cv-muted);
-  font-size: max(0.86rem, 14px);
 }
 
 .grid2,
@@ -513,8 +502,7 @@
 }
 
 .input,
-.textarea,
-.select {
+.textarea {
   width: 100%;
   min-height: 50px;
   border: 1px solid var(--cv-border);
@@ -529,8 +517,7 @@
     background-color var(--cv-motion);
 }
 
-.input,
-.select {
+.input {
   padding: 0 14px;
 }
 
@@ -552,14 +539,12 @@
 }
 
 .input:hover,
-.textarea:hover,
-.select:hover {
+.textarea:hover {
   border-color: #9fa4af;
 }
 
 .input:focus,
-.textarea:focus,
-.select:focus {
+.textarea:focus {
   border-color: var(--cv-blue);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16);
 }
@@ -711,7 +696,6 @@
 }
 
 .actions,
-.inlineActions,
 .badgeRow,
 .tagRow {
   display: flex;
@@ -728,7 +712,6 @@
 .primaryButton,
 .ghostButton,
 .dangerButton,
-.linkButton,
 .draftButton,
 .previewToggle {
   display: inline-flex;
@@ -816,19 +799,10 @@
   background: #fff1ef;
 }
 
-.linkButton {
-  min-height: 44px;
-  padding: 8px;
-  border: 0;
-  color: var(--cv-blue);
-  background: transparent;
-}
-
 .button:disabled,
 .primaryButton:disabled,
 .ghostButton:disabled,
 .dangerButton:disabled,
-.linkButton:disabled,
 .draftButton:disabled {
   cursor: not-allowed;
   opacity: 0.5;
@@ -912,11 +886,6 @@
 .autoSaveStatus {
   flex: 0 0 auto;
   margin-left: auto;
-}
-
-.wizardNavHint {
-  color: var(--cv-muted);
-  font-size: max(0.82rem, 14px);
 }
 
 .previewToggle {
@@ -1171,19 +1140,6 @@
 
 .europassBullets li {
   color: inherit;
-}
-
-.previewSection,
-.previewSidebarCard {
-  display: grid;
-  gap: 8px;
-}
-
-.previewSectionTitle {
-  margin: 0;
-  color: var(--cv-navy);
-  font-size: 0.9rem;
-  font-weight: 800;
 }
 
 .lockCard,
@@ -1494,13 +1450,11 @@
   /* 16px é o mínimo que evita o zoom automático do Safari ao focar um campo:
      com 15px o iPhone dava um salto de escala a cada toque. */
   .input,
-  .textarea,
-  .select {
+  .textarea {
     font-size: 16px;
   }
 
-  .input,
-  .select {
+  .input {
     min-height: 48px;
   }
 

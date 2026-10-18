@@ -22,28 +22,10 @@ import { evaluateJobSubmission } from '../../../domain/jobs/submission';
 import { validateScreeningQuestions } from '../../../domain/jobs/screening';
 import { canUseFeature } from '../../../domain/entitlements/canUseFeature';
 import { EMPLOYER_REVIEW_MESSAGE } from '../../../domain/jobs/riskScore';
-import { FirestoreFeatureFlags } from '../../../infrastructure/firebase/marketplace/FirestoreFeatureFlags';
-import { getFeatureEnvironment } from '../../../infrastructure/firebase/marketplace/environment';
 import {
   jobIdFor,
-  persistJobV2,
+  persistJob,
 } from '../../../infrastructure/firebase/jobs/FirestoreJobPublisher';
-
-// D9: ciclo de vida v2 da vaga (E3/F1), lido no servidor por organização.
-let jobFlags = null;
-async function isV2JobLifecycleEnabled(uid) {
-  try {
-    jobFlags ||= new FirestoreFeatureFlags(admin.firestore());
-    return await jobFlags.enabled('V2_JOB_LIFECYCLE', {
-      environment: getFeatureEnvironment(),
-      organizationId: uid,
-      userId: uid,
-    });
-  } catch (error) {
-    logServerWarning('jobs.v2_flag_read_failed', error);
-    return false;
-  }
-}
 
 async function notifyAdminsOfReview(payload, jobId) {
   // Os admins recebem a nova vaga na fila de revisão; uma falha aqui não
@@ -81,7 +63,7 @@ async function notifyAdminsOfReview(payload, jobId) {
   }
 }
 
-async function createV2Job({
+async function createJob({
   req,
   res,
   auth,
@@ -96,7 +78,7 @@ async function createV2Job({
       { type: 'ORGANIZATION', id: auth.uid },
       'SCREENING_QUESTIONS',
       [],
-      { now: now.getTime(), v2Enabled: true },
+      { now: now.getTime() },
     ).limit ?? 8;
   const screening = validateScreeningQuestions(
     req.body?.screeningQuestions,
@@ -154,7 +136,7 @@ async function createV2Job({
   const idempotencyKey =
     String((Array.isArray(header) ? header[0] : header) || '').trim() || null;
   const jobId = jobIdFor(admin.firestore(), auth.uid, idempotencyKey);
-  const outcome = await persistJobV2(admin.firestore(), {
+  const outcome = await persistJob(admin.firestore(), {
     jobId,
     ownerUserId: auth.uid,
     payload,
@@ -476,45 +458,13 @@ export default async function handler(req, res) {
         ? `A data de fecho foi ajustada para ${payload.dataFecho} com base no limite do seu plano.`
         : null;
 
-    if (await isV2JobLifecycleEnabled(auth.uid)) {
-      return createV2Job({
-        req,
-        res,
-        auth,
-        payload,
-        moderationEnabled,
-        warning,
-      });
-    }
-
-    const jobRef = await admin.firestore().collection('jobs').add(payload);
-    const jobDoc = await jobRef.get();
-    const job = buildJobResponse(jobDoc, jobDoc.data(), 0);
-
-    // Com a moderação ligada, os admins recebem a nova vaga na fila de
-    // revisão; uma falha aqui não impede a submissão da vaga.
-    if (moderationEnabled) {
-      await notifyAdminsOfReview(payload, jobRef.id);
-    } else {
-      // Sem moderação, a vaga nasce publicada: os candidatos são avisados aqui,
-      // no servidor, sem depender de um segundo pedido do cliente.
-      try {
-        await broadcastNewJob(admin, {
-          job: jobDoc.data(),
-          jobId: jobRef.id,
-          req,
-        });
-      } catch (broadcastError) {
-        logServerWarning('jobs.new_job_broadcast_failed', broadcastError);
-      }
-    }
-
-    return res.status(201).json({
-      message: moderationEnabled
-        ? 'Vaga submetida para revisão. Será publicada após aprovação do administrador.'
-        : 'Vaga criada com sucesso',
+    return createJob({
+      req,
+      res,
+      auth,
+      payload,
+      moderationEnabled,
       warning,
-      job,
     });
   } catch (error) {
     logServerError('jobs.api_api_jobs_failed', error);

@@ -19,12 +19,11 @@ function response() {
 }
 const batch = { claimed: 2, completed: 2, failed: 0, leaseLost: 0 };
 const runtime = (): jest.Mocked<OutboxCronRuntime> => ({
-  enabled: jest.fn().mockResolvedValue(true),
   process: jest.fn().mockResolvedValue(batch),
   heartbeat: jest.fn().mockResolvedValue(undefined),
 });
 
-describe('Cron do outbox: secret, arm, flags, heartbeat', () => {
+describe('Cron do outbox: secret e heartbeat', () => {
   test('constant-time comparison denies missing, malformed and mismatched secrets', () => {
     expect(matchesCronSecret(undefined, 'secret')).toBe(false);
     expect(matchesCronSecret('Bearer secret', undefined)).toBe(false);
@@ -32,43 +31,25 @@ describe('Cron do outbox: secret, arm, flags, heartbeat', () => {
     expect(matchesCronSecret('Bearer wrong!', 'secret')).toBe(false);
     expect(matchesCronSecret('Bearer secret', 'secret')).toBe(true);
   });
-  test('unauthorized, method and default disarm do not construct Firebase runtime', async () => {
+  test('unauthorized and wrong method do not construct Firebase runtime', async () => {
     const factory = jest.fn(runtime);
-    for (const [method, auth, armed, status] of [
-      ['GET', undefined, true, 401],
-      ['DELETE', 'Bearer secret', true, 405],
-      ['POST', 'Bearer secret', false, 200],
+    for (const [method, auth, status] of [
+      ['GET', undefined, 401],
+      ['DELETE', 'Bearer secret', 405],
     ] as const) {
       const res = response();
       await createOutboxCronHandler(factory, {
         secret: () => 'secret',
-        armed: () => armed,
       })({ method, headers: { authorization: auth } } as never, res as never);
       expect(res.status).toHaveBeenCalledWith(status);
     }
     expect(factory).not.toHaveBeenCalled();
-  });
-  test('all flags off keeps queue and heartbeat untouched', async () => {
-    const runner = runtime();
-    runner.enabled.mockResolvedValue(false);
-    const res = response();
-    await createOutboxCronHandler(() => runner, {
-      secret: () => 'secret',
-      armed: () => true,
-    })(
-      { method: 'GET', headers: { authorization: 'Bearer secret' } } as never,
-      res as never,
-    );
-    expect(res.json).toHaveBeenCalledWith({ status: 'disabled' });
-    expect(runner.process).not.toHaveBeenCalled();
-    expect(runner.heartbeat).not.toHaveBeenCalled();
   });
   test('success records heartbeat; exceptions expose only a stable code', async () => {
     const runner = runtime();
     const res = response();
     const handler = createOutboxCronHandler(() => runner, {
       secret: () => 'secret',
-      armed: () => true,
       now: () => 1000,
     });
     const req = {

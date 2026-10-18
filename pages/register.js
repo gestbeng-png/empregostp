@@ -460,7 +460,7 @@ export default function Register() {
           <title>Confirmar email | EmpregoSTP</title>
         </Head>
 
-        <AuthShell minimal>
+        <AuthShell>
           <div className={styles.verifyScreen}>
             <FiMail className={styles.verifyIcon} aria-hidden="true" />
             <h1 className={styles.verifyTitle}>Confirme o seu email</h1>
@@ -525,7 +525,7 @@ export default function Register() {
         <title>Criar conta | EmpregoSTP</title>
       </Head>
 
-      <AuthShell minimal wide>
+      <AuthShell wide>
         <div className={styles.formHeader}>
           <h1>Criar conta</h1>
           <p>

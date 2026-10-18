@@ -1,4 +1,4 @@
-import { announcementEmail } from '../../../lib/newsletterEmails';
+import { announcementEmail } from '../../../lib/email/newsletterEmails';
 
 const site = 'https://empregostp.com';
 

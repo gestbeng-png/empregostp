@@ -2,18 +2,8 @@ import { render, screen } from '@testing-library/react';
 
 import VagaDetalhe, { getServerSideProps } from '../../../pages/vaga/[id]';
 
-const mockFlagEnabled = jest.fn();
 const mockJobs = new Map<string, Record<string, unknown>>();
 const mockWrites: string[] = [];
-
-jest.mock(
-  '../../../infrastructure/firebase/marketplace/FirestoreFeatureFlags',
-  () => ({
-    FirestoreFeatureFlags: jest.fn().mockImplementation(() => ({
-      enabled: (...args: unknown[]) => mockFlagEnabled(...args),
-    })),
-  }),
-);
 
 jest.mock('../../../lib/empresaPlanFeatures', () => ({
   getEmpresaPlanSummary: () => ({ features: {} }),
@@ -104,31 +94,10 @@ function context(id: string) {
 beforeEach(() => {
   mockJobs.clear();
   mockWrites.length = 0;
-  mockFlagEnabled.mockReset();
   jest.spyOn(console, 'error').mockImplementation(() => {});
 });
 
-describe('/vaga/[id] com V2_SEO_PAGES desligada (comportamento atual)', () => {
-  beforeEach(() => mockFlagEnabled.mockResolvedValue(false));
-
-  it('vaga fechada continua a dar 404 e não há JSON-LD', async () => {
-    mockJobs.set('job-closed', { ...baseJob, status: 'closed' });
-    mockJobs.set('job-open', { ...baseJob, status: 'active' });
-
-    await expect(getServerSideProps(context('job-closed'))).resolves.toEqual({
-      notFound: true,
-    });
-    const open = (await getServerSideProps(context('job-open'))) as {
-      props: Record<string, unknown>;
-    };
-    expect(open.props.jsonLd).toBeUndefined();
-    expect(open.props.publicPage).toBeUndefined();
-  });
-});
-
-describe('/vaga/[id] com V2_SEO_PAGES ligada (F8.5/F8.6)', () => {
-  beforeEach(() => mockFlagEnabled.mockResolvedValue(true));
-
+describe('/vaga/[id]: páginas de vaga encerrada (F8.5/F8.6)', () => {
   it('vaga aberta: 200, indexável, com JobPosting', async () => {
     mockJobs.set('job-open', { ...baseJob, status: 'active' });
     const result = (await getServerSideProps(context('job-open'))) as {

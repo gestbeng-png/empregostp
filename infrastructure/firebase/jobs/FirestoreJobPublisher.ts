@@ -32,7 +32,7 @@ export function jobIdFor(
  * 1 (`jobVersions`), campos internos (`jobInternals`, nunca no documento
  * público — SEC-04), histórico, outbox e, com risco ≥ 70, ModerationCase P1.
  */
-export async function persistJobV2(
+export async function persistJob(
   db: Firestore,
   input: {
     jobId: string;

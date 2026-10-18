@@ -227,7 +227,19 @@ function sortRelatedPosts(posts, currentPost) {
   });
 }
 
-export default function BlogPost({ post, relatedPosts = [] }) {
+/**
+ * @param {{
+ *   post: Record<string, unknown> | null,
+ *   relatedPosts?: Array<Record<string, unknown>>,
+ *   articleHtml?: string | null,
+ * }} props `articleHtml` chega já sanitizado do `getStaticProps`; `null`
+ *   quando o conteúdo é texto simples.
+ */
+export default function BlogPost({
+  post,
+  relatedPosts = [],
+  articleHtml = null,
+}) {
   const router = useRouter();
   const [failedHeroImage, setFailedHeroImage] = useState(false);
   const [failedAvatar, setFailedAvatar] = useState(false);
@@ -464,12 +476,8 @@ export default function BlogPost({ post, relatedPosts = [] }) {
                   </header>
 
                   <div className={styles.articleContent}>
-                    {hasHtmlMarkup(articleCopy) ? (
-                      <div
-                        dangerouslySetInnerHTML={{
-                          __html: sanitizeRichHtml(articleCopy),
-                        }}
-                      />
+                    {articleHtml !== null ? (
+                      <div dangerouslySetInnerHTML={{ __html: articleHtml }} />
                     ) : (
                       <PlainTextArticle content={articleCopy} />
                     )}
@@ -562,8 +570,8 @@ export default function BlogPost({ post, relatedPosts = [] }) {
                       Mantenha-se atualizado
                     </h2>
                     <p>
-                      Receba artigos de carreira, tendências do mercado e
-                      novas oportunidades diretamente no seu email.
+                      Receba artigos de carreira, tendências do mercado e novas
+                      oportunidades diretamente no seu email.
                     </p>
                   </div>
                   <form
@@ -687,8 +695,15 @@ export async function getStaticProps({ params }) {
       post,
     ).slice(0, RELATED_POST_LIMIT);
 
+    // Sanitizado aqui, no servidor: o `sanitize-html` (e o postcss que ele
+    // arrasta) deixa de ir no bundle do browser desta página.
+    const articleCopy = post.content || post.excerpt || '';
+    const articleHtml = hasHtmlMarkup(articleCopy)
+      ? sanitizeRichHtml(articleCopy)
+      : null;
+
     return {
-      props: serializeForProps({ post, relatedPosts }),
+      props: serializeForProps({ post, relatedPosts, articleHtml }),
       revalidate: 300,
     };
   } catch (error) {

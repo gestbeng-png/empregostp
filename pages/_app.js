@@ -1,10 +1,16 @@
+// Font Awesome 6.0.0-beta3 servido pelo próprio site (o mesmo ficheiro da
+// cdnjs, verificado pelo hash SRI). Primeiro, para manter a ordem que tinha
+// quando vinha por <link> no _document.
+import '../vendor/font-awesome/6.0.0-beta3/css/all.min.css';
 import '../styles/globals.css';
 import '../styles/dashboard-shell.css';
 import '../styles/workbridge-theme.css';
 import dynamic from 'next/dynamic';
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import { AuthProvider } from '../context/AuthContext';
+import { beforeSendVitals } from '../lib/webVitals';
 // Ambos são interface que só aparece depois de um evento do browser (prompt de
 // instalação) ou de permissão concedida (push). Não precisam de SSR nem de
 // estar no bundle inicial de todas as páginas.
@@ -115,7 +121,7 @@ function MyApp({ Component, pageProps }) {
       <div
         className={
           isHome
-            ? undefined
+            ? 'homeRoute'
             : `workbridgeRoute workbridge${routeKind
                 .charAt(0)
                 .toUpperCase()}${routeKind.slice(1)}Route`
@@ -134,11 +140,13 @@ function MyApp({ Component, pageProps }) {
           <meta name="apple-mobile-web-app-title" content="EmpregoSTP" />
           <link rel="manifest" href="/manifest.webmanifest" />
           <link rel="icon" href="/assets/favicon.png" type="image/png" />
-          <link rel="apple-touch-icon" href="/assets/Emprego STP Logo 2.png" />
+          <link rel="apple-touch-icon" href="/assets/icon-180.png" />
         </Head>
         <PwaInstallPrompt />
         <WebPushManager />
         <DashboardRouteFrame Component={Component} pageProps={pageProps} />
+        {/* Web Vitals reais (LCP, INP, CLS) para o painel da Vercel. */}
+        <SpeedInsights beforeSend={beforeSendVitals} />
       </div>
     </AuthProvider>
   );

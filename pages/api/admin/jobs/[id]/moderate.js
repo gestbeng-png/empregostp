@@ -1,6 +1,6 @@
 import { admin } from '../../../../../lib/firebaseAdmin';
 import { isEmailConfigured, sendEmail } from '../../../../../lib/email';
-import { decisionEmail } from '../../../../../lib/jobModerationEmail';
+import { decisionEmail } from '../../../../../lib/email/jobModerationEmail';
 import { parseJobCloseDate } from '../../../../../lib/jobExpiration';
 import {
   JOB_STATUS_PENDING_REVIEW,
@@ -82,7 +82,7 @@ export default async function handler(req, res) {
 
         // D7: vagas já com estado v2 (backfill ou ocultação por denúncia)
         // mudam os dois estados e o histórico na mesma transação.
-        const v2Update = (to) => {
+        const lifecycleUpdate = (to) => {
           if (typeof jobData.v2Status !== 'string') return {};
           const version =
             (Number.isSafeInteger(jobData.version) ? jobData.version : 0) + 1;
@@ -116,7 +116,7 @@ export default async function handler(req, res) {
           }
 
           transaction.update(jobRef, {
-            ...v2Update('PUBLISHED'),
+            ...lifecycleUpdate('PUBLISHED'),
             status: 'active',
             // Vaga ocultada por denúncias e reaprovada mantém a data original;
             // o resto mantém o comportamento anterior.
@@ -132,7 +132,7 @@ export default async function handler(req, res) {
           });
         } else {
           transaction.update(jobRef, {
-            ...v2Update('REJECTED'),
+            ...lifecycleUpdate('REJECTED'),
             status: JOB_STATUS_REJECTED,
             moderatedAt: now,
             moderatedBy: decodedToken.uid,

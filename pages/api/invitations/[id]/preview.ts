@@ -5,7 +5,6 @@ import {
   authenticateWithEmail,
   getTeamService,
 } from '@/infrastructure/firebase/team/createTeamService';
-import { recruitmentApi } from '@/presentation/applications/recruitmentApi';
 import { workspaceRoute } from '@/presentation/applications/workspaceRoute';
 
 /** Read-only preview with the invitation token in the body, not access logs. */
@@ -28,4 +27,4 @@ async function handler(
   )(req, res);
 }
 
-export default recruitmentApi(handler);
+export default handler;

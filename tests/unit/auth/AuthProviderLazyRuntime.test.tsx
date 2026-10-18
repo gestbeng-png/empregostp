@@ -25,6 +25,14 @@ function Probe() {
   const { loading } = useAuth();
   return <h1>{loading ? 'A carregar sessão' : 'Sessão resolvida'}</h1>;
 }
+// Nas páginas públicas a sessão arranca na primeira interação (ou quando o
+// browser fica livre).
+async function interact() {
+  await act(async () => {
+    window.dispatchEvent(new Event('pointerdown'));
+  });
+}
+
 beforeEach(() => {
   jest.clearAllMocks();
   mockFailure = false;
@@ -53,6 +61,7 @@ test('failed runtime does not declare an anonymous session and retries once onli
       <Probe />
     </AuthProvider>,
   );
+  await interact();
   await waitFor(() => expect(mockReads).toBe(1));
   expect(screen.getByRole('heading')).toHaveTextContent('A carregar sessão');
   expect(mockSubscribe).not.toHaveBeenCalled();
@@ -76,6 +85,7 @@ test('late callback after unmount cannot recreate cookies; listener is cleaned u
       <Probe />
     </AuthProvider>,
   );
+  await interact();
   await waitFor(() => expect(mockSubscribe).toHaveBeenCalledTimes(1));
   const listener = mockSubscribe.mock.calls[0]?.[1] as (
     user: unknown,
@@ -84,4 +94,33 @@ test('late callback after unmount cannot recreate cookies; listener is cleaned u
   await listener({ getIdToken: async () => 'synthetic-token' });
   expect(createServerSession).not.toHaveBeenCalled();
   expect(mockUnsubscribe).toHaveBeenCalledTimes(1);
+});
+
+test('página pública: a sessão só arranca na primeira interação', async () => {
+  render(
+    <AuthProvider renderWhileLoading>
+      <Probe />
+    </AuthProvider>,
+  );
+  await act(async () => {
+    await Promise.resolve();
+  });
+  expect(mockReads).toBe(0);
+  await interact();
+  await waitFor(() => expect(mockSubscribe).toHaveBeenCalledTimes(1));
+});
+
+test('ao passar para um painel, a sessão arranca logo, sem esperar', async () => {
+  const { rerender } = render(
+    <AuthProvider renderWhileLoading>
+      <Probe />
+    </AuthProvider>,
+  );
+  expect(mockReads).toBe(0);
+  rerender(
+    <AuthProvider renderWhileLoading={false}>
+      <Probe />
+    </AuthProvider>,
+  );
+  await waitFor(() => expect(mockSubscribe).toHaveBeenCalledTimes(1));
 });

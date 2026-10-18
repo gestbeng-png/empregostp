@@ -22,10 +22,23 @@ export default function Document() {
           name="format-detection"
           content="telephone=no, date=no, email=no, address=no"
         />
-        <link rel="icon" href="/assets/Emprego STP Logo 2.png" />
+        <link rel="icon" href="/assets/icon-180.png" />
+        {/* As duas fontes usadas em todas as páginas começam a descarregar
+            junto com o CSS: chegam antes da primeira pintura e a troca de
+            fonte deixa de deslocar o conteúdo. */}
         <link
-          rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+          rel="preload"
+          href="/fonts/plus-jakarta-sans-latin.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/fonts/instrument-sans-400.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
         />
       </Head>
       <body>

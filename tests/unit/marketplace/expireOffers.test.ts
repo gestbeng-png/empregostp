@@ -12,7 +12,6 @@ const offer = {
   version: 2,
   expiresAt: now,
 };
-const context = { environment: 'development' as const };
 const record: LifecycleRecord = {
   id: offer.id,
   kind: 'Offer',
@@ -30,20 +29,13 @@ const actor = {
   transition: 'SYSTEM',
 } as const;
 
-test('flag desligada e prazo futuro não chamam o store', async () => {
+test('prazo futuro não chama o store', async () => {
   const store = { transitionAsSystem: jest.fn() };
   expect(
-    await new ExpireOffers(
-      { enabled: async () => false },
-      store,
-      () => now,
-    ).execute([offer], context),
+    await new ExpireOffers(store, () => now).execute([
+      { ...offer, expiresAt: new Date(now.getTime() + 1) },
+    ]),
   ).toEqual({ expired: 0, skipped: 1, failed: 0 });
-  await new ExpireOffers(
-    { enabled: async () => true },
-    store,
-    () => now,
-  ).execute([{ ...offer, expiresAt: new Date(now.getTime() + 1) }], context);
   expect(store.transitionAsSystem).not.toHaveBeenCalled();
 });
 
@@ -71,11 +63,7 @@ test.each([
         return failure('VERSION_CONFLICT');
       },
     };
-    await new ExpireOffers(
-      { enabled: async () => true },
-      store,
-      () => now,
-    ).execute([offer], context);
+    await new ExpireOffers(store, () => now).execute([offer]);
   },
 );
 
@@ -93,8 +81,8 @@ test('contabiliza sucesso e conflito sem repetir respostas do candidato', async 
       )
       .mockResolvedValueOnce(failure('VERSION_CONFLICT')),
   };
-  const run = new ExpireOffers({ enabled: async () => true }, store, () => now);
-  expect(await run.execute([offer, offer], context)).toEqual({
+  const run = new ExpireOffers(store, () => now);
+  expect(await run.execute([offer, offer])).toEqual({
     expired: 1,
     skipped: 1,
     failed: 0,

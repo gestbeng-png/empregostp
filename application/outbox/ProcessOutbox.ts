@@ -1,4 +1,4 @@
-import type { FeatureContext, FeatureKey } from '@/domain/feature-flags/flags';
+import type { FeatureKey } from '@/domain/feature-flags/flags';
 import { validEventPayload } from '@/domain/outbox/events';
 import type { OutboxEvent } from '@/domain/outbox/OutboxEvent';
 
@@ -54,7 +54,6 @@ export class ProcessOutbox {
     private readonly store: OutboxStore,
     private readonly handlers: readonly EventHandler[],
     private readonly flags: FeatureFlagReader,
-    private readonly context: FeatureContext,
     private readonly leaseId: () => string,
     private readonly now: () => number = Date.now,
   ) {
@@ -99,10 +98,7 @@ export class ProcessOutbox {
             // Check immediately before each outbound effect, not at batch start.
             if (
               handler.channel &&
-              (await this.flags.enabled(
-                killSwitch[handler.channel],
-                this.context,
-              ))
+              (await this.flags.enabled(killSwitch[handler.channel]))
             ) {
               errorCode = 'CHANNEL_DISABLED';
               break;

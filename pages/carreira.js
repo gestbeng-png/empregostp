@@ -18,7 +18,7 @@ import {
   STEPS,
   VALUES,
 } from '../components/careers/content';
-import useScrollReveal from '../lib/useScrollReveal';
+import useScrollReveal from '../hooks/useScrollReveal';
 import styles from '../styles/CarreiraPage.module.css';
 
 const title = 'Carreiras no Empregos STP | Trabalhe Connosco';

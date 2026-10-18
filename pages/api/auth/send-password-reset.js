@@ -2,7 +2,7 @@ import { isValidEmail, normalizeEmail } from '../../../lib/validation';
 import {
   sendResetPasswordEmail,
   resolveBaseUrl,
-} from '../../../lib/authEmails';
+} from '../../../lib/email/authEmails';
 import { enforceApiRateLimit } from '../../../lib/apiRateLimit';
 import { logServerError, logServerWarning } from '../../../lib/serverLog';
 import { createHash } from 'node:crypto';

@@ -1,10 +1,7 @@
 import { Timestamp } from 'firebase-admin/firestore';
 import type { Firestore, Transaction } from 'firebase-admin/firestore';
 
-import type {
-  FeatureFlagReader,
-  ResolvedIdentity,
-} from '@/application/marketplace/ports';
+import type { ResolvedIdentity } from '@/application/marketplace/ports';
 import {
   CLOSE_OUTCOMES,
   DEFAULT_REJECTION_TEMPLATES,
@@ -12,7 +9,6 @@ import {
   renderCandidateTemplate,
 } from '@/domain/applications/jobEnd';
 import type { CloseOutcome } from '@/domain/applications/jobEnd';
-import type { FeatureContext } from '@/domain/feature-flags/flags';
 import { readJobLifecycle } from '@/domain/jobs/legacyView';
 import { assertTransition as assertJob } from '@/domain/jobs/states';
 import type { JobStatus } from '@/domain/jobs/states';
@@ -57,8 +53,6 @@ export function validateCandidateMessage(message: unknown): string | null {
 export class FirestoreJobClosingService {
   constructor(
     private readonly db: Firestore,
-    private readonly flags: FeatureFlagReader,
-    private readonly context: FeatureContext,
     private readonly now: () => number = Date.now,
   ) {}
 
@@ -77,14 +71,6 @@ export class FirestoreJobClosingService {
     if (!job) return failure('NOT_FOUND');
     const organizationId = readJobLifecycle(job).organizationId;
     if (!organizationId) return failure('NOT_FOUND');
-    if (
-      !(await this.flags.enabled('V2_JOB_LIFECYCLE', {
-        ...this.context,
-        organizationId,
-        userId,
-      }))
-    )
-      return failure('FEATURE_DISABLED');
     const identity = await resolveIdentity(
       this.db,
       { get: (r: { get: () => unknown }) => r.get() } as never,
@@ -122,18 +108,18 @@ export class FirestoreJobClosingService {
   ) {
     const ref = this.db.collection('jobs').doc(jobId);
     const view = readJobLifecycle(job);
-    const hasV2 = typeof job.v2Status === 'string';
+    const hasLifecycleStatus = typeof job.v2Status === 'string';
     if (!['PUBLISHED', 'PAUSED', 'EXPIRED'].includes(view.status))
       throw new Abort('INVALID_TRANSITION');
     const check = assertJob(view.status, to, identity.transition, {
       guards: { [guard]: true },
     });
-    if (hasV2 && !check.ok) throw new Abort(check.error.code);
+    if (hasLifecycleStatus && !check.ok) throw new Abort(check.error.code);
     const legacy = legacyStatusUpdate('Job', to);
     const version = view.version + 1;
     tx.update(ref, {
       ...(legacy.ok ? legacy.value : {}),
-      ...(hasV2 ? { v2Status: to, version } : {}),
+      ...(hasLifecycleStatus ? { v2Status: to, version } : {}),
       ...fields,
       destaque: false,
       closedAt: this.at(),

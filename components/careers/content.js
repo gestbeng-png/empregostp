@@ -1,11 +1,11 @@
 // Texto curto de propósito: a página vive das imagens, do movimento e das
 // vagas, não de parágrafos.
-const PHOTOS = '/assets/imagens/Fotos para usar no site';
+const PHOTOS = '/assets/fotos';
 
 export const HERO_PHOTOS = {
-  main: `${PHOTOS}/06092026-EmpregoSTP Sequência nº (002)-33.jpg`,
-  smile: `${PHOTOS}/06092026-EmpregoSTP Sequência nº (002).jpg`,
-  standing: `${PHOTOS}/06092026-EmpregoSTP Sequência nº (002)-63.jpg`,
+  main: `${PHOTOS}/sequencia-002-33.webp`,
+  smile: `${PHOTOS}/sequencia-002-0.webp`,
+  standing: `${PHOTOS}/sequencia-002-63.webp`,
 };
 
 export const MARQUEE = [

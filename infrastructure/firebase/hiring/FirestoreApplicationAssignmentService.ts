@@ -1,8 +1,6 @@
 import { Timestamp } from 'firebase-admin/firestore';
 import type { Firestore } from 'firebase-admin/firestore';
 
-import type { FeatureFlagReader } from '@/application/marketplace/ports';
-import type { FeatureContext } from '@/domain/feature-flags/flags';
 import {
   isAssignable,
   parseAssignmentRequest,
@@ -31,8 +29,6 @@ const plainTx = { get: (ref: { get(): unknown }) => ref.get() } as never;
 export class FirestoreApplicationAssignmentService {
   constructor(
     private readonly db: Firestore,
-    private readonly flags: FeatureFlagReader,
-    private readonly context: FeatureContext,
     private readonly now: () => number = Date.now,
   ) {}
 
@@ -47,14 +43,6 @@ export class FirestoreApplicationAssignmentService {
     const parsed = parseAssignmentRequest(input);
     if (!parsed.ok) return parsed;
     const { organizationId, applicationIds, assigneeUserId } = parsed.value;
-    if (
-      !(await this.flags.enabled('V2_EMPLOYER_ATS', {
-        ...this.context,
-        organizationId,
-        userId,
-      }))
-    )
-      return failure('FEATURE_DISABLED');
     const actor = await resolveIdentity(
       this.db,
       plainTx,

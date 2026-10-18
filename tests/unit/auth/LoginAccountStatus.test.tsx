@@ -3,7 +3,10 @@ import userEvent from '@testing-library/user-event';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { getDoc } from 'firebase/firestore';
 
-import { createServerSession, destroyServerSession } from '../../../lib/authSessionClient';
+import {
+  createServerSession,
+  destroyServerSession,
+} from '../../../lib/authSessionClient';
 import Login from '../../../pages/login';
 
 jest.mock('next/router', () => ({

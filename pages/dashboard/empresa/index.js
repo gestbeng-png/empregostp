@@ -47,7 +47,6 @@ import {
 import { resolveDashboardTab } from '../../../lib/dashboardNavigation';
 import { buildLoginUrl, redirectToLogin } from '../../../lib/loginRedirect';
 import { recruitmentNotificationPath } from '../../../lib/recruitmentNotificationNavigation';
-import { isRecruitmentWorkspaceEnabled } from '../../../lib/recruitmentAvailability';
 
 const EmpresaApplicationsChart = dynamic(
   () => import('../../../components/charts/EmpresaApplicationsChart'),
@@ -2338,14 +2337,12 @@ export default function EmpresaDashboard({
                 </p>
               </div>
               <div className="header-actions">
-                {isRecruitmentWorkspaceEnabled() ? (
-                  <Link
-                    href="/dashboard/recrutamento"
-                    className="btn btn-primary"
-                  >
-                    Abrir recrutamento e equipa
-                  </Link>
-                ) : null}
+                <Link
+                  href="/dashboard/recrutamento"
+                  className="btn btn-primary"
+                >
+                  Abrir recrutamento e equipa
+                </Link>
                 <button
                   type="button"
                   className="btn btn-ghost"
@@ -3685,17 +3682,12 @@ export default function EmpresaDashboard({
           onClick: () => openTab('applications'),
           badge: totalApplications || undefined,
         },
-        // ADR-019: só com «Recrutamento e equipa» ativo.
-        ...(isRecruitmentWorkspaceEnabled()
-          ? [
-              {
-                key: 'recruitment',
-                label: 'Recrutamento e equipa',
-                icon: 'users',
-                href: '/dashboard/recrutamento',
-              },
-            ]
-          : []),
+        {
+          key: 'recruitment',
+          label: 'Recrutamento e equipa',
+          icon: 'users',
+          href: '/dashboard/recrutamento',
+        },
         {
           key: 'candidates',
           label: 'Banco de talentos',

@@ -2,7 +2,7 @@ import { admin } from '../../../lib/firebaseAdmin';
 import { enforceApiRateLimit, getClientIp } from '../../../lib/apiRateLimit';
 import { sendEmail, isEmailConfigured } from '../../../lib/email';
 import { logServerError } from '../../../lib/serverLog';
-import { notificationEmail } from '../../../lib/contactEmails';
+import { notificationEmail } from '../../../lib/email/contactEmails';
 
 // Recebe mensagens do formulário público de contacto.
 // As mensagens ficam guardadas em `contactMessages` e, quando o email estiver

@@ -12,93 +12,23 @@ import {
   RETRY_DELAYS_MS,
 } from '@/domain/outbox/OutboxEvent';
 
-const prod = { environment: 'production' as const };
-
-describe('feature flags (D9)', () => {
-  it('todas as flags começam desligadas', () => {
+describe('interruptores de emergência', () => {
+  it('só existem os três interruptores e começam desligados', () => {
+    expect([...FEATURE_KEYS].sort()).toEqual([
+      'KILL_AI',
+      'KILL_OUTBOUND_EMAIL_MARKETING',
+      'KILL_WHATSAPP',
+    ]);
     for (const key of FEATURE_KEYS) {
-      expect(
-        isEnabled(key, DEFAULT_FLAGS[key], { ...prod, userId: 'u1' }),
-      ).toBe(false);
+      expect(isEnabled(DEFAULT_FLAGS[key])).toBe(false);
     }
   });
 
-  it('as kill switches de emergência existem desde a Fase 1', () => {
-    expect(FEATURE_KEYS).toEqual(
-      expect.arrayContaining([
-        'KILL_AI',
-        'KILL_WHATSAPP',
-        'KILL_OUTBOUND_EMAIL_MARKETING',
-      ]),
-    );
-  });
-
-  it('uma kill switch ligada vale sempre, sem rollout nem ambiente', () => {
-    const flag: FeatureFlag = {
-      enabled: true,
-      rolloutPercent: 0,
-      environments: ['staging'],
-    };
-    expect(isEnabled('KILL_AI', flag, prod)).toBe(true);
-  });
-
-  it('respeita o ambiente', () => {
-    const flag: FeatureFlag = { enabled: true, environments: ['staging'] };
-    expect(isEnabled('V2_SEARCH', flag, prod)).toBe(false);
-    expect(isEnabled('V2_SEARCH', flag, { environment: 'staging' })).toBe(true);
-  });
-
-  it('allowlists ativam beta sem rollout', () => {
-    const flag: FeatureFlag = {
-      enabled: true,
-      rolloutPercent: 0,
-      allowOrgIds: ['org-beta'],
-      allowUserIds: ['u-equipa'],
-    };
-    expect(
-      isEnabled('V2_EMPLOYER_ATS', flag, {
-        ...prod,
-        organizationId: 'org-beta',
-      }),
-    ).toBe(true);
-    expect(
-      isEnabled('V2_EMPLOYER_ATS', flag, { ...prod, userId: 'u-equipa' }),
-    ).toBe(true);
-    expect(
-      isEnabled('V2_EMPLOYER_ATS', flag, { ...prod, userId: 'u-outro' }),
-    ).toBe(false);
-  });
-
-  it('rollout parcial é determinístico e aproxima a percentagem', () => {
-    const flag: FeatureFlag = { enabled: true, rolloutPercent: 25 };
-    const ids = Array.from({ length: 4000 }, (_, index) => `org-${index}`);
-    const first = ids.map((id) =>
-      isEnabled('V2_MATCHING', flag, { ...prod, organizationId: id }),
-    );
-    const second = ids.map((id) =>
-      isEnabled('V2_MATCHING', flag, { ...prod, organizationId: id }),
-    );
-    const share = first.filter(Boolean).length / ids.length;
-
-    expect(second).toEqual(first);
-    expect(share).toBeGreaterThan(0.2);
-    expect(share).toBeLessThan(0.3);
-  });
-
-  it('rollout parcial sem identidade fica desligado; percentagens inválidas também', () => {
-    expect(
-      isEnabled('V2_MATCHING', { enabled: true, rolloutPercent: 50 }, prod),
-    ).toBe(false);
-    for (const rolloutPercent of [0, -5, 101, Number.NaN]) {
-      expect(
-        isEnabled(
-          'V2_MATCHING',
-          { enabled: true, rolloutPercent },
-          { ...prod, userId: 'u1' },
-        ),
-      ).toBe(false);
-    }
-    expect(isEnabled('V2_MATCHING', { enabled: true }, prod)).toBe(true);
+  it('um interruptor ligado vale sempre; ausente ou desligado não', () => {
+    const on: FeatureFlag = { enabled: true };
+    expect(isEnabled(on)).toBe(true);
+    expect(isEnabled({ enabled: false })).toBe(false);
+    expect(isEnabled(undefined)).toBe(false);
   });
 });
 

@@ -114,7 +114,7 @@ const config = [
             {
               group: ['**/components/v2/**', '**/components/new/**'],
               message:
-                'Não criar componentes paralelos: estender o componente existente (docs/v2, C3).',
+                'Não criar componentes paralelos: estender o componente existente (docs/audits, C3).',
             },
           ],
         },

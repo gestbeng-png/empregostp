@@ -12,7 +12,7 @@ test('realistic recruitment/team presentation stays connected to scoped actions'
     userId: 'synthetic-owner',
     role: 'OWNER',
     limit: 100,
-    capabilities: { ats: true, jobs: true, interviews: true, manageTeam: true },
+    capabilities: { manageTeam: true },
     applications: [
       {
         id: 'ana',

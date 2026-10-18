@@ -1,34 +1,30 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/router";
-import Link from "next/link";
-import Head from "next/head";
-import dynamic from "next/dynamic";
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/router';
+import Link from 'next/link';
+import Head from 'next/head';
+import dynamic from 'next/dynamic';
 import {
   FiAlertCircle,
   FiArrowLeft,
   FiBriefcase,
   FiRefreshCw,
   FiSearch,
-} from "react-icons/fi";
+} from 'react-icons/fi';
 import {
   downloadInterviewICS,
   formatMaybeDateTimePt,
   getInterviewStatusLabelPt,
   isLikelyUrl,
-} from "../../../lib/interviewClient";
-import { requireCandidateSession } from "../../../lib/serverSession";
-import { candidateStatusLabel } from "../../../domain/applications/candidateView";
-import styles from "../../../styles/CandidaturasPage.module.css";
+} from '../../../lib/interviewClient';
+import { requireCandidateSession } from '../../../lib/serverSession';
+import { candidateStatusLabel } from '../../../domain/applications/candidateView';
+import styles from '../../../styles/CandidaturasPage.module.css';
 
-const CandidateRecruitmentActions = dynamic(() => import("../../../components/empresa/CandidateRecruitmentActions"));
+const CandidateRecruitmentActions = dynamic(
+  () => import('../../../components/empresa/CandidateRecruitmentActions'),
+);
 
-const ALLOWED_FILTERS = [
-  "all",
-  "pending",
-  "interview",
-  "approved",
-  "rejected",
-];
+const ALLOWED_FILTERS = ['all', 'pending', 'interview', 'approved', 'rejected'];
 
 const hasValidScheduledInterview = (app) => {
   const scheduledAt = app?.interviewDetails?.scheduledAt;
@@ -40,16 +36,16 @@ const hasValidScheduledInterview = (app) => {
 export default function CandidaturasPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const [reloadKey, setReloadKey] = useState(0);
   const [applications, setApplications] = useState([]);
-  const [filter, setFilter] = useState("all");
+  const [filter, setFilter] = useState('all');
 
   const setFilterAndSyncUrl = (nextFilter) => {
     setFilter(nextFilter);
     if (!router.isReady) return;
     const query = { ...router.query };
-    if (nextFilter && nextFilter !== "all") query.filter = nextFilter;
+    if (nextFilter && nextFilter !== 'all') query.filter = nextFilter;
     else delete query.filter;
     router.replace({ pathname: router.pathname, query }, undefined, {
       shallow: true,
@@ -59,7 +55,7 @@ export default function CandidaturasPage() {
   useEffect(() => {
     if (!router.isReady) return;
     const q = router.query.filter;
-    if (typeof q !== "string") return;
+    if (typeof q !== 'string') return;
     if (ALLOWED_FILTERS.includes(q)) {
       setFilter(q);
     }
@@ -69,14 +65,14 @@ export default function CandidaturasPage() {
     async function fetchApplications() {
       try {
         setLoading(true);
-        setError("");
-        const { getAuth } = await import("firebase/auth");
+        setError('');
+        const { getAuth } = await import('firebase/auth');
         const auth = getAuth();
         const currentUser = auth.currentUser;
         const uid = currentUser?.uid;
 
         if (!uid) {
-          router.push("/login");
+          router.push('/login');
           return;
         }
 
@@ -87,22 +83,22 @@ export default function CandidaturasPage() {
           },
         });
         if (res.status === 401) {
-          router.push("/login");
+          router.push('/login');
           return;
         }
 
         const json = await res.json().catch(() => ({}));
         if (!res.ok) {
           throw new Error(
-            json.error || "Não foi possível carregar as candidaturas.",
+            json.error || 'Não foi possível carregar as candidaturas.',
           );
         }
         setApplications(json.applications || []);
       } catch (err) {
-        console.error("Erro ao carregar candidaturas:", err);
+        console.error('Erro ao carregar candidaturas:', err);
         setError(
           err?.message ||
-            "Não foi possível carregar as candidaturas. Tente novamente.",
+            'Não foi possível carregar as candidaturas. Tente novamente.',
         );
       } finally {
         setLoading(false);
@@ -121,10 +117,10 @@ export default function CandidaturasPage() {
     };
 
     applications.forEach((application) => {
-      const status = application?.status || "pending";
-      if (status === "pending") nextStats.pending += 1;
-      if (status === "approved") nextStats.approved += 1;
-      if (status === "rejected") nextStats.rejected += 1;
+      const status = application?.status || 'pending';
+      if (status === 'pending') nextStats.pending += 1;
+      if (status === 'approved') nextStats.approved += 1;
+      if (status === 'rejected') nextStats.rejected += 1;
       if (hasValidScheduledInterview(application)) nextStats.interview += 1;
     });
 
@@ -133,8 +129,9 @@ export default function CandidaturasPage() {
       const rawB = b?.appliedAt || b?.createdAt;
       const timeA = rawA ? new Date(rawA).getTime() : 0;
       const timeB = rawB ? new Date(rawB).getTime() : 0;
-      return (Number.isNaN(timeB) ? 0 : timeB) -
-        (Number.isNaN(timeA) ? 0 : timeA);
+      return (
+        (Number.isNaN(timeB) ? 0 : timeB) - (Number.isNaN(timeA) ? 0 : timeA)
+      );
     });
 
     return { sortedApplications: sorted, stats: nextStats };
@@ -143,12 +140,12 @@ export default function CandidaturasPage() {
   const filteredApplications = useMemo(
     () =>
       sortedApplications.filter((application) => {
-        if (filter === "all") return true;
-        if (filter === "interview") {
+        if (filter === 'all') return true;
+        if (filter === 'interview') {
           return hasValidScheduledInterview(application);
         }
-        if (filter === "pending") {
-          return application.status === "pending" || !application.status;
+        if (filter === 'pending') {
+          return application.status === 'pending' || !application.status;
         }
         return application.status === filter;
       }),
@@ -162,9 +159,9 @@ export default function CandidaturasPage() {
           if (application.id !== applicationId) return application;
           return {
             ...application,
-            status: "withdrawn",
-            ...(typeof application.v2Status === "string"
-              ? { v2Status: "WITHDRAWN" }
+            status: 'withdrawn',
+            ...(typeof application.v2Status === 'string'
+              ? { v2Status: 'WITHDRAWN' }
               : {}),
             timeline: timelineEvent
               ? [...(application.timeline || []), timelineEvent]
@@ -186,7 +183,9 @@ export default function CandidaturasPage() {
           <div className={styles.loadingSpinner} aria-hidden="true" />
           <div>
             <strong>A carregar candidaturas</strong>
-            <p className={styles.loadingText}>A organizar o seu histórico mais recente.</p>
+            <p className={styles.loadingText}>
+              A organizar o seu histórico mais recente.
+            </p>
           </div>
         </div>
       </>
@@ -233,7 +232,7 @@ export default function CandidaturasPage() {
       <div className={styles.page}>
         <div className={styles.container}>
           {(() => {
-            const isInterviewView = filter === "interview";
+            const isInterviewView = filter === 'interview';
             return (
               <>
                 <header className={styles.hero}>
@@ -243,26 +242,26 @@ export default function CandidaturasPage() {
                   </Link>
 
                   <div className={styles.heroMain}>
-                  <div className={styles.heroCopy}>
-                    <span className={styles.heroEyebrow}>
-                      {isInterviewView
-                        ? "Agenda de entrevistas"
-                        : "Painel de candidaturas"}
-                    </span>
-                    <h1 className={styles.heroTitle}>
-                      {isInterviewView
-                        ? "Minhas entrevistas"
-                        : "Minhas candidaturas"}
-                    </h1>
-                    <p className={styles.heroDescription}>
-                      {isInterviewView
-                        ? "Consulte datas, locais e links das entrevistas agendadas."
-                        : "Acompanhe cada processo e saiba qual é o próximo passo."}
-                    </p>
-                  </div>
-                  <Link href="/vagas" className={styles.heroAction}>
-                    <FiSearch aria-hidden="true" /> Procurar vagas
-                  </Link>
+                    <div className={styles.heroCopy}>
+                      <span className={styles.heroEyebrow}>
+                        {isInterviewView
+                          ? 'Agenda de entrevistas'
+                          : 'Painel de candidaturas'}
+                      </span>
+                      <h1 className={styles.heroTitle}>
+                        {isInterviewView
+                          ? 'Minhas entrevistas'
+                          : 'Minhas candidaturas'}
+                      </h1>
+                      <p className={styles.heroDescription}>
+                        {isInterviewView
+                          ? 'Consulte datas, locais e links das entrevistas agendadas.'
+                          : 'Acompanhe cada processo e saiba qual é o próximo passo.'}
+                      </p>
+                    </div>
+                    <Link href="/vagas" className={styles.heroAction}>
+                      <FiSearch aria-hidden="true" /> Procurar vagas
+                    </Link>
                   </div>
                 </header>
 
@@ -273,40 +272,40 @@ export default function CandidaturasPage() {
                       label="Total"
                       color="#2057d7"
                       darkColor="#8eb4ff"
-                      active={filter === "all"}
-                      onClick={() => setFilterAndSyncUrl("all")}
+                      active={filter === 'all'}
+                      onClick={() => setFilterAndSyncUrl('all')}
                     />
                     <StatCard
                       value={stats.pending}
                       label="Pendentes"
                       color="#1e2b4d"
                       darkColor="#b7c8e8"
-                      active={filter === "pending"}
-                      onClick={() => setFilterAndSyncUrl("pending")}
+                      active={filter === 'pending'}
+                      onClick={() => setFilterAndSyncUrl('pending')}
                     />
                     <StatCard
                       value={stats.interview}
                       label="Entrevistas"
                       color="#5fb8f5"
                       darkColor="#7dceff"
-                      active={filter === "interview"}
-                      onClick={() => setFilterAndSyncUrl("interview")}
+                      active={filter === 'interview'}
+                      onClick={() => setFilterAndSyncUrl('interview')}
                     />
                     <StatCard
                       value={stats.approved}
                       label="Aprovadas"
                       color="#8ea800"
                       darkColor="#d9ff2f"
-                      active={filter === "approved"}
-                      onClick={() => setFilterAndSyncUrl("approved")}
+                      active={filter === 'approved'}
+                      onClick={() => setFilterAndSyncUrl('approved')}
                     />
                     <StatCard
                       value={stats.rejected}
                       label="Rejeitadas"
                       color="#ef4444"
                       darkColor="#fda4af"
-                      active={filter === "rejected"}
-                      onClick={() => setFilterAndSyncUrl("rejected")}
+                      active={filter === 'rejected'}
+                      onClick={() => setFilterAndSyncUrl('rejected')}
                     />
                   </section>
                 ) : (
@@ -339,26 +338,26 @@ export default function CandidaturasPage() {
                       <FiBriefcase />
                     </span>
                     <h3 className={styles.emptyTitle}>
-                      {filter === "all"
-                        ? "Nenhuma candidatura ainda"
+                      {filter === 'all'
+                        ? 'Nenhuma candidatura ainda'
                         : `Nenhuma candidatura ${
-                            filter === "pending"
-                              ? "pendente"
-                              : filter === "interview"
-                                ? "com entrevista"
-                                : filter === "approved"
-                                  ? "aprovada"
-                                  : filter === "rejected"
-                                    ? "rejeitada"
-                                    : ""
+                            filter === 'pending'
+                              ? 'pendente'
+                              : filter === 'interview'
+                                ? 'com entrevista'
+                                : filter === 'approved'
+                                  ? 'aprovada'
+                                  : filter === 'rejected'
+                                    ? 'rejeitada'
+                                    : ''
                           }`}
                     </h3>
                     <p className={styles.emptyDescription}>
-                      {filter === "all"
-                        ? "Explore as vagas e candidate-se às oportunidades alinhadas com o seu perfil."
-                        : "Escolha outro filtro para consultar as restantes candidaturas."}
+                      {filter === 'all'
+                        ? 'Explore as vagas e candidate-se às oportunidades alinhadas com o seu perfil.'
+                        : 'Escolha outro filtro para consultar as restantes candidaturas.'}
                     </p>
-                    {filter === "all" ? (
+                    {filter === 'all' ? (
                       <Link href="/vagas" className={styles.emptyAction}>
                         Procurar vagas
                       </Link>
@@ -379,10 +378,10 @@ function StatCard({ value, label, color, darkColor, active, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={`${styles.statCard} ${active ? styles.statCardActive : ""}`}
+      className={`${styles.statCard} ${active ? styles.statCardActive : ''}`}
       style={{
-        "--stat-accent": color,
-        "--stat-accent-dark": darkColor,
+        '--stat-accent': color,
+        '--stat-accent-dark': darkColor,
       }}
     >
       <span className={styles.statValue}>{value}</span>
@@ -394,73 +393,73 @@ function StatCard({ value, label, color, darkColor, active, onClick }) {
 function ApplicationDetailCard({ application, onWithdrawn }) {
   const getStatusInfo = (status) => {
     switch (status) {
-      case "approved":
+      case 'approved':
         return {
-          bg: "rgba(217, 255, 47, 0.18)",
-          border: "rgba(217, 255, 47, 0.28)",
-          color: "#1e2b4d",
-          darkBg: "rgba(217, 255, 47, 0.12)",
-          darkBorder: "rgba(217, 255, 47, 0.32)",
-          darkColor: "#d9ff2f",
-          text: "Aprovada",
+          bg: 'rgba(217, 255, 47, 0.18)',
+          border: 'rgba(217, 255, 47, 0.28)',
+          color: '#1e2b4d',
+          darkBg: 'rgba(217, 255, 47, 0.12)',
+          darkBorder: 'rgba(217, 255, 47, 0.32)',
+          darkColor: '#d9ff2f',
+          text: 'Aprovada',
         };
-      case "analysis":
+      case 'analysis':
         return {
-          bg: "rgba(95, 184, 245, 0.16)",
-          border: "rgba(32, 87, 215, 0.24)",
-          color: "#2057d7",
-          darkBg: "rgba(106, 156, 255, 0.14)",
-          darkBorder: "rgba(142, 180, 255, 0.34)",
-          darkColor: "#8eb4ff",
-          text: "Em análise",
+          bg: 'rgba(95, 184, 245, 0.16)',
+          border: 'rgba(32, 87, 215, 0.24)',
+          color: '#2057d7',
+          darkBg: 'rgba(106, 156, 255, 0.14)',
+          darkBorder: 'rgba(142, 180, 255, 0.34)',
+          darkColor: '#8eb4ff',
+          text: 'Em análise',
         };
-      case "interview":
+      case 'interview':
         return {
-          bg: "rgba(95, 184, 245, 0.18)",
-          border: "rgba(32, 87, 215, 0.24)",
-          color: "#2057d7",
-          darkBg: "rgba(125, 206, 255, 0.13)",
-          darkBorder: "rgba(125, 206, 255, 0.32)",
-          darkColor: "#7dceff",
-          text: "Entrevista",
+          bg: 'rgba(95, 184, 245, 0.18)',
+          border: 'rgba(32, 87, 215, 0.24)',
+          color: '#2057d7',
+          darkBg: 'rgba(125, 206, 255, 0.13)',
+          darkBorder: 'rgba(125, 206, 255, 0.32)',
+          darkColor: '#7dceff',
+          text: 'Entrevista',
         };
-      case "rejected":
+      case 'rejected':
         return {
-          bg: "rgba(239, 68, 68, 0.15)",
-          border: "rgba(239, 68, 68, 0.3)",
-          color: "#ef4444",
-          darkBg: "rgba(248, 113, 145, 0.13)",
-          darkBorder: "rgba(253, 164, 175, 0.32)",
-          darkColor: "#fda4af",
-          text: "Rejeitada",
+          bg: 'rgba(239, 68, 68, 0.15)',
+          border: 'rgba(239, 68, 68, 0.3)',
+          color: '#ef4444',
+          darkBg: 'rgba(248, 113, 145, 0.13)',
+          darkBorder: 'rgba(253, 164, 175, 0.32)',
+          darkColor: '#fda4af',
+          text: 'Rejeitada',
         };
-      case "withdrawn":
+      case 'withdrawn':
         return {
-          bg: "rgba(100, 116, 139, 0.12)",
-          border: "rgba(100, 116, 139, 0.28)",
-          color: "#52617d",
-          darkBg: "rgba(148, 163, 184, 0.12)",
-          darkBorder: "rgba(148, 163, 184, 0.28)",
-          darkColor: "#cbd5e1",
-          text: "Retirada",
+          bg: 'rgba(100, 116, 139, 0.12)',
+          border: 'rgba(100, 116, 139, 0.28)',
+          color: '#52617d',
+          darkBg: 'rgba(148, 163, 184, 0.12)',
+          darkBorder: 'rgba(148, 163, 184, 0.28)',
+          darkColor: '#cbd5e1',
+          text: 'Retirada',
         };
       default:
         return {
-          bg: "rgba(30, 43, 77, 0.08)",
-          border: "rgba(30, 43, 77, 0.18)",
-          color: "#1e2b4d",
-          darkBg: "rgba(183, 200, 232, 0.1)",
-          darkBorder: "rgba(183, 200, 232, 0.24)",
-          darkColor: "#b7c8e8",
-          text: "Pendente",
+          bg: 'rgba(30, 43, 77, 0.08)',
+          border: 'rgba(30, 43, 77, 0.18)',
+          color: '#1e2b4d',
+          darkBg: 'rgba(183, 200, 232, 0.1)',
+          darkBorder: 'rgba(183, 200, 232, 0.24)',
+          darkColor: '#b7c8e8',
+          text: 'Pendente',
         };
     }
   };
 
-  // E4: candidaturas v2 mostram o rótulo do candidato (shortlist = «Em
+  // E4: candidaturas com estado de ciclo de vida mostram o rótulo do candidato (shortlist = «Em
   // análise», fecho de vaga = «Processo encerrado»); as cores seguem o legado.
-  const isV2 = typeof application.v2Status === "string";
-  const statusInfo = isV2
+  const hasTrackedStatus = typeof application.v2Status === 'string';
+  const statusInfo = hasTrackedStatus
     ? {
         ...getStatusInfo(application.status),
         text: candidateStatusLabel(
@@ -473,79 +472,79 @@ function ApplicationDetailCard({ application, onWithdrawn }) {
   const premiumBadges = [
     application.priorityApplied
       ? {
-          key: "priority",
-          label: "Prioritária",
-          bg: "rgba(217, 255, 47, 0.16)",
-          border: "rgba(217, 255, 47, 0.28)",
-          color: "#1e2b4d",
-          darkBg: "rgba(217, 255, 47, 0.12)",
-          darkBorder: "rgba(217, 255, 47, 0.3)",
-          darkColor: "#d9ff2f",
+          key: 'priority',
+          label: 'Prioritária',
+          bg: 'rgba(217, 255, 47, 0.16)',
+          border: 'rgba(217, 255, 47, 0.28)',
+          color: '#1e2b4d',
+          darkBg: 'rgba(217, 255, 47, 0.12)',
+          darkBorder: 'rgba(217, 255, 47, 0.3)',
+          darkColor: '#d9ff2f',
         }
       : null,
     application.applicationHighlighted
       ? {
-          key: "highlight",
-          label: "Em destaque",
-          bg: "rgba(95, 184, 245, 0.14)",
-          border: "rgba(32, 87, 215, 0.24)",
-          color: "#2057d7",
-          darkBg: "rgba(106, 156, 255, 0.13)",
-          darkBorder: "rgba(142, 180, 255, 0.3)",
-          darkColor: "#8eb4ff",
+          key: 'highlight',
+          label: 'Em destaque',
+          bg: 'rgba(95, 184, 245, 0.14)',
+          border: 'rgba(32, 87, 215, 0.24)',
+          color: '#2057d7',
+          darkBg: 'rgba(106, 156, 255, 0.13)',
+          darkBorder: 'rgba(142, 180, 255, 0.3)',
+          darkColor: '#8eb4ff',
         }
       : null,
     application.premiumOnlyJob
       ? {
-          key: "premium-job",
-          label: "Vaga premium",
-          bg: "rgba(30, 43, 77, 0.08)",
-          border: "rgba(32, 87, 215, 0.18)",
-          color: "#1e2b4d",
-          darkBg: "rgba(183, 200, 232, 0.1)",
-          darkBorder: "rgba(183, 200, 232, 0.24)",
-          darkColor: "#b7c8e8",
+          key: 'premium-job',
+          label: 'Vaga premium',
+          bg: 'rgba(30, 43, 77, 0.08)',
+          border: 'rgba(32, 87, 215, 0.18)',
+          color: '#1e2b4d',
+          darkBg: 'rgba(183, 200, 232, 0.1)',
+          darkBorder: 'rgba(183, 200, 232, 0.24)',
+          darkColor: '#b7c8e8',
         }
       : null,
     application.accessedDuringEarlyWindow
       ? {
-          key: "early",
-          label: "Acesso antecipado",
-          bg: "rgba(95, 184, 245, 0.14)",
-          border: "rgba(32, 87, 215, 0.24)",
-          color: "#2057d7",
-          darkBg: "rgba(125, 206, 255, 0.12)",
-          darkBorder: "rgba(125, 206, 255, 0.3)",
-          darkColor: "#7dceff",
+          key: 'early',
+          label: 'Acesso antecipado',
+          bg: 'rgba(95, 184, 245, 0.14)',
+          border: 'rgba(32, 87, 215, 0.24)',
+          color: '#2057d7',
+          darkBg: 'rgba(125, 206, 255, 0.12)',
+          darkBorder: 'rgba(125, 206, 255, 0.3)',
+          darkColor: '#7dceff',
         }
       : null,
     application.coverLetter
       ? {
-          key: "cover-letter",
-          label: "Carta incluída",
-          bg: "rgba(217, 255, 47, 0.14)",
-          border: "rgba(217, 255, 47, 0.24)",
-          color: "#1e2b4d",
-          darkBg: "rgba(217, 255, 47, 0.11)",
-          darkBorder: "rgba(217, 255, 47, 0.28)",
-          darkColor: "#d9ff2f",
+          key: 'cover-letter',
+          label: 'Carta incluída',
+          bg: 'rgba(217, 255, 47, 0.14)',
+          border: 'rgba(217, 255, 47, 0.24)',
+          color: '#1e2b4d',
+          darkBg: 'rgba(217, 255, 47, 0.11)',
+          darkBorder: 'rgba(217, 255, 47, 0.28)',
+          darkColor: '#d9ff2f',
         }
       : null,
   ].filter(Boolean);
   const [interviewActionLoading, setInterviewActionLoading] = useState(false);
-  const [interviewError, setInterviewError] = useState("");
+  const [interviewError, setInterviewError] = useState('');
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
-  const [rescheduleReason, setRescheduleReason] = useState("");
+  const [rescheduleReason, setRescheduleReason] = useState('');
   const [withdrawOpen, setWithdrawOpen] = useState(false);
   const [withdrawLoading, setWithdrawLoading] = useState(false);
-  const [withdrawError, setWithdrawError] = useState("");
+  const [withdrawError, setWithdrawError] = useState('');
   const [localInterview, setLocalInterview] = useState(
     application.interviewDetails || null,
   );
-  const [v2Timeline, setV2Timeline] = useState(null);
-  const [v2TimelineLoading, setV2TimelineLoading] = useState(false);
-  const [v2TimelineError, setV2TimelineError] = useState("");
-  const [v2TimelineRevision, setV2TimelineRevision] = useState(0);
+  const [statusTimeline, setStatusTimeline] = useState(null);
+  const [statusTimelineLoading, setStatusTimelineLoading] = useState(false);
+  const [statusTimelineError, setStatusTimelineError] = useState('');
+  const [statusTimelineRevision, setStatusTimelineRevision] = useState(0);
 
   useEffect(() => {
     setLocalInterview(application.interviewDetails || null);
@@ -553,16 +552,16 @@ function ApplicationDetailCard({ application, onWithdrawn }) {
 
   useEffect(() => {
     let cancelled = false;
-    if (!isV2 || !application.id) return undefined;
+    if (!hasTrackedStatus || !application.id) return undefined;
 
-    async function loadV2Timeline() {
-      setV2TimelineLoading(true);
-      setV2TimelineError("");
-      setV2Timeline(null);
+    async function loadStatusTimeline() {
+      setStatusTimelineLoading(true);
+      setStatusTimelineError('');
+      setStatusTimeline(null);
       try {
-        const { getAuth } = await import("firebase/auth");
+        const { getAuth } = await import('firebase/auth');
         const token = await getAuth().currentUser?.getIdToken();
-        if (!token) throw new Error("Não foi possível validar a sessão.");
+        if (!token) throw new Error('Não foi possível validar a sessão.');
         const response = await fetch(
           `/api/applications/${encodeURIComponent(application.id)}/timeline`,
           { headers: { Authorization: `Bearer ${token}` } },
@@ -572,81 +571,84 @@ function ApplicationDetailCard({ application, onWithdrawn }) {
           throw new Error(
             data?.error?.message ||
               data?.error ||
-              "Não foi possível carregar o histórico.",
+              'Não foi possível carregar o histórico.',
           );
         }
-        if (!cancelled) setV2Timeline(data);
+        if (!cancelled) setStatusTimeline(data);
       } catch (error) {
         if (!cancelled) {
-          setV2TimelineError(
-            error?.message || "Não foi possível carregar o histórico.",
+          setStatusTimelineError(
+            error?.message || 'Não foi possível carregar o histórico.',
           );
         }
       } finally {
-        if (!cancelled) setV2TimelineLoading(false);
+        if (!cancelled) setStatusTimelineLoading(false);
       }
     }
 
-    loadV2Timeline();
+    loadStatusTimeline();
     return () => {
       cancelled = true;
     };
-  }, [application.id, application.v2Status, isV2, v2TimelineRevision]);
+  }, [
+    application.id,
+    application.v2Status,
+    hasTrackedStatus,
+    statusTimelineRevision,
+  ]);
 
   const interviewStatus = String(
-    localInterview?.status || "scheduled",
+    localInterview?.status || 'scheduled',
   ).toLowerCase();
   const hasInterview = Boolean(localInterview?.scheduledAt);
   const interviewStatusLabel = getInterviewStatusLabelPt(interviewStatus);
-  // F2.6: no v2 qualquer estado não terminal pode ser retirado.
-  const canWithdraw = isV2
+  // F2.6: qualquer estado não terminal pode ser retirado.
+  const canWithdraw = hasTrackedStatus
     ? [
-        "SUBMITTED",
-        "UNDER_REVIEW",
-        "SHORTLISTED",
-        "INTERVIEW",
-        "OFFER",
-        "OFFER_DECLINED",
+        'SUBMITTED',
+        'UNDER_REVIEW',
+        'SHORTLISTED',
+        'INTERVIEW',
+        'OFFER',
+        'OFFER_DECLINED',
       ].includes(application.v2Status)
-    : ["pending", "analysis"].includes(
-        String(application.status || "pending").toLowerCase(),
+    : ['pending', 'analysis'].includes(
+        String(application.status || 'pending').toLowerCase(),
       );
 
   const handleWithdraw = async () => {
     if (!application.id || !canWithdraw || withdrawLoading) return;
-    setWithdrawError("");
+    setWithdrawError('');
     setWithdrawLoading(true);
 
     try {
-      const { getAuth } = await import("firebase/auth");
+      const { getAuth } = await import('firebase/auth');
       const token = await getAuth().currentUser?.getIdToken();
-      if (!token) throw new Error("Não autenticado");
+      if (!token) throw new Error('Não autenticado');
 
       const response = await fetch(
         `/api/applications/${encodeURIComponent(application.id)}/withdraw`,
         {
-          method: "POST",
+          method: 'POST',
           headers: { Authorization: `Bearer ${token}` },
         },
       );
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
         const message =
-          typeof data?.error?.message === "string"
+          typeof data?.error?.message === 'string'
             ? data.error.message
-            : typeof data?.error === "string"
+            : typeof data?.error === 'string'
               ? data.error
-              : "";
-        throw new Error(
-          message || "Não foi possível retirar a candidatura.",
-        );
+              : '';
+        throw new Error(message || 'Não foi possível retirar a candidatura.');
       }
 
       setWithdrawOpen(false);
       onWithdrawn?.(application.id, data.timelineEvent || null);
     } catch (error) {
       setWithdrawError(
-        error?.message || "Não foi possível retirar a candidatura.",
+        error?.message || 'Não foi possível retirar a candidatura.',
       );
     } finally {
       setWithdrawLoading(false);
@@ -655,30 +657,30 @@ function ApplicationDetailCard({ application, onWithdrawn }) {
 
   const handleConfirmInterview = async () => {
     if (!application.id || !hasInterview || interviewActionLoading) return;
-    setInterviewError("");
+    setInterviewError('');
     setInterviewActionLoading(true);
     try {
-      const { getAuth } = await import("firebase/auth");
+      const { getAuth } = await import('firebase/auth');
       const auth = getAuth();
       const token = await auth.currentUser?.getIdToken();
-      if (!token) throw new Error("Não autenticado");
+      if (!token) throw new Error('Não autenticado');
 
       const res = await fetch(
         `/api/applications/${application.id}/interview-response`,
         {
-          method: "POST",
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ action: "confirm" }),
+          body: JSON.stringify({ action: 'confirm' }),
         },
       );
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Não foi possível confirmar.");
+      if (!res.ok) throw new Error(data.error || 'Não foi possível confirmar.');
       setLocalInterview(data.interviewDetails || localInterview);
     } catch (err) {
-      setInterviewError(err.message || "Erro ao confirmar.");
+      setInterviewError(err.message || 'Erro ao confirmar.');
     } finally {
       setInterviewActionLoading(false);
     }
@@ -686,29 +688,29 @@ function ApplicationDetailCard({ application, onWithdrawn }) {
 
   const handleRequestReschedule = async () => {
     if (!application.id || !hasInterview || interviewActionLoading) return;
-    const trimmed = String(rescheduleReason || "").trim();
+    const trimmed = String(rescheduleReason || '').trim();
     if (trimmed.length < 5) {
-      setInterviewError("Informe um motivo curto (mín. 5 caracteres).");
+      setInterviewError('Informe um motivo curto (mín. 5 caracteres).');
       return;
     }
-    setInterviewError("");
+    setInterviewError('');
     setInterviewActionLoading(true);
     try {
-      const { getAuth } = await import("firebase/auth");
+      const { getAuth } = await import('firebase/auth');
       const auth = getAuth();
       const token = await auth.currentUser?.getIdToken();
-      if (!token) throw new Error("Não autenticado");
+      if (!token) throw new Error('Não autenticado');
 
       const res = await fetch(
         `/api/applications/${application.id}/interview-response`,
         {
-          method: "POST",
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            action: "request_reschedule",
+            action: 'request_reschedule',
             reason: trimmed,
           }),
         },
@@ -716,13 +718,13 @@ function ApplicationDetailCard({ application, onWithdrawn }) {
       const data = await res.json().catch(() => ({}));
       if (!res.ok)
         throw new Error(
-          data.error || "Não foi possível solicitar reagendamento.",
+          data.error || 'Não foi possível solicitar reagendamento.',
         );
       setLocalInterview(data.interviewDetails || localInterview);
       setRescheduleOpen(false);
-      setRescheduleReason("");
+      setRescheduleReason('');
     } catch (err) {
-      setInterviewError(err.message || "Erro ao solicitar.");
+      setInterviewError(err.message || 'Erro ao solicitar.');
     } finally {
       setInterviewActionLoading(false);
     }
@@ -730,11 +732,11 @@ function ApplicationDetailCard({ application, onWithdrawn }) {
 
   const handleDownloadICS = async () => {
     if (!application.id || !hasInterview) return;
-    setInterviewError("");
+    setInterviewError('');
     try {
       await downloadInterviewICS(application.id);
     } catch (err) {
-      setInterviewError(err.message || "Erro ao baixar calendário.");
+      setInterviewError(err.message || 'Erro ao baixar calendário.');
     }
   };
 
@@ -742,12 +744,12 @@ function ApplicationDetailCard({ application, onWithdrawn }) {
     <article
       className={styles.applicationCard}
       style={{
-        "--card-accent": statusInfo.color,
-        "--card-accent-bg": statusInfo.bg,
-        "--card-accent-border": statusInfo.border,
-        "--card-accent-dark": statusInfo.darkColor,
-        "--card-accent-bg-dark": statusInfo.darkBg,
-        "--card-accent-border-dark": statusInfo.darkBorder,
+        '--card-accent': statusInfo.color,
+        '--card-accent-bg': statusInfo.bg,
+        '--card-accent-border': statusInfo.border,
+        '--card-accent-dark': statusInfo.darkColor,
+        '--card-accent-bg-dark': statusInfo.darkBg,
+        '--card-accent-border-dark': statusInfo.darkBorder,
       }}
     >
       <div className={styles.cardHeader}>
@@ -765,10 +767,10 @@ function ApplicationDetailCard({ application, onWithdrawn }) {
         {application.appliedAt ? (
           <InfoItem
             label="Data de Candidatura"
-            value={new Date(application.appliedAt).toLocaleDateString("pt-PT", {
-              day: "2-digit",
-              month: "long",
-              year: "numeric",
+            value={new Date(application.appliedAt).toLocaleDateString('pt-PT', {
+              day: '2-digit',
+              month: 'long',
+              year: 'numeric',
             })}
           />
         ) : null}
@@ -787,12 +789,12 @@ function ApplicationDetailCard({ application, onWithdrawn }) {
               key={badge.key}
               className={styles.featureBadge}
               style={{
-                "--badge-bg": badge.bg,
-                "--badge-border": badge.border,
-                "--badge-color": badge.color,
-                "--badge-bg-dark": badge.darkBg,
-                "--badge-border-dark": badge.darkBorder,
-                "--badge-color-dark": badge.darkColor,
+                '--badge-bg': badge.bg,
+                '--badge-border': badge.border,
+                '--badge-color': badge.color,
+                '--badge-bg-dark': badge.darkBg,
+                '--badge-border-dark': badge.darkBorder,
+                '--badge-color-dark': badge.darkColor,
               }}
             >
               {badge.label}
@@ -801,18 +803,18 @@ function ApplicationDetailCard({ application, onWithdrawn }) {
         </div>
       ) : null}
 
-      {typeof application.compatibilityScore === "number" ||
+      {typeof application.compatibilityScore === 'number' ||
       application.compatibilityReasons?.length ? (
         <section
           className={styles.insightBox}
           style={{
-            "--panel-accent": "rgba(6, 182, 212, 0.24)",
-            "--panel-bg": "rgba(6, 182, 212, 0.08)",
+            '--panel-accent': 'rgba(6, 182, 212, 0.24)',
+            '--panel-bg': 'rgba(6, 182, 212, 0.08)',
           }}
         >
           <h4 className={styles.sectionTitle}>Compatibilidade registada</h4>
           <div className={styles.sectionGrid}>
-            {typeof application.compatibilityScore === "number" ? (
+            {typeof application.compatibilityScore === 'number' ? (
               <InfoItem
                 label="Score"
                 value={`${application.compatibilityScore}%`}
@@ -828,7 +830,7 @@ function ApplicationDetailCard({ application, onWithdrawn }) {
 
           {application.compatibilityReasons?.length ? (
             <p className={styles.sectionText}>
-              {application.compatibilityReasons.slice(0, 3).join(" • ")}
+              {application.compatibilityReasons.slice(0, 3).join(' • ')}
             </p>
           ) : null}
 
@@ -891,12 +893,12 @@ function ApplicationDetailCard({ application, onWithdrawn }) {
         </section>
       ) : null}
 
-      {assessment && typeof assessment.score === "number" ? (
+      {assessment && typeof assessment.score === 'number' ? (
         <section
           className={styles.insightBox}
           style={{
-            "--panel-accent": "rgba(59, 130, 246, 0.24)",
-            "--panel-bg": "rgba(59, 130, 246, 0.10)",
+            '--panel-accent': 'rgba(59, 130, 246, 0.24)',
+            '--panel-bg': 'rgba(59, 130, 246, 0.10)',
           }}
         >
           <h4 className={styles.sectionTitle}>Teste de competências</h4>
@@ -904,7 +906,7 @@ function ApplicationDetailCard({ application, onWithdrawn }) {
             <InfoItem label="Pontuação" value={`${assessment.score}%`} />
             <InfoItem
               label="Resultado"
-              value={`${assessment.correctAnswers ?? 0}/${assessment.totalQuestions ?? 0} ${assessment.passed ? "(Aprovado)" : "(Não aprovado)"}`}
+              value={`${assessment.correctAnswers ?? 0}/${assessment.totalQuestions ?? 0} ${assessment.passed ? '(Aprovado)' : '(Não aprovado)'}`}
             />
           </div>
         </section>
@@ -914,8 +916,8 @@ function ApplicationDetailCard({ application, onWithdrawn }) {
         <section
           className={styles.insightBox}
           style={{
-            "--panel-accent": "rgba(34, 197, 94, 0.22)",
-            "--panel-bg": "rgba(34, 197, 94, 0.08)",
+            '--panel-accent': 'rgba(34, 197, 94, 0.22)',
+            '--panel-bg': 'rgba(34, 197, 94, 0.08)',
           }}
         >
           <h4 className={styles.sectionTitle}>Carta de apresentação enviada</h4>
@@ -927,8 +929,8 @@ function ApplicationDetailCard({ application, onWithdrawn }) {
         <section
           className={styles.insightBox}
           style={{
-            "--panel-accent": "rgba(139, 92, 246, 0.28)",
-            "--panel-bg": "rgba(139, 92, 246, 0.12)",
+            '--panel-accent': 'rgba(139, 92, 246, 0.28)',
+            '--panel-bg': 'rgba(139, 92, 246, 0.12)',
           }}
         >
           <h4 className={styles.sectionTitle}>Detalhes da entrevista</h4>
@@ -952,10 +954,10 @@ function ApplicationDetailCard({ application, onWithdrawn }) {
               value={formatMaybeDateTimePt(localInterview.scheduledAt)}
             />
             <InfoItem
-              label={localInterview.mode === "presencial" ? "Local" : "Link"}
+              label={localInterview.mode === 'presencial' ? 'Local' : 'Link'}
               value={
-                localInterview.mode === "presencial" ? (
-                  localInterview.location || "Local a confirmar"
+                localInterview.mode === 'presencial' ? (
+                  localInterview.location || 'Local a confirmar'
                 ) : localInterview.link ? (
                   isLikelyUrl(localInterview.link) ? (
                     <a
@@ -970,7 +972,7 @@ function ApplicationDetailCard({ application, onWithdrawn }) {
                     localInterview.link
                   )
                 ) : (
-                  "Link a confirmar"
+                  'Link a confirmar'
                 )
               }
             />
@@ -988,15 +990,15 @@ function ApplicationDetailCard({ application, onWithdrawn }) {
               type="button"
               onClick={handleConfirmInterview}
               disabled={
-                interviewActionLoading || interviewStatus === "confirmed"
+                interviewActionLoading || interviewStatus === 'confirmed'
               }
               className={`${styles.actionButton} ${styles.actionButtonPositive}`}
             >
               {interviewActionLoading
-                ? "A processar..."
-                : interviewStatus === "confirmed"
-                  ? "Presença confirmada"
-                  : "Confirmar presença"}
+                ? 'A processar...'
+                : interviewStatus === 'confirmed'
+                  ? 'Presença confirmada'
+                  : 'Confirmar presença'}
             </button>
             <button
               type="button"
@@ -1024,14 +1026,14 @@ function ApplicationDetailCard({ application, onWithdrawn }) {
                   disabled={interviewActionLoading}
                   className={`${styles.actionButton} ${styles.actionButtonAccent}`}
                 >
-                  {interviewActionLoading ? "A enviar..." : "Enviar pedido"}
+                  {interviewActionLoading ? 'A enviar...' : 'Enviar pedido'}
                 </button>
                 <button
                   type="button"
                   onClick={() => {
                     setRescheduleOpen(false);
-                    setRescheduleReason("");
-                    setInterviewError("");
+                    setRescheduleReason('');
+                    setInterviewError('');
                   }}
                   disabled={interviewActionLoading}
                   className={`${styles.actionButton} ${styles.actionButtonNeutral}`}
@@ -1057,7 +1059,7 @@ function ApplicationDetailCard({ application, onWithdrawn }) {
                     {event.description}
                   </div>
                   <div className={styles.timelineDate}>
-                    {new Date(event.date).toLocaleString("pt-PT")}
+                    {new Date(event.date).toLocaleString('pt-PT')}
                   </div>
                 </div>
               </div>
@@ -1066,42 +1068,60 @@ function ApplicationDetailCard({ application, onWithdrawn }) {
         </section>
       ) : null}
 
-      {isV2 ? (
+      {hasTrackedStatus ? (
         <section className={styles.timelineSection} aria-live="polite">
-          <h4 className={styles.sectionTitlePlain}>Acompanhamento do processo</h4>
-          {v2TimelineLoading ? (
-            <p className={styles.timelineDescription}>A carregar o histórico…</p>
-          ) : v2TimelineError ? (
-            <p className={styles.errorText} role="alert">{v2TimelineError}</p>
-          ) : v2Timeline?.timeline?.length ? (
+          <h4 className={styles.sectionTitlePlain}>
+            Acompanhamento do processo
+          </h4>
+          {statusTimelineLoading ? (
+            <p className={styles.timelineDescription}>
+              A carregar o histórico…
+            </p>
+          ) : statusTimelineError ? (
+            <p className={styles.errorText} role="alert">
+              {statusTimelineError}
+            </p>
+          ) : statusTimeline?.timeline?.length ? (
             <>
               <div className={styles.timelineList}>
-                {v2Timeline.timeline.map((event, index) => (
-                  <div key={`${event.date}-${index}`} className={styles.timelineItem}>
+                {statusTimeline.timeline.map((event, index) => (
+                  <div
+                    key={`${event.date}-${index}`}
+                    className={styles.timelineItem}
+                  >
                     <span className={styles.timelineDot} />
                     <div className={styles.timelineContent}>
                       <div className={styles.timelineTitle}>{event.label}</div>
                       {event.note ? (
-                        <div className={styles.timelineDescription}>{event.note}</div>
+                        <div className={styles.timelineDescription}>
+                          {event.note}
+                        </div>
                       ) : null}
-                      <div className={styles.timelineDate}>
-                        {event.date}
-                      </div>
+                      <div className={styles.timelineDate}>{event.date}</div>
                     </div>
                   </div>
                 ))}
               </div>
-              {v2Timeline.silenceNotice ? (
-                <p className={styles.timelineDescription}>{v2Timeline.silenceNotice}</p>
+              {statusTimeline.silenceNotice ? (
+                <p className={styles.timelineDescription}>
+                  {statusTimeline.silenceNotice}
+                </p>
               ) : null}
             </>
           ) : (
-            <p className={styles.timelineDescription}>Ainda não existem atualizações para mostrar.</p>
+            <p className={styles.timelineDescription}>
+              Ainda não existem atualizações para mostrar.
+            </p>
           )}
         </section>
       ) : null}
 
-      {v2Timeline ? <CandidateRecruitmentActions timeline={v2Timeline} onSuccess={() => setV2TimelineRevision((value) => value + 1)} /> : null}
+      {statusTimeline ? (
+        <CandidateRecruitmentActions
+          timeline={statusTimeline}
+          onSuccess={() => setStatusTimelineRevision((value) => value + 1)}
+        />
+      ) : null}
 
       {withdrawOpen && canWithdraw ? (
         <section
@@ -1117,8 +1137,8 @@ function ApplicationDetailCard({ application, onWithdrawn }) {
               Retirar esta candidatura?
             </h4>
             <p>
-              A empresa deixará de considerar o seu perfil para esta vaga.
-              Não poderá voltar a candidatar-se a esta vaga depois de a retirar.
+              A empresa deixará de considerar o seu perfil para esta vaga. Não
+              poderá voltar a candidatar-se a esta vaga depois de a retirar.
             </p>
           </div>
           {withdrawError ? <p role="alert">{withdrawError}</p> : null}
@@ -1129,14 +1149,14 @@ function ApplicationDetailCard({ application, onWithdrawn }) {
               onClick={handleWithdraw}
               disabled={withdrawLoading}
             >
-              {withdrawLoading ? "A retirar…" : "Confirmar retirada"}
+              {withdrawLoading ? 'A retirar…' : 'Confirmar retirada'}
             </button>
             <button
               type="button"
               className={styles.cancelWithdrawButton}
               onClick={() => {
                 setWithdrawOpen(false);
-                setWithdrawError("");
+                setWithdrawError('');
               }}
               disabled={withdrawLoading}
             >
@@ -1162,7 +1182,7 @@ function ApplicationDetailCard({ application, onWithdrawn }) {
             aria-expanded={withdrawOpen}
             onClick={() => {
               setWithdrawOpen((open) => !open);
-              setWithdrawError("");
+              setWithdrawError('');
             }}
           >
             Retirar candidatura

@@ -1,4 +1,4 @@
-import { resolveBaseUrl } from '../../../lib/authEmails';
+import { resolveBaseUrl } from '../../../lib/email/authEmails';
 
 jest.mock('../../../lib/firebaseAdmin', () => ({
   admin: {},
@@ -45,9 +45,9 @@ describe('resolveBaseUrl', () => {
     process.env.SITE_URL = 'https://empregostp.example/';
     process.env.NEXT_PUBLIC_SITE_URL = 'https://ignorado.example';
 
-    expect(resolveBaseUrl({ headers: { origin: 'https://evil.example' } })).toBe(
-      'https://empregostp.example',
-    );
+    expect(
+      resolveBaseUrl({ headers: { origin: 'https://evil.example' } }),
+    ).toBe('https://empregostp.example');
   });
 
   test('recusa HTTP remoto e permite localhost apenas fora de produção', () => {

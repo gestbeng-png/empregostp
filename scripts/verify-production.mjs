@@ -28,19 +28,31 @@ run('contract tests', 'node', ['--test', ...contractFiles]);
 run('production build', 'npm', ['run', 'build']);
 
 if (!process.env.CLOSURE_BASE_URL) {
-  checks.push({ label: 'route checker', passed: false, reason: 'CLOSURE_BASE_URL_REQUIRED' });
-  process.stderr.write('\n[closure] CLOSURE_BASE_URL is required for route verification.\n');
+  checks.push({
+    label: 'route checker',
+    passed: false,
+    reason: 'CLOSURE_BASE_URL_REQUIRED',
+  });
+  process.stderr.write(
+    '\n[closure] CLOSURE_BASE_URL is required for route verification.\n',
+  );
   process.exitCode = 1;
 } else {
-  run('route checker', 'node', ['scripts/v2/check-urls.mjs'], {
-    V2_AUDIT_BASE_URL: process.env.CLOSURE_BASE_URL,
-    V2_AUDIT_ENVIRONMENT: process.env.CLOSURE_ENVIRONMENT || 'staging',
+  run('route checker', 'node', ['scripts/quality/check-urls.mjs'], {
+    AUDIT_BASE_URL: process.env.CLOSURE_BASE_URL,
+    AUDIT_ENVIRONMENT: process.env.CLOSURE_ENVIRONMENT || 'staging',
   });
 }
 
 if (process.env.CLOSURE_E2E !== '1') {
-  checks.push({ label: 'critical E2E', passed: false, reason: 'CLOSURE_E2E_REQUIRED' });
-  process.stderr.write('\n[closure] CLOSURE_E2E=1 is required for critical browser flows.\n');
+  checks.push({
+    label: 'critical E2E',
+    passed: false,
+    reason: 'CLOSURE_E2E_REQUIRED',
+  });
+  process.stderr.write(
+    '\n[closure] CLOSURE_E2E=1 is required for critical browser flows.\n',
+  );
 } else {
   run('critical E2E', 'npm', ['run', 'test:e2e', '--', '--reporter=line']);
 }

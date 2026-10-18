@@ -36,7 +36,7 @@ jest.mock('../../../lib/serverNotifications', () => ({
   sendPushToUser: jest.fn(),
 }));
 
-jest.mock('../../../lib/jobAlertEmail', () => ({
+jest.mock('../../../lib/email/jobAlertEmail', () => ({
   buildJobAlertEmail: jest.fn(),
   filterPublishedJobs: jest.fn(),
 }));
@@ -126,42 +126,39 @@ describe('migração das rotas para o limitador Firestore', () => {
     jest.clearAllMocks();
   });
 
-  describe.each(ROUTES)(
-    'rota $name',
-    ({ handler, limit, method, scope }) => {
-      test(`usa o guard com scope "${scope}" e limite ${limit}/min e pára no 429`, async () => {
-        mockedEnforce.mockImplementation(async (_req, res) => {
-          const blockedResponse = res as ReturnType<typeof createResponse>;
-          blockedResponse.setHeader('Retry-After', '60');
-          blockedResponse.status(429).json({
-            error: 'Demasiados pedidos. Tente novamente dentro de um minuto.',
-          });
-          return false;
+  describe.each(ROUTES)('rota $name', ({ handler, limit, method, scope }) => {
+    test(`usa o guard com scope "${scope}" e limite ${limit}/min e pára no 429`, async () => {
+      mockedEnforce.mockImplementation(async (_req, res) => {
+        const blockedResponse = res as ReturnType<typeof createResponse>;
+        blockedResponse.setHeader('Retry-After', '60');
+        blockedResponse.status(429).json({
+          error: 'Demasiados pedidos. Tente novamente dentro de um minuto.',
         });
-
-        const response = createResponse();
-        await handler(
-          {
-            body: {},
-            headers: { 'x-forwarded-for': '203.0.113.99' },
-            method,
-            query: {},
-          },
-          response,
-        );
-
-        expect(mockedEnforce).toHaveBeenCalledTimes(1);
-        expect(mockedEnforce).toHaveBeenCalledWith(
-          expect.anything(),
-          response,
-          expect.objectContaining({ limit, scope }),
-        );
-        expect(response.status).toHaveBeenCalledWith(429);
-        expect(authMock).not.toHaveBeenCalled();
-        expect(firestoreMock).not.toHaveBeenCalled();
+        return false;
       });
-    },
-  );
+
+      const response = createResponse();
+      await handler(
+        {
+          body: {},
+          headers: { 'x-forwarded-for': '203.0.113.99' },
+          method,
+          query: {},
+        },
+        response,
+      );
+
+      expect(mockedEnforce).toHaveBeenCalledTimes(1);
+      expect(mockedEnforce).toHaveBeenCalledWith(
+        expect.anything(),
+        response,
+        expect.objectContaining({ limit, scope }),
+      );
+      expect(response.status).toHaveBeenCalledWith(429);
+      expect(authMock).not.toHaveBeenCalled();
+      expect(firestoreMock).not.toHaveBeenCalled();
+    });
+  });
 
   test('a rota de testemunhos mantém a mensagem própria de submissões', async () => {
     mockedEnforce.mockResolvedValue(false);

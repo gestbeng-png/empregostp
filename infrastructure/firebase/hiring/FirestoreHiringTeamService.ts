@@ -1,8 +1,6 @@
 import { Timestamp } from 'firebase-admin/firestore';
 import type { Firestore } from 'firebase-admin/firestore';
 
-import type { FeatureFlagReader } from '@/application/marketplace/ports';
-import type { FeatureContext } from '@/domain/feature-flags/flags';
 import {
   buildHiringTeam,
   canManageHiringTeam,
@@ -67,8 +65,6 @@ export async function activeOrganizationMemberIds(
 export class FirestoreHiringTeamService {
   constructor(
     private readonly db: Firestore,
-    private readonly flags: FeatureFlagReader,
-    private readonly context: FeatureContext,
     private readonly team: Pick<FirestoreTeamService, 'roleOf'>,
     private readonly now: () => number = Date.now,
   ) {}
@@ -84,14 +80,6 @@ export class FirestoreHiringTeamService {
     if (!job) return failure('NOT_FOUND');
     const organizationId = readJobLifecycle(job).organizationId;
     if (!organizationId) return failure('NOT_FOUND');
-    if (
-      !(await this.flags.enabled('V2_EMPLOYER_ATS', {
-        ...this.context,
-        organizationId,
-        userId,
-      }))
-    )
-      return failure('FEATURE_DISABLED');
     const role = await this.team.roleOf(userId, organizationId);
     // Quem não é da organização nem sabe que a vaga existe (D14).
     if (!role) return failure('NOT_FOUND');

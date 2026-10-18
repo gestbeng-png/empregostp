@@ -46,7 +46,7 @@ export default function VerificarEmail() {
         <title>Confirmar email | EmpregoSTP</title>
       </Head>
 
-      <AuthShell minimal>
+      <AuthShell>
         <div className={styles.verifyScreen}>
           {status === 'verifying' ? (
             <div

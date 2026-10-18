@@ -120,7 +120,7 @@ export default function RedefinirSenha() {
         <title>Redefinir senha | EmpregoSTP</title>
       </Head>
 
-      <AuthShell minimal>
+      <AuthShell>
         {status === 'checking' ? (
           <div className={styles.verifyScreen} role="status" aria-live="polite">
             <FiClock className={styles.verifyIcon} aria-hidden="true" />

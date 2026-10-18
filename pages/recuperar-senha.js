@@ -62,7 +62,7 @@ export default function RecuperarSenha() {
         <title>Recuperar senha | EmpregoSTP</title>
       </Head>
 
-      <AuthShell minimal>
+      <AuthShell>
         {sent ? (
           <div className={styles.verifyScreen} role="status" aria-live="polite">
             <FiMail className={styles.verifyIcon} aria-hidden="true" />

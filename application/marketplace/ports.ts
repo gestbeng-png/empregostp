@@ -1,4 +1,4 @@
-import type { FeatureContext, FeatureKey } from '@/domain/feature-flags/flags';
+import type { FeatureKey } from '@/domain/feature-flags/flags';
 import type {
   EntityKind,
   TransitionActor,
@@ -11,7 +11,7 @@ import type {
 import type { Result } from '@/domain/shared/Result';
 
 export interface FeatureFlagReader {
-  enabled(key: FeatureKey, context: FeatureContext): Promise<boolean>;
+  enabled(key: FeatureKey): Promise<boolean>;
 }
 export interface LifecycleRecord extends PermissionResource {
   id: string;

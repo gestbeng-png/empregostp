@@ -3,9 +3,7 @@ import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 import { Timestamp } from 'firebase-admin/firestore';
 import type { Firestore, Transaction } from 'firebase-admin/firestore';
 
-import type { FeatureFlagReader } from '@/application/marketplace/ports';
 import { canUseFeature } from '@/domain/entitlements/canUseFeature';
-import type { FeatureContext } from '@/domain/feature-flags/flags';
 import {
   canAssignRole,
   canManageMember,
@@ -40,8 +38,6 @@ const ROLES = new Set<string>(['OWNER', 'ADMIN', 'RECRUITER', 'REVIEWER']);
 export class FirestoreTeamService {
   constructor(
     private readonly db: Firestore,
-    private readonly flags: FeatureFlagReader,
-    private readonly context: FeatureContext,
     private readonly secret: string | undefined,
     private readonly now: () => number = Date.now,
   ) {}
@@ -276,14 +272,6 @@ export class FirestoreTeamService {
     const role = input.role as MemberRole;
     if (!email || !INVITABLE_ROLES.includes(role))
       return failure('INVALID_INPUT', 'Indique um email válido e o papel.');
-    if (
-      !(await this.flags.enabled('V2_EMPLOYER_ATS', {
-        ...this.context,
-        organizationId,
-        userId,
-      }))
-    )
-      return failure('FEATURE_DISABLED');
     const actorRole = await this.roleOf(userId, organizationId);
     if (!actorRole || !canAssignRole(actorRole, role))
       return failure('FORBIDDEN');
@@ -358,7 +346,7 @@ export class FirestoreTeamService {
       { type: 'ORGANIZATION', id: organizationId },
       'SEATS',
       [],
-      { now: this.now(), v2Enabled: true },
+      { now: this.now() },
     );
     if (
       !seatsAvailable({

@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import Head from 'next/head';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { FiArrowRight } from 'react-icons/fi';
@@ -26,7 +26,9 @@ import {
   getInitials,
 } from '../lib/spotlightCandidates';
 import { isJobPubliclyVisible } from '../lib/jobExpiration';
+import { countJobsByCategory } from '../lib/jobCategoryCounts';
 import { fetchPublicProductAds } from '../lib/productAds';
+import useScrollReveal from '../hooks/useScrollReveal';
 import styles from '../styles/HomePage.module.css';
 
 function serializeDateValue(value) {
@@ -133,15 +135,11 @@ function truncateText(value = '', maxLength = 112) {
   return `${normalized.slice(0, maxLength - 1).trim()}…`;
 }
 
-const FALLBACK_CATEGORIES = [
-  {
-    name: 'Marketing Digital',
-    icon: 'fa-bullhorn',
-    color: '#2563eb',
-    count: '...',
-  },
-  { name: 'Programação', icon: 'fa-code', color: '#10b981', count: '...' },
-  { name: 'Design', icon: 'fa-palette', color: '#0ea5e9', count: '...' },
+// As três categorias da home; a contagem vem das vagas ativas (servidor).
+const HOME_CATEGORIES = [
+  { name: 'Marketing Digital', icon: 'fa-bullhorn', color: '#2563eb' },
+  { name: 'Programação', icon: 'fa-code', color: '#10b981' },
+  { name: 'Design', icon: 'fa-palette', color: '#0ea5e9' },
 ];
 
 const CATEGORY_CONFIGS = {
@@ -161,6 +159,10 @@ const CATEGORY_CONFIGS = {
   'Recursos Humanos': { icon: 'fa-users', color: '#0f766e' },
   RH: { icon: 'fa-users', color: '#0f766e' },
 };
+
+// Título da hero, por linhas; cada palavra entra com o mesmo efeito das
+// outras rotas.
+const HERO_TITLE_LINES = [['Conectando'], ['Talentos'], ['ao', 'Sucesso']];
 
 const HOW_IT_WORKS_STEPS = [
   {
@@ -211,6 +213,25 @@ async function fetchCollectionWithFallback(collectionName) {
   }
 }
 
+// A página só mostra estes campos (cartões e pesquisa local); o resto da vaga,
+// como a descrição completa, não precisa de seguir no HTML.
+function toHomeJobCard(job) {
+  return {
+    id: job.id,
+    titulo: job.titulo,
+    localizacao: job.localizacao,
+    tipoContrato: job.tipoContrato,
+    salarioDe: job.salarioDe,
+    salarioAte: job.salarioAte,
+    empresaLogo: job.empresaLogo,
+    empresaNome: job.empresaNome,
+    status: job.status,
+    categoria: job.categoria,
+    publicadoEm: job.publicadoEm,
+    createdAt: job.createdAt,
+  };
+}
+
 export async function getServerSideProps(context) {
   const previewCreativePath = '/assets/product-ads/carro-preview.png';
   const previewCreativeSrc =
@@ -225,13 +246,17 @@ export async function getServerSideProps(context) {
       'public, s-maxage=60, stale-while-revalidate=300',
     );
 
+    // Os totais de empresas e candidatos usam agregação `count()`: devolvem
+    // o mesmo número sem transferir os documentos (dados pessoais) de todos
+    // os utilizadores. Os destaques não dependem das vagas e vão em paralelo.
     const [
       activeJobsSnapshot,
-      companiesSnapshot,
-      candidatesSnapshot,
+      companiesCountSnapshot,
+      candidatesCountSnapshot,
       postsSnapshot,
       testimonialsSnapshot,
       productAds,
+      spotlightCandidates,
     ] = await Promise.all([
       admin
         .firestore()
@@ -242,11 +267,13 @@ export async function getServerSideProps(context) {
         .firestore()
         .collection('users')
         .where('userType', '==', 'empresa')
+        .count()
         .get(),
       admin
         .firestore()
         .collection('users')
         .where('userType', '==', 'candidato')
+        .count()
         .get(),
       fetchCollectionWithFallback('posts'),
       admin
@@ -255,8 +282,13 @@ export async function getServerSideProps(context) {
         .where('status', '==', 'approved')
         .get(),
       fetchPublicProductAds(admin.firestore()),
+      fetchSpotlightCandidates(admin),
     ]);
 
+    // Mesma contagem que `/api/jobs/categories`, feita com as vagas já lidas.
+    const jobCategories = countJobsByCategory(
+      activeJobsSnapshot.docs.map((doc) => doc.data()),
+    );
     const activeJobsData = activeJobsSnapshot.docs
       .map((doc) => ({
         ...doc.data(),
@@ -355,8 +387,6 @@ export async function getServerSideProps(context) {
       })
       .sort(compareRecentJobs);
 
-    const spotlightCandidates = await fetchSpotlightCandidates(admin);
-
     const approvedTestimonials = testimonialsSnapshot.docs
       .map((doc) => {
         const data = doc.data() || {};
@@ -404,8 +434,8 @@ export async function getServerSideProps(context) {
 
     const stats = {
       activeJobs: jobs.length,
-      activeCandidates: candidatesSnapshot.size,
-      activeCompanies: companiesSnapshot.size,
+      activeCandidates: candidatesCountSnapshot.data().count,
+      activeCompanies: companiesCountSnapshot.data().count,
       recentJobsLast14Days: jobs.filter((job) => {
         if (!job.createdAt) return false;
         const createdAt = new Date(job.createdAt);
@@ -418,12 +448,13 @@ export async function getServerSideProps(context) {
 
     return {
       props: {
-        jobs: JSON.parse(JSON.stringify(jobs)),
+        jobs: JSON.parse(JSON.stringify(jobs.map(toHomeJobCard))),
         stats,
         spotlightCandidates: JSON.parse(JSON.stringify(spotlightCandidates)),
         latestPosts: JSON.parse(JSON.stringify(latestPosts)),
         testimonials: JSON.parse(JSON.stringify(approvedTestimonials)),
         productAds,
+        jobCategories,
         previewCreativeSrc,
       },
     };
@@ -442,6 +473,7 @@ export async function getServerSideProps(context) {
         latestPosts: [],
         testimonials: [],
         productAds: [],
+        jobCategories: [],
         previewCreativeSrc,
       },
     };
@@ -460,12 +492,14 @@ export default function HomePage({
   latestPosts = [],
   testimonials = [],
   productAds = [],
+  jobCategories = [],
   previewCreativeSrc = '',
 }) {
   const router = useRouter();
+  const pageRef = useRef(null);
+  useScrollReveal(pageRef);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredJobs, setFilteredJobs] = useState(initialJobs);
-  const [categories, setCategories] = useState([]);
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterState, setNewsletterState] = useState({
     status: 'idle',
@@ -474,34 +508,6 @@ export default function HomePage({
 
   useEffect(() => {
     setFilteredJobs(initialJobs);
-
-    fetch('/api/jobs/categories')
-      .then((res) => res.json())
-      .then((data) => {
-        const predefinedCategories = [
-          { name: 'Marketing Digital', icon: 'fa-bullhorn', color: '#2563eb' },
-          { name: 'Programação', icon: 'fa-code', color: '#10b981' },
-          { name: 'Design', icon: 'fa-palette', color: '#0ea5e9' },
-        ];
-
-        const categoriesWithCounts = predefinedCategories.map((predef) => {
-          const realCategory = data.categories?.find(
-            (category) => category.name === predef.name,
-          );
-          return {
-            ...predef,
-            count: realCategory ? realCategory.count : 0,
-          };
-        });
-
-        setCategories(categoriesWithCounts);
-      })
-      .catch((error) => {
-        console.error('Erro ao buscar categorias:', error);
-        setCategories(
-          FALLBACK_CATEGORIES.map((category) => ({ ...category, count: 0 })),
-        );
-      });
   }, [initialJobs]);
 
   const handleSearch = (event) => {
@@ -576,9 +582,11 @@ export default function HomePage({
     }
   };
 
-  const displayedCategories = (
-    categories.length === 0 ? FALLBACK_CATEGORIES : categories
-  ).slice(0, 3);
+  const displayedCategories = HOME_CATEGORIES.map((category) => ({
+    ...category,
+    count:
+      jobCategories.find((entry) => entry.name === category.name)?.count ?? 0,
+  }));
   const heroJobs = filteredJobs.slice(0, 4);
   const jobsPreview = filteredJobs.slice(0, 9);
   const verifiedCandidates = spotlightCandidates;
@@ -631,6 +639,21 @@ export default function HomePage({
     <>
       <Head>
         <title>Empregos STP - Conectando Talentos ao Sucesso</title>
+        {/* Pesos da Instrument Sans usados no topo da home. */}
+        <link
+          rel="preload"
+          href="/fonts/instrument-sans-600.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/fonts/instrument-sans-700.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
         <meta
           name="description"
           content="A melhor plataforma de empregos em São Tomé e Príncipe. Conectando talentos às melhores oportunidades."
@@ -638,7 +661,7 @@ export default function HomePage({
       </Head>
 
       <PublicPageShell headerVariant="light">
-        <div className={styles.page}>
+        <div className={styles.page} ref={pageRef}>
           <section className={styles.hero}>
             <div className={styles.sectionContainer}>
               <div className={styles.heroCanvas}>
@@ -665,11 +688,30 @@ export default function HomePage({
                       «ConectandoTalentosao Sucesso». Colapsam visualmente
                       por estarem junto às quebras de linha. */}
                   <h1 className={styles.heroTitle}>
-                    Conectando{' '}
-                    <br />
-                    <span className={styles.heroTitleAccent}>Talentos</span>{' '}
-                    <br />
-                    ao Sucesso
+                    {HERO_TITLE_LINES.map((line, lineIndex) => (
+                      <Fragment key={line.join(' ')}>
+                        {lineIndex ? <br /> : null}
+                        {line.map((word, wordIndex) => (
+                          <Fragment key={word}>
+                            {wordIndex ? ' ' : null}
+                            <span
+                              className={`${styles.heroWord} ${
+                                word === 'Talentos'
+                                  ? styles.heroTitleAccent
+                                  : ''
+                              }`}
+                              style={{
+                                '--i':
+                                  HERO_TITLE_LINES.slice(0, lineIndex).flat()
+                                    .length + wordIndex,
+                              }}
+                            >
+                              {word}
+                            </span>
+                          </Fragment>
+                        ))}
+                      </Fragment>
+                    ))}
                   </h1>
                   <p className={styles.heroDescription}>
                     Somos a plataforma que aproxima candidatos e empresas com
@@ -736,7 +778,7 @@ export default function HomePage({
 
           <section className={styles.jobsSection}>
             <div className={styles.sectionContainer}>
-              <div className={styles.sectionHeaderDark}>
+              <div className={styles.sectionHeaderDark} data-reveal>
                 <h2 className={styles.sectionTitleDark}>
                   Veja vagas disponíveis
                 </h2>
@@ -745,7 +787,7 @@ export default function HomePage({
                 </Link>
               </div>
 
-              <div className={styles.compactJobsGrid}>
+              <div className={styles.compactJobsGrid} data-reveal>
                 {jobsPreview.map((job) => (
                   <CompactJobCard
                     key={job.id}
@@ -778,7 +820,7 @@ export default function HomePage({
 
           <section className={styles.categoriesSection}>
             <div className={styles.sectionContainer}>
-              <div className={styles.sectionHeaderLight}>
+              <div className={styles.sectionHeaderLight} data-reveal>
                 <h2 className={styles.sectionTitleLight}>
                   Categorias populares
                 </h2>
@@ -788,7 +830,7 @@ export default function HomePage({
               </div>
 
               <div className={styles.categoriesGrid}>
-                {displayedCategories.map((category) => {
+                {displayedCategories.map((category, index) => {
                   const config = resolveCategoryConfig(category);
                   const countLabel =
                     typeof category.count === 'number'
@@ -800,7 +842,11 @@ export default function HomePage({
                       key={category.name}
                       href={`/vagas?categoria=${encodeURIComponent(category.name.toLowerCase())}`}
                       className={styles.categoryCard}
-                      style={{ '--category-tone': config.color }}
+                      data-reveal
+                      style={{
+                        '--category-tone': config.color,
+                        '--delay': `${index * 90}ms`,
+                      }}
                     >
                       <span className={styles.categoryIcon}>
                         <i
@@ -822,7 +868,7 @@ export default function HomePage({
           <section id="testemunhos" className={styles.signalsSection}>
             <div className={styles.sectionContainer}>
               <div className={styles.signalsGrid}>
-                <article className={styles.metricsCard}>
+                <article className={styles.metricsCard} data-reveal>
                   <div className={styles.metricsGrid}>
                     {metrics.map((item) => (
                       <div key={item.label} className={styles.metricItem}>
@@ -838,6 +884,8 @@ export default function HomePage({
                 <Link
                   href="/sobre-nos#testemunhos"
                   className={styles.testimonialCard}
+                  data-reveal
+                  style={{ '--delay': '120ms' }}
                   aria-label="Ver testemunhos na página Sobre nós"
                 >
                   <h2 className={styles.testimonialTitle}>Testemunhos</h2>
@@ -871,7 +919,7 @@ export default function HomePage({
           <section className={styles.aboutSection}>
             <div className={styles.sectionContainer}>
               <div className={styles.aboutGrid}>
-                <div className={styles.aboutContent}>
+                <div className={styles.aboutContent} data-reveal>
                   <p className={styles.aboutEyebrow}>Vitrine de empresas</p>
                   <h2 className={styles.aboutTitle}>
                     Anúncios de empresas em destaque
@@ -898,7 +946,7 @@ export default function HomePage({
 
           <section className={styles.processSection}>
             <div className={styles.sectionContainer}>
-              <div className={styles.processPanel}>
+              <div className={styles.processPanel} data-reveal>
                 <h2 className={styles.processTitle}>
                   Como funciona a plataforma
                 </h2>
@@ -909,8 +957,13 @@ export default function HomePage({
                 </p>
 
                 <div className={styles.processGrid}>
-                  {HOW_IT_WORKS_STEPS.map((step) => (
-                    <article key={step.number} className={styles.processStep}>
+                  {HOW_IT_WORKS_STEPS.map((step, index) => (
+                    <article
+                      key={step.number}
+                      className={styles.processStep}
+                      data-reveal
+                      style={{ '--delay': `${index * 90}ms` }}
+                    >
                       <span className={styles.processStepIcon}>
                         <i className={`fas ${step.icon}`} aria-hidden="true" />
                       </span>
@@ -930,7 +983,7 @@ export default function HomePage({
           >
             <div className={styles.sectionContainer}>
               <div className={styles.talentsGrid}>
-                <div className={styles.talentsContent}>
+                <div className={styles.talentsContent} data-reveal>
                   <p className={styles.srOnly}>Talentos em destaque</p>
                   <h2
                     id="featured-talents-title"
@@ -949,7 +1002,7 @@ export default function HomePage({
                   </Link>
                 </div>
 
-                <div className={styles.candidatesPanel}>
+                <div className={styles.candidatesPanel} data-reveal>
                   <VerifiedCandidatesCarousel candidates={verifiedCandidates} />
                 </div>
               </div>
@@ -958,7 +1011,7 @@ export default function HomePage({
 
           <section className={styles.newsSection}>
             <div className={styles.sectionContainer}>
-              <div className={styles.sectionHeaderLight}>
+              <div className={styles.sectionHeaderLight} data-reveal>
                 <h2 className={styles.sectionTitleLight}>
                   Novidades sobre mercado de trabalho
                 </h2>
@@ -968,7 +1021,7 @@ export default function HomePage({
               </div>
 
               <div className={styles.newsGrid}>
-                <article className={styles.newsletterCard}>
+                <article className={styles.newsletterCard} data-reveal>
                   <h3 className={styles.newsletterTitle}>
                     Subscreva a nossa newsletter
                   </h3>
@@ -1019,13 +1072,15 @@ export default function HomePage({
                   ) : null}
                 </article>
 
-                {newsPosts.map((post) => (
+                {newsPosts.map((post, index) => (
                   <Link
                     key={post.id}
                     href={
                       post.id === 'recursos' ? '/recursos' : `/blog/${post.id}`
                     }
                     className={styles.postCard}
+                    data-reveal
+                    style={{ '--delay': `${(index + 1) * 90}ms` }}
                   >
                     <div className={styles.postImageWrap}>
                       {post.image ? (
@@ -1069,6 +1124,7 @@ export default function HomePage({
               <div className={styles.dualGrid}>
                 <article
                   className={`${styles.dualCard} ${styles.dualCardCandidate}`}
+                  data-reveal
                 >
                   <div className={styles.dualCardHeader}>
                     <span className={styles.dualBadge}>Candidato</span>
@@ -1091,6 +1147,8 @@ export default function HomePage({
 
                 <article
                   className={`${styles.dualCard} ${styles.dualCardEmployer}`}
+                  data-reveal
+                  style={{ '--delay': '120ms' }}
                 >
                   <div className={styles.dualCardHeader}>
                     <span className={styles.dualBadge}>Empregador</span>

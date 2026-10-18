@@ -1,13 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { getOperationalAlerts } from '@/application/operations/GetOperationalAlerts';
-import { createOutboxRuntime } from '@/infrastructure/firebase/marketplace/createOutboxRuntime';
-import { getFeatureEnvironment } from '@/infrastructure/firebase/marketplace/environment';
 import { FirestoreHealthProbe } from '@/infrastructure/firebase/marketplace/FirestoreHealthProbe';
 import { logEvent } from '@/infrastructure/observability/logger';
 import { requireActiveApiUser } from '@/lib/apiUserAuth';
 import { admin } from '@/lib/firebaseAdmin';
-import { recruitmentApi } from '@/presentation/applications/recruitmentApi';
 
 async function handler(
   req: NextApiRequest,
@@ -28,13 +25,11 @@ async function handler(
       return;
     }
     const db = admin.firestore();
-    const context = { environment: getFeatureEnvironment() };
-    const [queue, heartbeat, expected] = await Promise.all([
+    // O processador de emails está sempre ativo: os alertas contam sempre.
+    const expected = true;
+    const [queue, heartbeat] = await Promise.all([
       new FirestoreHealthProbe(db, async () => true).queue(),
       db.collection('operationalHeartbeats').doc('processOutbox').get(),
-      process.env.V2_OUTBOX_PROCESSOR_ENABLED === 'true'
-        ? createOutboxRuntime(db, context).enabled()
-        : Promise.resolve(false),
     ]);
     const last = heartbeat.data()?.lastSucceededAtMs;
     const snapshot = {
@@ -59,4 +54,4 @@ async function handler(
   }
 }
 
-export default recruitmentApi(handler);
+export default handler;

@@ -50,12 +50,7 @@ function setup(
   const fake = createFakeFirestore(seed);
   return {
     ...fake,
-    service: new FirestoreHireService(
-      fake.db,
-      { enabled: async () => true },
-      { environment: 'production' },
-      () => NOW,
-    ),
+    service: new FirestoreHireService(fake.db, () => NOW),
   };
 }
 const all = (docs: Map<string, Record<string, unknown>>, prefix: string) =>

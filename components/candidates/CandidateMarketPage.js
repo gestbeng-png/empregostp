@@ -25,9 +25,9 @@ const CANDIDATE_MARKETING_PLANS = getCandidateMarketingPlans({
   includeVerification: false,
 });
 
-// Derivados WebP (50–100 KB) de `public/assets/imagens/Fotos para usar no
-// site`, cujos originais têm 8–15 MB. São fotografias diferentes das da home
-// para as duas páginas não repetirem a mesma imagem.
+// Derivados WebP (50–100 KB) das fotografias originais de 8–15 MB, que ficam
+// fora do site em `private/fotos-originais` (não publicada). São fotografias
+// diferentes das da home para as duas páginas não repetirem a mesma imagem.
 const CANDIDATE_PHOTOS = {
   national: {
     main: '/assets/candidatos/hero-nacional.webp',
@@ -297,44 +297,23 @@ function trackSpotlight(event) {
 
 function CandidateServiceCard({ service, index }) {
   const Icon = service.Icon;
-  const isLead = index === 0;
 
   return (
     <article
-      className={`${styles.serviceCard} ${isLead ? styles.serviceCardLead : ''}`}
+      className={styles.serviceCard}
       style={{ '--card-index': index }}
       onPointerMove={trackSpotlight}
     >
-      <span className={styles.serviceNumber} aria-hidden="true">
-        {String(index + 1).padStart(2, '0')}
+      <span className={styles.serviceIcon}>
+        <Icon aria-hidden="true" />
       </span>
-
-      <div className={styles.serviceTopline}>
-        <span className={styles.serviceIcon}>
-          <Icon aria-hidden="true" />
-        </span>
-        <p className={styles.serviceCategory}>{service.category}</p>
-      </div>
-
+      <p className={styles.serviceCategory}>{service.category}</p>
       <h3 className={styles.serviceTitle}>{service.title}</h3>
       <p className={styles.serviceDescription}>{service.description}</p>
-
-      {service.highlights?.length ? (
-        <ul className={styles.serviceHighlights}>
-          {service.highlights.map((highlight) => (
-            <li key={highlight}>{highlight}</li>
-          ))}
-        </ul>
-      ) : null}
-
-      <div className={styles.serviceFooter}>
-        <Link href={service.href} className={styles.serviceLinkButton}>
-          {service.cta}
-          <span className={styles.serviceLinkArrow}>
-            <FiArrowRight aria-hidden="true" />
-          </span>
-        </Link>
-      </div>
+      <Link href={service.href} className={styles.serviceLinkButton}>
+        {service.cta}
+        <FiArrowRight aria-hidden="true" />
+      </Link>
     </article>
   );
 }
@@ -485,12 +464,16 @@ export default function CandidateMarketPage({
                       {config.primaryLabel}
                       <FiArrowRight aria-hidden="true" />
                     </Link>
-                    <Link
+                    {/* Âncora na mesma página: com `Link`, o servidor e o
+                        browser resolviam `#planos` contra URLs diferentes
+                        (`?internacional=` / `?internacional`) e a hidratação
+                        falhava. */}
+                    <a
                       href={config.secondaryHref}
                       className={styles.secondaryAction}
                     >
                       {config.secondaryLabel}
-                    </Link>
+                    </a>
                   </div>
 
                   <div className={styles.heroAssurance}>

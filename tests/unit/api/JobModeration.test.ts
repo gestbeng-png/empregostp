@@ -51,6 +51,24 @@ jest.mock('../../../lib/serverNotifications', () => ({
   sendPushToUser: jest.fn(),
 }));
 
+// A criação de vagas tem um caminho só: avaliação (qualidade/risco/moderação)
+// e gravação transacional. Aqui controla-se a decisão e captura-se a escrita.
+const mockEvaluate = jest.fn();
+const mockPersist = jest.fn();
+jest.mock('../../../domain/jobs/submission', () => ({
+  evaluateJobSubmission: (input: unknown) => mockEvaluate(input),
+}));
+jest.mock(
+  '../../../infrastructure/firebase/jobs/FirestoreJobPublisher',
+  () => ({
+    jobIdFor: () => 'job-1',
+    persistJob: (...args: unknown[]) => mockPersist(...args),
+  }),
+);
+jest.mock('../../../lib/newJobBroadcast', () => ({
+  broadcastNewJob: jest.fn().mockResolvedValue(undefined),
+}));
+
 const authMock = admin.auth as unknown as jest.Mock;
 const firestoreMock = admin.firestore as unknown as jest.Mock;
 const mockedNotification = jest.mocked(createServerNotification);
@@ -69,19 +87,21 @@ function createResponse() {
 }
 
 describe('criacao de vaga com moderacao', () => {
-  const jobAdd = jest.fn();
   const notificationAdd = jest.fn();
   let moderationDoc: { exists: boolean; data?: () => Record<string, unknown> };
   let moderationGet: jest.Mock;
 
+  function decision(kind: 'PUBLISH' | 'REVIEW') {
+    return {
+      decision: kind === 'REVIEW' ? { kind, reasons: ['PLATFORM'] } : { kind },
+      quality: { score: 90, missing: [] },
+      risk: { score: 0, signals: [] },
+      expand: { fields: {}, review: [] },
+      protectedTerms: [],
+    };
+  }
+
   function installCompanyFirestore() {
-    jobAdd.mockResolvedValue({
-      get: jest.fn().mockResolvedValue({
-        data: () => ({ status: 'x' }),
-        id: 'job-1',
-      }),
-      id: 'job-1',
-    });
     moderationGet = jest.fn(async () => moderationDoc);
     const collection = jest.fn((name: string) => {
       if (name === 'users') {
@@ -105,7 +125,19 @@ describe('criacao de vaga com moderacao', () => {
         };
       }
       if (name === 'jobs') {
-        return { add: jobAdd };
+        return {
+          where: jest.fn(() => ({
+            limit: jest.fn(() => ({
+              get: jest.fn().mockResolvedValue({ docs: [] }),
+            })),
+          })),
+          doc: jest.fn(() => ({
+            get: jest.fn().mockResolvedValue({
+              id: 'job-1',
+              data: () => ({ status: 'active' }),
+            }),
+          })),
+        };
       }
       if (name === 'settings') {
         return { doc: jest.fn(() => ({ get: moderationGet })) };
@@ -128,21 +160,7 @@ describe('criacao de vaga com moderacao', () => {
     };
   }
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-    moderationDoc = { exists: false };
-    authMock.mockReturnValue({
-      verifyIdToken: jest.fn().mockResolvedValue({ uid: 'company-1' }),
-    });
-    installCompanyFirestore();
-  });
-
-  test('com moderacao ligada a vaga nasce pending_review sem publishedAt', async () => {
-    moderationDoc = {
-      data: () => ({ jobApprovalRequired: true }),
-      exists: true,
-    };
-
+  async function createJob() {
     const response = createResponse();
     await jobsHandler(
       {
@@ -152,14 +170,38 @@ describe('criacao de vaga com moderacao', () => {
       },
       response,
     );
+    return response;
+  }
 
+  beforeEach(() => {
+    jest.clearAllMocks();
+    moderationDoc = { exists: false };
+    authMock.mockReturnValue({
+      verifyIdToken: jest.fn().mockResolvedValue({ uid: 'company-1' }),
+    });
+    installCompanyFirestore();
+  });
+
+  test('com moderacao ligada a vaga vai para revisao e os admins sao avisados', async () => {
+    moderationDoc = {
+      data: () => ({ jobApprovalRequired: true }),
+      exists: true,
+    };
+    mockEvaluate.mockReturnValue(decision('REVIEW'));
+    mockPersist.mockResolvedValue({
+      kind: 'CREATED',
+      jobId: 'job-1',
+      status: 'PENDING_REVIEW',
+    });
+
+    const response = await createJob();
+
+    expect(mockEvaluate).toHaveBeenCalledWith(
+      expect.objectContaining({ platformModerationForced: true }),
+    );
     expect(response.status).toHaveBeenCalledWith(201);
-    const payload = jobAdd.mock.calls[0][0];
-    expect(payload.status).toBe('pending_review');
-    expect(payload.publishedAt).toBeNull();
-    const responseBody = response.json.mock.calls[0][0];
-    expect(responseBody.message).toBe(
-      'Vaga submetida para revisão. Será publicada após aprovação do administrador.',
+    expect(response.json.mock.calls[0][0].message).toBe(
+      'A sua vaga está em revisão. Normalmente demora até 1 dia útil.',
     );
     expect(notificationAdd).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -170,42 +212,41 @@ describe('criacao de vaga com moderacao', () => {
     );
   });
 
-  test('sem doc de settings mantem a publicacao direta', async () => {
-    const response = createResponse();
-    await jobsHandler(
-      {
-        body: jobRequestBody(),
-        headers: { authorization: 'Bearer valid' },
-        method: 'POST',
-      },
-      response,
-    );
+  test('sem doc de settings a vaga e publicada diretamente', async () => {
+    mockEvaluate.mockReturnValue(decision('PUBLISH'));
+    mockPersist.mockResolvedValue({
+      kind: 'CREATED',
+      jobId: 'job-1',
+      status: 'PUBLISHED',
+    });
 
+    const response = await createJob();
+
+    expect(mockEvaluate).toHaveBeenCalledWith(
+      expect.objectContaining({ platformModerationForced: false }),
+    );
     expect(response.status).toHaveBeenCalledWith(201);
-    const payload = jobAdd.mock.calls[0][0];
-    expect(payload.status).toBe('active');
-    expect(payload.publishedAt).toBe('server-timestamp');
     expect(response.json.mock.calls[0][0].message).toBe(
       'Vaga criada com sucesso',
     );
     expect(notificationAdd).not.toHaveBeenCalled();
   });
 
-  test('falha na leitura das settings publica diretamente com aviso', async () => {
+  test('falha na leitura das settings nao forca a moderacao e regista aviso', async () => {
     moderationGet.mockRejectedValue(new Error('firestore indisponivel'));
+    mockEvaluate.mockReturnValue(decision('PUBLISH'));
+    mockPersist.mockResolvedValue({
+      kind: 'CREATED',
+      jobId: 'job-1',
+      status: 'PUBLISHED',
+    });
 
-    const response = createResponse();
-    await jobsHandler(
-      {
-        body: jobRequestBody(),
-        headers: { authorization: 'Bearer valid' },
-        method: 'POST',
-      },
-      response,
-    );
+    const response = await createJob();
 
     expect(response.status).toHaveBeenCalledWith(201);
-    expect(jobAdd.mock.calls[0][0].status).toBe('active');
+    expect(mockEvaluate).toHaveBeenCalledWith(
+      expect.objectContaining({ platformModerationForced: false }),
+    );
     expect(mockedWarning).toHaveBeenCalledWith(
       'jobs.moderation_settings_lookup_failed',
       expect.anything(),
@@ -332,8 +373,7 @@ describe('decisao de moderacao pelo admin', () => {
       }),
     );
     const notificationPayload = mockedNotification.mock.calls[0]?.[1] as
-      | { message?: string }
-      | undefined;
+      { message?: string } | undefined;
     expect(notificationPayload?.message).toContain('Conteúdo incompleto');
     expect(activitiesAdd).toHaveBeenCalledWith(
       expect.objectContaining({ type: 'job_rejected' }),

@@ -2,12 +2,9 @@ import {
   APPLICATION_FORM_LIMITS,
   createEmptyApplicationForm,
   firstStepWithErrors,
-  isBirthDateValid,
   normalizeApplicationForm,
   validateApplicationForm,
 } from '../../../lib/applicationForm';
-
-const AGORA = new Date('2026-08-26T00:00:00Z');
 
 function formularioValido() {
   return {
@@ -84,9 +81,7 @@ describe('normalização do formulário de candidatura', () => {
       fullName: 'y'.repeat(500),
     });
 
-    expect(dados.coverLetter).toHaveLength(
-      APPLICATION_FORM_LIMITS.coverLetter,
-    );
+    expect(dados.coverLetter).toHaveLength(APPLICATION_FORM_LIMITS.coverLetter);
     expect(dados.fullName).toHaveLength(APPLICATION_FORM_LIMITS.fullName);
   });
 
@@ -112,102 +107,39 @@ describe('normalização do formulário de candidatura', () => {
 
 describe('validação do formulário de candidatura', () => {
   test('um formulário completo passa', () => {
-    expect(validateApplicationForm(formularioValido(), { agora: AGORA })).toEqual(
-      {},
-    );
+    expect(validateApplicationForm(formularioValido())).toEqual({});
   });
 
-  test('um formulário vazio acusa todos os campos obrigatórios', () => {
-    const erros = validateApplicationForm(createEmptyApplicationForm(), {
-      agora: AGORA,
-    });
+  test('um formulário vazio acusa os campos obrigatórios', () => {
+    const erros = validateApplicationForm(createEmptyApplicationForm());
 
     expect(Object.keys(erros).sort()).toEqual(
       [
-        'availability',
         'consentDataProcessing',
         'consentTruthful',
-        'coverLetter',
-        'education',
-        'experienceYears',
-        'birthDate',
         'email',
         'fullName',
-        'languages',
-        'nationality',
         'phone',
-        'references',
-        'workAuthorization',
       ].sort(),
     );
   });
 
-  test('uma carta demasiado curta é recusada', () => {
-    const erros = validateApplicationForm(
-      { ...formularioValido(), coverLetter: 'Quero o emprego.' },
-      { agora: AGORA },
-    );
-
-    expect(erros.coverLetter).toMatch(/demasiado curta/);
-  });
-
-  test('menores de 16 anos não se podem candidatar', () => {
-    const erros = validateApplicationForm(
-      { ...formularioValido(), birthDate: '2015-01-01' },
-      { agora: AGORA },
-    );
-
-    expect(erros.birthDate).toMatch(/16 anos/);
-  });
-
   test('o consentimento não pode ser dado por omissão', () => {
-    const erros = validateApplicationForm(
-      { ...formularioValido(), consentTruthful: 'sim' },
-      { agora: AGORA },
-    );
+    const erros = validateApplicationForm({
+      ...formularioValido(),
+      consentTruthful: 'sim',
+    });
 
     expect(erros.consentTruthful).toBeDefined();
   });
 
   test('aponta o primeiro passo com erro, para o modal saltar até lá', () => {
-    const erros = validateApplicationForm(
-      { ...formularioValido(), availability: '' },
-      { agora: AGORA },
-    );
+    const erros = validateApplicationForm({
+      ...formularioValido(),
+      consentDataProcessing: false,
+    });
 
-    expect(firstStepWithErrors(erros)).toBe(2);
+    expect(firstStepWithErrors(erros)).toBe(4);
     expect(firstStepWithErrors({})).toBeNull();
-  });
-});
-
-describe('a carta de motivação segue o plano do candidato', () => {
-  test('sem o plano, a carta sai da validação em vez de bloquear o envio', () => {
-    const erros = validateApplicationForm(
-      { ...formularioValido(), coverLetter: '' },
-      { agora: AGORA, coverLetterEnabled: false },
-    );
-
-    expect(erros).toEqual({});
-  });
-
-  test('com o plano, continua obrigatória', () => {
-    const erros = validateApplicationForm(
-      { ...formularioValido(), coverLetter: '' },
-      { agora: AGORA, coverLetterEnabled: true },
-    );
-
-    expect(erros.coverLetter).toBeDefined();
-  });
-});
-
-describe('data de nascimento', () => {
-  test.each([
-    ['1996-04-12', true],
-    ['2026-02-30', false],
-    ['nao-e-data', false],
-    ['2020-01-01', false],
-    ['1890-01-01', false],
-  ])('%s -> %s', (valor, esperado) => {
-    expect(isBirthDateValid(valor, AGORA)).toBe(esperado);
   });
 });

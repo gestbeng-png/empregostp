@@ -833,7 +833,9 @@ a.directCopy:hover .directValue {
 
 @keyframes wordIn {
   from {
-    opacity: 0;
+    /* Visível desde a primeira pintura (antes 0): o título conta logo
+       como LCP em vez de esperar o fim da entrada. */
+    opacity: 0.2;
     transform: translateY(0.6em) rotate(4deg);
     filter: blur(0.4rem);
   }

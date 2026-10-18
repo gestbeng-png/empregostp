@@ -12,7 +12,7 @@ import baseline from './css-color-baseline.json';
  * cores novas vêm dos tokens (`var(--...)`) de styles/globals.css.
  *
  * Alteração visual intencional: justificar no PR e regenerar a baseline com
- * `node scripts/v2/css-color-baseline.mjs --write`.
+ * `node scripts/quality/css-color-baseline.mjs --write`.
  */
 
 const TOKEN_FILES = new Set([

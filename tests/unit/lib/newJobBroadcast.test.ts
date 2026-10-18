@@ -6,10 +6,10 @@ jest.mock('@/lib/email', () => ({
   sendEmail: jest.fn().mockResolvedValue({ messageId: 'synthetic' }),
   getDefaultFrom: () => 'synthetic@example.test',
 }));
-jest.mock('@/lib/authEmails', () => ({
+jest.mock('@/lib/email/authEmails', () => ({
   resolveBaseUrl: () => 'https://example.test',
 }));
-jest.mock('@/lib/newJobEmail', () => ({
+jest.mock('@/lib/email/newJobEmail', () => ({
   buildNewJobEmail: () => ({
     subject: 'Synthetic',
     text: 'Synthetic',

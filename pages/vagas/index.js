@@ -23,7 +23,7 @@ import {
   filterPublicJobsByCompany,
   projectPublicJob,
 } from '../../lib/publicJob';
-import useScrollReveal from '../../lib/useScrollReveal';
+import useScrollReveal from '../../hooks/useScrollReveal';
 import styles from '../../styles/VagasPage.module.css';
 
 function normalizeSearchValue(value) {
@@ -1045,6 +1045,22 @@ export default function VagasPage({
           name="description"
           content="Descubra vagas com filtros úteis, compatibilidade visual e candidaturas rápidas em São Tomé e Príncipe."
         />
+        {/* Pesos usados no topo desta página: a chegada tardia deslocava o
+            hero (CLS 0,25 no Lighthouse móvel). */}
+        <link
+          rel="preload"
+          href="/fonts/instrument-sans-600.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/fonts/instrument-sans-700.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
       </Head>
 
       <PublicPageShell headerVariant="light" showFooter={!isMobileView}>
@@ -1428,11 +1444,8 @@ export async function getServerSideProps(context) {
     const { admin } = await import('../../lib/firebaseAdmin');
     const { getEmpresaPlanSummary } =
       await import('../../lib/empresaPlanFeatures');
-    const {
-      getEffectiveJobStatus,
-      isJobPubliclyVisible,
-      syncExpiredJobStatus,
-    } = await import('../../lib/jobExpiration');
+    const { getEffectiveJobStatus, isJobPubliclyVisible } =
+      await import('../../lib/jobExpiration');
 
     context?.res?.setHeader?.(
       'Cache-Control',
@@ -1482,16 +1495,17 @@ export async function getServerSideProps(context) {
       .orderBy('createdAt', 'desc')
       .get();
 
-    const normalizedDocs = await Promise.all(
-      snapshot.docs.map(async (doc) => {
-        const synced = await syncExpiredJobStatus(doc.ref, doc.data(), admin);
-        return {
-          id: doc.id,
-          ...synced.jobData,
-          status: getEffectiveJobStatus(synced.jobData),
-        };
-      }),
-    );
+    // Só leitura: uma vaga expirada sai da lista porque o estado efetivo é
+    // calculado aqui; gravar o fecho é trabalho do cron diário
+    // `/api/cron/check-job-expiration` (que também avisa a empresa).
+    const normalizedDocs = snapshot.docs.map((doc) => {
+      const jobData = doc.data();
+      return {
+        id: doc.id,
+        ...jobData,
+        status: getEffectiveJobStatus(jobData),
+      };
+    });
 
     const publicJobs = normalizedDocs.filter((job) =>
       isJobPubliclyVisible(job),

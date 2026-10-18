@@ -5,13 +5,9 @@ import type {
   Transaction,
 } from 'firebase-admin/firestore';
 
-import type {
-  FeatureFlagReader,
-  ResolvedIdentity,
-} from '@/application/marketplace/ports';
+import type { ResolvedIdentity } from '@/application/marketplace/ports';
 import { assertTransition as assertApplication } from '@/domain/applications/states';
 import type { ApplicationStatus } from '@/domain/applications/states';
-import type { FeatureContext } from '@/domain/feature-flags/flags';
 import {
   buildInterviewIcs,
   candidateInterviewView,
@@ -62,8 +58,6 @@ function toDate(value: unknown): Date | null {
 export class FirestoreInterviewService {
   constructor(
     private readonly db: Firestore,
-    private readonly flags: FeatureFlagReader,
-    private readonly context: FeatureContext,
     private readonly now: () => number = Date.now,
   ) {}
 
@@ -142,14 +136,6 @@ export class FirestoreInterviewService {
     )
       return failure('NOT_FOUND');
     const organizationId = app.organizationId;
-    if (
-      !(await this.flags.enabled('V2_INTERVIEWS_OFFERS', {
-        ...this.context,
-        organizationId,
-        userId,
-      }))
-    )
-      return failure('FEATURE_DISABLED');
     const identity = await this.identity(userId, organizationId);
     if (
       !identity ||
@@ -278,13 +264,6 @@ export class FirestoreInterviewService {
       .doc(interviewId);
     const current = (await ref.get()).data();
     if (!current) return failure('NOT_FOUND');
-    if (
-      !(await this.flags.enabled('V2_INTERVIEWS_OFFERS', {
-        ...this.context,
-        organizationId: String(current.organizationId),
-      }))
-    )
-      return failure('FEATURE_DISABLED');
     const who = await actor(current);
     if (!who) return failure('FORBIDDEN');
     return this.run(async (tx) => {

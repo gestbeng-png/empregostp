@@ -3,7 +3,6 @@ import { authenticateApiUser } from '@/infrastructure/firebase/applications/crea
 import { getTeamService } from '@/infrastructure/firebase/team/createTeamService';
 import { organizationLabels } from '@/infrastructure/firebase/team/organizationLabels';
 import { admin } from '@/lib/firebaseAdmin';
-import { recruitmentApi } from '@/presentation/applications/recruitmentApi';
 import { workspaceRoute } from '@/presentation/applications/workspaceRoute';
 
 /** GET — organizações do utilizador para o seletor do painel (D6). */
@@ -16,4 +15,4 @@ const route = workspaceRoute('GET', authenticateApiUser, async (uid) =>
   }),
 );
 
-export default recruitmentApi(route);
+export default route;

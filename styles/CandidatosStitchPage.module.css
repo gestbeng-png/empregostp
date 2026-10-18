@@ -2209,52 +2209,57 @@
 }
 
 /* ------------------------------------------------------------------
-   «Escolha o seu próximo passo» — mosaico com movimento
+   «Escolha o seu próximo passo» — cartões compactos
 
-   O primeiro cartão é alto e escuro; os outros quatro ficam em 2×2 ao
-   lado. Cada cartão mostra o número, as etiquetas do serviço, uma luz que
-   segue o cursor e uma barra que cresce por baixo ao passar o rato. Os
-   cartões entram em sequência quando a secção aparece no ecrã.
+   A mesma identidade dos cartões de /carreira: brancos, cantos de 24px,
+   contorno fino, ícone em fundo lima suave; ao passar o rato o cartão sobe
+   e passa a azul-marinho, com uma luz lima que segue o cursor. Cinco numa
+   fila no desktop; em ecrãs mais estreitos a fila desliza na horizontal.
    ------------------------------------------------------------------ */
 
 .page.page.page .servicesGrid {
   --service-ease: cubic-bezier(0.16, 1, 0.3, 1);
 
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1.25rem;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1rem;
 }
 
 .page.page.page .serviceCard,
-.page.page.page .serviceCard:nth-child(-n + 2) {
+.page.page.page .serviceCard:nth-child(-n + 2),
+.page.page.page .serviceCard:last-child:nth-child(odd) {
   grid-column: auto;
 }
 
 .page.page.page .serviceCard {
   position: relative;
   isolation: isolate;
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  align-items: flex-start;
   overflow: hidden;
-  padding: 1.75rem;
+  padding: 1.5rem 1.35rem 1.35rem;
   border: 0.0625rem solid
-    color-mix(in srgb, var(--candidate-outline) 70%, transparent);
-  border-radius: 1.25rem;
+    color-mix(in srgb, var(--candidate-outline) 65%, transparent);
+  border-radius: 1.5rem;
   background: var(--candidate-white);
-  box-shadow: 0 0.625rem 1.5rem
-    color-mix(in srgb, var(--candidate-navy) 4%, transparent);
+  box-shadow: none;
   transition:
     transform 0.45s var(--service-ease),
-    border-color 0.3s ease,
-    box-shadow 0.45s var(--service-ease);
+    background-color 0.45s ease,
+    border-color 0.45s ease,
+    box-shadow 0.45s ease;
 }
 
-/* Luz que segue o cursor */
 .page.page.page .serviceCard::before {
   position: absolute;
   z-index: -1;
   inset: 0;
   background: radial-gradient(
-    22rem circle at var(--spot-x, 50%) var(--spot-y, 0%),
-    color-mix(in srgb, var(--candidate-blue) 9%, transparent),
-    transparent 65%
+    16rem circle at var(--spot-x, 50%) var(--spot-y, 0%),
+    color-mix(in srgb, var(--candidate-lime) 26%, transparent),
+    transparent 70%
   );
   opacity: 0;
   pointer-events: none;
@@ -2262,259 +2267,110 @@
   content: '';
 }
 
-/* Barra azul → lima que cresce por baixo */
-.page.page.page .serviceCard::after {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: 0.1875rem;
-  background: linear-gradient(
-    90deg,
-    var(--candidate-blue),
-    var(--candidate-lime)
-  );
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.55s var(--service-ease);
-  content: '';
+.page.page.page .serviceIcon {
+  display: inline-grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: 0 0 auto;
+  place-items: center;
+  margin-bottom: 1.4rem;
+  border-radius: 0.875rem;
+  background: color-mix(in srgb, var(--candidate-lime) 40%, transparent);
+  color: var(--candidate-blue);
+  font-size: 1.15rem;
+  transition:
+    transform 0.5s var(--service-ease),
+    background-color 0.35s ease,
+    color 0.35s ease;
+}
+
+.page.page.page .serviceCategory {
+  margin: 0;
+  color: var(--candidate-blue);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  line-height: 1.3;
+  text-transform: uppercase;
+  transition: color 0.35s ease;
+}
+
+.page.page.page .serviceTitle {
+  max-width: none;
+  margin: 0.45rem 0 0;
+  color: var(--candidate-ink);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  transition: color 0.35s ease;
+}
+
+.page.page.page .serviceDescription {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0.5rem 0 0;
+  color: var(--candidate-muted);
+  font-size: 0.875rem;
+  line-height: 1.55;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  transition: color 0.35s ease;
+}
+
+.page.page.page .serviceLinkButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: auto;
+  padding-top: 1.25rem;
+  color: var(--candidate-blue);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: color 0.35s ease;
+}
+
+.page.page.page .serviceLinkButton svg {
+  flex: 0 0 auto;
+  transition: transform 0.3s var(--service-ease);
 }
 
 .page.page.page .serviceCard:hover {
-  border-color: color-mix(in srgb, var(--candidate-blue) 35%, transparent);
-  box-shadow: 0 1.5rem 3rem -1rem
+  border-color: var(--candidate-navy);
+  background: var(--candidate-navy);
+  box-shadow: 0 1.25rem 2.5rem
     color-mix(in srgb, var(--candidate-navy) 22%, transparent);
-  transform: translateY(-0.375rem);
+  transform: translateY(-0.4rem);
 }
 
 .page.page.page .serviceCard:hover::before {
   opacity: 1;
 }
 
-.page.page.page .serviceCard:hover::after {
-  transform: scaleX(1);
-}
-
-.page.page.page .serviceNumber {
-  position: absolute;
-  top: 1.1rem;
-  right: 1.5rem;
-  color: transparent;
-  font-family: var(--app-font-display);
-  font-size: 3.25rem;
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  line-height: 1;
-  -webkit-text-stroke: 0.0625rem
-    color-mix(in srgb, var(--candidate-outline) 85%, transparent);
-  transition:
-    color 0.4s ease,
-    transform 0.55s var(--service-ease);
-  pointer-events: none;
-}
-
-.page.page.page .serviceCard:hover .serviceNumber {
-  color: color-mix(in srgb, var(--candidate-blue) 10%, transparent);
-  transform: translateY(-0.2rem);
-}
-
-.page.page.page .serviceTopline {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.page.page.page .serviceIcon {
-  width: 2.75rem;
-  height: 2.75rem;
-  flex: 0 0 auto;
-  border-radius: 0.8rem;
-  transition:
-    background-color 0.3s ease,
-    color 0.3s ease,
-    transform 0.5s var(--service-ease);
-}
-
-.page.page.page .serviceIcon svg {
-  font-size: 1.2rem;
-}
-
 .page.page.page .serviceCard:hover .serviceIcon {
-  background: var(--candidate-blue);
-  color: var(--candidate-white);
+  background: var(--candidate-lime);
+  color: var(--candidate-navy);
   transform: rotate(-8deg) scale(1.06);
 }
 
-.page.page.page .serviceCategory {
-  margin: 0;
-  font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+.page.page.page .serviceCard:hover .serviceCategory,
+.page.page.page .serviceCard:hover .serviceLinkButton {
+  color: var(--candidate-lime);
 }
 
-.page.page.page .serviceTitle {
-  max-width: 22ch;
-  margin-top: 1.35rem;
-  font-size: 1.35rem;
-  line-height: 1.2;
-}
-
-.page.page.page .serviceDescription {
-  margin-top: 0.6rem;
-  font-size: 0.9375rem;
-}
-
-.page.page.page .serviceHighlights {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  margin: 1.1rem 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.page.page.page .serviceHighlights li {
-  padding: 0.3rem 0.7rem;
-  border-radius: 999rem;
-  background: var(--candidate-surface-low);
-  color: var(--candidate-ink);
-  font-size: 0.78rem;
-  font-weight: 700;
-  line-height: 1.3;
-}
-
-.page.page.page .serviceFooter {
-  padding-top: 1.5rem;
-}
-
-.page.page.page .serviceLinkButton {
-  align-items: center;
-  gap: 0.6rem;
-  text-decoration: none;
-}
-
-.page.page.page .serviceLinkArrow {
-  display: grid;
-  width: 2rem;
-  height: 2rem;
-  place-items: center;
-  border: 0.0625rem solid
-    color-mix(in srgb, var(--candidate-blue) 30%, transparent);
-  border-radius: 50%;
-  transition:
-    background-color 0.3s ease,
-    border-color 0.3s ease,
-    color 0.3s ease,
-    transform 0.45s var(--service-ease);
-}
-
-.page.page.page .serviceLinkButton svg {
-  transform: none;
-}
-
-.page.page.page .serviceCard:hover .serviceLinkArrow {
-  border-color: var(--candidate-blue);
-  background: var(--candidate-blue);
+.page.page.page .serviceCard:hover .serviceTitle {
   color: var(--candidate-white);
+}
+
+.page.page.page .serviceCard:hover .serviceDescription {
+  color: color-mix(in srgb, var(--candidate-white) 75%, transparent);
+}
+
+.page.page.page .serviceCard:hover .serviceLinkButton svg {
   transform: translateX(0.25rem);
-}
-
-/* Primeiro cartão: alto, marinho, com lima */
-.page.page.page .serviceCardLead {
-  grid-row: span 2;
-  justify-content: flex-end;
-  padding: 2.25rem;
-  border-color: transparent;
-  background:
-    radial-gradient(
-      circle at 100% 0%,
-      color-mix(in srgb, var(--candidate-lime) 26%, transparent),
-      transparent 42%
-    ),
-    radial-gradient(
-      circle at 0% 100%,
-      color-mix(in srgb, var(--candidate-blue) 55%, transparent),
-      transparent 55%
-    ),
-    var(--candidate-navy);
-  box-shadow: 0 1.5rem 3rem -1.25rem
-    color-mix(in srgb, var(--candidate-navy) 55%, transparent);
-}
-
-.page.page.page .serviceCardLead::before {
-  background: radial-gradient(
-    24rem circle at var(--spot-x, 50%) var(--spot-y, 0%),
-    color-mix(in srgb, var(--candidate-white) 12%, transparent),
-    transparent 60%
-  );
-}
-
-.page.page.page .serviceCardLead:hover {
-  border-color: transparent;
-  box-shadow: 0 2rem 4rem -1.25rem
-    color-mix(in srgb, var(--candidate-navy) 65%, transparent);
-}
-
-.page.page.page .serviceCardLead .serviceNumber {
-  top: 1.5rem;
-  right: 2rem;
-  font-size: 6.5rem;
-  -webkit-text-stroke-color: color-mix(
-    in srgb,
-    var(--candidate-white) 22%,
-    transparent
-  );
-}
-
-.page.page.page .serviceCardLead:hover .serviceNumber {
-  color: color-mix(in srgb, var(--candidate-lime) 14%, transparent);
-}
-
-.page.page.page .serviceCardLead .serviceIcon,
-.page.page.page .serviceCardLead:hover .serviceIcon {
-  width: 3.25rem;
-  height: 3.25rem;
-  background: var(--candidate-lime);
-  color: var(--candidate-navy);
-}
-
-.page.page.page .serviceCardLead .serviceCategory {
-  color: var(--candidate-lime);
-}
-
-.page.page.page .serviceCardLead .serviceTitle {
-  max-width: 16ch;
-  color: var(--candidate-white);
-  font-size: clamp(1.75rem, 2.6vw, 2.25rem);
-  line-height: 1.1;
-}
-
-.page.page.page .serviceCardLead .serviceDescription {
-  max-width: 34ch;
-  color: color-mix(in srgb, var(--candidate-white) 78%, transparent);
-  font-size: 1rem;
-}
-
-.page.page.page .serviceCardLead .serviceHighlights li {
-  border: 0.0625rem solid
-    color-mix(in srgb, var(--candidate-white) 18%, transparent);
-  background: color-mix(in srgb, var(--candidate-white) 8%, transparent);
-  color: var(--candidate-white);
-}
-
-.page.page.page .serviceCardLead .serviceLinkButton {
-  padding: 0.5rem 0.5rem 0.5rem 1.25rem;
-  border-radius: 999rem;
-  background: var(--candidate-lime);
-  color: var(--candidate-navy);
-}
-
-.page.page.page .serviceCardLead .serviceLinkArrow,
-.page.page.page .serviceCardLead:hover .serviceLinkArrow {
-  border-color: transparent;
-  background: var(--candidate-navy);
-  color: var(--candidate-lime);
 }
 
 /* Entrada em sequência (só com JavaScript e sem movimento reduzido) */
@@ -2523,14 +2379,14 @@
 }
 
 .page.page.page .servicesGrid[data-reveal='shown'] .serviceCard {
-  animation: serviceCardIn 0.8s var(--service-ease) backwards;
-  animation-delay: calc(var(--card-index, 0) * 90ms);
+  animation: serviceCardIn 0.7s var(--service-ease) backwards;
+  animation-delay: calc(var(--card-index, 0) * 80ms);
 }
 
 @keyframes serviceCardIn {
   from {
     opacity: 0;
-    transform: translateY(1.75rem) scale(0.98);
+    transform: translateY(1.25rem);
   }
 
   to {
@@ -2539,60 +2395,79 @@
   }
 }
 
-@media (max-width: 63.9375em) {
+/* Ecrãs mais estreitos: uma fila que desliza, em vez de cinco cartões
+   empilhados. */
+@media (max-width: 74.9375em) {
   .page.page.page .servicesGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: none;
+    grid-auto-columns: minmax(15.5rem, 1fr);
+    grid-auto-flow: column;
+    overflow-x: auto;
+    margin-inline: -1rem;
+    padding: 0.5rem 1rem 1rem;
+    scroll-padding-inline: 1rem;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
   }
 
-  .page.page.page .serviceCardLead {
-    grid-column: 1 / -1;
-    grid-row: auto;
-    min-height: 20rem;
+  .page.page.page .servicesGrid::-webkit-scrollbar {
+    display: none;
   }
 
-  .page.page.page .serviceCard:last-child:nth-child(odd) {
-    grid-column: auto;
+  .page.page.page .serviceCard {
+    scroll-snap-align: start;
   }
 }
 
 @media (max-width: 47.9375em) {
   .page.page.page .servicesGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .page.page.page .serviceCard,
-  .page.page.page .serviceCardLead {
-    padding: 1.5rem;
-  }
-
-  .page.page.page .serviceCardLead {
-    min-height: 0;
-  }
-
-  .page.page.page .serviceCardLead .serviceNumber {
-    font-size: 4.5rem;
+    grid-auto-columns: 78%;
   }
 }
 
 @media (hover: none) {
   .page.page.page .serviceCard:hover {
+    border-color: color-mix(in srgb, var(--candidate-outline) 65%, transparent);
+    background: var(--candidate-white);
+    box-shadow: none;
     transform: none;
+  }
+
+  .page.page.page .serviceCard:hover::before {
+    opacity: 0;
+  }
+
+  .page.page.page .serviceCard:hover .serviceIcon {
+    background: color-mix(in srgb, var(--candidate-lime) 40%, transparent);
+    color: var(--candidate-blue);
+    transform: none;
+  }
+
+  .page.page.page .serviceCard:hover .serviceCategory,
+  .page.page.page .serviceCard:hover .serviceLinkButton {
+    color: var(--candidate-blue);
+  }
+
+  .page.page.page .serviceCard:hover .serviceTitle {
+    color: var(--candidate-ink);
+  }
+
+  .page.page.page .serviceCard:hover .serviceDescription {
+    color: var(--candidate-muted);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .page.page.page .serviceCard,
-  .page.page.page .serviceCard::after,
-  .page.page.page .serviceNumber,
+  .page.page.page .serviceCard::before,
   .page.page.page .serviceIcon,
-  .page.page.page .serviceLinkArrow {
+  .page.page.page .serviceLinkButton svg {
     transition: none;
   }
 
   .page.page.page .serviceCard:hover,
   .page.page.page .serviceCard:hover .serviceIcon,
-  .page.page.page .serviceCard:hover .serviceLinkArrow,
-  .page.page.page .serviceCard:hover .serviceNumber {
+  .page.page.page .serviceCard:hover .serviceLinkButton svg {
     transform: none;
   }
 }

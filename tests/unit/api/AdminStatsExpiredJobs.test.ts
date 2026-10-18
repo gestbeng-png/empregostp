@@ -29,13 +29,20 @@ function install(jobs: Record<string, unknown>[]) {
     size: docs.length,
   });
 
+  // Agregação `count()`: os totais de utilizadores e candidaturas usam-na.
+  const count = (total: number) => () => ({
+    get: jest.fn().mockResolvedValue({ data: () => ({ count: total }) }),
+  });
+
   const collection = jest.fn((name: string) => {
     const base = {
-      get: jest.fn().mockResolvedValue(
-        name === 'jobs' ? snap(jobs) : snap([{}, {}]),
-      ),
+      get: jest
+        .fn()
+        .mockResolvedValue(name === 'jobs' ? snap(jobs) : snap([{}, {}])),
+      count: count(name === 'jobs' ? jobs.length : 2),
       where: jest.fn(() => ({
         get: jest.fn().mockResolvedValue(snap([{}, {}])),
+        count: count(2),
       })),
     };
     if (name === 'users') {
@@ -100,5 +107,17 @@ describe('estatísticas do admin refletem a expiração das vagas', () => {
 
     expect(stats.activeJobs).toBe(2);
     expect(stats.closedJobs).toBe(0);
+  });
+
+  test('os totais de utilizadores e candidaturas vêm das contagens', async () => {
+    install([{ dataFecho: FUTURO, status: 'active' }]);
+
+    const response = await pedirEstatisticas();
+    const { stats } = response.json.mock.calls[0][0];
+
+    expect(stats.totalUsers).toBe(2);
+    expect(stats.totalCandidatos).toBe(2);
+    expect(stats.totalEmpresas).toBe(2);
+    expect(stats.totalApplications).toBe(2);
   });
 });

@@ -14,7 +14,7 @@ import {
   normalizeRequiredDocuments,
   resolveDocumentRequirements,
 } from '../../lib/applicationDocuments';
-import useScrollReveal from '../../lib/useScrollReveal';
+import useScrollReveal from '../../hooks/useScrollReveal';
 import styles from '../../styles/VagaDetailPage.module.css';
 import {
   FiArrowLeft,
@@ -56,7 +56,7 @@ import { deduplicateRelatedJobs, projectPublicJob } from '../../lib/publicJob';
 import { getPublicSkillsAssessment } from '../../lib/skillsAssessment';
 import { shareWithClipboardFallback } from '../../lib/shareWithFallback';
 
-// F1.8/E9: só carregado quando `V2_MODERATION` está ligada.
+// F1.8/E9: painel de denúncia, carregado só quando é aberto.
 const JobReportPanel = dynamic(
   () => import('../../components/jobs/JobReportPanel'),
 );
@@ -480,7 +480,6 @@ export default function VagaDetalhe({
   publicPage = null,
   jsonLd = '',
   gone = false,
-  moderationEnabled = false,
 }) {
   const { user, loading: authLoading } = useAuth();
   const [applyStatus, setApplyStatus] = useState('idle');
@@ -512,8 +511,6 @@ export default function VagaDetalhe({
   const pageRef = useRef(null);
   useScrollReveal(pageRef, [vaga?.id]);
   const [reportSignal, setReportSignal] = useState(0);
-  // Política do formulário decidida no servidor (`V2_APPLICATION_SNAPSHOT`).
-  const [submissionPolicy, setSubmissionPolicy] = useState('legacy');
   const [applicationForm, setApplicationForm] = useState(() =>
     createEmptyApplicationForm(),
   );
@@ -733,9 +730,6 @@ export default function VagaDetalhe({
         });
         if (response.ok) {
           const data = await response.json();
-          if (active && data.submissionPolicy === 'v2') {
-            setSubmissionPolicy('v2');
-          }
           if (active && data.applications && data.applications.length > 0) {
             setApplyStatus('success');
           }
@@ -963,7 +957,7 @@ export default function VagaDetalhe({
     );
   }
 
-  // F8.6 — vaga que já não aceita candidaturas (só com V2_SEO_PAGES).
+  // F8.6 — vaga que já não aceita candidaturas.
   const closure =
     publicPage && publicPage.kind !== 'OPEN'
       ? {
@@ -1183,22 +1177,7 @@ export default function VagaDetalhe({
   };
 
   const handleReport = () => {
-    if (moderationEnabled) {
-      setReportSignal((value) => value + 1);
-      return;
-    }
-    const subject = encodeURIComponent(`Denúncia da vaga: ${titulo}`);
-    const body = encodeURIComponent(
-      [
-        `Vaga: ${titulo}`,
-        `Empresa: ${companyLabel}`,
-        `Identificador: ${vaga.id}`,
-        `Ligação: ${window.location.href}`,
-        '',
-        'Descreva abaixo o motivo da denúncia:',
-      ].join('\n'),
-    );
-    window.location.href = `mailto:contacto@empregostp.com?subject=${subject}&body=${body}`;
+    setReportSignal((value) => value + 1);
   };
 
   const handleToggleSave = async () => {
@@ -1420,7 +1399,6 @@ export default function VagaDetalhe({
           documentRequirements={documentRequirements}
           onUploadDocument={handleUploadDocument}
           coverLetterEnabled
-          policy={submissionPolicy}
           draftStatus={
             <AutoSaveStatus
               status={applicationDraftStatus}
@@ -2086,13 +2064,11 @@ export default function VagaDetalhe({
                     </button>
                   </div>
 
-                  {moderationEnabled ? (
-                    <JobReportPanel
-                      jobId={vaga.id}
-                      openSignal={reportSignal}
-                      loginHref={`/login?redirect=/vaga/${vaga.id}`}
-                    />
-                  ) : null}
+                  <JobReportPanel
+                    jobId={vaga.id}
+                    openSignal={reportSignal}
+                    loginHref={`/login?redirect=/vaga/${vaga.id}`}
+                  />
 
                   {isBlocked && (
                     <p className={styles.warningText}>
@@ -2302,25 +2278,6 @@ export default function VagaDetalhe({
   );
 }
 
-// Leitor de flags por instância: a cache de 60 s evita uma leitura ao
-// Firestore por cada visita à página.
-let seoFlagsReader = null;
-async function isSeoPagesEnabled(adminInstance, key = 'V2_SEO_PAGES') {
-  try {
-    const [{ FirestoreFeatureFlags }, { getFeatureEnvironment }] =
-      await Promise.all([
-        import('../../infrastructure/firebase/marketplace/FirestoreFeatureFlags'),
-        import('../../infrastructure/firebase/marketplace/environment'),
-      ]);
-    seoFlagsReader ||= new FirestoreFeatureFlags(adminInstance.firestore());
-    return await seoFlagsReader.enabled(key, {
-      environment: getFeatureEnvironment(),
-    });
-  } catch {
-    return false;
-  }
-}
-
 function toDateValue(value) {
   if (!value) return null;
   if (typeof value?.toDate === 'function') return value.toDate();
@@ -2355,50 +2312,39 @@ export async function getServerSideProps(context) {
       status: getEffectiveJobStatus(synced.jobData),
     };
 
-    const [seoPages, moderationEnabled] = await Promise.all([
-      isSeoPagesEnabled(admin),
-      isSeoPagesEnabled(admin, 'V2_MODERATION'),
-    ]);
-    let publicPage = null;
-    if (seoPages) {
-      const { resolvePublicJobPage } =
-        await import('../../domain/jobs/publicPage');
-      const closingDate = parseJobCloseDate(
-        synced.jobData.dataFecho ||
-          synced.jobData.expiresAt ||
-          synced.jobData.dataEncerramento,
-      );
-      const closedAt =
-        toDateValue(synced.jobData.closedAt) ||
-        toDateValue(synced.jobData.expiredAt) ||
-        (closingDate && closingDate.getTime() < Date.now()
-          ? closingDate
-          : null);
-      const page = resolvePublicJobPage({
-        v2Status: synced.jobData.v2Status,
-        legacyStatus: currentJob.status,
-        closedAt,
-        now: new Date(),
-      });
-      if (page.kind === 'NOT_FOUND') return { notFound: true };
-      if (page.kind === 'GONE') {
-        context.res.statusCode = 410;
-        return {
-          props: {
-            vaga: null,
-            gone: true,
-            relatedJobs: [],
-            referenceNow: Date.now(),
-          },
-        };
-      }
-      publicPage = {
-        ...page,
-        closedAt: closedAt ? closedAt.toISOString() : null,
+    const { resolvePublicJobPage } =
+      await import('../../domain/jobs/publicPage');
+    const closingDate = parseJobCloseDate(
+      synced.jobData.dataFecho ||
+        synced.jobData.expiresAt ||
+        synced.jobData.dataEncerramento,
+    );
+    const closedAt =
+      toDateValue(synced.jobData.closedAt) ||
+      toDateValue(synced.jobData.expiredAt) ||
+      (closingDate && closingDate.getTime() < Date.now() ? closingDate : null);
+    const page = resolvePublicJobPage({
+      v2Status: synced.jobData.v2Status,
+      legacyStatus: currentJob.status,
+      closedAt,
+      now: new Date(),
+    });
+    if (page.kind === 'NOT_FOUND') return { notFound: true };
+    if (page.kind === 'GONE') {
+      context.res.statusCode = 410;
+      return {
+        props: {
+          vaga: null,
+          gone: true,
+          relatedJobs: [],
+          referenceNow: Date.now(),
+        },
       };
-    } else if (!isJobPubliclyVisible(currentJob)) {
-      return { notFound: true };
     }
+    const publicPage = {
+      ...page,
+      closedAt: closedAt ? closedAt.toISOString() : null,
+    };
 
     const relatedSnapshot = await admin
       .firestore()
@@ -2585,9 +2531,8 @@ export async function getServerSideProps(context) {
         vaga: serializeJob(projectPublicJob(jobData)),
         relatedJobs,
         referenceNow: Date.now(),
-        ...(publicPage ? { publicPage } : {}),
+        publicPage,
         ...(jsonLd ? { jsonLd } : {}),
-        ...(moderationEnabled ? { moderationEnabled } : {}),
       },
     };
   } catch (error) {

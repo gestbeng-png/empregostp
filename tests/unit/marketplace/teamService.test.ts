@@ -41,13 +41,7 @@ function setup(
   });
   return {
     ...fake,
-    service: new FirestoreTeamService(
-      fake.db,
-      { enabled: async () => true },
-      { environment: 'production' },
-      secret,
-      () => NOW,
-    ),
+    service: new FirestoreTeamService(fake.db, secret, () => NOW),
   };
 }
 const tokenOf = (path: string) =>

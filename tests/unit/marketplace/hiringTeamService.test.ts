@@ -9,7 +9,6 @@ jest.mock('firebase-admin/firestore', () => ({
 }));
 
 const org = 'company-1';
-const context = { environment: 'production' as const };
 const roles: Record<string, 'OWNER' | 'ADMIN' | 'RECRUITER' | 'REVIEWER'> = {
   [org]: 'OWNER',
   ana: 'RECRUITER',
@@ -23,7 +22,7 @@ const member = (userId: string) => ({
   role: roles[userId],
 });
 
-function setup(enabled = true) {
+function setup() {
   const fake = createFakeFirestore({
     [`users/${org}`]: { userType: 'empresa', name: 'Empresa Alfa' },
     'users/ana': { userType: 'candidato', name: 'Ana Silva' },
@@ -55,8 +54,6 @@ function setup(enabled = true) {
   });
   const service = new FirestoreHiringTeamService(
     fake.db,
-    { enabled: async () => enabled },
-    context,
     { roleOf: async (userId: string) => roles[userId] ?? null },
     () => Date.parse('2026-10-20T12:00:00Z'),
   );
@@ -125,11 +122,7 @@ describe('R7/R14/R15 — equipa de um recrutamento', () => {
     ).toMatchObject({ ok: true, value: { version: 2 } });
   });
 
-  test('flag desligada e pessoas de fora da organização não veem a vaga', async () => {
-    expect(await setup(false).service.update(org, 'j1', {})).toMatchObject({
-      ok: false,
-      error: { code: 'FEATURE_DISABLED' },
-    });
+  test('pessoas de fora da organização não veem a vaga', async () => {
     expect(await setup().service.update('estranho', 'j1', {})).toMatchObject({
       ok: false,
       error: { code: 'NOT_FOUND' },
@@ -139,14 +132,9 @@ describe('R7/R14/R15 — equipa de um recrutamento', () => {
   test('integrar a equipa dá ao recrutador acesso à vaga; sair tira-o logo', async () => {
     const { service, db } = setup();
     const read = () =>
-      readRecruitmentWorkspace(
-        db,
-        { enabled: async () => true },
-        context,
-        'bruno',
-        org,
-        [{ organizationId: org, role: 'RECRUITER' }],
-      );
+      readRecruitmentWorkspace(db, 'bruno', org, [
+        { organizationId: org, role: 'RECRUITER' },
+      ]);
     let result = await read();
     if (!result.ok) throw new Error('unexpected');
     expect(result.value.applications).toHaveLength(0);
@@ -173,14 +161,9 @@ describe('R7/R14/R15 — equipa de um recrutamento', () => {
 
   test('o bootstrap traz a visão operacional com números reais', async () => {
     const { db } = setup();
-    const result = await readRecruitmentWorkspace(
-      db,
-      { enabled: async () => true },
-      context,
-      org,
-      org,
-      [{ organizationId: org, role: 'OWNER' }],
-    );
+    const result = await readRecruitmentWorkspace(db, org, org, [
+      { organizationId: org, role: 'OWNER' },
+    ]);
     if (!result.ok) throw new Error('unexpected');
     expect(result.value.overview.metrics).toMatchObject({
       openJobs: 2,

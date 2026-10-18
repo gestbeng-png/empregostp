@@ -737,21 +737,25 @@ export async function getServerSideProps(context) {
       newsSnapshot,
     ] = await Promise.all([
       admin.firestore().collection('users').get(),
+      // Estas cinco só alimentam totais: `count()` devolve o mesmo número sem
+      // transferir os documentos.
       admin
         .firestore()
         .collection('users')
         .where('userType', '==', 'candidato')
+        .count()
         .get(),
       admin
         .firestore()
         .collection('users')
         .where('userType', '==', 'empresa')
+        .count()
         .get(),
       admin.firestore().collection('jobs').get(),
       admin.firestore().collection('applications').get(),
-      admin.firestore().collection('posts').get(),
-      admin.firestore().collection('resources_templates').get(),
-      admin.firestore().collection('news').get(),
+      admin.firestore().collection('posts').count().get(),
+      admin.firestore().collection('resources_templates').count().get(),
+      admin.firestore().collection('news').count().get(),
     ]);
 
     const serializeTimestamp = (timestamp) => {
@@ -929,8 +933,8 @@ export async function getServerSideProps(context) {
       props: {
         initialStats: {
           totalUsers: usersSnapshot.size,
-          totalCandidatos: candidatosSnapshot.size,
-          totalEmpresas: empresasSnapshot.size,
+          totalCandidatos: candidatosSnapshot.data().count,
+          totalEmpresas: empresasSnapshot.data().count,
           totalJobs: jobsSnapshot.size,
           activeJobs,
           closedJobs,
@@ -944,9 +948,9 @@ export async function getServerSideProps(context) {
             0,
           ),
           totalApplications: applicationsSnapshot.size,
-          totalPosts: postsSnapshot.size,
-          totalResources: resourcesSnapshot.size,
-          totalNews: newsSnapshot.size,
+          totalPosts: postsSnapshot.data().count,
+          totalResources: resourcesSnapshot.data().count,
+          totalNews: newsSnapshot.data().count,
         },
         adminJobs: adminJobsWithCompanyNames,
         recentActivities,

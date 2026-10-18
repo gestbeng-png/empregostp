@@ -23,14 +23,12 @@
     "format:check": "prettier --check .",
     "quality": "npm run typecheck && npm run lint && npm run test",
     "verify:production": "node scripts/verify-production.mjs",
-    "verify:firebase-online": "node --import ./scripts/preloadEnv.mjs scripts/v2/audit-data.mjs --firestore",
+    "verify:firebase-online": "node --import ./scripts/preloadEnv.mjs scripts/ops/audit-data.mjs --firestore",
     "gen:env": "node scripts/generate-env.mjs",
     "test:email": "node scripts/test-email.mjs",
     "check:email-dns": "node scripts/check-email-dns.mjs",
     "preview:emails": "node scripts/preview-emails.mjs",
     "test:auth-emails": "node scripts/test-auth-emails.mjs",
-    "deploy": "bash deploy.sh",
-    "deploy:msg": "bash deploy.sh",
     "firestore:index": "node scripts/create-firestore-index.js",
     "firestore:index:open": "node scripts/open-index-link.js",
     "prebuild": "npm run generate:firebase-sw-config"
@@ -45,6 +43,7 @@
   "license": "ISC",
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "@vercel/speed-insights": "^2.0.0",
     "firebase": "^11.10.0",
     "firebase-admin": "^13.10.0",
     "jspdf": "^4.2.1",

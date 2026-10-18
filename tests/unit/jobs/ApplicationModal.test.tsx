@@ -74,7 +74,9 @@ describe('modal de candidatura', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Seguinte' }));
 
     expect(screen.getByText(/Passo 1 de 5/)).toBeInTheDocument();
-    expect(screen.getByText('Indique o seu nome completo.')).toBeInTheDocument();
+    expect(
+      screen.getByText('Indique o seu nome completo.'),
+    ).toBeInTheDocument();
   });
 
   test('os erros só aparecem depois de tentar avançar', () => {
@@ -98,9 +100,7 @@ describe('modal de candidatura', () => {
     for (let i = 0; i < 4; i += 1) {
       fireEvent.click(screen.getByRole('button', { name: 'Seguinte' }));
     }
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Enviar candidatura' }),
-    );
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar candidatura' }));
 
     expect(enviar).toHaveBeenCalledTimes(1);
     expect(enviar.mock.calls[0][0]).toMatchObject({
@@ -114,7 +114,7 @@ describe('modal de candidatura', () => {
     render(
       <Anfitriao
         onSubmit={enviar}
-        inicial={{ ...formularioCompleto(), availability: '' }}
+        inicial={{ ...formularioCompleto(), phone: '' }}
       />,
     );
 
@@ -122,12 +122,14 @@ describe('modal de candidatura', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Seguinte' }));
     }
 
-    expect(screen.getByText(/Passo 3 de 5/)).toBeInTheDocument();
+    expect(screen.getByText(/Passo 1 de 5/)).toBeInTheDocument();
     expect(
-      screen.getByText('Indique a sua disponibilidade.'),
+      screen.getByText('Indique um telefone de contacto válido.'),
     ).toBeInTheDocument();
     // Sem chegar ao último passo não há sequer botão de envio.
-    expect(screen.queryByRole('button', { name: 'Enviar candidatura' })).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: 'Enviar candidatura' }),
+    ).toBeNull();
     expect(enviar).not.toHaveBeenCalled();
   });
 
@@ -145,13 +147,13 @@ describe('modal de candidatura', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Seguinte' }));
     }
 
-    expect(screen.getByText(/planos Profissional e Premium/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/planos Profissional e Premium/),
+    ).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Seguinte' }));
     fireEvent.click(screen.getByRole('button', { name: 'Seguinte' }));
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Enviar candidatura' }),
-    );
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar candidatura' }));
 
     expect(enviar).toHaveBeenCalledTimes(1);
   });

@@ -3,7 +3,6 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { requireActiveApiUser } from '@/lib/apiUserAuth';
 import { admin } from '@/lib/firebaseAdmin';
 import { logServerError } from '@/lib/serverLog';
-import { recruitmentApi } from '@/presentation/applications/recruitmentApi';
 
 async function handler(
   req: NextApiRequest,
@@ -56,4 +55,4 @@ async function handler(
   }
 }
 
-export default recruitmentApi(handler);
+export default handler;

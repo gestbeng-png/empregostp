@@ -3,10 +3,7 @@ import { requireActiveApiUser } from '../../../../lib/apiUserAuth';
 import { logServerError } from '../../../../lib/serverLog';
 import { buildCandidateApplicationView } from '../../../../application/applications/candidateApplicationView';
 import { candidateInterviewView } from '../../../../domain/interviews/schedule';
-import { FirestoreFeatureFlags } from '../../../../infrastructure/firebase/marketplace/FirestoreFeatureFlags';
-import { getFeatureEnvironment } from '../../../../infrastructure/firebase/marketplace/environment';
 
-let flags = null;
 const NOT_FOUND = {
   error: { code: 'NOT_FOUND', message: 'Candidatura não encontrada.' },
 };
@@ -27,13 +24,6 @@ export default async function handler(req, res) {
     const authResult = await requireActiveApiUser(req, res, { adminApp });
     if (!authResult) return;
     const { uid } = authResult;
-    flags ||= new FirestoreFeatureFlags(adminApp.firestore());
-    const enabled = await flags.enabled('V2_CANDIDATE_TRACKING', {
-      environment: getFeatureEnvironment(),
-      userId: uid,
-    });
-    if (!enabled) return res.status(404).json(NOT_FOUND);
-
     const id = String(req.query?.id || '');
     if (!/^[A-Za-z0-9_-]{1,300}$/.test(id))
       return res.status(404).json(NOT_FOUND);
@@ -67,11 +57,6 @@ export default async function handler(req, res) {
       db.collection('hires').doc(id).get(),
     ]);
     const hireData = hire.exists ? hire.data() : null;
-    const interviewsEnabled = await flags.enabled('V2_INTERVIEWS_OFFERS', {
-      environment: getFeatureEnvironment(),
-      userId: uid,
-      organizationId: application.organizationId || application.companyId,
-    });
     return res.status(200).json({
       ...buildCandidateApplicationView(
         id,
@@ -83,7 +68,6 @@ export default async function handler(req, res) {
       interviews: interviews.docs.map((doc) =>
         candidateInterviewView({ id: doc.id, ...doc.data() }),
       ),
-      interviewsEnabled,
       // E5.3: «Começou a trabalhar?» só depois do pedido aos 30 dias.
       hireConfirmation:
         hireData &&

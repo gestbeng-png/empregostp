@@ -20,7 +20,6 @@ export default function CandidateRecruitmentActions({
               key={interview.id}
               candidate
               interview={interview}
-              enabled={timeline.interviewsEnabled !== false}
               onSuccess={onSuccess}
               request={request}
             />

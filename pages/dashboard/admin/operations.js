@@ -4,7 +4,6 @@ import { requireAdminPageAuth } from '../../../lib/adminPageGuard';
 import { apiRequest } from '../../../lib/apiClient';
 import { ActionForm } from '../../../components/empresa/RecruitmentControls';
 import styles from '../../../styles/RecruitmentWorkspace.module.css';
-import { isRecruitmentWorkspaceEnabled } from '../../../lib/recruitmentAvailability';
 
 export default function OperationsPage() {
   const [data, setData] = useState(null);
@@ -97,9 +96,6 @@ export default function OperationsPage() {
 export async function getServerSideProps(context) {
   context.res.setHeader('Cache-Control', 'private, no-store');
   context.res.setHeader('X-Robots-Tag', 'noindex, nofollow');
-  // ADR-019: operações de recrutamento retiradas com a área.
-  if (!isRecruitmentWorkspaceEnabled())
-    return { redirect: { destination: '/dashboard/admin', permanent: false } };
   const result = await requireAdminPageAuth(context);
   return result.ok ? { props: {} } : { redirect: result.redirect };
 }

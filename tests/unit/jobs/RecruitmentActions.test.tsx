@@ -79,13 +79,6 @@ test.each([
     );
   },
 );
-test('disabled interview rollout hides candidate writes but retains the calendar read', () => {
-  render(<InterviewControls candidate enabled={false} interview={interview} />);
-  expect(screen.queryAllByRole('form')).toHaveLength(0);
-  expect(
-    screen.getByRole('button', { name: 'Adicionar ao calendário' }),
-  ).toBeEnabled();
-});
 test.each([
   ['Concluir entrevista', 'complete'],
   ['Registar falta', 'no-show'],

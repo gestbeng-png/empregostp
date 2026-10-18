@@ -6,7 +6,7 @@ import {
   currentDesignLiterals,
   extractDesignLiterals,
   findDesignRegressions,
-} from '../../scripts/v2/design-contract.mjs';
+} from '../../scripts/quality/design-contract.mjs';
 
 test('CSS: tokens, comments and zero are allowed; nonzero px and full colors are counted', () => {
   assert.deepEqual(

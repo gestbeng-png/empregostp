@@ -1,6 +1,9 @@
 import { admin } from '../../../lib/firebaseAdmin';
 import { isValidEmail } from '../../../lib/validation';
-import { sendVerificationEmail, resolveBaseUrl } from '../../../lib/authEmails';
+import {
+  sendVerificationEmail,
+  resolveBaseUrl,
+} from '../../../lib/email/authEmails';
 import { enforceApiRateLimit } from '../../../lib/apiRateLimit';
 import { logServerError, logServerWarning } from '../../../lib/serverLog';
 

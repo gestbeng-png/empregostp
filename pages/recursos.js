@@ -29,7 +29,7 @@ import {
 import PublicPageShell from '../components/PublicPageShell';
 import { admin } from '../lib/firebaseAdmin';
 import { resolveProfessionalResourceAccess } from '../lib/resourcePremiumAccess';
-import useScrollReveal from '../lib/useScrollReveal';
+import useScrollReveal from '../hooks/useScrollReveal';
 import pageStyles from '../styles/RecursosStitchPage.module.css';
 import {
   DEFAULT_GUIDES,
@@ -66,10 +66,10 @@ const icons = {
   trending: <FiTrendingUp aria-hidden="true" />,
 };
 
-const PHOTOS = '/assets/imagens/Fotos para usar no site';
+const PHOTOS = '/assets/fotos';
 const HERO_PHOTOS = {
-  main: `${PHOTOS}/06092026-EmpregoSTP Sequência nº (002)-45.jpg`,
-  float: `${PHOTOS}/06092026-EmpregoSTP Sequência nº (002)-30.jpg`,
+  main: `${PHOTOS}/sequencia-002-45.webp`,
+  float: `${PHOTOS}/sequencia-002-30.webp`,
 };
 
 // O nome acessível do h1 tem de continuar a ser «Recursos gratuitos para a
@@ -1266,19 +1266,25 @@ const safeFetchCollection = async (collectionName, limit) => {
 };
 
 export async function getServerSideProps(context) {
-  const professionalAccess = await resolveProfessionalResourceAccess(context);
+  // A verificação de acesso não depende dos recursos (e nunca rejeita), por
+  // isso corre em paralelo com as leituras em vez de as atrasar.
+  const [
+    professionalAccess,
+    templatesFromDb,
+    guidesFromDb,
+    toolsFromDb,
+    faqsFromDb,
+  ] = await Promise.all([
+    resolveProfessionalResourceAccess(context),
+    safeFetchCollection('resources_templates', 12),
+    safeFetchCollection('resources_guides', 12),
+    safeFetchCollection('resources_tools', 8),
+    safeFetchCollection('resources_faqs', 12),
+  ]);
   const userAudience = normalizeAudience(
     professionalAccess.userType,
     RESOURCE_AUDIENCE.all,
   );
-
-  const [templatesFromDb, guidesFromDb, toolsFromDb, faqsFromDb] =
-    await Promise.all([
-      safeFetchCollection('resources_templates', 12),
-      safeFetchCollection('resources_guides', 12),
-      safeFetchCollection('resources_tools', 8),
-      safeFetchCollection('resources_faqs', 12),
-    ]);
 
   const templates = mergeResourceList(
     DEFAULT_TEMPLATES,

@@ -36,12 +36,7 @@ function setup(
   });
   return {
     ...fake,
-    service: new FirestoreJobClosingService(
-      fake.db,
-      { enabled: async () => true },
-      { environment: 'production' },
-      () => NOW,
-    ),
+    service: new FirestoreJobClosingService(fake.db, () => NOW),
   };
 }
 

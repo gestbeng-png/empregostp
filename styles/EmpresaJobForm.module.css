@@ -484,12 +484,6 @@
   background: var(--job-surface);
 }
 
-.optionCardStack {
-  display: grid;
-  align-items: initial;
-  cursor: default;
-}
-
 .optionTitle {
   display: block;
   margin-bottom: 3px;

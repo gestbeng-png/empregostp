@@ -9,7 +9,7 @@ import {
   publishScheduler,
   schedulerConfig,
   stagedDeploymentUrl,
-} from '../../scripts/v2/configure-github-scheduler.mjs';
+} from '../../scripts/ops/configure-github-scheduler.mjs';
 
 test('extracts only the staged project URL from noisy CLI output, never a canonical alias or foreign project', () => {
   const url = 'https://empregostp-hc6v5ylxs-edmirfoncecas-projects.vercel.app';
@@ -89,7 +89,7 @@ test('workflow uses fixed HTTPS paths, least privilege, protected secrets and st
   );
   assert.match(source, /7,37 \* \* \* \*/);
   assert.equal((source.match(/runs-on:/g) || []).length, 1);
-  assert.match(source, /EMAIL_NOT_READY/);
+  assert.doesNotMatch(source, /OUTBOX_ENABLED/);
   assert.match(source, /13 9 \* \* \*/);
 });
 
@@ -127,7 +127,6 @@ test('30-minute schedule processes reminders before the outbox in one runner', a
   const result = await runWorkflow({
     EVENT_NAME: 'schedule',
     EVENT_SCHEDULE: '7,37 * * * *',
-    OUTBOX_ENABLED: 'true',
   });
   assert.deepEqual(result.paths, [
     '/api/cron/interview-reminders',
@@ -140,7 +139,6 @@ test('daily run queues follow-ups before processing notifications', async () => 
   const result = await runWorkflow({
     EVENT_NAME: 'schedule',
     EVENT_SCHEDULE: '13 9 * * *',
-    OUTBOX_ENABLED: 'true',
   });
   assert.deepEqual(result.paths, [
     '/api/cron/ats-daily',
@@ -150,7 +148,6 @@ test('daily run queues follow-ups before processing notifications', async () => 
 test('manual smoke check runs all four tasks sequentially', async () => {
   const result = await runWorkflow({
     EVENT_NAME: 'workflow_dispatch',
-    OUTBOX_ENABLED: 'true',
   });
   assert.deepEqual(result.paths, [
     '/api/cron/interview-reminders',
@@ -159,17 +156,9 @@ test('manual smoke check runs all four tasks sequentially', async () => {
     '/api/cron/process-outbox',
   ]);
 });
-test('email not ready explicitly skips the outbox but does not block other authorized scheduled work', async () => {
-  const result = await runWorkflow({
-    EVENT_NAME: 'workflow_dispatch',
-    OUTBOX_ENABLED: 'false',
-  });
-  assert.ok(!result.paths.includes('/api/cron/process-outbox'));
-  assert.ok(result.logs.some((value) => value.includes('EMAIL_NOT_READY')));
-});
 test('processed response with failed delivery is not a falsely successful workflow', async () => {
   const result = await runWorkflow(
-    { EVENT_NAME: 'workflow_dispatch', OUTBOX_ENABLED: 'true' },
+    { EVENT_NAME: 'workflow_dispatch' },
     { status: 'processed', failed: 1, leaseLost: 0 },
   );
   assert.equal(result.exitCode, 1);

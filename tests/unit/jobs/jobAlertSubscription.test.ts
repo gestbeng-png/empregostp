@@ -1,4 +1,4 @@
-import { buildJobAlertEmail } from '../../../lib/jobAlertEmail';
+import { buildJobAlertEmail } from '../../../lib/email/jobAlertEmail';
 import {
   buildJobAlertFilterKey,
   buildJobAlertId,
@@ -24,9 +24,7 @@ describe('subscrições seguras de alertas de vagas', () => {
       minSalary: 3500,
     };
 
-    expect(buildJobAlertFilterKey(first)).toBe(
-      buildJobAlertFilterKey(second),
-    );
+    expect(buildJobAlertFilterKey(first)).toBe(buildJobAlertFilterKey(second));
     expect(buildJobAlertId('Pessoa@EXAMPLE.com', first)).toBe(
       buildJobAlertId('pessoa@example.com', second),
     );

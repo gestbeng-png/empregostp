@@ -914,44 +914,32 @@ export async function getServerSideProps(ctx) {
     const cookies = nookies.get(ctx);
 
     if (!cookies.token) {
-      console.log('❌ Token não encontrado');
       return redirectToLogin(ctx);
     }
 
-    console.log('🔐 Verificando token...');
     const token = await admin.auth().verifyIdToken(cookies.token);
     const uid = token.uid;
-
-    console.log('👤 UID:', uid);
 
     const adminDoc = await admin.firestore().collection('users').doc(uid).get();
 
     if (!adminDoc.exists) {
-      console.log('❌ Documento de usuário não existe');
       return redirectToLogin(ctx);
     }
 
     const userData = adminDoc.data();
-    console.log('✅ UserType:', userData.userType);
 
     if (userData.userType !== 'admin') {
-      console.log('❌ Usuário não é admin');
       return { redirect: { destination: '/dashboard', permanent: false } };
     }
 
-    console.log('✅ Admin verificado');
-
     const { id } = ctx.query;
-    console.log('📝 Buscando vaga:', id);
 
     const jobSnap = await admin.firestore().collection('jobs').doc(id).get();
 
     if (!jobSnap.exists) {
-      console.log('❌ Vaga não encontrada');
       return { notFound: true };
     }
 
-    console.log('✅ Vaga encontrada');
     const data = jobSnap.data();
 
     // Empresa e candidaturas dependem apenas da vaga e podem carregar em paralelo.
@@ -1020,11 +1008,6 @@ export async function getServerSideProps(ctx) {
         ? new Date(tsToMillis(data.updatedAt)).toISOString()
         : null,
     };
-
-    console.log('✅ Dados montados com sucesso');
-    console.log('Vaga:', job.titulo);
-    console.log('Empresa:', company?.name || 'N/A');
-    console.log('Candidaturas:', applications.length);
 
     return {
       props: serializeForProps({

@@ -4,7 +4,6 @@ import {
   authenticateApiUser,
   getBulkActionService,
 } from '@/infrastructure/firebase/applications/createApplicationWorkspace';
-import { recruitmentApi } from '@/presentation/applications/recruitmentApi';
 import { workspaceRoute } from '@/presentation/applications/workspaceRoute';
 
 const read = workspaceRoute<unknown>('GET', authenticateApiUser, (uid, id) =>
@@ -21,4 +20,4 @@ function handler(req: NextApiRequest, res: NextApiResponse): Promise<void> {
   return req.method === 'PATCH' ? write(req, res) : read(req, res);
 }
 
-export default recruitmentApi(handler);
+export default handler;

@@ -19,7 +19,7 @@ const FROM_LEGACY: Readonly<Record<string, JobStatus>> = {
   // Desativada pela administração: nunca aceita candidaturas.
   disabled: 'REJECTED',
 };
-const V2_STATUSES = new Set<string>(
+const LIFECYCLE_STATUSES = new Set<string>(
   Object.values(FROM_LEGACY).concat(['FILLED', 'EXPIRED', 'ARCHIVED']),
 );
 
@@ -65,7 +65,8 @@ export function readJobLifecycle(
     String(job.status ?? 'active')
       .trim()
       .toLowerCase() || 'active';
-  const status = (V2_STATUSES.has(v2) ? v2 : FROM_LEGACY[legacy]) ?? 'DRAFT';
+  const status =
+    (LIFECYCLE_STATUSES.has(v2) ? v2 : FROM_LEGACY[legacy]) ?? 'DRAFT';
   const method = job.applicationMethod;
   return {
     status: status as JobStatus,

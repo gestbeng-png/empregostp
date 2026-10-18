@@ -1,6 +1,5 @@
 import { authenticateApiUser } from '@/infrastructure/firebase/applications/createApplicationWorkspace';
 import { getApplicationAssignmentService } from '@/infrastructure/firebase/hiring/createApplicationAssignmentService';
-import { recruitmentApi } from '@/presentation/applications/recruitmentApi';
 import { workspaceRoute } from '@/presentation/applications/workspaceRoute';
 
 /** POST — responsável pela análise de 1 a 100 candidaturas (R24/R25/R88); `assigneeUserId: null` devolve à fila. */
@@ -16,4 +15,4 @@ const route = workspaceRoute(
   200,
 );
 
-export default recruitmentApi(route);
+export default route;
