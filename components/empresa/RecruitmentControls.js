@@ -78,8 +78,9 @@ export function ActionStatus({ action }) {
  * All writes are explicit form submissions, with synchronous double-click protection.
  * `showWhen` mostra um campo só quando outro tem um valor (ex.: o motivo só
  * quando o novo estado é «Não selecionada»); `placeholder` acrescenta uma
- * primeira opção vazia a um select.
- * @param {{title: string, path: string, method?: string, fields?: Array<{name: string, label: string, type?: string, options?: string[][], value?: string | number | string[], multiple?: boolean, required?: boolean, min?: number, max?: number, maxLength?: number, placeholder?: string, showWhen?: {field: string, equals: string}}>, buildBody?: (values: Record<string, any>) => Record<string, unknown>, onSuccess?: (value: any) => void, confirmText?: string, request?: typeof apiRequest, submit?: string, onBusyChange?: (busy: boolean) => void, resetOnSuccess?: boolean, disabled?: boolean}} props
+ * primeira opção vazia a um select. `secondary` dá ao botão o estilo
+ * discreto (ações de recusa ao lado de uma ação principal).
+ * @param {{title: string, path: string, method?: string, fields?: Array<{name: string, label: string, type?: string, options?: string[][], value?: string | number | string[], multiple?: boolean, required?: boolean, min?: number, max?: number, maxLength?: number, placeholder?: string, showWhen?: {field: string, equals: string}}>, buildBody?: (values: Record<string, any>) => Record<string, unknown>, onSuccess?: (value: any) => void, confirmText?: string, request?: typeof apiRequest, submit?: string, onBusyChange?: (busy: boolean) => void, resetOnSuccess?: boolean, disabled?: boolean, secondary?: boolean}} props
  */
 export function ActionForm({
   title,
@@ -94,6 +95,7 @@ export function ActionForm({
   onBusyChange,
   resetOnSuccess = false,
   disabled = false,
+  secondary = false,
 }) {
   const action = useAction(request);
   const [watched, setWatched] = useState(() =>
@@ -199,7 +201,7 @@ export function ActionForm({
         </label>
       ) : null}
       <button
-        className="btn btn-primary"
+        className={secondary ? 'btn btn-ghost' : 'btn btn-primary'}
         disabled={action.busy || disabled}
         type="submit"
       >

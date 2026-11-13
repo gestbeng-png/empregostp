@@ -706,7 +706,7 @@ export async function getServerSideProps(context) {
     }
 
     const userData = userDoc.data();
-    if (userData.userType !== 'empresa' && userData.userType !== 'admin') {
+    if (userData.userType !== 'empresa') {
       return { redirect: { destination: '/dashboard', permanent: false } };
     }
 
@@ -732,7 +732,6 @@ export async function getServerSideProps(context) {
       .get();
     const profileData = profileDoc.exists ? profileDoc.data() : {};
     const privacy = getCandidatePrivacy(profileData);
-    const isAdmin = userData.userType === 'admin';
     const isEmpresa = userData.userType === 'empresa';
 
     const planSummary =
@@ -803,48 +802,35 @@ export async function getServerSideProps(context) {
     let rawApplications = [];
 
     try {
-      if (isAdmin) {
-        const applicationsSnapshot = await applicationsQuery
-          .orderBy('createdAt', 'desc')
-          .limit(APPLICATION_HISTORY_LIMIT)
-          .get();
+      rawApplications = await collectCompanyApplicationHistory({
+        companyId: uid,
+        limit: APPLICATION_HISTORY_LIMIT,
+        fetchPage: async (cursor) => {
+          let query = applicationsQuery
+            .orderBy('createdAt', 'desc')
+            .limit(APPLICATION_HISTORY_PAGE_SIZE);
 
-        rawApplications = applicationsSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-      } else {
-        rawApplications = await collectCompanyApplicationHistory({
-          companyId: uid,
-          limit: APPLICATION_HISTORY_LIMIT,
-          fetchPage: async (cursor) => {
-            let query = applicationsQuery
-              .orderBy('createdAt', 'desc')
-              .limit(APPLICATION_HISTORY_PAGE_SIZE);
+          if (cursor) {
+            query = query.startAfter(cursor);
+          }
 
-            if (cursor) {
-              query = query.startAfter(cursor);
-            }
+          const snapshot = await query.get();
+          const lastDocument = snapshot.docs[snapshot.docs.length - 1] || null;
 
-            const snapshot = await query.get();
-            const lastDocument =
-              snapshot.docs[snapshot.docs.length - 1] || null;
-
-            return {
-              applications: snapshot.docs.map((doc) => ({
-                id: doc.id,
-                ...doc.data(),
-              })),
-              cursor: lastDocument,
-              hasMore: snapshot.docs.length === APPLICATION_HISTORY_PAGE_SIZE,
-            };
-          },
-          fetchJob: async (jobId) => {
-            const jobDoc = await firestore.collection('jobs').doc(jobId).get();
-            return jobDoc.exists ? jobDoc.data() || {} : {};
-          },
-        });
-      }
+          return {
+            applications: snapshot.docs.map((doc) => ({
+              id: doc.id,
+              ...doc.data(),
+            })),
+            cursor: lastDocument,
+            hasMore: snapshot.docs.length === APPLICATION_HISTORY_PAGE_SIZE,
+          };
+        },
+        fetchJob: async (jobId) => {
+          const jobDoc = await firestore.collection('jobs').doc(jobId).get();
+          return jobDoc.exists ? jobDoc.data() || {} : {};
+        },
+      });
     } catch (historyError) {
       console.error(
         'Erro ao carregar histórico de candidaturas do candidato:',
@@ -859,7 +845,7 @@ export async function getServerSideProps(context) {
       status: application.status || 'pending',
       createdAt: safeTimestampToMillis(application.createdAt),
       // Tudo o que o candidato enviou nesta candidatura. Só chegam aqui as
-      // candidaturas às vagas desta empresa (ou todas, para o admin), por isso
+      // candidaturas às vagas desta empresa, por isso
       // não há aqui exposição nova: é o mesmo alcance do histórico.
       ...serializeApplicationSubmission(application),
     }));
@@ -868,9 +854,8 @@ export async function getServerSideProps(context) {
     // mesmo com o perfil privado — a candidatura é o consentimento de partilha.
     const hasCompanyApplication = isEmpresa && applications.length > 0;
     if (
-      !isAdmin &&
       !hasCompanyApplication &&
-      !canViewerAccessCandidate(privacy, { isAdmin, isEmpresa })
+      !canViewerAccessCandidate(privacy, { isEmpresa })
     ) {
       return { notFound: true };
     }

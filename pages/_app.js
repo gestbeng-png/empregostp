@@ -117,7 +117,11 @@ function MyApp({ Component, pageProps }) {
   }, []);
 
   return (
-    <AuthProvider renderWhileLoading={routeKind === 'public'}>
+    // As páginas de autenticação gerem o Firebase Auth elas próprias. Se
+    // esperassem pelo AuthProvider, cada mudança de conta (criar conta, entrar,
+    // sair para pedir confirmação de email) desmontava-as e perdia o estado —
+    // o ecrã "Confirme o seu email" do registo nunca chegava a aparecer.
+    <AuthProvider renderWhileLoading={routeKind !== 'dashboard'}>
       <div
         className={
           isHome

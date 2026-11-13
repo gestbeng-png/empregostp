@@ -41,7 +41,9 @@ test.describe('blog público', () => {
       name: 'Publicações recentes',
     });
     const recentArticles = recentSection.getByRole('article');
-    await expect(recentArticles).toHaveCount(2);
+    // A quantidade depende das publicações reais disponíveis, não de um
+    // conjunto fixo de dados de demonstração.
+    expect(await recentArticles.count()).toBeGreaterThanOrEqual(2);
     await expect(recentArticles.nth(0).getByRole('img')).toBeVisible();
     await expect(recentArticles.nth(1).getByRole('img')).toBeVisible();
 
@@ -86,21 +88,22 @@ test.describe('blog público', () => {
       }
       expect(firstRecentImageBox.x).toBeGreaterThan(firstRecentTitleBox.x);
 
-      const updatesBox = await main
-        .getByRole('region', { name: 'Atualizações rápidas' })
-        .boundingBox();
+      // O painel "Atualizações rápidas" deixou de existir; em telemóvel a
+      // coluna lateral desaparece e a newsletter empilha a seguir à lista de
+      // publicações. É essa ordem que continua a interessar.
+      const recentBox = await recentSection.boundingBox();
       const newsletterBox = await main
         .getByRole('region', {
           name: 'Receba novidades do mercado de trabalho',
         })
         .boundingBox();
-      expect(updatesBox).not.toBeNull();
+      expect(recentBox).not.toBeNull();
       expect(newsletterBox).not.toBeNull();
-      if (!updatesBox || !newsletterBox) {
+      if (!recentBox || !newsletterBox) {
         throw new Error('Não foi possível medir os painéis mobile do blog.');
       }
       expect(newsletterBox.y).toBeGreaterThan(
-        updatesBox.y + updatesBox.height - 2,
+        recentBox.y + recentBox.height - 2,
       );
     } else {
       expect(featuredTitleBox.x).toBeGreaterThan(

@@ -49,6 +49,39 @@ function toDate(value: unknown): Date | null {
 }
 
 /**
+ * `interviewDetails` na candidatura é a cópia que os painéis antigos leem
+ * (agenda do candidato, calendário .ics). Uma entrevista terminada sai da
+ * agenda; as outras mudanças atualizam o estado, a hora e o local.
+ */
+export function legacyInterviewDetails(
+  details: Plain,
+  to: InterviewStatus,
+  fields: Plain = {},
+): Plain | null {
+  if (to === 'CANCELLED' || to === 'COMPLETED' || to === 'NO_SHOW') return null;
+  const startsAt = fields.startsAt as
+    { toMillis?: () => number; toDate?: () => Date } | undefined;
+  const ms =
+    typeof startsAt?.toMillis === 'function'
+      ? startsAt.toMillis()
+      : (toDate(startsAt)?.getTime() ?? null);
+  return {
+    ...details,
+    status:
+      to === 'CONFIRMED'
+        ? 'confirmed'
+        : to === 'RESCHEDULE_REQUESTED'
+          ? 'reschedule_requested'
+          : 'scheduled',
+    ...(ms !== null && Number.isFinite(ms)
+      ? { scheduledAt: new Date(ms).toISOString() }
+      : {}),
+    ...('location' in fields ? { location: fields.location ?? '' } : {}),
+    ...('meetingUrl' in fields ? { link: fields.meetingUrl ?? '' } : {}),
+  };
+}
+
+/**
  * E6 — ciclo de vida das entrevistas. Cada operação: uma transação que valida
  * a transição na máquina de estados, grava a entrevista, o histórico e um
  * evento na outbox (o dispatcher envia notificações e o .ics). Marcar a
@@ -270,6 +303,14 @@ export class FirestoreInterviewService {
       const snap = await tx.get(ref);
       const data = snap.data();
       if (!data) throw new Abort('NOT_FOUND');
+      // Lido antes de qualquer escrita (regra das transações do Firestore):
+      // a cópia em `interviewDetails` tem de acompanhar esta entrevista.
+      const appRef =
+        typeof data.applicationId === 'string' &&
+        validDocumentId(data.applicationId)
+          ? this.db.collection('applications').doc(data.applicationId)
+          : null;
+      const app = appRef ? (await tx.get(appRef)).data() : undefined;
       const spec = build(data);
       const check = assertInterview(
         data.v2Status as InterviewStatus,
@@ -298,6 +339,11 @@ export class FirestoreInterviewService {
         version,
       });
       this.event(tx, interviewId, 'Interview', version);
+      const details = app?.interviewDetails as Plain | null | undefined;
+      if (appRef && details?.interviewId === interviewId)
+        tx.update(appRef, {
+          interviewDetails: legacyInterviewDetails(details, to, spec.fields),
+        });
       const count =
         Number(spec.fields?.rescheduleCount ?? data.rescheduleCount) || 0;
       return {

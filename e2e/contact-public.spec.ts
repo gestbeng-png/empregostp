@@ -44,14 +44,18 @@ test.describe('página pública de contacto', () => {
       page.getByRole('complementary', { name: 'Informações de contacto' }),
     ).toBeVisible();
     await expect(
-      page.getByRole('link', { name: /suporte@empregos\.st/i }),
-    ).toHaveAttribute('href', 'mailto:suporte@empregos.st');
+      page
+        .getByRole('complementary', { name: 'Informações de contacto' })
+        .getByRole('link', { name: /contacto@empregostp\.com/i }),
+    ).toHaveAttribute('href', 'mailto:contacto@empregostp.com');
     await expect(
       page.getByRole('link', { name: /\+239 986 9673/i }).first(),
     ).toHaveAttribute('href', 'https://wa.me/2399869673');
 
     await formRegion.getByRole('button', { name: 'Enviar mensagem' }).click();
-    await expect(page.getByRole('alert')).toContainText(
+    // Restringido ao formulário: o Next.js mantém o seu próprio
+    // `__next-route-announcer__` com role="alert" em todas as páginas.
+    await expect(formRegion.getByRole('alert')).toContainText(
       'Indique o seu nome com pelo menos 2 caracteres.',
     );
 

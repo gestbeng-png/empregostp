@@ -30,9 +30,8 @@ try {
   // Push messaging remains best effort; caching still works without FCM bootstrap.
 }
 
-const STATIC_CACHE = 'empregostp-static-v2';
-const PAGES_CACHE = 'empregostp-pages-v2';
-const DASHBOARD_CACHE = 'empregostp-dashboard-v2';
+const STATIC_CACHE = 'empregostp-static-v3';
+const PAGES_CACHE = 'empregostp-pages-v3';
 const OFFLINE_URL = '/offline';
 const APP_SHELL = [
   '/',
@@ -43,7 +42,7 @@ const APP_SHELL = [
 ];
 
 function isStaticAsset(pathname) {
-  return pathname.startsWith('/_next/') || /\.(?:js|css|png|jpg|jpeg|svg|webp|ico|woff2?)$/i.test(pathname);
+  return pathname.startsWith('/_next/static/') || /\.(?:js|css|png|jpg|jpeg|svg|webp|ico|woff2?)$/i.test(pathname);
 }
 
 function shouldBypassRequest(pathname) {
@@ -61,15 +60,20 @@ function isCriticalPublicPage(pathname) {
   return pathname === '/vagas' || pathname.startsWith('/vaga/');
 }
 
-function isCriticalDashboardPage(pathname) {
-  return pathname === '/dashboard/candidato' || pathname.startsWith('/dashboard/candidato/');
+function isPrivatePage(pathname) {
+  return pathname === '/dashboard' || pathname.startsWith('/dashboard/') ||
+    pathname.startsWith('/candidatos/') ||
+    pathname === '/profile' || pathname === '/premium' || pathname.startsWith('/premium/') ||
+    pathname === '/recursos/gerador-cv';
 }
 
 async function networkFirst(request, cacheName, fallbackToOffline = true) {
   const cache = await caches.open(cacheName);
   try {
     const response = await fetch(request);
-    if (response && response.status === 200) {
+    if (response && response.status === 200 &&
+        !/no-store|private/i.test(response.headers.get('Cache-Control') || '') &&
+        !isPrivatePage(new URL(response.url || request.url).pathname)) {
       cache.put(request, response.clone());
     }
     return response;
@@ -96,14 +100,16 @@ async function staleWhileRevalidate(request, cacheName) {
 }
 
 async function clearAuthCaches() {
-  await caches.delete(DASHBOARD_CACHE);
-  const pagesCache = await caches.open(PAGES_CACHE);
-  const requests = await pagesCache.keys();
-  await Promise.all(
-    requests
-      .filter((request) => new URL(request.url).pathname.startsWith('/dashboard/'))
-      .map((request) => pagesCache.delete(request))
-  );
+  await caches.delete('empregostp-dashboard-v2');
+  // Limpa igualmente dados Next que versões antigas tratavam como assets.
+  for (const name of [PAGES_CACHE, STATIC_CACHE]) {
+    const cache = await caches.open(name);
+    const requests = await cache.keys();
+    await Promise.all(requests.filter((request) => {
+      const pathname = new URL(request.url).pathname;
+      return isPrivatePage(pathname) || pathname.startsWith('/_next/data/');
+    }).map((request) => cache.delete(request)));
+  }
 }
 
 self.addEventListener('install', (event) => {
@@ -115,7 +121,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => Promise.all(
-      keys.filter((key) => ![STATIC_CACHE, PAGES_CACHE, DASHBOARD_CACHE].includes(key)).map((key) => caches.delete(key))
+      keys.filter((key) => key.startsWith('empregostp-') && ![STATIC_CACHE, PAGES_CACHE].includes(key)).map((key) => caches.delete(key))
     )).then(() => self.clients.claim())
   );
 });
@@ -151,14 +157,15 @@ self.addEventListener('fetch', (event) => {
   const requestUrl = new URL(event.request.url);
   if (requestUrl.origin !== self.location.origin) return;
   if (isApiRequest(requestUrl.pathname)) return;
+  // Nunca reutilizar HTML/JSON de uma conta anterior, nem sequer offline.
+  // O pedido deve sempre passar pela autorização do servidor.
+  if (isPrivatePage(requestUrl.pathname) || requestUrl.pathname.startsWith('/_next/data/')) {
+    event.respondWith(fetch(event.request, { cache: 'no-store' }));
+    return;
+  }
   if (shouldBypassRequest(requestUrl.pathname)) return;
 
   if (event.request.mode === 'navigate') {
-    if (isCriticalDashboardPage(requestUrl.pathname)) {
-      event.respondWith(networkFirst(event.request, DASHBOARD_CACHE, true));
-      return;
-    }
-
     if (isCriticalPublicPage(requestUrl.pathname)) {
       event.respondWith(networkFirst(event.request, PAGES_CACHE, true));
       return;

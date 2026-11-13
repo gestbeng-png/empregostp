@@ -129,7 +129,7 @@ describe('cookie de sessão servidor', () => {
     expect(response.status).toHaveBeenCalledWith(200);
   });
 
-  test('DELETE verifica o Bearer, revoga refresh tokens e expira o cookie', async () => {
+  test('DELETE com Bearer termina esta sessão sem revogar outros dispositivos', async () => {
     const verifyIdToken = jest.fn().mockResolvedValue({ uid: 'candidate-1' });
     const revokeRefreshTokens = jest.fn().mockResolvedValue(undefined);
     authMock.mockReturnValue({ revokeRefreshTokens, verifyIdToken });
@@ -143,13 +143,13 @@ describe('cookie de sessão servidor', () => {
       response as never,
     );
 
-    expect(verifyIdToken).toHaveBeenCalledWith('logout-token');
-    expect(revokeRefreshTokens).toHaveBeenCalledWith('candidate-1');
+    expect(verifyIdToken).not.toHaveBeenCalled();
+    expect(revokeRefreshTokens).not.toHaveBeenCalled();
     expect(nookies.destroy).toHaveBeenCalled();
-    expect(response.json).toHaveBeenCalledWith({ success: true, revoked: true });
+    expect(response.json).toHaveBeenCalledWith({ success: true });
   });
 
-  test('falha de revogação não impede a expiração do cookie', async () => {
+  test('Firebase indisponível não impede a expiração local do cookie', async () => {
     authMock.mockReturnValue({
       revokeRefreshTokens: jest.fn().mockRejectedValue(new Error('unavailable')),
       verifyIdToken: jest.fn().mockResolvedValue({ uid: 'candidate-1' }),
@@ -166,6 +166,7 @@ describe('cookie de sessão servidor', () => {
 
     expect(nookies.destroy).toHaveBeenCalled();
     expect(response.status).toHaveBeenCalledWith(200);
-    expect(response.json).toHaveBeenCalledWith({ success: true, revoked: false });
+    expect(response.json).toHaveBeenCalledWith({ success: true });
+    expect(authMock).not.toHaveBeenCalled();
   });
 });

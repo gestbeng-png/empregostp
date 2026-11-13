@@ -11,7 +11,6 @@ import {
   downloadInterviewICS,
   isLikelyUrl,
 } from '../../../lib/interviewClient';
-import { VERIFICATION_TYPE_CONFIG } from '../../../lib/candidateVerification';
 import { getFirebaseStorageErrorMessage } from '../../../lib/firebaseStorageError';
 import { resolveDashboardTab } from '../../../lib/dashboardNavigation';
 import {
@@ -41,7 +40,6 @@ import {
 } from 'react-icons/fi';
 import DashboardShell from '../../../components/dashboard/DashboardShell';
 import CandidateDashboardOverview from '../../../components/dashboard/CandidateDashboardOverview';
-import AffiliateSection from '../../../components/affiliate/AffiliateSection';
 import AutoSaveStatus from '../../../components/forms/AutoSaveStatus';
 import useAutoDraft from '../../../hooks/useAutoDraft';
 import styles from '../../../styles/DashboardCandidato.module.css';
@@ -60,6 +58,7 @@ import { buildLoginUrl } from '../../../lib/loginRedirect';
 import { requireCandidateSession } from '../../../lib/serverSession';
 import { candidateStatusLabel } from '../../../domain/applications/candidateView';
 import { recruitmentNotificationPath } from '../../../lib/recruitmentNotificationNavigation';
+import { getCandidateVerificationDisplayState } from '../../../lib/candidateVerificationDisplay';
 
 const CandidatePremiumPlansExperience = dynamic(
   () => import('../../../components/CandidatePremiumPlansExperience'),
@@ -82,6 +81,11 @@ const CandidateSettings = dynamic(
     ssr: false,
     loading: () => <CandidateLoadingState />,
   },
+);
+
+const CandidateVerificationModal = dynamic(
+  () => import('../../../components/candidates/CandidateVerificationModal'),
+  { ssr: false },
 );
 
 const icons = {
@@ -201,51 +205,6 @@ const getInitials = (value = '') =>
     .map((part) => part[0]?.toUpperCase() || '')
     .join('') || 'U';
 
-const VERIFICATION_TYPE_ORDER = [
-  'identity',
-  'certificates',
-  'academic',
-  'experience',
-  'competencies',
-];
-
-const VERIFICATION_STATUS_META = {
-  draft: {
-    label: 'Não iniciado',
-    toneClass: 'verificationStatusMuted',
-    summary: 'Ainda não existe um pedido completo para revisão.',
-  },
-  not_requested: {
-    label: 'Disponivel',
-    toneClass: 'verificationStatusMuted',
-    summary: 'Este bloco ainda não foi solicitado.',
-  },
-  pending: {
-    label: 'Em análise',
-    toneClass: 'verificationStatusPending',
-    summary: 'A equipa está a rever este bloco de verificação.',
-  },
-  approved: {
-    label: 'Aprovado',
-    toneClass: 'verificationStatusApproved',
-    summary: 'Este bloco já foi validado com sucesso.',
-  },
-  verified: {
-    label: 'Verificado',
-    toneClass: 'verificationStatusApproved',
-    summary: 'Este bloco já foi validado com sucesso.',
-  },
-  rejected: {
-    label: 'Rejeitado',
-    toneClass: 'verificationStatusRejected',
-    summary: 'Faltam ajustes ou novos comprovativos para este bloco.',
-  },
-  partial: {
-    label: 'Parcial',
-    toneClass: 'verificationStatusMixed',
-    summary: 'Há blocos aprovados e outros que exigem correção.',
-  },
-};
 
 const formatDate = (value) => {
   if (!value) return '-';
@@ -254,10 +213,6 @@ const formatDate = (value) => {
   return date.toLocaleDateString('pt-PT');
 };
 
-const getVerificationStatusMeta = (status) => {
-  if (!status) return VERIFICATION_STATUS_META.draft;
-  return VERIFICATION_STATUS_META[status] || VERIFICATION_STATUS_META.draft;
-};
 
 const createVerificationForm = (profileData, userState) => ({
   contactEmail: profileData?.email || userState?.email || '',
@@ -301,7 +256,6 @@ const NAV_MENU = [
   { id: 'settings', label: 'Configurações', icon: 'settings' },
   { id: 'verification', label: 'Verificação', icon: 'verification' },
   { id: 'plans', label: 'Planos premium', icon: 'plans' },
-  { id: 'affiliate', label: 'Ser Afiliado', icon: 'trophy' },
 ];
 const CANDIDATE_TAB_IDS = new Set(NAV_MENU.map((item) => item.id));
 
@@ -648,6 +602,8 @@ const CandidateDashboard = () => {
   );
   const [verificationLoading, setVerificationLoading] = useState(false);
   const [verificationMessage, setVerificationMessage] = useState(null);
+  const [showVerificationRequest, setShowVerificationRequest] = useState(false);
+  const [showVerificationChoice, setShowVerificationChoice] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [settingsSearchQuery, setSettingsSearchQuery] = useState('');
   const [dashboardSearchQuery, setDashboardSearchQuery] = useState('');
@@ -864,7 +820,7 @@ const CandidateDashboard = () => {
         return latestVerification;
       } catch (error) {
         console.error('Erro ao carregar verificacao tipada:', error);
-        setVerificationRecord(null);
+        if (!silent) setVerificationRecord(null);
         return null;
       } finally {
         if (!silent) {
@@ -991,6 +947,7 @@ const CandidateDashboard = () => {
       try {
         setDashboardError('');
         const { getAuth } = await import('firebase/auth');
+        if (!isMounted) return;
         const auth = getAuth();
         const userInstance = auth.currentUser;
         if (!userInstance) {
@@ -1000,12 +957,15 @@ const CandidateDashboard = () => {
 
         const uid = userInstance.uid;
         const token = await userInstance.getIdToken();
+        if (!isMounted) return;
 
         const profileRes = await fetch(`/api/profile?uid=${uid}`, {
+          cache: 'no-store',
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
+        if (!isMounted) return;
         if (profileRes.status === 401) {
           router.push(buildLoginUrl(router.asPath));
           return;
@@ -1017,6 +977,10 @@ const CandidateDashboard = () => {
         if (!isMounted) return;
 
         const profileData = profileJson.profile?.data || {};
+        if (profileData.userType !== 'candidato') {
+          router.replace('/dashboard');
+          return;
+        }
         setProfile(profileData);
         if (profileDraftInteractionOwnerRef.current !== uid) {
           setProfileForm(buildProfileForm(profileData, user));
@@ -1035,6 +999,7 @@ const CandidateDashboard = () => {
             : Promise.resolve(setRecommendedJobs([])),
         ]);
       } catch (err) {
+        if (!isMounted) return;
         console.error('Erro ao carregar dashboard do candidato:', err);
         setProfile(null);
         setDashboardError(
@@ -1172,13 +1137,6 @@ const CandidateDashboard = () => {
     }));
   };
 
-  const toggleVerificationType = (type) => {
-    setSelectedVerificationTypes((prev) =>
-      prev.includes(type)
-        ? prev.filter((entry) => entry !== type)
-        : [...prev, type],
-    );
-  };
 
   // Fetch conversations when messages tab becomes active
   useEffect(() => {
@@ -1433,6 +1391,7 @@ const CandidateDashboard = () => {
   const profileVisibility = planStatus?.visibility || {
     highlighted: false,
     verified: profile?.verificationStatus === 'verified',
+    premiumVerified: Boolean(profile?.premiumVerified),
     completionScore: profileCompletion.score,
     isProfileComplete: profileCompletion.isProfileComplete,
     priorityInSearch: false,
@@ -1600,70 +1559,56 @@ const CandidateDashboard = () => {
     ],
   );
 
-  const verificationItems = useMemo(
-    () =>
-      VERIFICATION_TYPE_ORDER.map((type) => {
-        const config = VERIFICATION_TYPE_CONFIG[type];
-        const detailedItem = verificationRecord?.verificationItems?.[type];
-        const fallbackSummary =
-          verificationSummary?.types?.[type] ||
-          profile?.verificationItems?.[type] ||
-          {};
-        return {
-          type,
-          label: config?.label || type,
-          description: config?.description || '',
-          requested:
-            detailedItem?.requested ?? fallbackSummary?.requested ?? false,
-          status:
-            detailedItem?.status || fallbackSummary?.status || 'not_requested',
-          checklist: detailedItem?.checklist || [],
-          evidence: detailedItem?.evidence || [],
-          reviewReason: detailedItem?.reviewReason || '',
-          reviewedAt: detailedItem?.reviewedAt || null,
-          submittedAt:
-            detailedItem?.submittedAt ||
-            verificationSummary?.lastSubmittedAt ||
-            null,
-          completedChecklistCount:
-            detailedItem?.completedChecklistCount ??
-            fallbackSummary?.completedChecklistCount ??
-            0,
-          totalChecklistCount:
-            detailedItem?.totalChecklistCount ??
-            fallbackSummary?.totalChecklistCount ??
-            0,
-          evidenceCount:
-            detailedItem?.evidenceCount ?? fallbackSummary?.evidenceCount ?? 0,
-        };
-      }),
-    [profile?.verificationItems, verificationRecord, verificationSummary],
-  );
 
   const canRequestVerification = Boolean(activePlan.features?.canVerifyProfile);
-  const verificationOverallStatus =
-    verificationRecord?.status || verificationSummary?.status || 'draft';
-  const verificationOverallMeta = getVerificationStatusMeta(
-    verificationOverallStatus,
-  );
+  const {
+    active: verificationIsActive,
+    pending: verificationIsPending,
+    premiumActive: premiumVerificationIsActive,
+  } = getCandidateVerificationDisplayState({
+    visibility: profileVisibility,
+    record: verificationRecord,
+    summary: verificationSummary,
+    fallbackStatus: profile?.verificationStatus,
+  });
 
   useEffect(() => {
-    const availableTypes = verificationItems
-      .filter((item) => item.status !== 'approved')
-      .map((item) => item.type);
+    if (!['verification', 'plans'].includes(activeTab) || !user?.uid) return undefined;
+    let disposed = false;
+    let refreshing = false;
+    const refresh = async () => {
+      if (disposed || refreshing || document.visibilityState === 'hidden') return;
+      refreshing = true;
+      try {
+        const { getAuth } = await import('firebase/auth');
+        const currentUser = getAuth().currentUser;
+        if (!currentUser || currentUser.uid !== user.uid) return;
+        const token = await currentUser.getIdToken();
+        if (!disposed) {
+          await Promise.all([
+            fetchVerificationRecord(token, user.uid, { silent: true }),
+            refreshPlanStatus(),
+          ]);
+        }
+      } catch (error) {
+        console.error('Erro ao atualizar estado da verificação:', error);
+      } finally {
+        refreshing = false;
+      }
+    };
+    refresh();
+    const interval = setInterval(refresh, 30000);
+    window.addEventListener('focus', refresh);
+    return () => {
+      disposed = true;
+      clearInterval(interval);
+      window.removeEventListener('focus', refresh);
+    };
+  }, [activeTab, user?.uid, fetchVerificationRecord, refreshPlanStatus]);
 
-    if (!availableTypes.length) {
-      setSelectedVerificationTypes([]);
-      return;
-    }
-
-    setSelectedVerificationTypes((prev) => {
-      const filtered = prev.filter((type) => availableTypes.includes(type));
-      return filtered;
-    });
-  }, [verificationItems]);
 
   const handleVerificationSubmit = async () => {
+    if (verificationLoading || verificationIsActive || verificationIsPending) return;
     if (!canRequestVerification) {
       setVerificationMessage({
         type: 'error',
@@ -1689,6 +1634,9 @@ const CandidateDashboard = () => {
     const validationMessages = [];
 
     if (selectedTypesSet.has('identity')) {
+      if (!profile?.cvUrl) {
+        validationMessages.push('Adicione o seu CV no perfil antes de enviar o pedido.');
+      }
       if (!verificationForm.contactEmail || !verificationForm.contactPhone) {
         validationMessages.push(
           'Preencha email e telefone para enviar Identidade.',
@@ -1703,6 +1651,12 @@ const CandidateDashboard = () => {
         validationMessages.push(
           'Anexe a selfie com documento para enviar Identidade.',
         );
+      }
+      for (const file of [verificationForm.identityDocument, verificationForm.selfieDocument]) {
+        if (file && (file.size >= 10 * 1024 * 1024 ||
+          !['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif', 'image/avif', 'image/gif'].includes(file.type))) {
+          validationMessages.push('Utilize documentos PDF ou imagens com menos de 10 MB.');
+        }
       }
     }
 
@@ -1963,6 +1917,7 @@ const CandidateDashboard = () => {
         type: 'success',
         text: data.message || 'Pedido de verificacao enviado com sucesso.',
       });
+      setShowVerificationRequest(false);
     } catch (err) {
       console.error('Erro na verificacao:', err);
       setVerificationMessage({
@@ -2422,6 +2377,122 @@ const CandidateDashboard = () => {
             actionLabel="Tentar novamente"
             onAction={() => router.reload()}
           />
+        </div>
+      );
+    }
+
+    if (activeTab === 'verification') {
+      return (
+        <div className={styles.contentArea}>
+          <div className={styles.verificationSingleAction}>
+            <div className={styles.verificationSingleActionCopy}>
+              <span className={styles.verificationSingleActionEyebrow}>
+                Verificação de perfil
+              </span>
+              <h1>{verificationIsActive
+                ? 'Verificado'
+                : verificationIsPending
+                  ? 'Verificação em análise'
+                  : 'Mais confiança para o seu próximo passo'}</h1>
+              <p>
+                {verificationIsActive
+                  ? premiumVerificationIsActive
+                    ? 'A verificação incluída no seu plano Premium está ativa automaticamente. O selo está visível para empresas e recrutadores enquanto o plano estiver ativo.'
+                    : 'O seu perfil foi aprovado. O selo de verificação está ativo e visível para empresas e recrutadores.'
+                  : verificationIsPending
+                    ? 'Recebemos o seu pedido. A equipa está a analisar os documentos enviados.'
+                    : 'O selo de verificação ajuda empresas e recrutadores a reconhecerem rapidamente um perfil com informação validada.'}
+              </p>
+              <ul className={styles.verificationBenefits}>
+                <li>
+                  <span aria-hidden="true">✓</span>
+                  Mais credibilidade nas candidaturas
+                </li>
+                <li>
+                  <span aria-hidden="true">✓</span>
+                  {premiumVerificationIsActive
+                    ? 'Verificação incluída no Premium, sem novo pedido'
+                    : 'Informação analisada pela equipa'}
+                </li>
+                <li>
+                  <span aria-hidden="true">✓</span>
+                  Sinal claro de compromisso profissional
+                </li>
+              </ul>
+            </div>
+            {verificationMessage && (
+              <p role={verificationMessage.type === 'error' ? 'alert' : 'status'}>
+                {verificationMessage.text}
+              </p>
+            )}
+            {verificationIsActive || verificationIsPending ? (
+              <p role="status" className={styles.verificationSingleActionEyebrow}>
+                {verificationIsActive ? '✓ Verificação ativa' : 'A aguardar aprovação'}
+              </p>
+            ) : showVerificationRequest && canRequestVerification ? (
+              <form className={styles.verificationSimpleForm} onSubmit={(event) => {
+                event.preventDefault();
+                handleVerificationSubmit();
+              }}>
+                <p>Confirme os contactos e anexe os documentos para análise da equipa.</p>
+                <label htmlFor="verification-contact-email">Email de contacto</label>
+                <input id="verification-contact-email" type="email" required
+                  className={styles.profileInput} value={verificationForm.contactEmail}
+                  onChange={(event) => handleVerificationFieldChange('contactEmail', event.target.value)} />
+                <label htmlFor="verification-contact-phone">Telefone</label>
+                <input id="verification-contact-phone" type="tel" required
+                  className={styles.profileInput} value={verificationForm.contactPhone}
+                  onChange={(event) => handleVerificationFieldChange('contactPhone', event.target.value)} />
+                <label htmlFor="verification-identity-file">BI ou passaporte (PDF ou imagem, menos de 10 MB)</label>
+                <input id="verification-identity-file" type="file" required accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.heif,.avif,.gif"
+                  onChange={(event) => handleVerificationFileChange('identityDocument', event.target.files)} />
+                <label htmlFor="verification-selfie-file">Selfie com o documento (imagem, menos de 10 MB)</label>
+                <input id="verification-selfie-file" type="file" required accept="image/jpeg,image/png,image/webp,image/heic,image/heif,image/avif,image/gif"
+                  onChange={(event) => handleVerificationFileChange('selfieDocument', event.target.files)} />
+                {!profile?.cvUrl && <p role="status">Adicione o seu CV em Meu perfil antes de enviar este pedido.</p>}
+                <div className={styles.verificationActions}>
+                  <button type="button" className={styles.secondaryButton} disabled={verificationLoading}
+                    onClick={() => setShowVerificationRequest(false)}>Cancelar</button>
+                  <button type="submit" className={styles.primaryButton} disabled={verificationLoading || !profile?.cvUrl}>
+                    {verificationLoading ? 'A enviar…' : 'Enviar pedido de verificação'}
+                  </button>
+                </div>
+              </form>
+            ) : <button
+              type="button"
+              className={`${styles.primaryButton} ${styles.verificationSingleActionButton}`}
+              onClick={() => {
+                setVerificationMessage(null);
+                setShowVerificationChoice(true);
+              }}
+            >
+              Torne-se verificado
+            </button>}
+          </div>
+          {showVerificationChoice && (
+            <CandidateVerificationModal
+              profile={{ ...profile, email: profile?.email || user?.email || '' }}
+              verificationIncluded={canRequestVerification}
+              onClose={() => setShowVerificationChoice(false)}
+              onPremium={() => {
+                setShowVerificationChoice(false);
+                if (canRequestVerification) {
+                  setSelectedVerificationTypes(['identity']);
+                  setVerificationMessage(null);
+                  setShowVerificationRequest(true);
+                } else {
+                  openTab('plans');
+                }
+              }}
+              onSubmit={async (values) => {
+                const { submitCompetencyVerification } = await import('../../../lib/candidateVerificationClient');
+                const record = await submitCompetencyVerification(values);
+                setVerificationRecord(record);
+                setVerificationMessage({ type: 'success', text: 'Pedido enviado. A equipa irá analisar as suas competências e comprovativos.' });
+                await refreshPlanStatus();
+              }}
+            />
+          )}
         </div>
       );
     }
@@ -3900,6 +3971,15 @@ const CandidateDashboard = () => {
           <div className={styles.contentArea}>
             <CandidatePremiumPlansExperience
               embedded
+              verificationActive={verificationIsActive}
+              verificationPending={verificationIsPending}
+              verificationIncluded={canRequestVerification}
+              onOpenVerification={() => {
+                setSelectedVerificationTypes(['identity']);
+                setVerificationMessage(null);
+                setShowVerificationRequest(true);
+                openTab('verification');
+              }}
               onPlanApproved={async () => {
                 await refreshPlanStatus();
               }}
@@ -4225,738 +4305,6 @@ const CandidateDashboard = () => {
           </div>
         );
 
-      case 'verification':
-        return (
-          <div className={styles.contentArea}>
-            <CandidateSectionHeader
-              eyebrow="Confiança profissional"
-              title="Verificação de perfil"
-              description="Envie apenas os blocos que pretende validar. Os blocos aprovados permanecem preservados."
-              count={`${verificationSummary?.progressPercent || 0}%`}
-            />
-            <div className={styles.verificationLayout}>
-              <section className={styles.verificationWorkspace}>
-                <div className={styles.verificationPanel}>
-                  <div className={styles.verificationOverview}>
-                    <div>
-                      <span
-                        className={`${styles.verificationStatusPill} ${styles[verificationOverallMeta.toneClass]}`}
-                      >
-                        {verificationOverallMeta.label}
-                      </span>
-                      <h3 className={styles.verificationOverviewTitle}>
-                        Revisão modular de confiança
-                      </h3>
-                      <p className={styles.verificationOverviewText}>
-                        {verificationOverallMeta.summary}
-                      </p>
-                      <p className={styles.verificationOverviewMeta}>
-                        Último envio:{' '}
-                        {verificationSummary?.lastSubmittedAt
-                          ? formatDate(verificationSummary.lastSubmittedAt)
-                          : 'Ainda não submetido'}
-                      </p>
-                    </div>
-
-                    <div className={styles.verificationOverviewStats}>
-                      <div className={styles.verificationOverviewStat}>
-                        <strong>
-                          {verificationSummary?.requestedCount || 0}
-                        </strong>
-                        <span>Tipos pedidos</span>
-                      </div>
-                      <div className={styles.verificationOverviewStat}>
-                        <strong>
-                          {verificationSummary?.approvedCount || 0}
-                        </strong>
-                        <span>Aprovados</span>
-                      </div>
-                      <div className={styles.verificationOverviewStat}>
-                        <strong>
-                          {verificationSummary?.pendingCount || 0}
-                        </strong>
-                        <span>Em análise</span>
-                      </div>
-                      <div className={styles.verificationOverviewStat}>
-                        <strong>
-                          {verificationSummary?.progressPercent || 0}%
-                        </strong>
-                        <span>Progresso</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {verificationFetching ? (
-                    <p className={styles.tipFallback}>
-                      A carregar o estado da verificação...
-                    </p>
-                  ) : (
-                    <div className={styles.verificationTypeGrid}>
-                      {verificationItems.map((item) => {
-                        const itemStatusMeta = getVerificationStatusMeta(
-                          item.status,
-                        );
-                        return (
-                          <article
-                            key={item.type}
-                            className={styles.verificationTypeCard}
-                          >
-                            <div className={styles.verificationTypeHeader}>
-                              <div>
-                                <div className={styles.verificationTypeEyebrow}>
-                                  {item.label}
-                                </div>
-                                <h4 className={styles.verificationTypeTitle}>
-                                  {item.label}
-                                </h4>
-                                <p
-                                  className={styles.verificationTypeDescription}
-                                >
-                                  {item.description}
-                                </p>
-                              </div>
-                              <span
-                                className={`${styles.verificationStatusPill} ${styles[itemStatusMeta.toneClass]}`}
-                              >
-                                {itemStatusMeta.label}
-                              </span>
-                            </div>
-
-                            <div className={styles.verificationTypeMetaRow}>
-                              <span>
-                                {item.completedChecklistCount}/
-                                {item.totalChecklistCount || 0} requisitos
-                              </span>
-                              <span>{item.evidenceCount || 0} evidências</span>
-                              <span>
-                                {item.submittedAt
-                                  ? `Atualizado em ${formatDate(item.submittedAt)}`
-                                  : 'Sem submissao'}
-                              </span>
-                            </div>
-
-                            {item.reviewReason && (
-                              <div className={styles.verificationReviewNote}>
-                                <strong>Observação da revisão:</strong>{' '}
-                                {item.reviewReason}
-                              </div>
-                            )}
-
-                            {item.checklist.length > 0 ? (
-                              <ul
-                                className={styles.verificationChecklistCompact}
-                              >
-                                {item.checklist.map((check) => (
-                                  <li
-                                    key={check.id}
-                                    className={
-                                      styles.verificationChecklistCompactItem
-                                    }
-                                  >
-                                    <span
-                                      className={`${styles.verificationMiniCheck} ${check.completed ? styles.verificationMiniCheckDone : styles.verificationMiniCheckPending}`}
-                                    >
-                                      {check.completed ? 'OK' : '!'}
-                                    </span>
-                                    <span>{check.label}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            ) : (
-                              <p className={styles.verificationTypeHint}>
-                                Este bloco ainda não recebeu detalhes
-                                suficientes para revisão.
-                              </p>
-                            )}
-
-                            {item.evidence.length > 0 && (
-                              <div
-                                className={styles.verificationEvidencePreview}
-                              >
-                                {item.evidence
-                                  .slice(0, 3)
-                                  .map((evidence, index) => (
-                                    <span
-                                      key={
-                                        evidence.id || `${item.type}-${index}`
-                                      }
-                                      className={
-                                        styles.verificationEvidenceChip
-                                      }
-                                    >
-                                      {evidence.label ||
-                                        evidence.fileName ||
-                                        'Evidencia'}
-                                    </span>
-                                  ))}
-                              </div>
-                            )}
-                          </article>
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  {verificationMessage && (
-                    <p
-                      className={`${styles.verificationBanner} ${verificationMessage.type === 'success' ? styles.verificationBannerSuccess : styles.verificationBannerError}`}
-                    >
-                      {verificationMessage.text}
-                    </p>
-                  )}
-
-                  {!canRequestVerification ? (
-                    <div className={styles.verificationLocked}>
-                      <div className={styles.verificationLockedIcon}>
-                        <FiLock aria-hidden="true" />
-                      </div>
-                      <div>
-                        <h3 className={styles.verificationLockedTitle}>
-                          Verificacao premium
-                        </h3>
-                        <p className={styles.verificationLockedText}>
-                          O envio de novos blocos de verificação está disponível
-                          nos planos Verificação e Premium. O histórico atual
-                          continua visivel aqui.
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        className={styles.primaryButton}
-                        onClick={() => openTab('plans')}
-                      >
-                        Ver planos e fazer upgrade
-                      </button>
-                    </div>
-                  ) : (
-                    <div className={styles.verificationComposer}>
-                      <div className={styles.verificationComposerHeader}>
-                        <div>
-                          <h3 className={styles.verificationComposerTitle}>
-                            Enviar ou atualizar blocos
-                          </h3>
-                          <p className={styles.verificationComposerText}>
-                            Selecione apenas os tipos que quer rever agora. Os
-                            blocos já aprovados ficam preservados.
-                          </p>
-                        </div>
-                        <span className={styles.verificationComposerMeta}>
-                          {selectedVerificationTypes.length}{' '}
-                          {selectedVerificationTypes.length === 1
-                            ? 'tipo selecionado'
-                            : 'tipos selecionados'}
-                        </span>
-                      </div>
-
-                      <div className={styles.verificationTypeSelector}>
-                        {verificationItems.map((item) => {
-                          const disabled = item.status === 'approved';
-                          const selected = selectedVerificationTypes.includes(
-                            item.type,
-                          );
-                          const itemStatusMeta = getVerificationStatusMeta(
-                            item.status,
-                          );
-
-                          return (
-                            <button
-                              key={`select-${item.type}`}
-                              type="button"
-                              className={`${styles.verificationTypeToggle} ${selected ? styles.verificationTypeToggleActive : ''} ${disabled ? styles.verificationTypeToggleDisabled : ''}`}
-                              onClick={() =>
-                                !disabled && toggleVerificationType(item.type)
-                              }
-                              disabled={disabled}
-                            >
-                              <strong>{item.label}</strong>
-                              <span>
-                                {disabled
-                                  ? 'Já aprovado'
-                                  : itemStatusMeta.label}
-                              </span>
-                            </button>
-                          );
-                        })}
-                      </div>
-
-                      {selectedVerificationTypes.length === 0 ? (
-                        <div className={styles.verificationEmptySelection}>
-                          Todos os blocos editáveis já estão aprovados. Se
-                          quiser rever novos tipos, escolha um bloco ainda não
-                          aprovado.
-                        </div>
-                      ) : (
-                        <div className={styles.verificationFormStack}>
-                          {selectedVerificationTypes.includes('identity') && (
-                            <section className={styles.verificationFormCard}>
-                              <div
-                                className={styles.verificationFormCardHeader}
-                              >
-                                <h4>Identidade</h4>
-                                <p>
-                                  Confirme os contactos base e envie documento +
-                                  selfie.
-                                </p>
-                              </div>
-                              <div className={styles.verificationFormGrid}>
-                                <div>
-                                  <label
-                                    className={styles.verificationFieldLabel}
-                                  >
-                                    Email
-                                  </label>
-                                  <input
-                                    className={styles.profileInput}
-                                    value={verificationForm.contactEmail}
-                                    onChange={(event) =>
-                                      handleVerificationFieldChange(
-                                        'contactEmail',
-                                        event.target.value,
-                                      )
-                                    }
-                                  />
-                                </div>
-                                <div>
-                                  <label
-                                    className={styles.verificationFieldLabel}
-                                  >
-                                    Telefone
-                                  </label>
-                                  <input
-                                    className={styles.profileInput}
-                                    value={verificationForm.contactPhone}
-                                    onChange={(event) =>
-                                      handleVerificationFieldChange(
-                                        'contactPhone',
-                                        event.target.value,
-                                      )
-                                    }
-                                  />
-                                </div>
-                              </div>
-                              <div className={styles.verificationUploadGrid}>
-                                <label
-                                  className={`${styles.cvUploadButton} ${styles.verificationUpload}`}
-                                >
-                                  <span
-                                    className={styles.verificationUploadText}
-                                  >
-                                    {verificationForm.identityDocument
-                                      ? verificationForm.identityDocument.name
-                                      : 'Documento de identidade'}
-                                  </span>
-                                  <input
-                                    type="file"
-                                    accept="image/*,.pdf"
-                                    onChange={(event) =>
-                                      handleVerificationFileChange(
-                                        'identityDocument',
-                                        event.target.files,
-                                      )
-                                    }
-                                  />
-                                </label>
-                                <label
-                                  className={`${styles.cvUploadButton} ${styles.verificationUpload}`}
-                                >
-                                  <span
-                                    className={styles.verificationUploadText}
-                                  >
-                                    {verificationForm.selfieDocument
-                                      ? verificationForm.selfieDocument.name
-                                      : 'Selfie com documento'}
-                                  </span>
-                                  <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={(event) =>
-                                      handleVerificationFileChange(
-                                        'selfieDocument',
-                                        event.target.files,
-                                      )
-                                    }
-                                  />
-                                </label>
-                              </div>
-                            </section>
-                          )}
-
-                          {selectedVerificationTypes.includes(
-                            'certificates',
-                          ) && (
-                            <section className={styles.verificationFormCard}>
-                              <div
-                                className={styles.verificationFormCardHeader}
-                              >
-                                <h4>Certificados</h4>
-                                <p>
-                                  Liste certificados relevantes e anexe
-                                  comprovativos.
-                                </p>
-                              </div>
-                              <label className={styles.verificationFieldLabel}>
-                                Resumo dos certificados
-                              </label>
-                              <textarea
-                                className={styles.profileTextarea}
-                                rows={4}
-                                value={verificationForm.certificationsText}
-                                onChange={(event) =>
-                                  handleVerificationFieldChange(
-                                    'certificationsText',
-                                    event.target.value,
-                                  )
-                                }
-                                placeholder="Ex: Curso de Excel Avancado, Certificado de Seguranca, Formacao tecnica..."
-                              />
-                              <label
-                                className={`${styles.cvUploadButton} ${styles.verificationUpload} ${styles.verificationUploadCompact}`}
-                              >
-                                <span className={styles.verificationUploadText}>
-                                  {verificationForm.certificateDocuments.length
-                                    ? `${verificationForm.certificateDocuments.length} ficheiro(s) selecionado(s)`
-                                    : 'Anexar certificados'}
-                                </span>
-                                <input
-                                  type="file"
-                                  accept=".pdf,.jpg,.jpeg,.png"
-                                  multiple
-                                  onChange={(event) =>
-                                    handleVerificationFileChange(
-                                      'certificateDocuments',
-                                      event.target.files,
-                                      { multiple: true },
-                                    )
-                                  }
-                                />
-                              </label>
-                              {verificationForm.certificateDocuments.length >
-                                0 && (
-                                <div className={styles.verificationFileList}>
-                                  {verificationForm.certificateDocuments.map(
-                                    (file) => (
-                                      <span
-                                        key={file.name}
-                                        className={styles.verificationFileChip}
-                                      >
-                                        {file.name}
-                                      </span>
-                                    ),
-                                  )}
-                                </div>
-                              )}
-                            </section>
-                          )}
-
-                          {selectedVerificationTypes.includes('academic') && (
-                            <section className={styles.verificationFormCard}>
-                              <div
-                                className={styles.verificationFormCardHeader}
-                              >
-                                <h4>Formação académica</h4>
-                                <p>
-                                  Resuma o percurso académico e anexe
-                                  comprovativos se tiver.
-                                </p>
-                              </div>
-                              <label className={styles.verificationFieldLabel}>
-                                Resumo académico
-                              </label>
-                              <textarea
-                                className={styles.profileTextarea}
-                                rows={4}
-                                value={verificationForm.educationSummary}
-                                onChange={(event) =>
-                                  handleVerificationFieldChange(
-                                    'educationSummary',
-                                    event.target.value,
-                                  )
-                                }
-                                placeholder="Ex: Licenciatura em Gestao, Universidade..., 2021"
-                              />
-                              <label
-                                className={`${styles.cvUploadButton} ${styles.verificationUpload} ${styles.verificationUploadCompact}`}
-                              >
-                                <span className={styles.verificationUploadText}>
-                                  {verificationForm.academicDocument
-                                    ? verificationForm.academicDocument.name
-                                    : 'Anexar diploma ou declaracao'}
-                                </span>
-                                <input
-                                  type="file"
-                                  accept=".pdf,.jpg,.jpeg,.png"
-                                  onChange={(event) =>
-                                    handleVerificationFileChange(
-                                      'academicDocument',
-                                      event.target.files,
-                                    )
-                                  }
-                                />
-                              </label>
-                            </section>
-                          )}
-
-                          {selectedVerificationTypes.includes('experience') && (
-                            <section className={styles.verificationFormCard}>
-                              <div
-                                className={styles.verificationFormCardHeader}
-                              >
-                                <h4>Experiencia profissional</h4>
-                                <p>
-                                  Use o seu historico do perfil, um resumo
-                                  manual e comprovativos de trabalho.
-                                </p>
-                              </div>
-                              <label className={styles.verificationFieldLabel}>
-                                Resumo da experiência
-                              </label>
-                              <textarea
-                                className={styles.profileTextarea}
-                                rows={4}
-                                value={verificationForm.experienceSummary}
-                                onChange={(event) =>
-                                  handleVerificationFieldChange(
-                                    'experienceSummary',
-                                    event.target.value,
-                                  )
-                                }
-                                placeholder="Descreva rapidamente as funcoes e empresas mais relevantes."
-                              />
-
-                              {profile?.cvUrl &&
-                                !verificationForm.cvDocument && (
-                                  <div
-                                    className={styles.verificationExistingCv}
-                                  >
-                                    <span>
-                                      <FiFileText aria-hidden="true" />
-                                    </span>
-                                    <span
-                                      className={
-                                        styles.verificationExistingCvName
-                                      }
-                                    >
-                                      {profile?.cvName ||
-                                        'CV atual guardado no perfil'}
-                                    </span>
-                                    <span
-                                      className={
-                                        styles.verificationExistingCvStatus
-                                      }
-                                    >
-                                      Usar atual
-                                    </span>
-                                  </div>
-                                )}
-
-                              <div className={styles.verificationUploadGrid}>
-                                <label
-                                  className={`${styles.cvUploadButton} ${styles.verificationUpload} ${styles.verificationUploadCompact}`}
-                                >
-                                  <span
-                                    className={styles.verificationUploadText}
-                                  >
-                                    {verificationForm.employmentProof
-                                      ? verificationForm.employmentProof.name
-                                      : 'Comprovativo de experiência'}
-                                  </span>
-                                  <input
-                                    type="file"
-                                    accept=".pdf,.jpg,.jpeg,.png"
-                                    onChange={(event) =>
-                                      handleVerificationFileChange(
-                                        'employmentProof',
-                                        event.target.files,
-                                      )
-                                    }
-                                  />
-                                </label>
-                                <label
-                                  className={`${styles.cvUploadButton} ${styles.verificationUpload} ${styles.verificationUploadCompact}`}
-                                >
-                                  <span
-                                    className={styles.verificationUploadText}
-                                  >
-                                    {verificationForm.cvDocument
-                                      ? verificationForm.cvDocument.name
-                                      : 'Novo CV em PDF (opcional)'}
-                                  </span>
-                                  <input
-                                    type="file"
-                                    accept=".pdf"
-                                    onChange={(event) =>
-                                      handleVerificationFileChange(
-                                        'cvDocument',
-                                        event.target.files,
-                                      )
-                                    }
-                                  />
-                                </label>
-                              </div>
-                            </section>
-                          )}
-
-                          {selectedVerificationTypes.includes(
-                            'competencies',
-                          ) && (
-                            <section className={styles.verificationFormCard}>
-                              <div
-                                className={styles.verificationFormCardHeader}
-                              >
-                                <h4>Competencias</h4>
-                                <p>
-                                  Refira skills, portfolio e links que ajudem a
-                                  validar capacidade real.
-                                </p>
-                              </div>
-                              <label className={styles.verificationFieldLabel}>
-                                Notas sobre competências
-                              </label>
-                              <textarea
-                                className={styles.profileTextarea}
-                                rows={4}
-                                value={verificationForm.competencyNotes}
-                                onChange={(event) =>
-                                  handleVerificationFieldChange(
-                                    'competencyNotes',
-                                    event.target.value,
-                                  )
-                                }
-                                placeholder="Ex: gestao de equipas, Excel avancado, manutencao industrial, vendas..."
-                              />
-                              <div className={styles.verificationFormGrid}>
-                                <div>
-                                  <label
-                                    className={styles.verificationFieldLabel}
-                                  >
-                                    Portfolio / website
-                                  </label>
-                                  <input
-                                    className={styles.profileInput}
-                                    value={verificationForm.portfolioUrl}
-                                    onChange={(event) =>
-                                      handleVerificationFieldChange(
-                                        'portfolioUrl',
-                                        event.target.value,
-                                      )
-                                    }
-                                    placeholder="https://..."
-                                  />
-                                </div>
-                                <div>
-                                  <label
-                                    className={styles.verificationFieldLabel}
-                                  >
-                                    LinkedIn
-                                  </label>
-                                  <input
-                                    className={styles.profileInput}
-                                    value={verificationForm.linkedin}
-                                    onChange={(event) =>
-                                      handleVerificationFieldChange(
-                                        'linkedin',
-                                        event.target.value,
-                                      )
-                                    }
-                                    placeholder="https://linkedin.com/in/..."
-                                  />
-                                </div>
-                              </div>
-                              <label
-                                className={`${styles.cvUploadButton} ${styles.verificationUpload} ${styles.verificationUploadCompact}`}
-                              >
-                                <span className={styles.verificationUploadText}>
-                                  {verificationForm.competencyDocument
-                                    ? verificationForm.competencyDocument.name
-                                    : 'Comprovativo adicional de competências'}
-                                </span>
-                                <input
-                                  type="file"
-                                  accept=".pdf,.jpg,.jpeg,.png"
-                                  onChange={(event) =>
-                                    handleVerificationFileChange(
-                                      'competencyDocument',
-                                      event.target.files,
-                                    )
-                                  }
-                                />
-                              </label>
-                            </section>
-                          )}
-                        </div>
-                      )}
-
-                      <div className={styles.verificationActions}>
-                        <button
-                          className={`${styles.primaryButton} ${styles.fullWidthButton}`}
-                          onClick={handleVerificationSubmit}
-                          disabled={
-                            verificationLoading ||
-                            selectedVerificationTypes.length === 0
-                          }
-                        >
-                          {verificationLoading
-                            ? 'A enviar...'
-                            : 'Enviar para revisão'}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </section>
-
-              <aside className={styles.verificationGuide}>
-                <span
-                  className={styles.verificationGuideIcon}
-                  aria-hidden="true"
-                >
-                  <FiCheckCircle />
-                </span>
-                <h3>Como funciona</h3>
-                <ul className={styles.planFeatures}>
-                  <li>
-                    O selo público depende da aprovação do bloco de identidade.
-                  </li>
-                  <li>
-                    Certificados, formação, experiência e competências podem ser
-                    enviados e revistos separadamente.
-                  </li>
-                  <li>
-                    Blocos aprovados ficam preservados quando atualiza um novo
-                    pedido.
-                  </li>
-                </ul>
-                <h3>Valor para o perfil</h3>
-                <ul className={styles.planFeatures}>
-                  <li>Mais confiança perante empresas e recrutadores.</li>
-                  <li>Melhor leitura editorial da qualidade do perfil.</li>
-                  <li>
-                    Base para destaque e ranking mais forte no banco de
-                    talentos.
-                  </li>
-                </ul>
-              </aside>
-            </div>
-          </div>
-        );
-
-      case 'affiliate':
-        return (
-          <div className={styles.contentArea}>
-            <AffiliateSection
-              role="candidato"
-              user={user}
-              defaults={{
-                fullName:
-                  profile?.fullName || profile?.name || user?.name || '',
-                email: profile?.email || user?.email || '',
-                phone: profile?.phone || '',
-                location: profile?.city || '',
-                occupation: profile?.headline || profile?.profession || '',
-              }}
-            />
-          </div>
-        );
 
       case 'settings':
         return (
@@ -5069,12 +4417,6 @@ const CandidateDashboard = () => {
           label: 'Configurações',
           icon: 'settings',
           onClick: () => openTab('settings'),
-        },
-        {
-          key: 'affiliate',
-          label: 'Ser afiliado',
-          icon: 'dollar',
-          onClick: () => openTab('affiliate'),
         },
       ],
     },

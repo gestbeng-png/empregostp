@@ -37,27 +37,34 @@ export class FirestoreNotificationDispatcher implements EventHandler {
     const notice = await resolveRecruitmentNotice(this.db, event, this.now());
     if (!notice?.userId) return;
     const id = digest([event.id, this.name, notice.userId]);
-    await this.db
-      .collection('notifications')
-      .doc(id)
-      .set(
-        {
-          id,
-          userId: notice.userId,
-          type: notice.type,
-          entityId: notice.entityId,
-          entityKind: notice.entityKind,
-          title: notice.title,
-          body: notice.body,
-          link: notice.path,
-          message: notice.body,
-          actionUrl: notice.path,
-          read: false,
-          createdAt: Timestamp.fromMillis(this.now()),
-          createdAtMs: this.now(),
-          sourceEventId: event.id,
-        },
-        { merge: false },
-      );
+    const ref = this.db.collection('notifications').doc(id);
+    try {
+      await ref.create({
+        id,
+        userId: notice.userId,
+        type: notice.type,
+        entityId: notice.entityId,
+        entityKind: notice.entityKind,
+        title: notice.title,
+        body: notice.body,
+        link: notice.path,
+        message: notice.body,
+        actionUrl: notice.path,
+        read: false,
+        createdAt: Timestamp.fromMillis(this.now()),
+        createdAtMs: this.now(),
+        sourceEventId: event.id,
+      });
+    } catch (error) {
+      // A retry after delivery must preserve read/readAt and the original date.
+      // Only ALREADY_EXISTS is a successful replay; other errors need retry.
+      if (
+        !error ||
+        typeof error !== 'object' ||
+        !('code' in error) ||
+        error.code !== 6
+      )
+        throw error;
+    }
   }
 }

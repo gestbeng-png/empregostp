@@ -13,6 +13,7 @@ const mockApplicationGet = jest.fn();
 const mockHistoryGet = jest.fn();
 const mockInterviewGet = jest.fn();
 const mockHireGet = jest.fn();
+const mockOfferGet = jest.fn();
 let mockUser: Record<string, unknown>;
 const doc = (data: Record<string, unknown> | null) => ({
   exists: data !== null,
@@ -58,6 +59,7 @@ beforeEach(() => {
   });
   mockInterviewGet.mockReset().mockResolvedValue({ docs: [] });
   mockHireGet.mockReset().mockResolvedValue(doc(null));
+  mockOfferGet.mockReset().mockResolvedValue({ docs: [] });
   mockCollection.mockImplementation((name: string) => {
     if (name === 'users')
       return { doc: () => ({ get: async () => doc(mockUser) }) };
@@ -70,6 +72,7 @@ beforeEach(() => {
     if (name === 'interviews')
       return { where: () => ({ get: mockInterviewGet }) };
     if (name === 'hires') return { doc: () => ({ get: mockHireGet }) };
+    if (name === 'offers') return { where: () => ({ get: mockOfferGet }) };
     throw new Error(`Unexpected collection: ${name}`);
   });
   (admin.auth as unknown as jest.Mock).mockReturnValue({
@@ -101,11 +104,51 @@ test('owner receives only candidate-visible fields and private no-store caching'
       },
     ],
     interviews: [],
+    offers: [],
     hireConfirmation: null,
   });
   expect(JSON.stringify(body)).not.toMatch(
     /PRIVATE_|SHORTLISTED|rating|internalNote|tags/,
   );
+});
+
+test('sent offers reach the candidate; drafts and internal fields never do', async () => {
+  mockOfferGet.mockResolvedValue({
+    docs: [
+      {
+        id: 'offer-draft',
+        data: () => ({ v2Status: 'DRAFT', amountMinor: 100, createdBy: 'x' }),
+      },
+      {
+        id: 'offer-sent',
+        data: () => ({
+          v2Status: 'SENT',
+          version: 1,
+          amountMinor: 1_500_000,
+          currency: 'STN',
+          period: 'MONTH',
+          startDate: '2026-11-02',
+          expiresAt: new Date('2099-01-01T23:59:59Z'),
+          message: 'Bem-vinda.',
+          createdBy: 'PRIVATE_RECRUITER_MARKER',
+          organizationId: 'PRIVATE_ORG_MARKER',
+        }),
+      },
+    ],
+  });
+  const res = response();
+  await handler(request(), res);
+  const body = res.json.mock.calls[0]?.[0];
+  expect(body.offers).toEqual([
+    expect.objectContaining({
+      id: 'offer-sent',
+      status: 'SENT',
+      amountMinor: 1_500_000,
+      currency: 'STN',
+      period: 'MONTH',
+    }),
+  ]);
+  expect(JSON.stringify(body)).not.toMatch(/PRIVATE_|offer-draft/);
 });
 
 test.each([

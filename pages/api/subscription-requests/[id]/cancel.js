@@ -2,6 +2,7 @@ import { admin } from '../../../../lib/firebaseAdmin';
 import { requireActiveApiUser } from '../../../../lib/apiUserAuth';
 import { assertRequestCancellable } from '../../../../lib/subscriptionLifecycle';
 import { logServerError } from '../../../../lib/serverLog';
+import { expireCheckoutSession } from '../../../../lib/payments/stripe';
 
 // C12/E19 — o titular desiste de um pedido de plano ainda sem comprovativo.
 // Sem isto ficava preso: um pedido em aberto impede pedir outro plano.
@@ -29,6 +30,7 @@ export default async function handler(req, res) {
   const requestRef = db.collection('subscription-requests').doc(id);
   try {
     let alreadyCancelled = false;
+    let openCheckoutSessionId = null;
     await db.runTransaction(async (transaction) => {
       const snapshot = await transaction.get(requestRef);
       const request = snapshot.exists ? snapshot.data() : null;
@@ -36,6 +38,9 @@ export default async function handler(req, res) {
       if (request.status === 'cancelled') {
         alreadyCancelled = true;
         return;
+      }
+      if (request.stripeCheckout?.status === 'open') {
+        openCheckoutSessionId = request.stripeCheckout.sessionId || null;
       }
       const now = admin.firestore.Timestamp.now();
       transaction.update(requestRef, {
@@ -54,6 +59,8 @@ export default async function handler(req, res) {
         at: now,
       });
     });
+    // Uma página de pagamento ainda aberta deixa de poder ser paga.
+    await expireCheckoutSession(openCheckoutSessionId);
     return res
       .status(200)
       .json({ request: { id, status: 'cancelled' }, alreadyCancelled });

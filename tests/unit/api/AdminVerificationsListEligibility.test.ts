@@ -51,16 +51,27 @@ describe('listagem admin de verificações inclui CV e elegibilidade de pagament
       if (name === 'users') {
         return {
           doc: jest.fn((uid: string) => ({
-            get: jest.fn().mockResolvedValue(
-              uid === 'admin-1'
-                ? { data: () => ({ userType: 'admin' }), exists: true }
-                : { data: () => candidateUserData, exists: true },
-            ),
+            get: jest
+              .fn()
+              .mockResolvedValue(
+                uid === 'admin-1'
+                  ? { data: () => ({ userType: 'admin' }), exists: true }
+                  : { data: () => candidateUserData, exists: true },
+              ),
           })),
         };
       }
       if (name === 'verifications') {
-        return { get: jest.fn().mockResolvedValue({ docs: [verificationDoc] }) };
+        return {
+          get: jest.fn().mockResolvedValue({ docs: [verificationDoc] }),
+        };
+      }
+      if (name === 'profiles') {
+        return {
+          doc: () => ({
+            get: jest.fn().mockResolvedValue({ data: () => ({}) }),
+          }),
+        };
       }
       throw new Error(`Colecao inesperada: ${name}`);
     });
@@ -99,7 +110,9 @@ describe('listagem admin de verificações inclui CV e elegibilidade de pagament
     const response = await getVerifications();
     const payload = response.json.mock.calls[0][0];
 
-    expect(payload.verifications[0].cvUrl).toBe('https://storage.example/cv.pdf');
+    expect(payload.verifications[0].cvUrl).toBe(
+      'https://storage.example/cv.pdf',
+    );
     expect(payload.verifications[0].approvalEligibility).toEqual(
       expect.objectContaining({ allowed: true }),
     );
@@ -118,7 +131,9 @@ describe('listagem admin de verificações inclui CV e elegibilidade de pagament
     const payload = response.json.mock.calls[0][0];
 
     expect(payload.verifications[0].approvalEligibility.allowed).toBe(false);
-    expect(payload.verifications[0].approvalEligibility.code).toBe('VERIFICATION_MISSING_CV');
+    expect(payload.verifications[0].approvalEligibility.code).toBe(
+      'VERIFICATION_MISSING_CV',
+    );
   });
 
   test('candidato cujo plano já não inclui verificação aparece não elegível', async () => {
@@ -134,6 +149,8 @@ describe('listagem admin de verificações inclui CV e elegibilidade de pagament
     const payload = response.json.mock.calls[0][0];
 
     expect(payload.verifications[0].approvalEligibility.allowed).toBe(false);
-    expect(payload.verifications[0].approvalEligibility.code).toBe('VERIFICATION_PLAN_NOT_ELIGIBLE');
+    expect(payload.verifications[0].approvalEligibility.code).toBe(
+      'VERIFICATION_PLAN_NOT_ELIGIBLE',
+    );
   });
 });

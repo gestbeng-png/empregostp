@@ -13,6 +13,10 @@ jest.mock('../../../context/AuthContext', () => ({
   useAuth: () => useAuth(),
 }));
 
+jest.mock('../../../lib/serverSession', () => ({
+  requireSessionAccount: jest.fn(),
+}));
+
 describe('encaminhamento premium', () => {
   beforeEach(() => {
     replace.mockReset();
@@ -61,6 +65,30 @@ describe('encaminhamento premium', () => {
       expect(replace).toHaveBeenCalledWith('/premium/candidatos'),
     );
   });
+
+  test.each([
+    ['empresa', '/premium/empresa'],
+    ['admin', '/dashboard/admin'],
+  ])(
+    '%s não é encaminhado para planos de candidato nem para o login',
+    async (userType, destination) => {
+      useAuth.mockReturnValue({
+        loading: false,
+        user: {
+          getIdToken: async () => 'synthetic-token',
+          uid: 'synthetic-account',
+        },
+      });
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ profile: { data: { userType } } }),
+      });
+      render(<PremiumRedirect />);
+      await waitFor(() => expect(replace).toHaveBeenCalledWith(destination));
+      expect(replace).not.toHaveBeenCalledWith('/premium/candidatos');
+      expect(replace).not.toHaveBeenCalledWith('/login');
+    },
+  );
 
   // O encaminhamento de /premium/candidatos e /premium/empresa deixou de ser
   // incondicional e passou a depender da sessão; vive agora, com os dois

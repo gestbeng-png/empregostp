@@ -25,13 +25,27 @@ function formatDate(dateStr) {
   }
 }
 
-function StatCard({ title, value, color }) {
+function StatCard({ title, value }) {
   return (
-    <div className={styles.statCard} style={{ '--accent-color': color }}>
+    <div className={styles.statCard}>
       <p className={styles.statValue}>{value}</p>
       <p className={styles.statLabel}>{title}</p>
     </div>
   );
+}
+
+function hasRevokedItem(verification) {
+  return Object.values(verification?.verificationItems || {}).some(
+    (item) => item?.status === 'rejected' && item?.revokedAt,
+  );
+}
+
+function getVerificationBucket(verification) {
+  if (verification.summary?.pendingCount > 0) return 'pending';
+  if (verification.summary?.publicVerified) return 'active';
+  if (hasRevokedItem(verification)) return 'inactive';
+  if (verification.summary?.rejectedCount > 0) return 'rejected';
+  return 'all';
 }
 
 export default function AdminVerificacoes() {
@@ -42,6 +56,8 @@ export default function AdminVerificacoes() {
   const [message, setMessage] = useState({ text: '', ok: true });
   const [selectedVerification, setSelectedVerification] = useState(null);
   const [reviewReason, setReviewReason] = useState('');
+  const [activeFilter, setActiveFilter] = useState('pending');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const fetchVerifications = useCallback(async () => {
     setLoading(true);
@@ -142,6 +158,7 @@ export default function AdminVerificacoes() {
         approve: 'aprovado com sucesso',
         reject: 'rejeitado',
         revoke: 'desativado',
+        reactivate: 'reativado',
       }[action];
       setMessage({
         text: verificationType
@@ -162,12 +179,28 @@ export default function AdminVerificacoes() {
     () => ({
       pending: verifications.filter((item) => item.summary?.pendingCount > 0)
         .length,
-      verified: verifications.filter((item) => item.summary?.publicVerified)
+      active: verifications.filter((item) => item.summary?.publicVerified)
         .length,
+      inactive: verifications.filter((item) => hasRevokedItem(item)).length,
       total: verifications.length,
     }),
     [verifications],
   );
+
+  const filteredVerifications = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLocaleLowerCase('pt-PT');
+    return verifications.filter((verification) => {
+      const matchesFilter =
+        activeFilter === 'all' || getVerificationBucket(verification) === activeFilter;
+      if (!matchesFilter) return false;
+      if (!normalizedQuery) return true;
+      return [verification.candidateName, verification.candidateEmail]
+        .filter(Boolean)
+        .some((value) =>
+          String(value).toLocaleLowerCase('pt-PT').includes(normalizedQuery),
+        );
+    });
+  }, [activeFilter, searchQuery, verifications]);
 
   const closeModal = () => {
     setSelectedVerification(null);
@@ -183,7 +216,9 @@ export default function AdminVerificacoes() {
         <title>Verificações | Admin EmpregoSTP</title>
       </Head>
 
-      <div className={`${styles.page} ${styles.pageNarrow}`}>
+      <div
+        className={`${styles.page} ${styles.pageNarrow} ${styles.verificationAdminPage}`}
+      >
         <div className={styles.headerCard}>
           <div className={styles.headerCopy}>
             <Link
@@ -215,18 +250,16 @@ export default function AdminVerificacoes() {
             <StatCard
               title="Com itens pendentes"
               value={stats.pending}
-              color="#f59e0b"
             />
             <StatCard
-              title="Perfis públicos verificados"
-              value={stats.verified}
-              color="#0b6644"
+              title="Perfis ativos"
+              value={stats.active}
             />
             <StatCard
-              title="Total carregados"
-              value={stats.total}
-              color="#4a5568"
+              title="Perfis desativados"
+              value={stats.inactive}
             />
+            <StatCard title="Total de pedidos" value={stats.total} />
           </div>
         </section>
 
@@ -247,16 +280,47 @@ export default function AdminVerificacoes() {
         ) : null}
 
         <section className={styles.section}>
+          <div className={styles.verificationToolbar}>
+            <div className={styles.verificationFilterGroup} role="tablist" aria-label="Filtrar pedidos">
+              {[
+                ['pending', 'Pendentes', stats.pending],
+                ['active', 'Ativos', stats.active],
+                ['inactive', 'Desativados', stats.inactive],
+                ['rejected', 'Rejeitados', verifications.filter((item) => getVerificationBucket(item) === 'rejected').length],
+                ['all', 'Todos', stats.total],
+              ].map(([value, label, count]) => (
+                <button
+                  key={value}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeFilter === value}
+                  className={`${styles.verificationFilterButton} ${activeFilter === value ? styles.verificationFilterButtonActive : ''}`}
+                  onClick={() => setActiveFilter(value)}
+                >
+                  {label} <span>{count}</span>
+                </button>
+              ))}
+            </div>
+            <label className={styles.verificationSearch}>
+              <span className={styles.srOnly}>Pesquisar pedido</span>
+              <input
+                type="search"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="Pesquisar candidato ou email"
+              />
+            </label>
+          </div>
           <div className={styles.tableShell}>
             {loading ? (
               <div className={styles.loadingState}>
                 <div className={styles.spinner} />
                 <p className={styles.loadingText}>A carregar verificações...</p>
               </div>
-            ) : verifications.length === 0 ? (
+            ) : filteredVerifications.length === 0 ? (
               <div className={styles.emptyState}>
                 <p className={styles.emptyText}>
-                  Nenhuma verificação encontrada.
+                  Nenhum pedido corresponde a este filtro.
                 </p>
               </div>
             ) : (
@@ -278,7 +342,7 @@ export default function AdminVerificacoes() {
                     </tr>
                   </thead>
                   <tbody>
-                    {verifications.map((verification) => {
+                    {filteredVerifications.map((verification) => {
                       return (
                         <tr key={verification.id} className={styles.tableRow}>
                           <td className={styles.tableCell}>

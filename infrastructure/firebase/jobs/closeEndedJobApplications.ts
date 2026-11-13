@@ -68,6 +68,14 @@ export async function closeEndedJobApplications(
   for (const jobDoc of jobs.docs) {
     result.jobsScanned++;
     const job = jobDoc.data();
+    // Renewal clears this marker. Re-read it in each transaction so a cron
+    // that selected the expired job cannot close applications after renewal,
+    // or overwrite the marker of a subsequent closing process.
+    const sameEnd = (current: Record<string, unknown> | undefined) =>
+      current?.jobEndPending === true &&
+      current.jobEndState === job.jobEndState &&
+      (toDate(current.jobEndedAt)?.getTime() ?? null) ===
+        (toDate(job.jobEndedAt)?.getTime() ?? null);
     const state = END_STATES.has(job.jobEndState)
       ? (job.jobEndState as JobEndState)
       : 'CLOSED';
@@ -102,7 +110,11 @@ export async function closeEndedJobApplications(
       const eventRef = db.collection('outboxEvents').doc();
       const notificationRef = db.collection('notifications').doc();
       const closed = await db.runTransaction(async (tx) => {
-        const snapshot = await tx.get(appRef);
+        const [snapshot, currentJob] = await Promise.all([
+          tx.get(appRef),
+          tx.get(jobDoc.ref),
+        ]);
+        if (!sameEnd(currentJob.data())) return null;
         const data = snapshot.data();
         if (!data) return null;
         const current = statusOf(data);
@@ -202,11 +214,15 @@ export async function closeEndedJobApplications(
       if (!closed) continue;
       result.applicationsClosed++;
     }
-    await jobDoc.ref.update({
-      jobEndPending: false,
-      jobEndApplicationsClosedAt: Timestamp.fromDate(now),
+    const completed = await db.runTransaction(async (tx) => {
+      if (!sameEnd((await tx.get(jobDoc.ref)).data())) return false;
+      tx.update(jobDoc.ref, {
+        jobEndPending: false,
+        jobEndApplicationsClosedAt: Timestamp.fromDate(now),
+      });
+      return true;
     });
-    result.jobsCompleted++;
+    if (completed) result.jobsCompleted++;
   }
   return result;
 }

@@ -1,0 +1,277 @@
+.theme {
+  --plans-paper: var(--surface, var(--app-surface-1));
+  --plans-ink: var(--text-1, var(--app-text-primary));
+  --plans-muted: var(--text-3, var(--app-text-muted));
+  --plans-border: var(--border, var(--app-border-subtle));
+  --plans-navy: var(--app-brand-dark);
+  --plans-lime: var(--app-brand-lime);
+  --plans-on-dark: var(--app-text-on-dark);
+  --plans-soft: var(--surface-3, var(--app-surface-3));
+}
+
+/* Inset colour panels and quiet frames follow the supplied reference.
+   Plan metadata still decides which card is featured. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  align-items: stretch;
+  gap: 1.125rem;
+  width: 100%;
+  max-width: 62rem;
+  min-width: 0;
+  margin-inline: auto;
+}
+
+.theme .card {
+  --plan-head-bg: color-mix(
+    in srgb,
+    var(--plans-lime) 24%,
+    var(--app-surface-1)
+  );
+  --plan-head-fg: var(--plans-navy);
+  --plan-head-muted: var(--app-text-muted);
+  --plan-cta-bg: var(--plans-navy);
+  --plan-cta-fg: var(--plans-on-dark);
+
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 0.5625rem;
+  border: 0.0625rem solid var(--plans-border);
+  border-radius: 1.75rem;
+  background: var(--plans-paper);
+}
+
+.theme .cardPopular {
+  --plan-head-bg: var(--plans-navy);
+  --plan-head-fg: var(--plans-on-dark);
+  --plan-head-muted: var(--app-text-on-dark-muted);
+  --plan-cta-bg: var(--plans-lime);
+  --plan-cta-fg: var(--plans-navy);
+}
+
+.planIntro {
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+  min-width: 0;
+  min-height: 18.5rem;
+  padding: 1.5rem;
+  border-radius: 1.25rem;
+  background: var(--plan-head-bg);
+  color: var(--plan-head-fg);
+}
+
+.planTopline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.card .planName {
+  margin: 0;
+  color: inherit;
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.popularBadge {
+  padding: 0.3rem 0.75rem;
+  border-radius: 10rem;
+  background: var(--plans-lime);
+  color: var(--plans-navy);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.card .summary {
+  margin: 0;
+  max-width: 38ch;
+  color: var(--plan-head-muted);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.priceRow {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.5rem;
+  margin-top: auto;
+  padding-top: 0.4rem;
+  color: var(--plan-head-fg);
+}
+
+.card .price {
+  min-width: 0;
+  font-size: clamp(2.4rem, 4.1vw, 3rem);
+  font-weight: 700;
+  letter-spacing: -0.06em;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+
+.priceCurrency,
+.card .pricePeriod {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 1.5;
+}
+
+.pricePeriod {
+  color: var(--plan-head-muted);
+}
+
+.theme .subscribeBtn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.7rem 1.125rem;
+  border: 0.0625rem solid transparent;
+  border-radius: 10rem;
+  background: var(--plan-cta-bg);
+  color: var(--plan-cta-fg);
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.5;
+  cursor: pointer;
+  transition: opacity 160ms ease;
+}
+
+.subscribeBtn:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.subscribeBtnPopular {
+  background: var(--plan-cta-bg);
+  color: var(--plan-cta-fg);
+}
+
+.subscribeBtn:disabled {
+  cursor: default;
+  opacity: 0.65;
+}
+
+.subscribeBtnCurrent:disabled {
+  border-color: color-mix(in srgb, var(--plan-head-fg) 20%, transparent);
+  background: color-mix(in srgb, var(--plan-head-fg) 10%, var(--plan-head-bg));
+  color: var(--plan-head-fg);
+  opacity: 1;
+}
+
+.planDetails {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+  padding: 1.5rem 1.25rem;
+}
+
+.card .featuresTitle {
+  margin: 0;
+  color: var(--plans-ink);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.features {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card .feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  color: var(--text-2, var(--app-text-secondary));
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.checkIcon {
+  display: grid;
+  flex: 0 0 1.2rem;
+  width: 1.2rem;
+  height: 1.2rem;
+  margin-top: 0.15rem;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--plans-navy);
+  color: var(--plans-on-dark);
+}
+
+.checkIcon svg {
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
+.currentNote {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: auto 0 0;
+  padding-top: 0.25rem;
+  color: var(--plans-muted);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.cardCurrent .currentNote {
+  font-weight: 600;
+}
+
+.companyGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.theme .card:hover {
+  border-color: var(--plans-border);
+  background: var(--plans-paper);
+  box-shadow: none;
+  transform: none;
+}
+
+.theme .subscribeBtn {
+  text-decoration: none;
+  text-align: center;
+}
+
+.theme .subscribeBtn:focus-visible {
+  outline: 0.1875rem solid var(--blue, var(--app-brand-primary));
+  outline-offset: 0.1875rem;
+}
+
+@media (max-width: 40rem) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .planIntro {
+    min-height: 18rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme .subscribeBtn {
+    transition: none;
+  }
+}

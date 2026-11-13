@@ -2,7 +2,7 @@ import { admin } from '../../../lib/firebaseAdmin';
 import { getDefaultBasicPlanForUserType } from '../../../lib/defaultPlans';
 import { createServerNotification } from '../../../lib/serverNotifications';
 import { evaluatePlanExpirationTask } from '../../../lib/subscriptionLifecycle';
-import { logServerError } from '../../../lib/serverLog';
+import { logServerError, logServerWarning } from '../../../lib/serverLog';
 
 /**
  * Cron job to check and update expired plans
@@ -12,6 +12,39 @@ import { logServerError } from '../../../lib/serverLog';
  * Vercel Cron invokes this route with GET. POST remains available for manual runs.
  * Example: curl https://yoursite.com/api/cron/check-plan-expiration -H "Authorization: Bearer YOUR_CRON_SECRET"
  */
+function isMissingIndexError(error) {
+  return (
+    error?.code === 9 ||
+    String(error?.details || error?.message || '')
+      .toLowerCase()
+      .includes('requires an index')
+  );
+}
+
+/**
+ * `type ==` + `executeAt <=` precisa de um índice composto que não está em
+ * firestore.indexes.json. Sem ele a consulta falhava e o cron parava todo —
+ * os planos pagos nunca expiravam. Recorre a um só filtro de intervalo
+ * (índice automático) e escolhe o tipo em memória.
+ */
+async function findDueRevertTasks(nowTimestamp) {
+  const tasks = admin.firestore().collection('scheduledTasks');
+  try {
+    const snapshot = await tasks
+      .where('type', '==', 'REVERT_TO_BASIC_PLAN')
+      .where('executeAt', '<=', nowTimestamp)
+      .get();
+    return snapshot.docs;
+  } catch (error) {
+    if (!isMissingIndexError(error)) throw error;
+    logServerWarning('cron.plan_expiration_composite_index_missing', error);
+    const snapshot = await tasks.where('executeAt', '<=', nowTimestamp).get();
+    return snapshot.docs.filter(
+      (doc) => doc.data()?.type === 'REVERT_TO_BASIC_PLAN',
+    );
+  }
+}
+
 export default async function handler(req, res) {
   // Verify cron job secret
   const cronSecret = process.env.CRON_SECRET;
@@ -39,14 +72,9 @@ export default async function handler(req, res) {
     console.log(`[${now.toISOString()}] Starting plan expiration check...`);
 
     // Método 1: Buscar tarefas agendadas (existente)
-    const tasksSnapshot = await admin
-      .firestore()
-      .collection('scheduledTasks')
-      .where('type', '==', 'REVERT_TO_BASIC_PLAN')
-      .where('executeAt', '<=', nowTimestamp)
-      .get();
+    const dueTasks = await findDueRevertTasks(nowTimestamp);
 
-    for (const doc of tasksSnapshot.docs) {
+    for (const doc of dueTasks) {
       try {
         const outcome = await admin
           .firestore()
@@ -197,7 +225,7 @@ export default async function handler(req, res) {
     }
 
     console.log(`[${now.toISOString()}] Plan expiration check completed:`, {
-      processed: tasksSnapshot.docs.length,
+      processed: dueTasks.length,
       updated: updatedCount,
       skipped: skippedCount,
       errors: errorCount,
@@ -207,7 +235,7 @@ export default async function handler(req, res) {
       success: true,
       message: `${updatedCount} users reverted to basic plan`,
       stats: {
-        processed: tasksSnapshot.docs.length,
+        processed: dueTasks.length,
         updated: updatedCount,
         skipped: skippedCount,
         errors: errorCount,

@@ -599,7 +599,7 @@ export default function AdminHRServices() {
             aria-modal="true"
             aria-labelledby="complete-hr-request-title"
           >
-            <div className={styles.modalHeader}>
+            <div className={`${styles.modalHeader} ${styles.sectionHeading}`}>
               <div>
                 <h2
                   id="complete-hr-request-title"
@@ -607,7 +607,7 @@ export default function AdminHRServices() {
                 >
                   Finalizar pedido
                 </h2>
-                <p className={styles.modalSub}>
+                <p className={styles.modalSubtitle}>
                   {completing.title} · {completing.companyName}
                 </p>
               </div>
@@ -627,7 +627,7 @@ export default function AdminHRServices() {
             >
               <label
                 htmlFor="hr-admin-response"
-                className={styles.label}
+                className={styles.formLabel}
                 style={{
                   fontWeight: 700,
                   fontSize: '0.85rem',
@@ -672,7 +672,7 @@ export default function AdminHRServices() {
 
             <div style={{ marginTop: '1rem' }}>
               <span
-                className={styles.label}
+                className={styles.formLabel}
                 style={{
                   fontWeight: 700,
                   fontSize: '0.85rem',
@@ -769,7 +769,7 @@ export default function AdminHRServices() {
             </div>
 
             <div
-              className={styles.modalActions}
+              className={styles.buttonGroupEnd}
               style={{ marginTop: '1.2rem' }}
             >
               <button

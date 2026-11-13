@@ -34,6 +34,15 @@ export function StatusBadge({ status, children }) {
   );
 }
 
+function safeEvidenceUrl(value) {
+  try {
+    const url = new URL(value);
+    return ['https:', 'http:'].includes(url.protocol) ? url.href : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function VerificationReviewModal({
   selectedVerification,
   closeModal,
@@ -42,278 +51,250 @@ export default function VerificationReviewModal({
   processAction,
   processingKey,
 }) {
-  const approvalEligibility = selectedVerification.approvalEligibility || {
-    allowed: true,
-  };
   const items = getOrderedItems(selectedVerification);
-  const publicVerified =
-    Boolean(selectedVerification.summary?.publicVerified) ||
-    selectedVerification.verificationItems?.identity?.status === 'approved';
-  const hasApprovedItem = items.some((item) => item.status === 'approved');
-  const isProcessing = (type, action) =>
-    processingKey === `${selectedVerification.id}:${type || 'all'}:${action}`;
-
-  const confirmRevoke = (type, label) => {
-    const question = type
-      ? `Desativar a verificação de ${label}? O tipo passa a rejeitado e o candidato pode voltar a submeter.`
-      : `Desativar a verificação de ${selectedVerification.candidateName}? O selo de perfil verificado deixa de aparecer em todo o site.`;
-    if (window.confirm(question)) {
-      processAction(selectedVerification, 'revoke', type);
+  const publicVerified = Boolean(
+    selectedVerification.summary?.publicVerified ??
+    selectedVerification.verificationItems?.[
+      selectedVerification.verificationMethod === 'competencies'
+        ? 'competencies'
+        : 'identity'
+    ]?.status === 'approved',
+  );
+  const pending = items.some((item) => item.status === 'pending');
+  const revoked = items.some(
+    (item) => item.status === 'rejected' && item.revokedAt,
+  );
+  const eligible = selectedVerification.approvalEligibility?.allowed !== false;
+  const busy = Boolean(processingKey);
+  const cvUrl = safeEvidenceUrl(selectedVerification.cvUrl);
+  const documents = [];
+  const seen = new Set(cvUrl ? [cvUrl] : []);
+  for (const item of items) {
+    for (const evidence of item.evidence || []) {
+      const url = safeEvidenceUrl(evidence.url);
+      if (!url || seen.has(url)) continue;
+      seen.add(url);
+      documents.push({
+        url,
+        label: evidence.label || evidence.fileName || item.label,
+        category: item.label,
+        description: evidence.description || '',
+      });
     }
+  }
+  const notes = items
+    .flatMap((item) =>
+      (item.evidence || [])
+        .filter((entry) => entry.text && !entry.url)
+        .map((entry) => ({
+          label: entry.label || item.label,
+          text: entry.text,
+        })),
+    )
+    .filter(
+      (entry, index, all) =>
+        all.findIndex((other) => other.text === entry.text) === index &&
+        entry.text !== selectedVerification.candidateEmail,
+    );
+  const act = (action) => {
+    if (busy) return;
+    if (
+      action === 'revoke' &&
+      !window.confirm(
+        'Desativar a verificação deste perfil? O selo será removido.',
+      )
+    )
+      return;
+    if (
+      action === 'reactivate' &&
+      !window.confirm('Reativar a verificação deste perfil?')
+    )
+      return;
+    processAction(selectedVerification, action);
   };
 
   return (
-    <div className={styles.modalOverlay} onClick={closeModal}>
+    <div
+      className={styles.modalOverlay}
+      onClick={busy ? undefined : closeModal}
+    >
       <div
-        className={`${styles.modalCard} ${styles.modalCardLarge}`}
+        className={`${styles.modalCard} ${styles.verificationModal} ${styles.verificationCompactModal}`}
         onClick={(event) => event.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="verification-review-title"
+        aria-busy={busy}
       >
         <div className={styles.modalHeader}>
           <h2 id="verification-review-title" className={styles.modalTitle}>
-            Painel de revisão
+            {selectedVerification.candidateName}
           </h2>
           <p className={styles.modalSubtitle}>
-            {selectedVerification.candidateName} •{' '}
             {selectedVerification.candidateEmail}
           </p>
+          <p className={styles.proofNote}>
+            {selectedVerification.verificationMethod === 'competencies'
+              ? 'Avaliação de competências · sem plano pago'
+              : 'Verificação documental · plano pago'}
+          </p>
         </div>
-
         <div className={styles.modalBodyStack}>
-          <div className={styles.modalInfoCard}>
-            <div className={styles.verificationPublicRow}>
-              <div>
-                <h3 className={styles.modalInfoTitle}>Estado do perfil</h3>
-                <div className={styles.buttonGroup}>
-                  <StatusBadge status={publicVerified ? 'approved' : 'draft'}>
-                    {publicVerified
-                      ? 'Perfil verificado ativo'
-                      : 'Perfil sem selo de verificado'}
-                  </StatusBadge>
-                  <StatusBadge status="approved">
-                    {selectedVerification.summary?.approvedCount || 0} aprovados
-                  </StatusBadge>
-                  <StatusBadge status="pending">
-                    {selectedVerification.summary?.pendingCount || 0} pendentes
-                  </StatusBadge>
-                  <StatusBadge status="rejected">
-                    {selectedVerification.summary?.rejectedCount || 0}{' '}
-                    rejeitados
-                  </StatusBadge>
-                </div>
-              </div>
-              {hasApprovedItem ? (
-                <button
-                  type="button"
-                  disabled={isProcessing(null, 'revoke')}
-                  onClick={() => confirmRevoke(null)}
-                  className={`${styles.buttonBase} ${styles.buttonDangerOutline}`}
-                >
-                  {isProcessing(null, 'revoke')
-                    ? 'A desativar…'
-                    : 'Desativar verificação'}
-                </button>
-              ) : null}
-            </div>
-          </div>
-
-          <div className={styles.modalInfoCard}>
-            <h3 className={styles.modalInfoTitle}>
-              Pré-requisitos para aprovar
-            </h3>
-            <div className={styles.buttonGroup}>
-              {selectedVerification.cvUrl ? (
-                <a
-                  href={selectedVerification.cvUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={styles.proofLink}
-                >
-                  Abrir CV do candidato
-                </a>
-              ) : (
-                <StatusBadge status="rejected">
-                  Sem CV anexado ao perfil
-                </StatusBadge>
-              )}
-              <StatusBadge
-                status={approvalEligibility.allowed ? 'approved' : 'rejected'}
+          <div className={styles.verificationPublicRow}>
+            <StatusBadge
+              status={
+                publicVerified
+                  ? 'approved'
+                  : pending
+                    ? 'pending'
+                    : revoked
+                      ? 'draft'
+                      : selectedVerification.status
+              }
+            >
+              {publicVerified
+                ? 'Verificação ativa'
+                : pending
+                  ? 'Pedido pendente'
+                  : revoked
+                    ? 'Verificação desativada'
+                    : 'Sem verificação ativa'}
+            </StatusBadge>
+            {cvUrl && (
+              <a
+                href={cvUrl}
+                target="_blank"
+                rel="noreferrer"
+                className={styles.proofLink}
               >
-                Plano: {selectedVerification.currentPlan || 'basic_candidato'}
-                {approvalEligibility.allowed
-                  ? ' • pagamento confirmado'
-                  : ' • pagamento não confirmado'}
-              </StatusBadge>
-            </div>
-            {!approvalEligibility.allowed ? (
-              <p className={styles.proofNote}>
-                {approvalEligibility.reason} Não é possível aprovar nenhum tipo
-                deste pedido enquanto isto não for resolvido.
-              </p>
-            ) : null}
+                Abrir CV
+              </a>
+            )}
           </div>
-
-          <div className={styles.formField}>
-            <label htmlFor="review-reason" className={styles.formLabel}>
+          {publicVerified && pending && (
+            <p className={styles.proofNote}>
+              Existem novos documentos a aguardar revisão.
+            </p>
+          )}
+          {(pending || revoked) && !eligible && (
+            <p role="status" className={styles.proofNote}>
+              {selectedVerification.approvalEligibility?.reason ||
+                'Os requisitos para aprovação ainda não estão cumpridos.'}
+            </p>
+          )}
+          <section aria-label="Documentos e links para revisão">
+            <h3 className={styles.modalInfoTitle}>Documentos e links</h3>
+            {documents.length ? (
+              <ul className={styles.verificationDocumentList}>
+                {documents.map((document) => (
+                  <li key={document.url}>
+                    <span>{document.category}</span>
+                    <div className={styles.verificationDocumentContent}>
+                      {document.description && <p>{document.description}</p>}
+                      <a
+                        href={document.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={styles.proofLink}
+                      >
+                        {document.label}
+                      </a>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className={styles.proofNote}>
+                {cvUrl
+                  ? 'Sem documentos adicionais.'
+                  : 'Nenhum documento disponível.'}
+              </p>
+            )}
+          </section>
+          {notes.length > 0 && (
+            <details className={styles.verificationExtraDetails}>
+              <summary>Informações do candidato</summary>
+              <dl>
+                {notes.map((note, index) => (
+                  <div key={index}>
+                    <dt>{note.label}</dt>
+                    <dd>{note.text}</dd>
+                  </div>
+                ))}
+              </dl>
+            </details>
+          )}
+          <details className={styles.verificationExtraDetails}>
+            <summary>Adicionar nota ao candidato</summary>
+            <label htmlFor="review-reason" className={styles.srOnly}>
               Nota de revisão
             </label>
             <textarea
               id="review-reason"
               value={reviewReason}
+              disabled={busy}
               onChange={(event) => setReviewReason(event.target.value)}
               rows={3}
-              placeholder="Opcional. Justifica a aprovação, rejeição ou desativação e é enviada ao candidato."
+              placeholder="Motivo ou observação (opcional)"
               className={styles.textareaControl}
             />
-          </div>
-
-          <div className={styles.verificationReviewGrid}>
-            {items.map((item) => (
-              <article
-                key={item.type}
-                className={styles.verificationReviewCard}
-              >
-                <div className={styles.verificationReviewHeader}>
-                  <div>
-                    <h3 className={styles.verificationReviewTitle}>
-                      {item.label}
-                    </h3>
-                    <p className={styles.verificationReviewText}>
-                      {item.description}
-                    </p>
-                  </div>
-                  <StatusBadge status={item.status} />
-                </div>
-
-                <div className={styles.verificationChecklistAdmin}>
-                  {item.checklist?.map((check) => (
-                    <div
-                      key={`${item.type}-${check.id}`}
-                      className={styles.verificationChecklistAdminItem}
-                    >
-                      <span
-                        className={
-                          check.completed
-                            ? styles.verificationCheckDone
-                            : styles.verificationCheckPending
-                        }
-                        aria-label={check.completed ? 'Cumprido' : 'Em falta'}
-                      >
-                        {check.completed ? '✓' : '•'}
-                      </span>
-                      <div>
-                        <strong>{check.label}</strong>
-                        {check.hint ? <p>{check.hint}</p> : null}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {item.evidence?.length ? (
-                  <div className={styles.verificationEvidenceList}>
-                    {item.evidence.map((evidence) => (
-                      <div
-                        key={evidence.id}
-                        className={styles.verificationEvidenceItem}
-                      >
-                        <strong>{evidence.label}</strong>
-                        {evidence.url ? (
-                          <a
-                            href={evidence.url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className={styles.proofLink}
-                          >
-                            Abrir evidência
-                          </a>
-                        ) : (
-                          <p>{evidence.text || 'Sem detalhe textual.'}</p>
-                        )}
-                        <span>
-                          {evidence.source === 'submission'
-                            ? 'Submetido no pedido'
-                            : 'Puxado do perfil atual'}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className={styles.proofNote}>
-                    Sem evidências anexadas neste tipo.
-                  </p>
-                )}
-
-                {item.reviewReason && item.status !== 'pending' ? (
-                  <p className={styles.proofNote}>
-                    Motivo: {item.reviewReason}
-                  </p>
-                ) : null}
-
-                {item.status === 'pending' ? (
-                  <div className={styles.verificationActions}>
-                    <button
-                      type="button"
-                      disabled={
-                        !approvalEligibility.allowed ||
-                        isProcessing(item.type, 'approve')
-                      }
-                      title={
-                        approvalEligibility.allowed
-                          ? undefined
-                          : approvalEligibility.reason
-                      }
-                      onClick={() =>
-                        processAction(
-                          selectedVerification,
-                          'approve',
-                          item.type,
-                        )
-                      }
-                      className={`${styles.buttonBase} ${styles.buttonSuccess} ${styles.buttonSmall}`}
-                    >
-                      Aprovar tipo
-                    </button>
-                    <button
-                      type="button"
-                      disabled={isProcessing(item.type, 'reject')}
-                      onClick={() =>
-                        processAction(selectedVerification, 'reject', item.type)
-                      }
-                      className={`${styles.buttonBase} ${styles.buttonDangerOutline} ${styles.buttonSmall}`}
-                    >
-                      Rejeitar tipo
-                    </button>
-                  </div>
-                ) : item.status === 'approved' ? (
-                  <div className={styles.verificationActions}>
-                    <button
-                      type="button"
-                      disabled={isProcessing(item.type, 'revoke')}
-                      onClick={() => confirmRevoke(item.type, item.label)}
-                      className={`${styles.buttonBase} ${styles.buttonDangerOutline} ${styles.buttonSmall}`}
-                    >
-                      {isProcessing(item.type, 'revoke')
-                        ? 'A desativar…'
-                        : 'Desativar tipo'}
-                    </button>
-                  </div>
-                ) : null}
-              </article>
-            ))}
-          </div>
+          </details>
         </div>
-
-        <div className={styles.buttonGroupEnd}>
+        <div className={styles.verificationCompactActions}>
           <button
             type="button"
             onClick={closeModal}
+            disabled={busy}
             className={`${styles.buttonBase} ${styles.buttonGhost}`}
           >
             Fechar
           </button>
+          {pending && (
+            <>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => act('reject')}
+                className={`${styles.buttonBase} ${styles.buttonGhost}`}
+              >
+                Rejeitar pedido
+              </button>
+              <button
+                type="button"
+                disabled={busy || !eligible}
+                onClick={() => act('approve')}
+                className={`${styles.buttonBase} ${styles.buttonPrimary}`}
+              >
+                Aprovar pedido
+              </button>
+            </>
+          )}
+          {publicVerified && (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => act('revoke')}
+              className={`${styles.buttonBase} ${styles.buttonDangerOutline}`}
+            >
+              Desativar verificação
+            </button>
+          )}
+          {!publicVerified && revoked && (
+            <button
+              type="button"
+              disabled={busy || !eligible}
+              onClick={() => act('reactivate')}
+              className={`${styles.buttonBase} ${styles.buttonPrimary}`}
+            >
+              Reativar verificação
+            </button>
+          )}
         </div>
+        {busy && (
+          <p role="status" className={styles.proofNote}>
+            A guardar alteração…
+          </p>
+        )}
       </div>
     </div>
   );

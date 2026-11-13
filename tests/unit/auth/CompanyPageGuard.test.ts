@@ -86,9 +86,12 @@ describe('guard das páginas de empresa', () => {
     await expect(requireCompanySession(contexto)).resolves.toBeNull();
   });
 
-  test('admin também passa, para poder rever o formulário', async () => {
+  test('admin não assume uma conta de empresa nem abre o formulário empresarial', async () => {
     utilizador({ userType: 'admin', status: 'active' });
 
-    await expect(requireCompanySession(contexto)).resolves.toBeNull();
+    await expect(requireCompanySession(contexto)).resolves.toEqual({
+      redirect: { destination: '/dashboard', permanent: false },
+    });
+    expect(verifyIdToken).toHaveBeenCalledWith('token-valido', true);
   });
 });

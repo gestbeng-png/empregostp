@@ -1,360 +1,612 @@
+/*
+ * Perfil público da empresa. Mesma linguagem do perfil do candidato
+ * (PublicCandidateProfilePage): cartão branco com faixa azul-noite, logótipo
+ * sobreposto, barra de factos e duas colunas. Cores só por tokens de
+ * styles/globals.css — este ficheiro não tem cores literais (baseline 0).
+ */
+
 .page {
-  min-height: 100vh;
-  padding: var(--app-space-xl) 0 var(--app-section-space-md);
-  background:
-    radial-gradient(
-      circle at 82% 8%,
-      color-mix(in srgb, var(--app-brand-secondary) 18%, transparent),
-      transparent 28rem
-    ),
-    var(--app-bg-soft);
+  --ink: var(--app-brand-dark);
+  --blue: var(--app-brand-primary);
+  --lime: var(--app-brand-lime);
+  --white: var(--app-surface-1);
+  --text: var(--app-text-secondary);
+  --muted: var(--app-text-muted);
+  --line: var(--app-border-subtle);
+  --line-soft: color-mix(in srgb, var(--app-border-subtle) 60%, var(--white));
+  --surface-soft: var(--app-surface-2);
+  --radius: 16px;
+  --shadow:
+    0 1px 2px color-mix(in srgb, var(--ink) 4%, transparent),
+    0 4px 16px color-mix(in srgb, var(--ink) 4%, transparent);
+  --motion: 180ms cubic-bezier(0.4, 0, 0.2, 1);
+  width: min(1160px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 2rem 0 5rem;
+  color: var(--text);
 }
 
-.container {
-  width: min(var(--app-public-width), calc(100% - 2 * var(--app-page-inline)));
-  margin-inline: auto;
+.page :is(a, button):focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 3px;
 }
 
-.backLink,
-.allJobsLink {
+.backLink {
   display: inline-flex;
-  min-height: 44px;
   align-items: center;
-  gap: var(--app-space-sm);
-  font-weight: 700;
+  gap: 0.45rem;
+  min-height: 40px;
+  margin-bottom: 0.75rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color var(--motion);
 }
 
+.backLink:hover {
+  color: var(--ink);
+}
+
+.backIcon {
+  width: 16px;
+  height: 16px;
+  transition: transform var(--motion);
+}
+
+.backLink:hover .backIcon {
+  transform: translateX(-3px);
+}
+
+/* Cabeçalho ----------------------------------------------------------------- */
 .hero {
-  position: relative;
-  isolation: isolate;
-  min-height: 330px;
-  margin-top: var(--app-space-md);
   overflow: hidden;
-  border: 1px solid var(--app-border-subtle);
-  border-radius: var(--app-radius-2xl);
-  background: var(--app-surface-dark);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--white);
+  box-shadow: var(--shadow);
+}
+
+/* Sem capa: azul-noite com dois brilhos e uma grelha de pontos. Com capa, a
+   imagem cobre a faixa. */
+.heroBanner {
+  position: relative;
+  height: 132px;
+  overflow: hidden;
+  background-color: var(--ink);
+  background-image:
+    radial-gradient(
+      circle at 82% -30%,
+      color-mix(in srgb, var(--blue) 95%, transparent) 0%,
+      transparent 58%
+    ),
+    radial-gradient(
+      circle at 100% 120%,
+      color-mix(in srgb, var(--lime) 22%, transparent) 0%,
+      transparent 38%
+    ),
+    radial-gradient(
+      color-mix(in srgb, var(--white) 9%, transparent) 1px,
+      transparent 1.2px
+    );
+  background-size:
+    100% 100%,
+    100% 100%,
+    18px 18px;
 }
 
 .coverImage {
-  z-index: -2;
   object-fit: cover;
 }
 
-.coverFallback {
-  position: absolute;
-  z-index: -2;
-  inset: 0;
-  background:
-    linear-gradient(
-      118deg,
-      color-mix(in srgb, var(--app-brand-primary) 72%, transparent),
-      transparent 66%
-    ),
-    var(--app-surface-dark);
-}
-
-.hero::after {
-  position: absolute;
-  z-index: -1;
-  inset: 0;
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--app-surface-dark) 96%, transparent) 0%,
-    color-mix(in srgb, var(--app-surface-dark) 76%, transparent) 56%,
-    color-mix(in srgb, var(--app-surface-dark) 34%, transparent) 100%
-  );
-  content: '';
-}
-
-.heroContent {
+.heroMain {
   display: grid;
-  min-height: 330px;
-  align-items: end;
-  gap: var(--app-space-lg);
   grid-template-columns: auto minmax(0, 1fr) auto;
-  padding: var(--app-space-2xl);
+  gap: 0 1.5rem;
+  align-items: start;
+  padding: 0 2rem 1.75rem;
 }
 
 .logo {
+  /* À frente da faixa: esta é posicionada (para a capa) e tapava-o. */
+  position: relative;
+  z-index: 1;
   display: grid;
-  width: 112px;
-  height: 112px;
-  overflow: hidden;
   place-items: center;
-  border: 4px solid var(--app-surface-1);
-  border-radius: var(--app-radius-xl);
-  background: var(--app-surface-1);
-  color: var(--app-brand-dark);
-  font-size: 1.75rem;
-  font-weight: 800;
+  width: 120px;
+  height: 120px;
+  margin-top: -60px;
+  overflow: hidden;
+  border: 4px solid var(--white);
+  border-radius: 24px;
+  background: var(--white);
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--ink) 14%, transparent);
+  color: var(--blue);
+  font-size: 2.1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* Sem logótipo: as iniciais sobre um azul muito claro. */
+.logo span {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  background: color-mix(in srgb, var(--blue) 9%, var(--white));
 }
 
 .logo img {
   width: 100%;
   height: 100%;
+  padding: 10px;
   object-fit: contain;
 }
 
 .identity {
   min-width: 0;
+  padding-top: 1rem;
 }
 
-.eyebrow,
-.sectionEyebrow {
+.eyebrow {
   display: block;
-  margin-bottom: var(--app-space-sm);
-  color: var(--app-brand-primary);
-  font-size: var(--app-font-size-sm);
-  font-weight: 800;
+  margin-bottom: 0.3rem;
+  color: var(--blue);
+  font-size: 0.75rem;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.hero .eyebrow {
-  color: var(--app-brand-lime);
+.name {
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(1.5rem, 2.3vw, 1.9rem);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
-.titleRow {
-  display: flex;
-  align-items: center;
-  gap: var(--app-space-md);
-  flex-wrap: wrap;
-}
-
-.titleRow h1 {
-  color: var(--app-text-on-dark);
-  font-size: clamp(2rem, 5vw, 3.5rem);
-}
-
-.verified {
+/* O selo segue o nome; se o nome quebrar, vai com a última palavra. */
+.nameSeal {
   display: inline-flex;
-  min-height: 32px;
-  align-items: center;
-  gap: var(--app-space-xs);
-  padding: var(--app-space-xs) var(--app-space-sm);
-  border-radius: var(--app-radius-sm);
-  background: var(--app-brand-lime);
-  color: var(--app-brand-dark);
-  font-size: var(--app-font-size-sm);
-  font-weight: 800;
+  margin-left: 0.3em;
+  vertical-align: -0.1em;
 }
 
-.meta {
-  display: flex;
-  margin-top: var(--app-space-md);
-  gap: var(--app-space-md);
-  flex-wrap: wrap;
-}
-
-.meta span {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--app-space-xs);
-  color: var(--app-text-on-dark-muted);
-  font-size: var(--app-font-size-sm);
+.verifiedLine {
+  margin: 0.3rem 0 0;
+  color: color-mix(in srgb, var(--app-success) 75%, var(--ink));
+  font-size: 0.9rem;
   font-weight: 600;
 }
 
-.websiteButton,
-.emptyAction,
-.ctaCard a {
+.heroActions {
+  display: flex;
+  align-self: end;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mainLink {
   display: inline-flex;
-  min-height: 48px;
   align-items: center;
   justify-content: center;
-  gap: var(--app-space-sm);
-  padding: var(--app-space-sm) var(--app-space-md);
-  border-radius: var(--app-radius-md);
-  font-weight: 800;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0 1.2rem;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--white);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color var(--motion);
 }
 
-.websiteButton {
-  background: var(--app-surface-1);
-  color: var(--app-brand-dark);
+.mainLink:hover {
+  background: var(--blue);
+  color: var(--white);
 }
 
+.mainLink svg {
+  width: 17px;
+  height: 17px;
+}
+
+.iconLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--white);
+  color: var(--ink);
+  transition:
+    border-color var(--motion),
+    color var(--motion),
+    background-color var(--motion);
+}
+
+.iconLink:hover {
+  border-color: var(--blue);
+  background: color-mix(in srgb, var(--blue) 6%, var(--white));
+  color: var(--blue);
+}
+
+.iconLink svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Factos rápidos, em faixa por baixo da identidade. */
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  margin: 0;
+  border-top: 1px solid var(--line-soft);
+  background: color-mix(in srgb, var(--surface-soft) 60%, var(--white));
+}
+
+.fact {
+  min-width: 0;
+  padding: 1rem 2rem;
+}
+
+.fact + .fact {
+  border-left: 1px solid var(--line-soft);
+}
+
+.factLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.25rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.factLabel svg {
+  width: 13px;
+  height: 13px;
+  color: var(--blue);
+}
+
+.factValue {
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+/* Corpo --------------------------------------------------------------------- */
 .layout {
   display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 1.25rem;
   align-items: start;
-  gap: var(--app-space-xl);
-  grid-template-columns: minmax(0, 1fr) 320px;
-  margin-top: var(--app-space-xl);
+  margin-top: 1.25rem;
 }
 
-.main,
-.sidebar {
+.mainColumn,
+.sideColumn {
   display: grid;
-  gap: var(--app-space-xl);
+  gap: 1.25rem;
+  min-width: 0;
 }
 
-.about,
-.jobsSection,
-.infoCard,
-.ctaCard {
-  border: 1px solid var(--app-border-subtle);
-  border-radius: var(--app-radius-xl);
-  background: var(--app-surface-1);
+/* A coluna lateral acompanha a leitura; o cabeçalho do site tem 80px. */
+.sideColumn {
+  position: sticky;
+  top: 96px;
+  align-self: start;
 }
 
-.about,
-.jobsSection {
-  padding: clamp(var(--app-space-lg), 4vw, var(--app-space-2xl));
+.panel {
+  padding: 1.6rem 1.75rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--white);
+  box-shadow: var(--shadow);
+  scroll-margin-top: 96px;
 }
 
-.about h2,
-.jobsSection h2,
-.infoCard h2,
-.ctaCard h2 {
-  font-size: clamp(1.45rem, 3vw, 2rem);
-}
-
-.about p {
-  max-width: 72ch;
-  margin-top: var(--app-space-md);
-  color: var(--app-text-secondary);
-  line-height: 1.75;
-}
-
-.sectionHeading {
+.panelHeading {
   display: flex;
-  align-items: end;
+  align-items: center;
   justify-content: space-between;
-  gap: var(--app-space-md);
-  margin-bottom: var(--app-space-xl);
+  gap: 1rem;
+  margin-bottom: 1.1rem;
 }
 
-.jobsGrid {
+.panelHeading .panelTitle {
+  margin: 0;
+}
+
+.panelTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 1.1rem;
+  color: var(--ink);
+  font-size: 1.02rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.panelCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 0.4rem;
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.text,
+.textMuted {
+  max-width: 72ch;
+  margin: 0;
+  font-size: 0.97rem;
+  line-height: 1.75;
+  white-space: pre-line;
+}
+
+.text {
+  color: var(--text);
+}
+
+.textMuted {
+  color: var(--muted);
+}
+
+.textLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 40px;
+  color: var(--blue);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.textLink:hover {
+  color: var(--ink);
+}
+
+.textLink svg {
+  width: 16px;
+  height: 16px;
+  transition: transform var(--motion);
+}
+
+.textLink:hover svg {
+  transform: translateX(3px);
+}
+
+.jobsList {
   display: grid;
-  gap: var(--app-space-md);
+  gap: 0.85rem;
 }
 
 .emptyState {
   display: grid;
-  min-height: 310px;
-  place-items: center;
-  align-content: center;
-  padding: var(--app-space-xl);
+  justify-items: center;
+  gap: 0.4rem;
+  padding: 2.25rem 1.5rem;
   border: 1px dashed var(--app-border-strong);
-  border-radius: var(--app-radius-xl);
-  background: var(--app-surface-2);
+  border-radius: 14px;
+  background: var(--surface-soft);
   text-align: center;
 }
 
 .emptyIcon {
-  display: grid;
-  width: 56px;
-  height: 56px;
-  margin-bottom: var(--app-space-md);
-  place-items: center;
-  border-radius: var(--app-radius-xl);
-  background: var(--app-primary-light);
-  color: var(--app-brand-primary);
-  font-size: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 0.35rem;
+  border-radius: 12px;
+  background: var(--white);
+  color: var(--blue);
+  box-shadow: var(--shadow);
 }
 
-.emptyState p {
-  max-width: 48ch;
-  margin: var(--app-space-sm) auto var(--app-space-md);
+.emptyIcon svg {
+  width: 20px;
+  height: 20px;
 }
 
-.emptyAction {
-  background: var(--app-brand-primary);
-  color: var(--app-text-on-dark);
-}
-
-.infoCard,
-.ctaCard {
-  padding: var(--app-space-lg);
-}
-
-.infoCard p {
-  margin-top: var(--app-space-md);
-}
-
-.sectors {
-  display: flex;
-  gap: var(--app-space-sm);
-  flex-wrap: wrap;
-  margin-top: var(--app-space-md);
-}
-
-.sectors span {
-  padding: var(--app-space-xs) var(--app-space-sm);
-  border: 1px solid var(--app-border-subtle);
-  border-radius: var(--app-radius-sm);
-  background: var(--app-surface-2);
-  color: var(--app-text-secondary);
-  font-size: var(--app-font-size-sm);
+.emptyTitle {
+  margin: 0;
+  color: var(--ink);
+  font-size: 1rem;
   font-weight: 700;
 }
 
-.ctaCard {
-  border-color: transparent;
-  background: var(--app-surface-dark);
+.emptyText {
+  max-width: 46ch;
+  margin: 0;
+  color: var(--text);
+  font-size: 0.92rem;
+  line-height: 1.6;
 }
 
-.ctaCard > span {
-  color: var(--app-brand-lime);
-  font-size: var(--app-font-size-sm);
-  font-weight: 800;
+/* Convite ao candidato ------------------------------------------------------ */
+.joinPanel {
+  display: grid;
+  gap: 0.6rem;
+  padding: 1.5rem;
+  border-radius: var(--radius);
+  background-color: var(--ink);
+  background-image: radial-gradient(
+    circle at 100% 0%,
+    color-mix(in srgb, var(--blue) 85%, transparent) 0%,
+    transparent 60%
+  );
+}
+
+.joinEyebrow {
+  color: var(--lime);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
-.ctaCard h2 {
-  margin: var(--app-space-sm) 0 var(--app-space-lg);
-  color: var(--app-text-on-dark);
-  line-height: 1.25;
+.joinTitle {
+  margin: 0 0 0.4rem;
+  color: var(--white);
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.35;
 }
 
-.ctaCard a {
-  width: 100%;
-  background: var(--app-brand-lime);
-  color: var(--app-brand-dark);
+.joinLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  border-radius: 999px;
+  background: var(--lime);
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color var(--motion);
 }
 
-@media (max-width: 900px) {
-  .heroContent {
-    align-items: start;
+.joinLink:hover {
+  background: color-mix(in srgb, var(--lime) 75%, var(--white));
+  color: var(--ink);
+}
+
+/* Setores ------------------------------------------------------------------- */
+.tagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--blue) 16%, var(--white));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--blue) 5%, var(--white));
+  color: var(--blue);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+/* Responsivo ---------------------------------------------------------------- */
+@media (max-width: 960px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sideColumn {
+    position: static;
+  }
+
+  .heroMain {
     grid-template-columns: auto minmax(0, 1fr);
   }
 
-  .websiteButton {
+  .heroActions {
     grid-column: 1 / -1;
-    justify-self: start;
+    margin-top: 1.25rem;
   }
 
-  .layout {
-    grid-template-columns: 1fr;
-  }
-
-  .sidebar {
+  .facts {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .fact {
+    padding: 0.9rem 1.5rem;
+  }
+
+  .fact + .fact {
+    border-left: 0;
+  }
+
+  .fact:nth-child(even) {
+    border-left: 1px solid var(--line-soft);
+  }
+
+  .fact:nth-child(n + 3) {
+    border-top: 1px solid var(--line-soft);
   }
 }
 
 @media (max-width: 640px) {
   .page {
-    padding-top: var(--app-space-md);
+    width: calc(100% - 32px);
+    padding: 1rem 0 3.5rem;
   }
 
-  .heroContent {
-    grid-template-columns: 1fr;
-    padding: var(--app-space-lg);
+  .heroBanner {
+    height: 92px;
+  }
+
+  .heroMain {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 0 1.25rem 1.35rem;
   }
 
   .logo {
-    width: 88px;
-    height: 88px;
+    width: 92px;
+    height: 92px;
+    margin-top: -46px;
+    border-radius: 20px;
+    font-size: 1.6rem;
   }
 
-  .meta,
-  .sectionHeading {
+  .identity {
+    padding-top: 0.85rem;
+  }
+
+  .heroActions {
+    margin-top: 1.1rem;
+  }
+
+  .mainLink {
+    flex: 1;
+  }
+
+  .fact {
+    padding: 0.85rem 1.25rem;
+  }
+
+  .panel {
+    padding: 1.3rem 1.25rem;
+  }
+
+  .panelHeading {
     align-items: flex-start;
     flex-direction: column;
-  }
-
-  .sidebar {
-    grid-template-columns: 1fr;
+    gap: 0.25rem;
   }
 }
 
@@ -362,6 +614,55 @@
   .page *,
   .page *::before,
   .page *::after {
-    scroll-behavior: auto;
+    transition-duration: 0.01ms !important;
   }
+}
+
+.heroActions {
+  flex-wrap: wrap;
+}
+
+/* Cartão de contactos da empresa (coluna lateral). */
+.contactList {
+  display: grid;
+  gap: 0.9rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.contactItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.contactItem > svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 0.15rem;
+  color: var(--blue);
+}
+
+.contactItem > span {
+  display: grid;
+  min-width: 0;
+}
+
+.contactLabel {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.contactValue {
+  color: var(--ink);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+  text-decoration: none;
+}
+
+a.contactValue:hover {
+  color: var(--blue);
 }

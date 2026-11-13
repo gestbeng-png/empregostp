@@ -36,19 +36,19 @@
   --dash-danger: #a11d2f;
   --dash-success: #0f6b41;
   --dash-warning: #a96612;
-  --dash-radius-sm: 4px;
-  --dash-radius: 8px;
-  --dash-radius-lg: 10px;
+  --dash-radius-sm: 6px;
+  --dash-radius: 10px;
+  --dash-radius-lg: 14px;
   --dash-control-height: 44px;
   --dash-sidebar-width: 264px;
   --dash-content-width: 1344px;
   --dash-duration: 220ms;
   --dash-ease: cubic-bezier(0.4, 0, 0.2, 1);
   --dash-focus: 0 0 0 3px rgba(105, 200, 255, 0.28);
-  --dash-shadow-sm: 0 1px 3px rgba(16, 36, 65, 0.04);
-  --dash-shadow-md: 0 4px 14px rgba(16, 36, 65, 0.07);
-  --dash-shadow-lg: 0 10px 26px rgba(16, 36, 65, 0.1);
-  --dash-shadow-card: 0 1px 3px rgba(16, 36, 65, 0.04);
+  --dash-shadow-sm: 0 1px 2px rgba(16, 36, 65, 0.04);
+  --dash-shadow-md: 0 8px 22px rgba(16, 36, 65, 0.07);
+  --dash-shadow-lg: 0 16px 36px rgba(16, 36, 65, 0.12);
+  --dash-shadow-card: 0 2px 8px rgba(16, 36, 65, 0.05);
 
   /* Compatibility aliases consumed by the existing dashboard modules. */
   --bg: var(--dash-canvas);
@@ -177,7 +177,7 @@ html[data-dashboard-theme='dark'] .dashShell[data-theme='light'] {
 
 /* ─── SIDEBAR ────────────────────────────────────────────── */
 .dash-sidebar {
-  width: 272px;
+  width: 264px;
   flex-shrink: 0;
   background: var(--sidebar-bg);
   border-right: 1px solid var(--sidebar-border);
@@ -187,7 +187,7 @@ html[data-dashboard-theme='dark'] .dashShell[data-theme='light'] {
   top: 0;
   height: 100vh;
   overflow-y: auto;
-  box-shadow: 4px 0 32px rgba(15, 23, 42, 0.06);
+  box-shadow: 8px 0 28px rgba(15, 23, 42, 0.055);
   z-index: 50;
   transition:
     background 0.4s ease,
@@ -198,8 +198,8 @@ html[data-dashboard-theme='dark'] .dashShell[data-theme='light'] {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 22px 20px 16px;
-  border-bottom: 1px solid var(--border);
+  padding: 20px 20px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 .dash-sidebar-logo img {
   height: 34px;
@@ -220,10 +220,17 @@ html[data-dashboard-theme='dark'] .dashShell[data-theme='light'] {
   gap: 12px;
   margin: 14px 14px 10px;
   padding: 12px 14px;
-  border-radius: 16px;
-  background: var(--surface);
-  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: var(--shadow-sm);
+}
+.dashShell .dash-sidebar :is(.dash-profile-name, .dash-profile-role) {
+  color: rgba(255, 255, 255, 0.94);
+}
+.dashShell .dash-sidebar .dash-profile-role,
+.dashShell .dash-sidebar .dash-nav-label {
+  color: rgba(236, 243, 255, 0.66);
 }
 .dash-profile-avatar {
   width: 40px;
@@ -296,7 +303,7 @@ html[data-dashboard-theme='dark'] .dashShell[data-theme='light'] {
   width: calc(100% - 20px);
   padding: 10px 14px;
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
   margin: 1px 10px;
   background: transparent;
   color: var(--text-3);
@@ -318,12 +325,8 @@ html[data-dashboard-theme='dark'] .dashShell[data-theme='light'] {
   transform: translateX(2px);
 }
 .dash-nav-item.active {
-  background: linear-gradient(
-    135deg,
-    rgba(32, 87, 215, 0.12),
-    rgba(95, 184, 245, 0.1)
-  );
-  color: var(--text-1);
+  background: rgba(105, 200, 255, 0.13);
+  color: #ffffff;
   font-weight: 700;
 }
 .dash-nav-item.active::before {
@@ -332,10 +335,10 @@ html[data-dashboard-theme='dark'] .dashShell[data-theme='light'] {
   left: 0;
   top: 50%;
   transform: translateY(-50%);
-  width: 3px;
+  width: 4px;
   height: 60%;
   border-radius: 999px;
-  background: linear-gradient(180deg, #2057d7, #5fb8f5);
+  background: var(--dash-lime);
 }
 .dash-nav-icon {
   width: 18px;
@@ -396,6 +399,12 @@ html[data-dashboard-theme='dark'] .dashShell[data-theme='light'] {
   z-index: 1;
 }
 
+/* `.dash-main` é um contexto de empilhamento abaixo da sidebar (50): com um
+   modal aberto sobe por cima dela, senão o modal ficava tapado pela sidebar. */
+.dashShell:has(.dash-main [aria-modal='true']) .dash-main {
+  z-index: 60;
+}
+
 /* ─── TOP BAR ────────────────────────────────────────────── */
 .dash-topbar {
   position: sticky;
@@ -404,7 +413,7 @@ html[data-dashboard-theme='dark'] .dashShell[data-theme='light'] {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 14px 28px;
+  padding: 15px clamp(18px, 3vw, 36px);
   background: var(--header-bg);
   border-bottom: 1px solid var(--border);
   backdrop-filter: blur(20px);
@@ -635,7 +644,8 @@ html[data-dashboard-theme='dark'] .dashShell[data-theme='light'] {
 
 /* ─── CONTENT ────────────────────────────────────────────── */
 .dash-content {
-  padding: 28px;
+  width: min(100%, 1440px);
+  padding: clamp(20px, 3vw, 36px);
   flex: 1;
 }
 
@@ -646,16 +656,12 @@ html[data-dashboard-theme='dark'] .dashShell[data-theme='light'] {
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
-  padding: 28px 32px;
-  margin-bottom: 28px;
-  border-radius: 24px;
+  padding: clamp(24px, 3vw, 36px);
+  margin-bottom: 24px;
+  border-radius: 18px;
   border: 1px solid var(--border);
   background:
-    linear-gradient(
-      135deg,
-      rgba(95, 184, 245, 0.14) 0%,
-      rgba(217, 255, 47, 0.1) 100%
-    ),
+    linear-gradient(118deg, rgba(105, 200, 255, 0.14), rgba(218, 255, 69, 0.12)),
     var(--surface);
   box-shadow: var(--shadow-md);
   position: relative;
@@ -719,8 +725,8 @@ html[data-dashboard-theme='dark'] .dashShell[data-theme='light'] {
 .dashShell .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-  margin-bottom: 28px;
+  gap: 14px;
+  margin-bottom: 24px;
 }
 .dashShell .stats-grid.cols-3 {
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -729,8 +735,8 @@ html[data-dashboard-theme='dark'] .dashShell[data-theme='light'] {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 .dashShell .stat-card {
-  padding: 22px;
-  border-radius: 20px;
+  padding: 20px;
+  border-radius: 14px;
   border: 1px solid var(--border);
   background: var(--surface);
   box-shadow: var(--shadow-card);
@@ -5786,8 +5792,10 @@ html[data-dashboard-theme='dark'] .dashShell[data-theme='light'] {
   background: var(--surface-3);
 }
 
+/* Os overlays dos modais também são filhos directos da página legada; ficam
+   de fora para não perderem o fundo escurecido. */
 .dashShell .dash-legacy-page,
-.dashShell .dash-legacy-page > div,
+.dashShell .dash-legacy-page > div:not(:has(> [aria-modal='true'])),
 .dashShell .dash-legacy-page > main,
 .dashShell .dash-legacy-page main {
   min-height: 0 !important;

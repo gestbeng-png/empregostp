@@ -127,4 +127,30 @@ describe('retoma da sessão guardada no login', () => {
     expect(mockedCreateSession).not.toHaveBeenCalled();
     expect(screen.getByLabelText('Email')).toBeVisible();
   });
+
+  test('um token atrasado da sessão anterior não substitui a sessão admin', async () => {
+    let finish!: (token: string) => void;
+    const obterObservador = capturarObservador();
+    render(<Login />);
+    act(() => {
+      obterObservador()({
+        uid: 'old-candidate',
+        getIdToken: () =>
+          new Promise<string>((resolve) => {
+            finish = resolve;
+          }),
+      });
+    });
+    await act(async () =>
+      obterObservador()({
+        uid: 'admin-1',
+        getIdToken: async () => 'admin-token',
+      }),
+    );
+    await act(async () => finish('candidate-token'));
+    expect(mockedCreateSession).toHaveBeenCalledTimes(1);
+    expect(mockedCreateSession).toHaveBeenCalledWith('admin-token');
+    expect(replaceMock).toHaveBeenCalledTimes(1);
+    expect(replaceMock).toHaveBeenCalledWith('/dashboard');
+  });
 });

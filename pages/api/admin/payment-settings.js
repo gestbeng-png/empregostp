@@ -1,10 +1,17 @@
 import { admin } from '../../../lib/firebaseAdmin';
+import { requireActiveApiUser } from '../../../lib/apiUserAuth';
 import { logServerError } from '../../../lib/serverLog';
 
 export default async function handler(req, res) {
   try {
     if (req.method === 'GET') {
-      // GET é público - qualquer um pode ver as configurações de pagamento
+      // Os dados da transferência (NIB, titular, email do comprovativo) só
+      // servem a quem está a pagar um plano, e isso exige conta. Eram
+      // devolvidos a qualquer visitante, o que expunha a conta bancária e o
+      // email do titular a recolha automática. Continua a ser legível por
+      // qualquer utilizador autenticado — não é um dado de administração.
+      if (!(await requireActiveApiUser(req, res))) return;
+
       const settingsDoc = await admin
         .firestore()
         .collection('settings')

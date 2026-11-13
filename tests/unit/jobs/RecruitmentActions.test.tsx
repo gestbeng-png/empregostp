@@ -23,6 +23,14 @@ const interview = {
   feedback: 'PRIVATE_FEEDBACK',
 };
 
+beforeEach(() => {
+  jest.spyOn(Date, 'now').mockReturnValue(Date.parse('2026-10-19T10:00:00Z'));
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
+});
+
 test('failed writes keep the same idempotency key on retry and prevent concurrent submission', async () => {
   const request = jest
     .fn()

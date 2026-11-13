@@ -286,9 +286,9 @@ export default function AdminBlogEdit({ postData, isNew }) {
   return (
     <>
       <Head>
-        <title>
-          {isNew ? 'Novo Artigo' : 'Editar Artigo'} | Admin EmpregoSTP
-        </title>
+        <title>{`${
+          isNew ? 'Novo Artigo' : 'Editar Artigo'
+        } | Admin EmpregoSTP`}</title>
       </Head>
       <div className={adminStyles.legacyPage} style={styles.page}>
         <div style={styles.container}>

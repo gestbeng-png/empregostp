@@ -8,15 +8,18 @@ const footerGroups = [
     name: 'Links de Candidatos',
     links: [
       ['Encontrar vagas', '/vagas'],
-      ['Criar currículo', '/recursos/gerador-cv'],
+      ['Criar currículo', '/login?redirect=%2Frecursos%2Fgerador-cv'],
       ['Dicas de carreira', '/blog'],
     ],
   },
   {
     name: 'Links de Empresas',
     links: [
-      ['Publicar vagas', '/dashboard/empresa/vaga/criar-vaga'],
-      ['Procurar candidatos', '/#candidatos-verificados'],
+      [
+        'Publicar vagas',
+        '/login?redirect=%2Fdashboard%2Fempresa%2Fvaga%2Fcriar-vaga',
+      ],
+      ['Procurar candidatos', '/verificados'],
       ['Recursos', '/recursos'],
     ],
   },
@@ -86,10 +89,10 @@ test.describe('footer público', () => {
     ).toHaveAttribute('href', 'tel:+2399869673');
     await expect(
       contacts.getByRole('link', {
-        name: 'suporte@empregos.st',
+        name: 'contacto@empregostp.com',
         exact: true,
       }),
-    ).toHaveAttribute('href', 'mailto:suporte@empregos.st');
+    ).toHaveAttribute('href', 'mailto:contacto@empregostp.com');
 
     await expect(
       footer.getByRole('link', { name: 'Privacidade', exact: true }).last(),
@@ -224,7 +227,12 @@ test.describe('footer público', () => {
       expect(platformBox.x).toBeLessThan(contactBox.x);
     }
 
-    const firstFooterLink = footer.getByRole('link', { name: 'EmpregoSTP' });
+    // `exact` é obrigatório: sem ele o nome acessível também apanha o link
+    // "contacto@empregostp.com" que vive no mesmo rodapé.
+    const firstFooterLink = footer.getByRole('link', {
+      name: 'EmpregoSTP',
+      exact: true,
+    });
     await firstFooterLink.focus();
     const focusStyle = await firstFooterLink.evaluate((element) => {
       const style = window.getComputedStyle(element);

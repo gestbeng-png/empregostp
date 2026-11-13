@@ -65,7 +65,7 @@ function pedido(body: Record<string, unknown>) {
 describe('gravação de perfil com certificados inalterados', () => {
   beforeEach(() => jest.clearAllMocks());
 
-  test('uma lista igual à guardada não dispara o guard de certificados', async () => {
+  test('empresa não edita um perfil de candidato, mesmo com certificados inalterados', async () => {
     montarFirestore(CERTIFICADOS);
     montarUtilizador('empresa');
     const { req, res } = pedido({
@@ -75,7 +75,7 @@ describe('gravação de perfil com certificados inalterados', () => {
 
     await handler(req, res as never);
 
-    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.status).toHaveBeenCalledWith(403);
   });
 
   test('mudar a lista continua a ser exclusivo de candidatos', async () => {
@@ -90,9 +90,22 @@ describe('gravação de perfil com certificados inalterados', () => {
 
     expect(res.status).toHaveBeenCalledWith(403);
     expect(res.json).toHaveBeenCalledWith({
-      error: 'Apenas candidatos podem gerir certificados',
+      error: 'Apenas candidatos podem editar este perfil.',
     });
   });
+
+  test.each(['admin', 'empresa', 'desconhecido'])(
+    'a conta %s não altera sequer campos básicos de candidato',
+    async (role) => {
+      const { profileSet } = montarFirestore(CERTIFICADOS);
+      const { update } = montarUtilizador(role);
+      const { req, res } = pedido({ name: 'Alterado', bio: 'Alterada' });
+      await handler(req, res as never);
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(update).not.toHaveBeenCalled();
+      expect(profileSet).not.toHaveBeenCalled();
+    },
+  );
 
   test('o resto do perfil é gravado mesmo quando os certificados não mudam', async () => {
     const { profileSet } = montarFirestore(CERTIFICADOS);

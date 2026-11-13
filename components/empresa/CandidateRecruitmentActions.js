@@ -1,17 +1,27 @@
 import { ActionForm, InterviewControls, idPath } from './RecruitmentControls';
+import { CandidateOfferPanel } from './OfferControls';
 import styles from '../../styles/RecruitmentWorkspace.module.css';
 
 /**
  * Only the candidate-safe timeline projection enters this component.
- * @param {{timeline: Record<string, any>, onSuccess?: (value: any) => void, request?: import('../../lib/apiClient').apiRequest}} props
+ * @param {{timeline: Record<string, any>, applicationId?: string, onSuccess?: (value: any) => void, request?: import('../../lib/apiClient').apiRequest}} props
  */
 export default function CandidateRecruitmentActions({
   timeline,
+  applicationId,
   onSuccess,
   request,
 }) {
   return (
     <div className={styles.root}>
+      {applicationId && timeline.offers?.length ? (
+        <CandidateOfferPanel
+          applicationId={applicationId}
+          offers={timeline.offers}
+          onSuccess={onSuccess}
+          request={request}
+        />
+      ) : null}
       {timeline.interviews?.length ? (
         <section aria-label="Entrevistas do processo">
           <h4>Entrevistas</h4>

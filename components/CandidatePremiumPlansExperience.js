@@ -3,19 +3,42 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { getAuth } from 'firebase/auth';
 import ManualPaymentProofCard from './ManualPaymentProofCard';
-import { getCandidateMarketingPlans } from '../lib/candidateCatalog';
+import StripeReturnNotice from './payments/StripeReturnNotice';
+import PaymentMethodPicker from './payments/PaymentMethodPicker';
+import useOnlinePaymentConfig from './payments/useOnlinePaymentConfig';
+import { canChargeOnline } from '../lib/payments/currency';
+import {
+  getPlanSummary,
+  hasActivePremiumVerification,
+} from '../lib/candidatePlanFeatures';
+import {
+  getCandidateMarketingPlans,
+  getCandidatePlanBenefits,
+} from '../lib/candidateCatalog';
 import styles from '../styles/CandidatePremiumPlansExperience.module.css';
+import presentation from '../styles/PlansPresentation.module.css';
 
 // Planos de marketing usados apenas como fallback e para metadados de
 // apresentação (ex.: destaque "popular") quando cruzados com os planos do admin.
 const FALLBACK_CANDIDATE_PLANS = getCandidateMarketingPlans({
   includeBasic: false,
-  includeVerification: true,
+  includeVerification: false,
 });
 
+function getProfileVerificationState(profile) {
+  return {
+    active: Boolean(
+      profile.paidVerified ||
+      profile.qualifiedVerified ||
+      hasActivePremiumVerification(profile) ||
+      profile.verificationStatus === 'verified',
+    ),
+    pending: profile.verificationStatus === 'pending',
+  };
+}
+
 // Cruza os planos criados pelo admin (Firestore) com os metadados de
-// apresentação, mantendo os valores do admin (nome, preço, recursos) como fonte
-// da verdade.
+// apresentação, preservando os valores do admin e a verificação fixa do Premium.
 function mergeAdminPlansWithPresentation(apiPlans) {
   const byTier = FALLBACK_CANDIDATE_PLANS.reduce((acc, plan) => {
     acc[plan.id] = plan;
@@ -30,6 +53,10 @@ function mergeAdminPlansWithPresentation(apiPlans) {
       ...plan,
       id: plan.id,
       tierId: tier,
+      features: getCandidatePlanBenefits(
+        tier,
+        plan.features || presentation.features,
+      ),
       popular: plan.popular ?? presentation.popular ?? false,
     };
   });
@@ -70,20 +97,16 @@ function ConfirmPaymentModal({
   onConfirm,
   onCancel,
   loading,
+  method,
+  onMethodChange,
 }) {
+  const { loading: methodsLoading, onlineEnabled } = useOnlinePaymentConfig();
   if (!plan || Number(plan.price) === 0) return null;
-
-  const bankRows = [
-    ['Conta', paymentSettings?.accountNumber],
-    ['Titular', paymentSettings?.accountName],
-    ['Banco', paymentSettings?.bankName],
-    ['Email', paymentSettings?.email],
-  ].filter(([, value]) => Boolean(value));
 
   return (
     <Modal
-      title="Confirmar assinatura"
-      subtitle="Reveja os dados, faça a transferência e confirme para gerar o pedido."
+      title="Como quer pagar?"
+      subtitle="Escolha a forma de pagamento para continuar com este plano."
       onClose={onCancel}
     >
       <div className={styles.summaryBox}>
@@ -97,20 +120,14 @@ function ConfirmPaymentModal({
         </div>
       </div>
 
-      {(bankRows.length > 0 || paymentSettings?.instructions) && (
-        <div className={styles.bankBox}>
-          <p className={styles.bankTitle}>Dados para transferência</p>
-          {bankRows.map(([label, value]) => (
-            <div key={label} className={styles.bankRow}>
-              <span>{label}</span>
-              <strong>{value}</strong>
-            </div>
-          ))}
-          {paymentSettings?.instructions && (
-            <p className={styles.bankNote}>{paymentSettings.instructions}</p>
-          )}
-        </div>
-      )}
+      <PaymentMethodPicker
+        name={`candidate-plan-method-${plan.id}`}
+        value={method}
+        onChange={onMethodChange}
+        onlineAvailable={onlineEnabled && canChargeOnline(plan.price)}
+        loading={methodsLoading}
+        disabled={loading}
+      />
 
       <div className={styles.modalActions}>
         <button type="button" className={styles.btnGhost} onClick={onCancel}>
@@ -120,7 +137,9 @@ function ConfirmPaymentModal({
           type="button"
           className={styles.btnPrimary}
           onClick={onConfirm}
-          disabled={!paymentSettings || loading}
+          disabled={
+            !method || (method === 'transfer' && !paymentSettings) || loading
+          }
         >
           {loading ? 'A processar...' : 'Confirmar'}
         </button>
@@ -129,22 +148,71 @@ function ConfirmPaymentModal({
   );
 }
 
+/**
+ * @param {object} props
+ * @param {boolean} [props.embedded]
+ * @param {Function} [props.onPlanApproved]
+ * @param {boolean} [props.verificationActive]
+ * @param {boolean} [props.verificationPending]
+ * @param {boolean} [props.verificationIncluded]
+ * @param {Function} [props.onOpenVerification]
+ */
 export default function CandidatePremiumPlansExperience({
   embedded = false,
   onPlanApproved,
+  verificationActive: suppliedVerificationActive,
+  verificationPending: suppliedVerificationPending,
+  verificationIncluded = false,
+  onOpenVerification,
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [currentPlan, setCurrentPlan] = useState(null);
+  const [profileVerification, setProfileVerification] = useState({
+    active: false,
+    pending: false,
+  });
+  const verificationActive =
+    suppliedVerificationActive ?? profileVerification.active;
+  const verificationPending =
+    !verificationActive &&
+    (suppliedVerificationPending ?? profileVerification.pending);
   const [selectedPlan, setSelectedPlan] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState(null);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [showProofModal, setShowProofModal] = useState(false);
   const [paymentSettings, setPaymentSettings] = useState(null);
   const [pendingPaymentRequest, setPendingPaymentRequest] = useState(null);
 
   const [plans, setPlans] = useState(FALLBACK_CANDIDATE_PLANS);
+
+  // Um pedido em análise continua aberto, mas já não precisa de pagamento
+  // nem de um segundo comprovativo. A condição também cobre registos legados
+  // cujo estado ainda seja "pending", mas que já tenham o ficheiro guardado.
+  const requestNeedsPayment = Boolean(
+    pendingPaymentRequest?.id &&
+    pendingPaymentRequest.status === 'pending' &&
+    !pendingPaymentRequest.paymentProof?.url &&
+    !pendingPaymentRequest.paymentProof?.submittedAt &&
+    !['proof_submitted', 'approved', 'paid', 'not_required'].includes(
+      pendingPaymentRequest.paymentStatus,
+    ),
+  );
+  const isOnlinePayment = pendingPaymentRequest?.paymentMethod === 'stripe';
+  const needsManualPaymentProof = requestNeedsPayment && !isOnlinePayment;
+  const canResumeOnlinePaymentFor = (plan) => {
+    const tier = plan?.tierId || plan?.id;
+    return (
+      requestNeedsPayment &&
+      isOnlinePayment &&
+      Boolean(plan) &&
+      (pendingPaymentRequest.planId === plan.id ||
+        pendingPaymentRequest.planId === tier ||
+        pendingPaymentRequest.planTierId === tier)
+    );
+  };
 
   useEffect(() => {
     async function bootstrap() {
@@ -164,7 +232,9 @@ export default function CandidatePremiumPlansExperience({
             fetch('/api/profile', {
               headers: { Authorization: `Bearer ${token}` },
             }),
-            fetch('/api/admin/payment-settings'),
+            fetch('/api/admin/payment-settings', {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
             fetch('/api/subscription-requests/current', {
               headers: { Authorization: `Bearer ${token}` },
             }),
@@ -186,7 +256,8 @@ export default function CandidatePremiumPlansExperience({
         if (profileRes.ok) {
           const profileJson = await profileRes.json();
           const userData = profileJson.profile?.data || {};
-          setCurrentPlan(userData.currentPlan || 'basic_candidato');
+          setCurrentPlan(getPlanSummary(userData).planId);
+          setProfileVerification(getProfileVerificationState(userData));
         }
 
         if (paymentRes.ok) {
@@ -215,6 +286,12 @@ export default function CandidatePremiumPlansExperience({
   }, [embedded, router]);
 
   const processSubscription = async (planId) => {
+    const plan = plans.find((item) => item.id === planId);
+    if (
+      (plan?.tierId || planId) === 'verification_candidato' &&
+      (verificationActive || verificationPending)
+    )
+      return;
     try {
       setLoading(true);
       setError('');
@@ -257,16 +334,18 @@ export default function CandidatePremiumPlansExperience({
 
       if (data.status === 'approved') {
         setSuccess('Plano ativado com sucesso.');
-        setCurrentPlan(planId);
+        const activatedTier = plan?.tierId || planId;
+        setCurrentPlan(activatedTier);
+        if (activatedTier === 'unlimited_candidato') {
+          setProfileVerification({ active: true, pending: false });
+        }
         setPendingPaymentRequest(null);
         onPlanApproved?.(planId);
         if (!embedded) {
           setTimeout(() => router.push('/dashboard/candidato'), 1200);
         }
       } else if (data.status === 'awaiting_payment') {
-        setSuccess(
-          'Solicitação criada. Faça a transferência e envie o comprovativo.',
-        );
+        setSuccess('Pedido criado. Conclua o pagamento para ativar o plano.');
         setPendingPaymentRequest({
           id: data.requestId,
           planId,
@@ -287,9 +366,52 @@ export default function CandidatePremiumPlansExperience({
     }
   };
 
+  // Pagamento online confirmado no regresso do Stripe: o pedido deixou de
+  // estar em aberto e o plano novo já está no perfil.
+  const handleOnlinePaymentApproved = async () => {
+    setPendingPaymentRequest(null);
+    setShowProofModal(false);
+    try {
+      const token = await getAuth().currentUser?.getIdToken();
+      if (token) {
+        const profileRes = await fetch('/api/profile', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (profileRes.ok) {
+          const profileJson = await profileRes.json();
+          const userData = profileJson.profile?.data || {};
+          setCurrentPlan(getPlanSummary(userData).planId);
+          setProfileVerification(getProfileVerificationState(userData));
+        }
+      }
+    } catch {
+      // O painel volta a ler o plano ao recarregar.
+    }
+    onPlanApproved?.();
+  };
+
   const handleSubscribe = async (planId) => {
     const plan = plans.find((item) => item.id === planId);
     const tier = plan?.tierId || planId;
+    if (
+      tier === 'verification_candidato' &&
+      (verificationActive || verificationPending)
+    )
+      return;
+    if (
+      tier === 'verification_candidato' &&
+      verificationIncluded &&
+      onOpenVerification
+    ) {
+      onOpenVerification();
+      return;
+    }
+    if (canResumeOnlinePaymentFor(plan)) {
+      setError('');
+      setPaymentMethod('online');
+      setShowProofModal(true);
+      return;
+    }
     if (currentPlan === planId || currentPlan === tier) {
       setError('Você já está neste plano.');
       return;
@@ -297,6 +419,7 @@ export default function CandidatePremiumPlansExperience({
 
     if (plan && Number(plan.price) > 0) {
       setSelectedPlan(planId);
+      setPaymentMethod(null);
       setShowPaymentForm(true);
       return;
     }
@@ -305,12 +428,12 @@ export default function CandidatePremiumPlansExperience({
   };
 
   return (
-    <div className={styles.wrap}>
+    <div className={`${styles.wrap} ${presentation.theme}`}>
       <div className={styles.header}>
+        <span className={styles.eyebrow}>Planos para candidatos</span>
         <h1 className={styles.title}>Escolha o seu plano</h1>
         <p className={styles.subtitle}>
-          Destaque o seu currículo e aumente as suas chances de conseguir
-          emprego.
+          Compare as ferramentas e os serviços incluídos em cada plano.
         </p>
       </div>
 
@@ -322,8 +445,9 @@ export default function CandidatePremiumPlansExperience({
           {success}
         </div>
       )}
+      <StripeReturnNotice onApproved={handleOnlinePaymentApproved} />
 
-      {pendingPaymentRequest?.id && (
+      {needsManualPaymentProof && (
         <div className={styles.pendingBanner}>
           <div className={styles.pendingInfo}>
             <span className={styles.pendingIcon} aria-hidden="true">
@@ -336,17 +460,18 @@ export default function CandidatePremiumPlansExperience({
                   ? ` — ${pendingPaymentRequest.planName}`
                   : ''}
               </strong>
-              <span>
-                Depois da transferência, envie o comprovativo para aprovação.
-              </span>
+              <span>Conclua o pagamento para ativar o plano.</span>
             </div>
           </div>
           <button
             type="button"
             className={styles.pendingBtn}
-            onClick={() => setShowProofModal(true)}
+            onClick={() => {
+              setPaymentMethod(null);
+              setShowProofModal(true);
+            }}
           >
-            Enviar comprovativo
+            Concluir pagamento
           </button>
         </div>
       )}
@@ -355,6 +480,8 @@ export default function CandidatePremiumPlansExperience({
         <ConfirmPaymentModal
           plan={plans.find((item) => item.id === selectedPlan)}
           paymentSettings={paymentSettings}
+          method={paymentMethod}
+          onMethodChange={setPaymentMethod}
           loading={loading}
           onConfirm={() => processSubscription(selectedPlan)}
           onCancel={() => {
@@ -366,16 +493,25 @@ export default function CandidatePremiumPlansExperience({
 
       {showProofModal && pendingPaymentRequest?.id && (
         <Modal
-          title="Enviar comprovativo"
-          subtitle="Faça a transferência e envie aqui o comprovativo para revisão do administrador."
+          title="Pagamento do plano"
+          subtitle="Conclua o pagamento para ativar o plano."
           onClose={() => setShowProofModal(false)}
           wide
         >
           <ManualPaymentProofCard
+            key={pendingPaymentRequest.id}
             request={pendingPaymentRequest}
+            initialMethod={paymentMethod}
             title="Comprovativo de pagamento"
             description="Anexe o comprovativo da transferência (PDF, JPG ou PNG)."
-            onSubmitted={(updated) => setPendingPaymentRequest(updated)}
+            onSubmitted={(updated) => {
+              setPendingPaymentRequest(updated);
+              setShowProofModal(false);
+              setError('');
+              setSuccess(
+                'Comprovativo enviado. Aguarde a análise do administrador.',
+              );
+            }}
             onCancelled={() => {
               setPendingPaymentRequest(null);
               setShowProofModal(false);
@@ -384,57 +520,120 @@ export default function CandidatePremiumPlansExperience({
         </Modal>
       )}
 
-      <div className={styles.grid}>
+      <section className={presentation.grid} aria-label="Planos disponíveis">
         {plans.map((plan) => {
+          const isVerification =
+            (plan.tierId || plan.id) === 'verification_candidato';
+          const verificationBlocked =
+            isVerification && (verificationActive || verificationPending);
+          const canSubmitVerification =
+            isVerification &&
+            verificationIncluded &&
+            Boolean(onOpenVerification);
           const isCurrent =
             currentPlan === plan.id || currentPlan === plan.tierId;
           const isSelected = selectedPlan === plan.id && loading;
+          const canResumeOnlinePayment = canResumeOnlinePaymentFor(plan);
           const isPopular = Boolean(plan.popular);
+          const priceLabel = String(plan.priceLabel || '');
+          const priceParts = priceLabel.match(/^([\d\s.,]+)\s+(.+)$/);
           return (
-            <div
+            <article
               key={plan.id}
-              className={`${styles.card} ${isPopular ? styles.cardPopular : ''} ${isCurrent ? styles.cardCurrent : ''}`}
+              className={`${presentation.card} ${isPopular ? presentation.cardPopular : ''} ${isCurrent ? presentation.cardCurrent : ''}`}
+              aria-label={plan.name}
             >
-              {isPopular && <div className={styles.popularBadge}>Popular</div>}
+              <div className={presentation.planIntro}>
+                <div className={presentation.planTopline}>
+                  <h2 className={presentation.planName}>{plan.name}</h2>
+                  {isPopular && (
+                    <span className={presentation.popularBadge}>Popular</span>
+                  )}
+                </div>
+                {plan.summary && (
+                  <p className={presentation.summary}>{plan.summary}</p>
+                )}
+                <div className={presentation.priceRow}>
+                  <span className={presentation.price}>
+                    {priceParts ? (
+                      <>
+                        {priceParts[1].trim()}{' '}
+                        <span className={presentation.priceCurrency}>
+                          {priceParts[2]}
+                        </span>
+                      </>
+                    ) : (
+                      priceLabel
+                    )}
+                  </span>
+                  {Number(plan.price) > 0 && (
+                    <span className={presentation.pricePeriod}>/ mês</span>
+                  )}
+                </div>
 
-              <h3 className={styles.planName}>{plan.name}</h3>
-              <div className={styles.priceRow}>
-                <span className={styles.price}>{plan.priceLabel}</span>
-                {Number(plan.price) > 0 && (
-                  <span className={styles.pricePeriod}>/ mês</span>
+                <button
+                  type="button"
+                  onClick={() => handleSubscribe(plan.id)}
+                  disabled={
+                    loading ||
+                    (isCurrent &&
+                      !canSubmitVerification &&
+                      !canResumeOnlinePayment) ||
+                    verificationBlocked
+                  }
+                  className={`${presentation.subscribeBtn} ${isPopular ? presentation.subscribeBtnPopular : ''} ${isCurrent ? presentation.subscribeBtnCurrent : ''}`}
+                >
+                  {isVerification && verificationActive
+                    ? 'Verificado'
+                    : isVerification && verificationPending
+                      ? 'Verificação em análise'
+                      : canSubmitVerification
+                        ? 'Enviar documentos'
+                        : canResumeOnlinePayment
+                          ? 'Continuar pagamento'
+                          : isSelected
+                            ? 'A processar...'
+                            : isCurrent
+                              ? 'Plano atual'
+                              : 'Assinar plano'}
+                </button>
+              </div>
+
+              <div className={presentation.planDetails}>
+                <h3 className={presentation.featuresTitle}>
+                  O que está incluído
+                </h3>
+                <ul className={presentation.features}>
+                  {(plan.features || []).slice(0, 8).map((feature) => (
+                    <li key={feature} className={presentation.feature}>
+                      <span
+                        className={presentation.checkIcon}
+                        aria-hidden="true"
+                      >
+                        <svg viewBox="0 0 16 16" fill="none" focusable="false">
+                          <path
+                            d="m4 8 2.5 2.5L12 5"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </span>
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+                {isCurrent && (
+                  <p className={presentation.currentNote}>
+                    <span aria-hidden="true">✓</span> O seu plano atual
+                  </p>
                 )}
               </div>
-              {plan.summary && <p className={styles.summary}>{plan.summary}</p>}
-
-              <div className={styles.divider} />
-
-              <ul className={styles.features}>
-                {(plan.features || []).slice(0, 8).map((feature) => (
-                  <li key={feature} className={styles.feature}>
-                    <span className={styles.checkIcon} aria-hidden="true">
-                      ✓
-                    </span>
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-
-              <button
-                type="button"
-                onClick={() => handleSubscribe(plan.id)}
-                disabled={loading || isCurrent}
-                className={`${styles.subscribeBtn} ${isPopular ? styles.subscribeBtnPopular : ''} ${isCurrent ? styles.subscribeBtnCurrent : ''}`}
-              >
-                {isSelected
-                  ? 'A processar...'
-                  : isCurrent
-                    ? 'Plano atual'
-                    : 'Assinar plano'}
-              </button>
-            </div>
+            </article>
           );
         })}
-      </div>
+      </section>
 
       {!embedded && (
         <div className={styles.footer}>

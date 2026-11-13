@@ -600,7 +600,12 @@ function ApplicationDetailCard({ application, onWithdrawn }) {
   const interviewStatus = String(
     localInterview?.status || 'scheduled',
   ).toLowerCase();
-  const hasInterview = Boolean(localInterview?.scheduledAt);
+  // Entrevistas do recrutamento (com `interviewId`) aparecem nos controlos de
+  // `CandidateRecruitmentActions`, ligados à entrevista real. Este painel
+  // antigo só alterava a cópia na candidatura — a empresa nunca via a
+  // confirmação — por isso fica só para entrevistas antigas.
+  const hasInterview =
+    Boolean(localInterview?.scheduledAt) && !localInterview?.interviewId;
   const interviewStatusLabel = getInterviewStatusLabelPt(interviewStatus);
   // F2.6: qualquer estado não terminal pode ser retirado.
   const canWithdraw = hasTrackedStatus
@@ -1119,6 +1124,7 @@ function ApplicationDetailCard({ application, onWithdrawn }) {
       {statusTimeline ? (
         <CandidateRecruitmentActions
           timeline={statusTimeline}
+          applicationId={application.id}
           onSuccess={() => setStatusTimelineRevision((value) => value + 1)}
         />
       ) : null}

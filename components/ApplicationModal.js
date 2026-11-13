@@ -657,7 +657,7 @@ export default function ApplicationModal({
                   <Campo
                     id="ap-salaryExpectation"
                     label="Pretensão salarial"
-                    ajuda="Opcional. Valor mensal bruto em Dobras."
+                    ajuda="Opcional. Valor mensal bruto em STD."
                     erro={errosVisiveis.salaryExpectation}
                   >
                     <input

@@ -4,7 +4,10 @@ import Link from 'next/link';
 import { FiArrowRight, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { MdVerified } from 'react-icons/md';
 
+import { TrustSealIcon } from '../VerificationBadge';
+import { useAuth } from '../../context/AuthContext';
 import styles from '../../styles/HomePage.module.css';
+import tileStyles from '../../styles/HomeTalentTile.module.css';
 
 /**
  * @typedef {Object} VerifiedCandidate
@@ -19,8 +22,18 @@ import styles from '../../styles/HomePage.module.css';
 
 const CANDIDATES_PER_PAGE = 3;
 
-/** @param {{ candidate: VerifiedCandidate }} props */
-function CandidateAvatar({ candidate }) {
+/**
+ * @param {{
+ *   candidate: VerifiedCandidate,
+ *   imageClassName?: string,
+ *   fallbackClassName?: string,
+ * }} props
+ */
+function CandidateAvatar({
+  candidate,
+  imageClassName = styles.homeCandidateAvatarImage,
+  fallbackClassName = styles.homeCandidateAvatar,
+}) {
   const [imageFailed, setImageFailed] = useState(false);
   const showImage = Boolean(candidate.photoUrl) && !imageFailed;
 
@@ -29,7 +42,7 @@ function CandidateAvatar({ candidate }) {
       <Image
         src={candidate.photoUrl}
         alt=""
-        className={styles.homeCandidateAvatarImage}
+        className={imageClassName}
         width={124}
         height={124}
         sizes="(max-width: 720px) 80px, 124px"
@@ -40,19 +53,65 @@ function CandidateAvatar({ candidate }) {
   }
 
   return (
-    <div className={styles.homeCandidateAvatar} aria-hidden="true">
+    <div className={fallbackClassName} aria-hidden="true">
       {candidate.initials}
     </div>
   );
 }
 
+// Quem já tem sessão vai direto ao perfil: mandá-lo para /login fazia parecer
+// que a sessão se tinha perdido. O servidor do perfil decide o acesso.
+function getCandidateHref(candidate, signedIn = false) {
+  const profileHref = `/candidatos/${candidate.id}`;
+  return signedIn || candidate.profileVisibility === 'public'
+    ? profileHref
+    : `/login?redirect=${encodeURIComponent(profileHref)}`;
+}
+
+function getCandidateLinkLabel(candidate, signedIn = false) {
+  return signedIn || candidate.profileVisibility === 'public'
+    ? `Ver perfil de ${candidate.fullName}`
+    : `Iniciar sessão de empresa para ver o perfil de ${candidate.fullName}`;
+}
+
+/**
+ * Cartão da home: foto, nome com selo, título, "Verificado" e "Ver perfil".
+ * Exportado para a /verificados, que mostra os mesmos cartões em grelha.
+ * @param {{ candidate: VerifiedCandidate }} props
+ */
+export function HomeTalentTile({ candidate }) {
+  const signedIn = Boolean(useAuth()?.user);
+  return (
+    <Link
+      href={getCandidateHref(candidate, signedIn)}
+      className={tileStyles.tile}
+      aria-label={getCandidateLinkLabel(candidate, signedIn)}
+    >
+      <CandidateAvatar
+        candidate={candidate}
+        imageClassName={tileStyles.photo}
+        fallbackClassName={tileStyles.photoFallback}
+      />
+      <div className={tileStyles.body}>
+        <div className={tileStyles.nameRow}>
+          <h3 className={tileStyles.name}>{candidate.fullName}</h3>
+          <TrustSealIcon className={tileStyles.seal} />
+        </div>
+        {candidate.headline ? (
+          <p className={tileStyles.role}>{candidate.headline}</p>
+        ) : null}
+        <span className={tileStyles.status}>Verificado</span>
+      </div>
+      <span className={tileStyles.cta} aria-hidden="true">
+        Ver perfil
+      </span>
+    </Link>
+  );
+}
+
 /** @param {{ candidate: VerifiedCandidate }} props */
 function CandidateCard({ candidate }) {
-  const profileHref = `/candidatos/${candidate.id}`;
-  const cardHref =
-    candidate.profileVisibility === 'public'
-      ? profileHref
-      : `/login?redirect=${encodeURIComponent(profileHref)}`;
+  const signedIn = Boolean(useAuth()?.user);
   const content = (
     <>
       <CandidateAvatar candidate={candidate} />
@@ -81,13 +140,9 @@ function CandidateCard({ candidate }) {
 
   return (
     <Link
-      href={cardHref}
+      href={getCandidateHref(candidate, signedIn)}
       className={styles.homeCandidateCard}
-      aria-label={
-        candidate.profileVisibility === 'public'
-          ? `Ver perfil de ${candidate.fullName}`
-          : `Iniciar sessão de empresa para ver o perfil de ${candidate.fullName}`
-      }
+      aria-label={getCandidateLinkLabel(candidate, signedIn)}
     >
       {content}
     </Link>
@@ -216,11 +271,20 @@ export default function VerifiedCandidatesCarousel({
             aria-label={`Página ${pageIndex + 1} de ${candidatePages.length}`}
           >
             <ul className={`${styles.candidatesList} ${styles.candidateStack}`}>
-              {candidatePage.map((candidate) => (
-                <li key={candidate.id} className={styles.homeCandidateListItem}>
-                  <CandidateCard candidate={candidate} />
-                </li>
-              ))}
+              {candidatePage.map((candidate) =>
+                variante === 'larga' ? (
+                  <li
+                    key={candidate.id}
+                    className={styles.homeCandidateListItem}
+                  >
+                    <CandidateCard candidate={candidate} />
+                  </li>
+                ) : (
+                  <li key={candidate.id} className={tileStyles.item}>
+                    <HomeTalentTile candidate={candidate} />
+                  </li>
+                ),
+              )}
             </ul>
           </div>
         ))}

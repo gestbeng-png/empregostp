@@ -29,7 +29,7 @@
 }
 .emptyKicker {
   color: var(--dash-ink-muted);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -62,7 +62,7 @@
   background: var(--app-brand-dark);
   box-shadow: var(--app-shadow-md);
   color: var(--app-surface-1);
-  font-size: 0.8rem;
+  font-size: 0.875rem;
   font-weight: 800;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -117,7 +117,7 @@
   padding: 0.45rem 0.8rem;
   border-radius: 0.6rem;
   color: var(--app-surface-1);
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   font-weight: 700;
   line-height: 1.2;
 }
@@ -219,7 +219,7 @@
   border-radius: 0.375rem;
   background: var(--app-surface-1);
   color: var(--app-text-primary);
-  font-size: 0.86rem;
+  font-size: 0.875rem;
   font-weight: 700;
 }
 
@@ -262,7 +262,7 @@
 .priceLabel {
   max-width: 8.5rem;
   color: var(--app-text-muted);
-  font-size: 0.74rem;
+  font-size: 0.875rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   line-height: 1.3;
@@ -279,7 +279,7 @@
 
 .priceValue small {
   color: var(--app-text-muted);
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   font-weight: 500;
   letter-spacing: 0;
 }
@@ -362,7 +362,7 @@
 .count {
   margin-right: 0.3rem;
   color: var(--app-text-muted);
-  font-size: 0.8rem;
+  font-size: 0.875rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
@@ -422,7 +422,7 @@
     left: -0.6rem;
     width: 4.5rem;
     height: 4.5rem;
-    font-size: 0.68rem;
+    font-size: 0.875rem;
   }
 
   .toolbar {
@@ -492,7 +492,7 @@
   box-shadow: 0 0.5rem 1.25rem
     color-mix(in srgb, var(--app-brand-dark) 25%, transparent);
   color: var(--app-brand-dark);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   letter-spacing: 0.08em;
 }
 
@@ -660,8 +660,10 @@
 }
 
 .dots button {
-  width: 1.5rem;
-  height: 1.5rem;
+  /* O ponto visível continua a ser o ::after; o botão é só a área de toque,
+     que estava a 24px — abaixo do mínimo de 44px. */
+  width: 2.75rem;
+  height: 2.75rem;
 }
 
 .dots button::after {
@@ -677,8 +679,9 @@
 }
 
 .controls button {
-  width: 2.5rem;
-  height: 2.5rem;
+  /* 40px ficava abaixo do alvo mínimo de toque. */
+  width: 2.75rem;
+  height: 2.75rem;
   transition:
     background-color 0.2s ease,
     border-color 0.2s ease,
@@ -750,7 +753,7 @@
     left: 0.75rem;
     width: auto;
     height: auto;
-    font-size: 0.7rem;
+    font-size: 0.875rem;
   }
 
   .toolbar {

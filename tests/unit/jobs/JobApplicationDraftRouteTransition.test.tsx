@@ -42,6 +42,12 @@ jest.mock('firebase/auth', () => ({
   getAuth: () => ({ currentUser: candidateUser }),
 }));
 
+// A página valida o perfil antes de carregar rascunhos de candidato.
+// Evitar inicializar o SDK real (setPersistence) neste teste de navegação.
+jest.mock('../../../lib/firebaseAuth', () => ({
+  auth: { currentUser: candidateUser },
+}));
+
 jest.mock('../../../components/PublicPageShell', () => ({
   __esModule: true,
   default: ({ children }: { children: React.ReactNode }) => (

@@ -1,5 +1,6 @@
 import { admin } from '../../../../lib/firebaseAdmin';
 import { logServerError } from '../../../../lib/serverLog';
+import { isUserAccountActive } from '../../../../lib/userStatus';
 
 /**
  * Alinha o Firebase Auth com o estado administrativo da conta.
@@ -46,7 +47,14 @@ export default async function handler(req, res) {
         .json({ message: 'Token de autorização ausente ou inválido' });
     }
 
-    const decodedToken = await admin.auth().verifyIdToken(token);
+    let decodedToken;
+    try {
+      decodedToken = await admin.auth().verifyIdToken(token, true);
+    } catch {
+      return res
+        .status(401)
+        .json({ message: 'Token de autorização inválido ou expirado' });
+    }
     const adminUid = decodedToken.uid;
 
     // Verificar se o usuário é um administrador
@@ -62,13 +70,16 @@ export default async function handler(req, res) {
     }
 
     const adminData = adminDoc.data();
+    if (!isUserAccountActive(adminData)) {
+      return res.status(403).json({
+        code: 'ACCOUNT_BLOCKED',
+        message: 'Esta conta está suspensa ou inativa.',
+      });
+    }
     if (adminData.userType !== 'admin') {
-      return res
-        .status(403)
-        .json({
-          message:
-            'Acesso negado. Apenas administradores podem acessar esta API',
-        });
+      return res.status(403).json({
+        message: 'Acesso negado. Apenas administradores podem acessar esta API',
+      });
     }
 
     // Verificar se o usuário a ser gerenciado existe

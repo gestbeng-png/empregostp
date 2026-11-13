@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import Link from 'next/link';
+import Link from '../auth/AccountActionLink';
 import { FiMail, FiPhone } from 'react-icons/fi';
 import styles from '../../styles/Footer.module.css';
 

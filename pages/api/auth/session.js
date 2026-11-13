@@ -2,7 +2,7 @@ import nookies from 'nookies';
 
 import { admin } from '../../../lib/firebaseAdmin';
 import { isUserAccountActive } from '../../../lib/userStatus';
-import { logServerError, logServerWarning } from '../../../lib/serverLog';
+import { logServerError } from '../../../lib/serverLog';
 
 const COOKIE_NAME = 'token';
 
@@ -24,25 +24,12 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
 
   if (req.method === 'DELETE') {
-    let revoked = false;
-    const authHeader = req.headers.authorization;
-
-    try {
-      if (authHeader?.startsWith('Bearer ')) {
-        const token = authHeader.slice('Bearer '.length).trim();
-        const decodedToken = await admin.auth().verifyIdToken(token);
-        await admin.auth().revokeRefreshTokens(decodedToken.uid);
-        revoked = true;
-      }
-    } catch (error) {
-      // A limpeza do cookie é obrigatória mesmo quando Firebase está
-      // indisponível ou o token já foi revogado/expirou.
-      logServerWarning('auth_session.revoke_failed', error);
-    } finally {
-      clearSessionCookie(req, res);
-    }
-
-    return res.status(200).json({ success: true, revoked });
+    // Sair apaga só o cookie deste browser. Revogar os refresh tokens aqui
+    // derrubava a conta em todos os outros dispositivos e separadores (as
+    // guardas usam `verifyIdToken(token, true)`), o que se via como "perder a
+    // sessão à toa". A revogação fica para o bloqueio de conta pelo admin.
+    clearSessionCookie(req, res);
+    return res.status(200).json({ success: true });
   }
 
   if (req.method !== 'POST') {

@@ -1,7 +1,7 @@
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
-import Link from 'next/link';
+import Link from '../components/auth/AccountActionLink';
 import {
   FiArrowRight,
   FiChevronLeft,
@@ -99,25 +99,6 @@ const AUDIENCES = [
   },
 ];
 
-const SEED_TESTIMONIALS = [
-  {
-    id: 'seed-1',
-    name: 'Ana Trindade',
-    role: 'Candidata · São Tomé',
-    rating: 5,
-    message:
-      'Encontrei o meu primeiro emprego formal através do Emprego STP. O processo foi simples e recebi resposta em poucos dias.',
-  },
-  {
-    id: 'seed-2',
-    name: 'Nelson Costa',
-    role: 'Gestor de Recursos Humanos',
-    rating: 5,
-    message:
-      'Conseguimos preencher duas vagas técnicas com candidatos locais qualificados. A plataforma tornou o recrutamento muito mais claro.',
-  },
-];
-
 function Stars({ value = 0 }) {
   return (
     <span
@@ -146,7 +127,8 @@ function initialsOf(name = '') {
 }
 
 export default function SobreNos() {
-  const [testimonials, setTestimonials] = useState(SEED_TESTIMONIALS);
+  const [testimonials, setTestimonials] = useState([]);
+  const [testimonialLoadState, setTestimonialLoadState] = useState('loading');
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [testimonialPaused, setTestimonialPaused] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -227,21 +209,20 @@ export default function SobreNos() {
     let cancelled = false;
 
     fetch('/api/testimonials')
-      .then((response) =>
-        response.ok ? response.json() : { testimonials: [] },
-      )
+      .then((response) => {
+        if (!response.ok) throw new Error('Erro ao carregar testemunhos');
+        return response.json();
+      })
       .then((data) => {
         if (cancelled) return;
-        const approved = Array.isArray(data.testimonials)
-          ? data.testimonials
-          : [];
-
-        if (approved.length) {
-          setTestimonials([...SEED_TESTIMONIALS, ...approved]);
+        if (!Array.isArray(data?.testimonials)) {
+          throw new Error('Resposta de testemunhos inválida');
         }
+        setTestimonials(data.testimonials);
+        setTestimonialLoadState('ready');
       })
       .catch(() => {
-        // Os testemunhos base mantêm a secção útil mesmo sem ligação à API.
+        if (!cancelled) setTestimonialLoadState('error');
       });
 
     return () => {
@@ -533,7 +514,14 @@ export default function SobreNos() {
                   </p>
                 </header>
 
-                {testimonialCount ? (
+                {testimonialLoadState === 'loading' ? (
+                  <p role="status">A carregar testemunhos...</p>
+                ) : testimonialLoadState === 'error' ? (
+                  <p role="alert">
+                    Não foi possível carregar os testemunhos. Tente novamente
+                    mais tarde.
+                  </p>
+                ) : testimonialCount > 0 ? (
                   <div
                     className={styles.testimonialsCarousel}
                     role="region"
@@ -643,7 +631,12 @@ export default function SobreNos() {
                       </div>
                     ) : null}
                   </div>
-                ) : null}
+                ) : (
+                  <p role="status">
+                    Ainda não há testemunhos publicados. Partilhe a sua
+                    experiência no formulário abaixo.
+                  </p>
+                )}
               </div>
             </section>
 

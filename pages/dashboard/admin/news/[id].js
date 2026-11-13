@@ -274,9 +274,9 @@ export default function AdminNewsEdit({ newsData, isNew }) {
   return (
     <>
       <Head>
-        <title>
-          {isNew ? 'Nova Notícia' : 'Editar Notícia'} | Admin EmpregoSTP
-        </title>
+        <title>{`${
+          isNew ? 'Nova Notícia' : 'Editar Notícia'
+        } | Admin EmpregoSTP`}</title>
       </Head>
       <div className={adminStyles.legacyPage} style={styles.page}>
         <div style={styles.container}>

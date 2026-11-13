@@ -147,6 +147,33 @@ describe('Fase 3 — entrevistas (E6)', () => {
     });
   });
 
+  test('a agenda do candidato (interviewDetails) acompanha cada mudança', async () => {
+    const { service, docs } = setup();
+    const scheduled = await service.schedule(company, 'app-1', valid, KEY);
+    const id = scheduled.ok ? scheduled.value.interviewId : '';
+    const details = () => docs.get('applications/app-1')?.interviewDetails;
+
+    await service.confirm('cand-1', id);
+    expect(details()).toMatchObject({ interviewId: id, status: 'confirmed' });
+
+    await service.requestReschedule('cand-1', id, 'Pode ser na sexta?');
+    expect(details()).toMatchObject({ status: 'reschedule_requested' });
+
+    await service.reschedule(company, id, {
+      ...valid,
+      startsAt: '2026-10-15T09:00:00Z',
+      location: 'Filial, Lobata',
+    });
+    expect(details()).toMatchObject({
+      status: 'scheduled',
+      scheduledAt: '2026-10-15T09:00:00.000Z',
+      location: 'Filial, Lobata',
+    });
+
+    await service.cancel(company, id, 'Vaga suspensa', 'ORGANIZATION');
+    expect(details()).toBeNull();
+  });
+
   test('concluir/faltou só depois da hora; cancelar com motivo por qualquer lado', async () => {
     const { service } = setup();
     const scheduled = await service.schedule(company, 'app-1', valid, KEY);

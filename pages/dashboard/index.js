@@ -11,6 +11,7 @@ export default function Dashboard() {
   const { user, loading } = useAuth();
 
   useEffect(() => {
+    const controller = new AbortController();
     async function redirectUser() {
       if (!user) {
         router.replace(buildLoginUrl(router.asPath));
@@ -24,10 +25,12 @@ export default function Dashboard() {
         // A rota exige o token no cabeçalho; sem ele respondia 401 e todas
         // as contas acabavam na página inicial.
         const token = await user.getIdToken();
+        if (controller.signal.aborted) return;
         const response = await fetch(
           `/api/profile?uid=${encodeURIComponent(user.uid)}`,
           {
             cache: 'no-store',
+            signal: controller.signal,
             headers: {
               Accept: 'application/json',
               Authorization: `Bearer ${token}`,
@@ -35,6 +38,7 @@ export default function Dashboard() {
           },
         );
         const payload = await response.json().catch(() => null);
+        if (controller.signal.aborted) return;
         if (
           (response.ok || response.status === 304) &&
           payload?.profile?.data
@@ -56,6 +60,7 @@ export default function Dashboard() {
           router.replace('/');
         }
       } catch (error) {
+        if (controller.signal.aborted) return;
         console.error('Não foi possível consultar o utilizador:', error);
         router.replace('/');
       }
@@ -64,6 +69,7 @@ export default function Dashboard() {
     if (!loading) {
       redirectUser();
     }
+    return () => controller.abort();
   }, [user, loading, router]);
 
   return (

@@ -1,6 +1,7 @@
 import AnnouncementBar from './AnnouncementBar';
 import LandingHeader from './LandingHeader';
 import Footer from './home/Footer';
+import { AccountActionBoundary } from './auth/AccountActionLink';
 import styles from '../styles/PublicPageShell.module.css';
 
 export default function PublicPageShell({
@@ -9,25 +10,27 @@ export default function PublicPageShell({
   showFooter = true,
 }) {
   return (
-    <div className={`${styles.page} workbridgePublicShell`}>
-      <a href="#main-content" className="skipLink">
-        Ir para o conteúdo
-      </a>
-      <div className={styles.backdrop} aria-hidden="true">
-        <span className={styles.orbPrimary} />
-        <span className={styles.orbSecondary} />
-        <span className={styles.orbTertiary} />
-        <span className={styles.gridPattern} />
+    <AccountActionBoundary>
+      <div className={`${styles.page} workbridgePublicShell`}>
+        <a href="#main-content" className="skipLink">
+          Ir para o conteúdo
+        </a>
+        <div className={styles.backdrop} aria-hidden="true">
+          <span className={styles.orbPrimary} />
+          <span className={styles.orbSecondary} />
+          <span className={styles.orbTertiary} />
+          <span className={styles.gridPattern} />
+        </div>
+        <AnnouncementBar />
+        <LandingHeader variant={headerVariant} />
+        <main
+          id="main-content"
+          className={`${styles.content} workbridgePublicContent`}
+        >
+          {children}
+        </main>
+        {showFooter ? <Footer /> : null}
       </div>
-      <AnnouncementBar />
-      <LandingHeader variant={headerVariant} />
-      <main
-        id="main-content"
-        className={`${styles.content} workbridgePublicContent`}
-      >
-        {children}
-      </main>
-      {showFooter ? <Footer /> : null}
-    </div>
+    </AccountActionBoundary>
   );
 }

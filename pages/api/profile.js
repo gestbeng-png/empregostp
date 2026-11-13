@@ -1,6 +1,7 @@
 import { admin } from '../../lib/firebaseAdmin';
 import { logServerError } from '../../lib/serverLog';
 import { requireActiveApiUser } from '../../lib/apiUserAuth';
+import { buildCandidateVisibility } from '../../lib/candidateProfileInsights';
 
 const serializeTimestamp = (value) => {
   if (!value) return null;
@@ -77,6 +78,14 @@ export default async function handler(req, res) {
 
     const profileData = profileSnap.exists ? profileSnap.data() : {};
     const userData = userSnap.exists ? userSnap.data() : {};
+    const candidateVisibility =
+      userData.userType === 'candidato'
+        ? buildCandidateVisibility(userData, profileData)
+        : null;
+    const verificationReviewStatus =
+      userData.verificationStatus ||
+      profileData.verificationStatus ||
+      'unverified';
 
     const mergedProfile = {
       ...profileData,
@@ -91,17 +100,33 @@ export default async function handler(req, res) {
       photoUrl: userData.photoUrl || profileData.photoUrl || '',
       coverUrl: userData.coverUrl || profileData.coverUrl || '',
       currentPlan: userData.currentPlan || null,
+      planTierId: userData.planTierId || null,
       planId: userData.planId || null,
+      planStartDate: serializeTimestamp(userData.planStartDate),
       planEndDate: serializeTimestamp(userData.planEndDate),
       planName: userData.planName || null,
       planFeatures: userData.planFeatures || [],
       curriculoDestacado: Boolean(userData.curriculoDestacado),
       vagasLimit: userData.vagasLimit ?? null,
       destaque: Boolean(userData.destaque),
-      verificationStatus:
-        userData.verificationStatus ||
-        profileData.verificationStatus ||
-        'unverified',
+      verificationReviewStatus,
+      verificationStatus: candidateVisibility
+        ? candidateVisibility.verified
+          ? 'verified'
+          : userData.verificationDisabled === true
+            ? 'revoked'
+            : ['verified', 'approved'].includes(verificationReviewStatus)
+              ? 'unverified'
+              : verificationReviewStatus
+        : verificationReviewStatus,
+      ...(candidateVisibility
+        ? {
+            verified: candidateVisibility.verified,
+            verificado: candidateVisibility.verified,
+            isVerified: candidateVisibility.verified,
+          }
+        : {}),
+      verificationDisabled: userData.verificationDisabled === true,
       verificationSummary: serializeDeep(
         userData.verificationSummary || profileData.verificationSummary || null,
       ),
@@ -110,6 +135,23 @@ export default async function handler(req, res) {
       ),
       verificationId:
         userData.verificationId || profileData.verificationId || null,
+      verificationMethod:
+        userData.verificationMethod || profileData.verificationMethod || null,
+      verificationTypes:
+        candidateVisibility?.verificationTypes ||
+        userData.verificationTypes ||
+        profileData.verificationTypes ||
+        [],
+      verificationType:
+        candidateVisibility?.verificationType ||
+        userData.verificationType ||
+        profileData.verificationType ||
+        null,
+      paidVerified: Boolean(candidateVisibility?.paidVerified),
+      premiumVerified: Boolean(candidateVisibility?.premiumVerified),
+      qualifiedVerified: Boolean(candidateVisibility?.qualifiedVerified),
+      qualificationScore: candidateVisibility?.qualificationScore || 0,
+      qualificationLabel: candidateVisibility?.qualificationLabel || null,
     };
 
     let applications = [];

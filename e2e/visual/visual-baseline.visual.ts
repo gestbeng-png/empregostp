@@ -43,7 +43,7 @@ for (const route of routes) {
         '360 apenas para fluxos críticos.',
       );
       const response = await page.goto(route.path, {
-        waitUntil: 'networkidle',
+        waitUntil: 'load',
       });
       expect(response?.status()).toBe(200);
       expect(new URL(page.url()).pathname).toBe(route.path);

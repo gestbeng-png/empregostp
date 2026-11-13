@@ -3225,6 +3225,45 @@
   font-size: 0.88rem;
 }
 
+.verificationQualificationCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  padding: 1rem 1.15rem;
+  border: 0.0625rem solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface-2);
+}
+
+.verificationQualificationEyebrow {
+  color: var(--candidate-primary);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.verificationQualificationTitle {
+  margin: 0.3rem 0 0.25rem;
+  color: var(--text-1);
+  font-size: 1rem;
+}
+
+.verificationQualificationText {
+  margin: 0;
+  color: var(--candidate-muted);
+  line-height: 1.5;
+  font-size: 0.9rem;
+}
+
+.verificationQualificationCard > strong {
+  color: var(--candidate-primary-strong);
+  font-size: 1.35rem;
+  white-space: nowrap;
+}
+
 .verificationTypeGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -6300,4 +6339,172 @@
   background: var(--dash-blue);
   color: #0d1526;
   box-shadow: none;
+}
+
+/* Verification workspace — final visual authority.
+   The older verification styles above are kept for backwards compatibility
+   with shared candidate screens; this block gives the current route one
+   coherent, quiet surface without touching its behaviour. */
+.verificationSingleAction {
+  position: relative;
+  isolation: isolate;
+  width: min(100%, 56.25rem);
+  min-height: min(56vh, 32.5rem);
+  margin: auto;
+  display: grid;
+  place-items: center;
+  gap: 1.5rem;
+  overflow: hidden;
+  padding: clamp(2rem, 6vw, 4.5rem) clamp(1.25rem, 5vw, 4rem);
+  border: 0.0625rem solid var(--border);
+  border-radius: 1.125rem;
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  text-align: center;
+}
+
+.verificationSingleAction::before {
+  display: none;
+}
+
+.verificationSingleAction::after {
+  display: none;
+}
+
+.verificationSingleActionCopy {
+  max-width: 35rem;
+}
+
+.verificationSingleActionEyebrow {
+  display: inline-block;
+  color: var(--text-3);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.verificationSingleActionCopy h1 {
+  margin: 0.55rem 0 0.65rem;
+  color: var(--text-1);
+  font-size: clamp(1.65rem, 3vw, 2.35rem);
+  line-height: 1.08;
+  letter-spacing: -0.045em;
+}
+
+.verificationSingleActionCopy p {
+  max-width: 31.875rem;
+  margin: 0 auto;
+  color: var(--text-3);
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.verificationBenefits {
+  display: grid;
+  gap: 0.7rem;
+  width: min(100%, 26.25rem);
+  margin: 1.35rem auto 0;
+  padding: 0;
+  color: var(--text-1);
+  list-style: none;
+  text-align: left;
+}
+
+.verificationBenefits li {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.verificationBenefits li span {
+  display: grid;
+  flex: 0 0 1.35rem;
+  width: 1.35rem;
+  height: 1.35rem;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--surface-3);
+  color: var(--blue);
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.verificationSingleActionButton {
+  min-width: min(100%, 17.5rem);
+  min-height: 3.5rem;
+  padding-inline: 2rem;
+  border-radius: 0.875rem;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  box-shadow: var(--shadow-sm);
+}
+
+.verificationSingleActionButton:hover {
+  transform: translateY(-0.125rem);
+  box-shadow: var(--shadow-md);
+}
+
+.verificationSingleActionButton:focus-visible {
+  outline: 0.125rem solid var(--blue);
+  outline-offset: 0.25rem;
+}
+
+.verificationSingleActionButton:active {
+  transform: translateY(0);
+}
+
+:global(.dashShell[data-theme='dark']) .verificationSingleAction {
+  background: var(--surface);
+}
+
+:global(.dashShell[data-theme='dark']) .verificationSingleActionCopy h1,
+:global(.dashShell[data-theme='dark']) .verificationBenefits {
+  color: var(--text-1);
+}
+
+:global(.dashShell[data-theme='dark']) .verificationSingleActionCopy p {
+  color: var(--text-2);
+}
+
+.verificationSimpleForm {
+  display: grid;
+  gap: 0.75rem;
+  width: min(100%, 31.25rem);
+  min-width: 0;
+  text-align: left;
+  color: var(--text-1);
+}
+
+.verificationSimpleForm p {
+  margin: 0;
+  color: var(--text-3);
+  line-height: 1.6;
+}
+
+.verificationSimpleForm input {
+  width: 100%;
+  min-width: 0;
+  color: var(--text-1);
+}
+
+.verificationSimpleForm label {
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .verificationSingleActionButton {
+    transition: none;
+  }
+  .verificationSingleActionButton:hover {
+    transform: none;
+  }
+}
+
+/* Sem bolinha decorativa antes do texto. */
+.candidateSectionEyebrow::before {
+  display: none !important;
 }

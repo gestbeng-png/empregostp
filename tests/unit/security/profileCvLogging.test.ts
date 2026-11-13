@@ -6,10 +6,12 @@ import profileCvHandler from '../../../pages/api/profile/upload-cv';
 jest.mock('../../../lib/firebaseAdmin', () => ({
   admin: {
     auth: jest.fn(),
+    firestore: jest.fn(),
   },
 }));
 
 const authMock = admin.auth as unknown as jest.Mock;
+const firestoreMock = admin.firestore as unknown as jest.Mock;
 
 function createResponse() {
   const response = {
@@ -39,12 +41,17 @@ describe('logs da rota de upload de CV', () => {
     const canary =
       'candidato@example.test|cv-token|data:application/pdf;base64';
     const sensitiveError = Object.assign(new Error(canary), {
-      code: 'auth/internal-error',
+      code: 'firestore/internal-error',
       customData: { cvName: canary, cvUrl: canary },
       serverResponse: { email: canary },
     });
     authMock.mockReturnValue({
-      verifyIdToken: jest.fn().mockRejectedValue(sensitiveError),
+      verifyIdToken: jest.fn().mockResolvedValue({ uid: 'candidate-1' }),
+    });
+    firestoreMock.mockReturnValue({
+      collection: () => ({
+        doc: () => ({ get: jest.fn().mockRejectedValue(sensitiveError) }),
+      }),
     });
 
     const response = createResponse();
@@ -58,7 +65,7 @@ describe('logs da rota de upload de CV', () => {
     );
 
     expect(consoleErrorSpy).toHaveBeenCalledWith('profile.cv_upload_failed', {
-      category: 'authentication',
+      category: 'firestore',
     });
     expect(inspect(consoleErrorSpy.mock.calls, { depth: null })).not.toContain(
       canary,
@@ -67,5 +74,27 @@ describe('logs da rota de upload de CV', () => {
     expect(response.json).toHaveBeenCalledWith({
       error: 'Erro interno ao atualizar o CV.',
     });
+  });
+
+  test('uma falha de autenticação devolve 401 sem expor detalhes nos logs', async () => {
+    const canary = 'candidato@example.test|private-cv-token';
+    authMock.mockReturnValue({
+      verifyIdToken: jest.fn().mockRejectedValue(new Error(canary)),
+    });
+    const response = createResponse();
+
+    await profileCvHandler(
+      {
+        body: { cvName: canary, cvUrl: canary },
+        headers: { authorization: 'Bearer token-de-teste' },
+        method: 'POST',
+      },
+      response,
+    );
+
+    expect(response.status).toHaveBeenCalledWith(401);
+    expect(consoleErrorSpy).not.toHaveBeenCalled();
+    expect(firestoreMock).not.toHaveBeenCalled();
+    expect(JSON.stringify(response.json.mock.calls)).not.toContain(canary);
   });
 });

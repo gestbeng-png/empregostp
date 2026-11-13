@@ -13,7 +13,7 @@ test.describe('página pública de vagas', () => {
     const pageErrors = monitorPageErrors(page);
 
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    const response = await page.goto('/vagas', { waitUntil: 'networkidle' });
+    const response = await page.goto('/vagas', { waitUntil: 'load' });
 
     expect(response?.ok()).toBe(true);
     await expect(page.getByRole('main')).toHaveCount(1);
@@ -24,8 +24,10 @@ test.describe('página pública de vagas', () => {
       }),
     ).toBeAttached();
     await expect(page.getByLabel('Ordenar vagas')).toBeVisible();
+    // O cartão da lista rotula a ação "Candidatar" (a FAQ de /recursos usa a
+    // mesma palavra); "Candidatar-se" aparece só no modal da candidatura.
     const applyLinks = page.getByRole('link', {
-      name: 'Candidatar-se',
+      name: 'Candidatar',
       exact: true,
     });
     expect(await applyLinks.count()).toBeGreaterThan(0);
@@ -65,7 +67,7 @@ test.describe('página pública de vagas', () => {
     page,
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    const response = await page.goto('/vagas', { waitUntil: 'networkidle' });
+    const response = await page.goto('/vagas', { waitUntil: 'load' });
 
     expect(response?.ok()).toBe(true);
     await expect(

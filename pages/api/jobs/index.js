@@ -1,4 +1,5 @@
 import { admin } from '../../../lib/firebaseAdmin';
+import { requireActiveApiUser } from '../../../lib/apiUserAuth';
 import {
   canCreateJob,
   canHighlightJob,
@@ -19,6 +20,7 @@ import { normalizeSkillsAssessmentInput } from '../../../lib/skillsAssessment';
 import { normalizeRequiredDocuments } from '../../../lib/applicationDocuments';
 import { broadcastNewJob } from '../../../lib/newJobBroadcast';
 import { evaluateJobSubmission } from '../../../domain/jobs/submission';
+import { deadlineToUtc } from '../../../domain/jobs/deadlines';
 import { validateScreeningQuestions } from '../../../domain/jobs/screening';
 import { canUseFeature } from '../../../domain/entitlements/canUseFeature';
 import { EMPLOYER_REVIEW_MESSAGE } from '../../../domain/jobs/riskScore';
@@ -219,26 +221,9 @@ function getBasicEmpresaUpdate() {
 }
 
 async function getAuthenticatedCompany(req, res) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    res.status(401).json({ error: 'Token de autenticação não fornecido' });
-    return null;
-  }
-
-  const token = authHeader.split('Bearer ')[1];
-  const decodedToken = await admin.auth().verifyIdToken(token);
-  const userDoc = await admin
-    .firestore()
-    .collection('users')
-    .doc(decodedToken.uid)
-    .get();
-
-  if (!userDoc.exists) {
-    res.status(404).json({ error: 'Utilizador não encontrado' });
-    return null;
-  }
-
-  const userData = userDoc.data();
+  const auth = await requireActiveApiUser(req, res, { adminApp: admin });
+  if (!auth) return null;
+  const { uid, userDoc, userData } = auth;
   if (userData.userType !== 'empresa') {
     res.status(403).json({ error: 'Somente empresas podem gerir vagas' });
     return null;
@@ -266,7 +251,7 @@ async function getAuthenticatedCompany(req, res) {
   }
 
   return {
-    uid: decodedToken.uid,
+    uid,
     userDoc,
     userData,
     planSummary,
@@ -394,9 +379,11 @@ export default async function handler(req, res) {
       }
     }
 
-    const maxExpirationDate = getJobExpirationDate(planId);
-    const requestedCloseDate = new Date(dataFecho);
-    if (Number.isNaN(requestedCloseDate.getTime())) {
+    const maxExpirationDate = deadlineToUtc(
+      getJobExpirationDate(planId).toISOString().slice(0, 10),
+    );
+    const requestedCloseDate = deadlineToUtc(dataFecho);
+    if (!requestedCloseDate) {
       return res.status(400).json({ error: 'Data de fecho inválida' });
     }
 

@@ -1,24 +1,29 @@
 import { admin } from '../../../lib/firebaseAdmin';
 import { serializeFirestoreValue } from '../../../lib/empresaPlansCatalog';
-import { getCandidateMarketingPlans } from '../../../lib/candidateCatalog';
+import {
+  getCandidateMarketingPlans,
+  getCandidatePlanBenefits,
+} from '../../../lib/candidateCatalog';
+import { normalizePlanPriceLabel } from '../../../lib/payments/currency';
 import { logServerError } from '../../../lib/serverLog';
 import { requireActiveApiUser } from '../../../lib/apiUserAuth';
 
-// Modelo "3 planos fixos": o candidato vê sempre exatamente os planos canónicos
-// (Verificação, Profissional, Premium). O admin pode editar nome, preço, rótulo
+// Planos fixos: o candidato vê sempre exatamente os planos canónicos
+// (Profissional, Premium). O plano Verificação deixou de ser vendido — a
+// verificação vem incluída no Premium —, mas continua no catálogo para quem já
+// o tem. O admin pode editar nome, preço, rótulo
 // e recursos; essas edições são guardadas em documentos do Firestore com o id
 // canónico e sobrepõem-se aos valores por omissão. Planos avulsos criados no
 // passado são ignorados de propósito.
 const FIXED_CANDIDATE_PLANS = getCandidateMarketingPlans({
   includeBasic: false,
-  includeVerification: true,
+  includeVerification: false,
 });
 
 function normalizePriceLabel(plan) {
   const price = Number(plan?.price) || 0;
-  if (plan?.priceLabel) return String(plan.priceLabel);
-  if (price === 0) return 'Gratuito';
-  return `${price} Dobras`;
+  if (price === 0 && !plan?.priceLabel) return 'Gratuito';
+  return normalizePlanPriceLabel(plan?.priceLabel, price);
 }
 
 export default async function handler(req, res) {
@@ -40,7 +45,7 @@ export default async function handler(req, res) {
     }
 
     // Ler os documentos canónicos diretamente pelo id (onde vivem as edições do
-    // admin). Evita queries/índices e é determinístico: sempre os mesmos 3 planos.
+    // admin). Evita queries/índices e é determinístico: sempre os mesmos planos.
     const plansCollection = admin.firestore().collection('plans');
     const refs = FIXED_CANDIDATE_PLANS.map((plan) =>
       plansCollection.doc(plan.id),
@@ -63,10 +68,12 @@ export default async function handler(req, res) {
         planTierId: base.id,
         type: 'candidato',
         // Mantém os recursos por omissão se o admin não tiver definido nenhum.
-        features:
+        features: getCandidatePlanBenefits(
+          base.id,
           Array.isArray(override.features) && override.features.length
             ? override.features
             : base.features,
+        ),
       };
       merged.priceLabel = normalizePriceLabel(merged);
       return merged;

@@ -29,17 +29,19 @@ function createResponse() {
   return response;
 }
 
+const BRAVO = {
+  data: () => ({
+    candidateEmail: 'b@example.test',
+    candidateName: 'Bravo',
+    createdAt: { toDate: () => new Date('2026-02-01T00:00:00Z') },
+    jobTitle: 'Vaga B',
+    status: 'pending',
+  }),
+  id: 'app-b',
+};
+
 const DOCS = [
-  {
-    data: () => ({
-      candidateEmail: 'b@example.test',
-      candidateName: 'Bravo',
-      createdAt: { toDate: () => new Date('2026-02-01T00:00:00Z') },
-      jobTitle: 'Vaga B',
-      status: 'pending',
-    }),
-    id: 'app-b',
-  },
+  BRAVO,
   {
     data: () => ({
       candidateEmail: 'a@example.test',
@@ -52,10 +54,20 @@ const DOCS = [
   },
 ];
 
-function installFirestore({ indexMissing = false } = {}) {
-  const missing = Object.assign(new Error('The query requires an index.'), { code: 9 });
+function installFirestore({
+  indexMissing = false,
+  user = {},
+  docs = DOCS,
+}: {
+  indexMissing?: boolean;
+  user?: Record<string, unknown>;
+  docs?: typeof DOCS;
+} = {}) {
+  const missing = Object.assign(new Error('The query requires an index.'), {
+    code: 9,
+  });
   const base = {
-    get: jest.fn().mockResolvedValue({ docs: DOCS }),
+    get: jest.fn().mockResolvedValue({ docs: [...docs] }),
     orderBy: jest.fn(),
     where: jest.fn(),
   };
@@ -63,7 +75,7 @@ function installFirestore({ indexMissing = false } = {}) {
   base.orderBy.mockReturnValue({
     get: indexMissing
       ? jest.fn().mockRejectedValue(missing)
-      : jest.fn().mockResolvedValue({ docs: DOCS }),
+      : jest.fn().mockResolvedValue({ docs: [...docs] }),
   });
 
   firestoreMock.mockReturnValue({
@@ -76,6 +88,7 @@ function installFirestore({ indexMissing = false } = {}) {
               currentPlan: 'unlimited_empresa',
               planEndDate: null,
               userType: 'empresa',
+              ...user,
             }),
             exists: true,
           }),
@@ -86,9 +99,15 @@ function installFirestore({ indexMissing = false } = {}) {
   return base;
 }
 
-async function get() {
+async function get({ revoked = false } = {}) {
   authMock.mockReturnValue({
-    verifyIdToken: jest.fn().mockResolvedValue({ uid: 'company-1' }),
+    verifyIdToken: jest.fn(async (_token: string, checkRevoked?: boolean) => {
+      if (revoked && checkRevoked)
+        throw Object.assign(new Error('Revoked'), {
+          code: 'auth/id-token-revoked',
+        });
+      return { uid: 'company-1' };
+    }),
   });
   const response = createResponse();
   await handler(
@@ -154,5 +173,82 @@ describe('exportação de candidaturas sem índice composto', () => {
     const response = await get();
 
     expect(response.status).toHaveBeenCalledWith(500);
+  });
+
+  test.each(['suspended', 'inactive', 'disabled', 'deleted'])(
+    'uma empresa %s não consegue exportar dados pessoais',
+    async (status) => {
+      const base = installFirestore({ user: { status } });
+
+      const response = await get();
+
+      expect(response.status).toHaveBeenCalledWith(403);
+      expect(response.json).toHaveBeenCalledWith(
+        expect.objectContaining({ code: 'ACCOUNT_BLOCKED' }),
+      );
+      expect(base.where).not.toHaveBeenCalled();
+      expect(response.send).not.toHaveBeenCalled();
+    },
+  );
+
+  test('um token revogado é recusado antes de consultar candidaturas', async () => {
+    const base = installFirestore();
+
+    const response = await get({ revoked: true });
+
+    expect(response.status).toHaveBeenCalledWith(401);
+    expect(base.where).not.toHaveBeenCalled();
+    expect(response.send).not.toHaveBeenCalled();
+  });
+
+  test.each([
+    '=HYPERLINK("https://example.test","abrir")',
+    '+1+1',
+    '-1+1',
+    '@SUM(1,2)',
+    '\t=1+1',
+    '\r=1+1',
+    '\n=1+1',
+    '  =1+1',
+  ])(
+    'exporta como texto um valor que poderia ser fórmula: %j',
+    async (name) => {
+      installFirestore({
+        docs: [
+          {
+            ...BRAVO,
+            data: () => ({ ...BRAVO.data(), candidateName: name }),
+          },
+        ],
+      });
+
+      const response = await get();
+      const csv = response.send.mock.calls[0][0] as string;
+      const escaped = `'${name}`.replace(/"/g, '""');
+      const cell = /[,"\r\n]/.test(name) ? `"${escaped}"` : escaped;
+
+      expect(csv).toContain(`app-b,${cell},b@example.test,`);
+    },
+  );
+
+  test('preserva texto normal e protege também fórmulas no título da vaga', async () => {
+    installFirestore({
+      docs: [
+        {
+          ...BRAVO,
+          data: () => ({
+            ...BRAVO.data(),
+            candidateName: 'Ana, "Maria"',
+            jobTitle: '=1+1',
+          }),
+        },
+      ],
+    });
+
+    const response = await get();
+
+    expect(response.send.mock.calls[0][0]).toContain(
+      'app-b,"Ana, ""Maria""",b@example.test,\'=1+1,pending,',
+    );
   });
 });

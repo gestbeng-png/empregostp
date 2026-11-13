@@ -14,6 +14,7 @@ import {
   teamRoleLabel,
 } from '../../lib/recruitmentLabels';
 import TeamWorkspace, { MessageTemplates } from './TeamWorkspace';
+import { EmployerOfferPanel } from './OfferControls';
 import { safeSignedUrl, apiRequest } from '../../lib/apiClient';
 import {
   ActionForm,
@@ -481,6 +482,22 @@ function ApplicationWorkspace({
                   submit="Marcar entrevista"
                 />
               </details>
+            ) : null}
+            {row.permissions.interview &&
+            [
+              'SHORTLISTED',
+              'INTERVIEW',
+              'OFFER',
+              'OFFER_DECLINED',
+              'HIRED',
+            ].includes(view.status) ? (
+              <EmployerOfferPanel
+                base={base}
+                status={view.status}
+                version={view.version}
+                request={request}
+                onChange={refresh}
+              />
             ) : null}
             {row.permissions.hire &&
             !['HIRED', 'REJECTED', 'WITHDRAWN', 'DRAFT'].includes(

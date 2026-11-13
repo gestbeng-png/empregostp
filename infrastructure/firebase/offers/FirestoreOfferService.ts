@@ -1,5 +1,9 @@
 import { Timestamp } from 'firebase-admin/firestore';
-import type { Firestore, Transaction } from 'firebase-admin/firestore';
+import type {
+  DocumentReference,
+  Firestore,
+  Transaction,
+} from 'firebase-admin/firestore';
 
 import { assertTransition as applicationTransition } from '@/domain/applications/states';
 import type { ApplicationStatus } from '@/domain/applications/states';
@@ -257,26 +261,44 @@ export class FirestoreOfferService {
             version,
             at,
           });
-          if (action === 'send' || action === 'decline') {
-            const to = action === 'send' ? 'OFFER' : 'OFFER_DECLINED';
+          if (action === 'send') {
             const appVersion = Number(app.version || 0) + 1;
-            const legacy = legacyStatusUpdate('Application', to);
+            const legacy = legacyStatusUpdate('Application', 'OFFER');
             tx.update(appRef, {
               ...(legacy.ok ? legacy.value : {}),
-              v2Status: to,
+              v2Status: 'OFFER',
               version: appVersion,
               lastStatusChangeAt: at,
             });
             tx.create(this.db.collection('applicationsStatusHistory').doc(), {
               entityId: applicationId,
               from: app.v2Status,
-              to,
+              to: 'OFFER',
               version: appVersion,
               actorId: uid,
-              actorType: candidateAction ? 'SYSTEM' : identity.transition,
+              actorType: identity.transition,
               at,
             });
           }
+          // Retirar a proposta também tira a candidatura de OFFER. Sem isto
+          // ficava presa: de OFFER só o sistema sai, e só com a proposta
+          // aceite (contratação) ou recusada/expirada.
+          const withdrawReleases =
+            action === 'withdraw' &&
+            app.v2Status === 'OFFER' &&
+            !offers.docs.some(
+              (doc) =>
+                doc.id !== ref.id &&
+                ['SENT', 'ACCEPTED'].includes(doc.data().v2Status),
+            );
+          if (action === 'decline' || withdrawReleases)
+            this.endOffer(tx, appRef, app, {
+              actorId: uid,
+              closedReason: action === 'withdraw' ? 'OFFER_WITHDRAWN' : null,
+              note:
+                action === 'withdraw' ? 'A empresa retirou a proposta.' : null,
+              at,
+            });
           if (action !== 'save') this.notify(tx, ref.id, version);
           const result = {
             offer: candidateOfferView(ref.id, data, this.now()),
@@ -289,6 +311,89 @@ export class FirestoreOfferService {
       if (error instanceof Abort) return failure(error.code, error.message);
       throw error;
     }
+  }
+
+  /**
+   * Depois de o cron expirar propostas: a candidatura que ficou em OFFER sem
+   * nenhuma proposta ativa passa a OFFER_DECLINED («Proposta expirada»).
+   * Relê tudo na transação e não faz nada fora desse caso, por isso pode ser
+   * chamada para qualquer candidatura, várias vezes.
+   */
+  async releaseAfterExpiry(applicationId: string): Promise<boolean> {
+    if (!validDocumentId(applicationId)) return false;
+    return this.db.runTransaction(async (tx) => {
+      const appRef = this.db.collection('applications').doc(applicationId);
+      const [appSnap, offers] = await Promise.all([
+        tx.get(appRef),
+        tx.get(
+          this.db
+            .collection('offers')
+            .where('applicationId', '==', applicationId),
+        ),
+      ]);
+      const app = appSnap.data();
+      if (!app || app.v2Status !== 'OFFER') return false;
+      const statuses = offers.docs.map((doc) => String(doc.data().v2Status));
+      if (
+        !statuses.includes('EXPIRED') ||
+        statuses.some((status) => ['SENT', 'ACCEPTED'].includes(status))
+      )
+        return false;
+      this.endOffer(tx, appRef, app, {
+        actorId: 'system:expireOffers',
+        closedReason: 'OFFER_EXPIRED',
+        note: 'A proposta expirou sem resposta.',
+        at: Timestamp.fromMillis(this.now()),
+      });
+      return true;
+    });
+  }
+
+  /** OFFER → OFFER_DECLINED, com o motivo que o candidato vai ler. */
+  private endOffer(
+    tx: Transaction,
+    appRef: DocumentReference,
+    app: Data,
+    {
+      actorId,
+      closedReason,
+      note,
+      at,
+    }: {
+      actorId: string;
+      closedReason: 'OFFER_WITHDRAWN' | 'OFFER_EXPIRED' | null;
+      note: string | null;
+      at: Timestamp;
+    },
+  ) {
+    const moved = applicationTransition(
+      app.v2Status as ApplicationStatus,
+      'OFFER_DECLINED',
+      'SYSTEM',
+      { guards: { offerDeclinedOrExpired: true } },
+    );
+    if (!moved.ok) throw new Abort(moved.error.code, moved.error.message);
+    const version = Number(app.version || 0) + 1;
+    const legacy = legacyStatusUpdate('Application', 'OFFER_DECLINED');
+    tx.update(appRef, {
+      ...(legacy.ok ? legacy.value : {}),
+      v2Status: 'OFFER_DECLINED',
+      version,
+      lastStatusChangeAt: at,
+      // Limpa sempre: um motivo antigo não pode rotular uma recusa nova.
+      closedReason,
+    });
+    tx.create(this.db.collection('applicationsStatusHistory').doc(), {
+      entityId: appRef.id,
+      from: app.v2Status,
+      to: 'OFFER_DECLINED',
+      version,
+      actorId,
+      actorType: 'SYSTEM',
+      closedReason,
+      ...(note ? { candidateVisibleNote: note } : {}),
+      at,
+    });
   }
 
   private notify(tx: Transaction, id: string, version: number) {

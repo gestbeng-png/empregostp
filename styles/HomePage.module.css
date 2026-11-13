@@ -6339,6 +6339,47 @@
   border-radius: 0.75rem;
 }
 
+/* No telemóvel a pesquisa tem duas linhas: o contorno acompanha o conjunto,
+   mas só o botão mantém a forma de pílula usada no desktop. */
+@media (max-width: 720px) {
+  .page .searchForm {
+    display: grid;
+    width: 100%;
+    max-width: 27.8125rem;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 1.5rem;
+  }
+
+  .page .searchField {
+    width: 100%;
+    min-width: 0;
+    min-height: 3rem;
+    gap: 0.625rem;
+    padding-inline: 0.75rem;
+  }
+
+  .page .searchInput {
+    min-height: 3rem;
+    padding-block: 0.75rem;
+    border-radius: 0;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .page .searchButton {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    min-height: 3rem;
+    align-items: center;
+    justify-content: center;
+    padding: 0.875rem 1.25rem;
+    line-height: 1.25;
+  }
+}
+
 /* ------------------------------------------------------------------
    Movimento das outras rotas (carreira, sobre-nós, contacto, recursos):
    título palavra a palavra, blocos que sobem ao entrar no ecrã, cartões que
@@ -6474,4 +6515,9 @@
   .page.page.page.page :is(a, article):hover :is(span, svg) {
     transform: none !important;
   }
+}
+
+/* Sem bolinha decorativa antes do texto. */
+.heroEyebrow::before {
+  display: none !important;
 }

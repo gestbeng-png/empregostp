@@ -1,4 +1,5 @@
 import { admin } from '../../../lib/firebaseAdmin';
+import { requireActiveApiUser } from '../../../lib/apiUserAuth';
 import { logServerError } from '../../../lib/serverLog';
 import { resolveOwnedStorageObjectPath } from '../../../lib/storageObjectPath';
 
@@ -40,16 +41,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res
-        .status(401)
-        .json({ error: 'Token de autenticação não fornecido' });
+    const authResult = await requireActiveApiUser(req, res);
+    if (!authResult) return;
+    const { uid, userRef, userData: currentUserData } = authResult;
+    if (currentUserData.userType !== 'candidato') {
+      return res.status(403).json({ error: 'Apenas candidatos podem atualizar o CV.' });
     }
-
-    const token = authHeader.split('Bearer ')[1];
-    const decodedToken = await admin.auth().verifyIdToken(token);
-    const uid = decodedToken.uid;
 
     const { cvUrl, cvName } = req.body;
     if (!cvUrl || !cvName) {
@@ -69,7 +66,6 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Dados do CV inválidos' });
     }
 
-    const userRef = admin.firestore().collection('users').doc(uid);
     const profileRef = admin.firestore().collection('profiles').doc(uid);
 
     // `updatedAt` muda a cada edição do perfil e não serve para saber a idade

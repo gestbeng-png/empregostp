@@ -8,13 +8,54 @@ import { admin } from '../../../lib/firebaseAdmin';
 import styles from '../../../styles/AdminPanel.module.css';
 import { redirectToLogin } from '../../../lib/loginRedirect';
 
-export default function AdminJobs({ jobs = [] }) {
+export default function AdminJobs({ jobs = [], jobApprovalRequired = false }) {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [sourceFilter, setSourceFilter] = useState('all');
   const [moderatingId, setModeratingId] = useState('');
   const [moderationFeedback, setModerationFeedback] = useState(null);
+  const [approvalRequired, setApprovalRequired] = useState(
+    Boolean(jobApprovalRequired),
+  );
+  const [savingApproval, setSavingApproval] = useState(false);
+
+  // A fila de revisão existia (aprovar/rejeitar abaixo), mas não havia forma de
+  // a ligar: o toggle `settings/moderation` só se mudava na base de dados.
+  const updateApprovalRequired = async (next) => {
+    if (savingApproval) return;
+    setSavingApproval(true);
+    setModerationFeedback(null);
+    try {
+      const { getAuth } = await import('firebase/auth');
+      const token = await getAuth().currentUser?.getIdToken();
+      const response = await fetch('/api/admin/moderation-settings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ jobApprovalRequired: next }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(
+          data.message || 'Não foi possível guardar a definição.',
+        );
+      }
+      setApprovalRequired(data.jobApprovalRequired === true);
+      setModerationFeedback({
+        ok: true,
+        text: data.jobApprovalRequired
+          ? 'Revisão ativada: as novas vagas das empresas ficam em moderação até serem aprovadas.'
+          : 'Revisão desativada: as novas vagas das empresas são publicadas de imediato.',
+      });
+    } catch (error) {
+      setModerationFeedback({ ok: false, text: error.message });
+    } finally {
+      setSavingApproval(false);
+    }
+  };
 
   // O endpoint de moderação existia sem qualquer chamador na interface: as
   // vagas ficavam em `pending_review` sem forma de as aprovar, e a única saída
@@ -24,7 +65,8 @@ export default function AdminJobs({ jobs = [] }) {
 
     let reason = '';
     if (action === 'reject') {
-      reason = window.prompt('Motivo da rejeição (visível para a empresa):') || '';
+      reason =
+        window.prompt('Motivo da rejeição (visível para a empresa):') || '';
       if (!reason.trim()) return;
     }
 
@@ -45,7 +87,9 @@ export default function AdminJobs({ jobs = [] }) {
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        throw new Error(data.error || data.message || 'Não foi possível concluir.');
+        throw new Error(
+          data.error || data.message || 'Não foi possível concluir.',
+        );
       }
 
       setModerationFeedback({
@@ -199,6 +243,30 @@ export default function AdminJobs({ jobs = [] }) {
             accent="var(--admin-muted)"
             onClick={() => setFilterStatus('disabled')}
           />
+        </section>
+
+        <section
+          className={`${styles.surface} ${styles.panel} ${styles.section}`}
+          aria-labelledby="admin-jobs-approval-title"
+        >
+          <h2 id="admin-jobs-approval-title" className={styles.chartTitle}>
+            Revisão antes de publicar
+          </h2>
+          <label className={styles.checkboxField}>
+            <input
+              type="checkbox"
+              role="switch"
+              checked={approvalRequired}
+              aria-checked={approvalRequired}
+              disabled={savingApproval}
+              onChange={(event) => updateApprovalRequired(event.target.checked)}
+            />
+            {savingApproval
+              ? 'A guardar…'
+              : approvalRequired
+                ? 'Ativa — as vagas novas das empresas aguardam aprovação'
+                : 'Desativada — as vagas novas das empresas são publicadas de imediato'}
+          </label>
         </section>
 
         {moderationFeedback ? (
@@ -356,7 +424,9 @@ export default function AdminJobs({ jobs = [] }) {
                                 onClick={() => moderateJob(job, 'approve')}
                                 className={`${styles.buttonBase} ${styles.buttonSuccess} ${styles.buttonSmall}`}
                               >
-                                {moderatingId === job.id ? 'A processar…' : 'Aprovar'}
+                                {moderatingId === job.id
+                                  ? 'A processar…'
+                                  : 'Aprovar'}
                               </button>
                               <button
                                 type="button"
@@ -512,10 +582,12 @@ export async function getServerSideProps(context) {
       return { redirect: { destination: '/dashboard', permanent: false } };
     }
 
-    const [jobsSnapshot, applicationsSnapshot] = await Promise.all([
-      admin.firestore().collection('jobs').orderBy('createdAt', 'desc').get(),
-      admin.firestore().collection('applications').get(),
-    ]);
+    const [jobsSnapshot, applicationsSnapshot, moderationSettings] =
+      await Promise.all([
+        admin.firestore().collection('jobs').orderBy('createdAt', 'desc').get(),
+        admin.firestore().collection('applications').get(),
+        admin.firestore().collection('settings').doc('moderation').get(),
+      ]);
     const applicationsByJob = {};
     applicationsSnapshot.docs.forEach((doc) => {
       const data = doc.data();
@@ -588,7 +660,12 @@ export async function getServerSideProps(context) {
     });
 
     return {
-      props: { jobs },
+      props: {
+        jobs,
+        jobApprovalRequired:
+          moderationSettings.exists &&
+          moderationSettings.data()?.jobApprovalRequired === true,
+      },
     };
   } catch (error) {
     console.error('Erro no getServerSideProps de admin/jobs:', error);

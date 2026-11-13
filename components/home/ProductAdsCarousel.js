@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { normalizeCurrencyText } from '../../lib/payments/currency';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -235,7 +236,9 @@ export default function ProductAdsCarousel({
                     </span>
                   ) : null}
                   <span className={styles.priceValue}>
-                    {activeAd.price}
+                    {/* O preço do anúncio é texto livre escrito pelo admin;
+                        a moeda é normalizada para a do resto do site. */}
+                    {normalizeCurrencyText(activeAd.price)}
                     {activeAd.priceSuffix ? (
                       <small>{activeAd.priceSuffix}</small>
                     ) : null}

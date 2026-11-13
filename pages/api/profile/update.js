@@ -102,6 +102,10 @@ const mapProfileResponse = (userData, profileData) => ({
     userData.verificationItems || profileData.verificationItems || null,
   ),
   verificationId: userData.verificationId || profileData.verificationId || null,
+  verificationType:
+    userData.verificationType || profileData.verificationType || null,
+  verificationTypes:
+    userData.verificationTypes || profileData.verificationTypes || [],
   ...mapPlanInfo(userData),
 });
 
@@ -117,6 +121,11 @@ export default async function handler(req, res) {
     });
     if (!authResult) return;
     const { uid, userData: existingUserData, userRef } = authResult;
+    // Este formulário e todos os seus campos são do perfil de candidato.
+    // A empresa e o admin têm endpoints próprios; não herdam esta permissão.
+    if (existingUserData.userType !== 'candidato') {
+      return res.status(403).json({ error: 'Apenas candidatos podem editar este perfil.' });
+    }
     const profileRef = admin.firestore().collection('profiles').doc(uid);
 
     const {

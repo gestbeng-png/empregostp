@@ -1,12 +1,128 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import Head from 'next/head';
+import { useRouter } from 'next/router';
 import nookies from 'nookies';
 import { admin } from '../../../lib/firebaseAdmin';
 import styles from '../../../styles/AdminPanel.module.css';
 import { redirectToLogin } from '../../../lib/loginRedirect';
 
+/**
+ * A API de criação de administradores existia sem ecrã: dar acesso de admin a
+ * alguém só era possível mexendo na base de dados. A pessoa recebe o email da
+ * EmpregoSTP para definir a senha.
+ */
+function AddAdminPanel({ onCreated }) {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [feedback, setFeedback] = useState(null);
+
+  const submit = async (event) => {
+    event.preventDefault();
+    if (busy) return;
+    const cleanName = name.trim();
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanName || !cleanEmail) return;
+    setBusy(true);
+    setFeedback(null);
+    try {
+      const { getAuth } = await import('firebase/auth');
+      const token = await getAuth().currentUser?.getIdToken();
+      const response = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: cleanName,
+          email: cleanEmail,
+          userType: 'admin',
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.message || 'Não foi possível criar a conta.');
+      }
+      setFeedback({
+        ok: true,
+        text: data.passwordEmailSent
+          ? `Conta criada. Enviámos a ${cleanEmail} um email para definir a senha.`
+          : `Conta criada, mas o email não foi enviado. Peça a ${cleanEmail} para usar «Recuperar senha» na página de login.`,
+      });
+      setName('');
+      setEmail('');
+      onCreated?.();
+    } catch (error) {
+      setFeedback({ ok: false, text: error.message });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section className={`${styles.surface} ${styles.panel} ${styles.section}`}>
+      <details>
+        <summary className={styles.chartTitle}>Adicionar administrador</summary>
+        <form
+          onSubmit={submit}
+          className={styles.inlineControls}
+          aria-label="Adicionar administrador"
+        >
+          <div style={{ flex: '1 1 220px' }}>
+            <label className={styles.chartTitle} htmlFor="admin-new-name">
+              Nome
+            </label>
+            <input
+              id="admin-new-name"
+              type="text"
+              required
+              maxLength={120}
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              className={styles.inputControl}
+            />
+          </div>
+          <div style={{ flex: '1 1 260px' }}>
+            <label className={styles.chartTitle} htmlFor="admin-new-email">
+              Email
+            </label>
+            <input
+              id="admin-new-email"
+              type="email"
+              required
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              className={styles.inputControl}
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={busy}
+            className={`${styles.buttonBase} ${styles.buttonPrimary}`}
+          >
+            {busy ? 'A criar…' : 'Criar e enviar convite'}
+          </button>
+        </form>
+      </details>
+      {feedback ? (
+        <div
+          role="status"
+          aria-live="polite"
+          className={`${styles.alert} ${
+            feedback.ok ? styles.alertSuccess : styles.alertError
+          }`}
+        >
+          {feedback.text}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
 export default function AdminUsers({ users = [] }) {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
 
@@ -94,6 +210,12 @@ export default function AdminUsers({ users = [] }) {
             onClick={() => setFilterType('admin')}
           />
         </section>
+
+        <AddAdminPanel
+          onCreated={() =>
+            router.replace(router.asPath, undefined, { scroll: false })
+          }
+        />
 
         <section
           className={`${styles.surface} ${styles.panel} ${styles.section}`}

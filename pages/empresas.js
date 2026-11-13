@@ -12,12 +12,16 @@ import {
   FiUsers,
 } from 'react-icons/fi';
 import PublicPageShell from '../components/PublicPageShell';
+import AccountActionLink, {
+  AccountActionProvider,
+} from '../components/auth/AccountActionLink';
 import { getEmpresaPlanFeatures } from '../lib/empresaPlanFeatures';
 import {
   fetchEmpresaPlans,
   getEmpresaPlanCatalog,
 } from '../lib/empresaPlansCatalog';
 import styles from '../styles/EmpresasStitchPage.module.css';
+import presentation from '../styles/PlansPresentation.module.css';
 
 const COMPANY_PHOTOS = {
   collaboration: '/assets/fotos/sequencia-002-45.webp',
@@ -207,7 +211,7 @@ function ComparisonValue({ value }) {
  */
 export default function EmpresasPage({ companyPlans = [] }) {
   return (
-    <>
+    <AccountActionProvider>
       <Head>
         <title>Ferramentas de Recrutamento Profissional | EmpregoSTP</title>
         <meta
@@ -239,14 +243,17 @@ export default function EmpresasPage({ companyPlans = [] }) {
                   </p>
 
                   <div className={styles.heroActions}>
-                    <Link
+                    <AccountActionLink
                       href="/dashboard/empresa/vaga/criar-vaga"
                       className={styles.primaryAction}
                     >
                       Publicar uma vaga
                       <FiArrowRight aria-hidden="true" />
-                    </Link>
-                    <Link href="/candidatos" className={styles.secondaryAction}>
+                    </AccountActionLink>
+                    <Link
+                      href="/verificados"
+                      className={styles.secondaryAction}
+                    >
                       <FiSearch aria-hidden="true" />
                       Procurar candidatos
                     </Link>
@@ -294,6 +301,36 @@ export default function EmpresasPage({ companyPlans = [] }) {
             </div>
           </section>
 
+          <section
+            className={styles.toolkitSection}
+            aria-labelledby="toolkit-title"
+          >
+            <div className={`${styles.container} ${styles.toolkitLayout}`}>
+              <div>
+                <span className={styles.sectionEyebrow}>
+                  Tudo numa só plataforma
+                </span>
+                <h2 id="toolkit-title" className={styles.plansTitle}>
+                  Recrute melhor com a EmpregoSTP
+                </h2>
+                <p className={styles.plansSubtitle}>
+                  Publique vagas, encontre candidatos e organize todo o seu
+                  processo de recrutamento numa única plataforma. A EmpregoSTP
+                  ajuda empresas de todos os tamanhos a contratar com mais
+                  rapidez, organização e visibilidade.
+                </p>
+              </div>
+              <ul className={styles.toolkitList}>
+                {RECRUITING_TOOLS.map((tool) => (
+                  <li key={tool}>
+                    <FiCheck aria-hidden="true" />
+                    {tool}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+
           <section className={styles.plansSection} id="planos">
             <div className={styles.container}>
               <div className={styles.plansIntro}>
@@ -305,50 +342,90 @@ export default function EmpresasPage({ companyPlans = [] }) {
                 </p>
               </div>
 
-              <div className={styles.plansGrid}>
+              <div
+                className={`${presentation.theme} ${presentation.grid} ${presentation.companyGrid}`}
+              >
                 {companyPlans.map((plan) => {
                   const isPopular = Boolean(plan.popular);
                   const isFree = Number(plan.price) === 0;
+                  const priceLabel = String(plan.priceLabel || '');
+                  const priceParts = priceLabel.match(/^([\d\s.,]+)\s+(.+)$/);
                   return (
                     <article
                       key={plan.id}
-                      className={`${styles.planCard} ${
-                        isPopular ? styles.planCardPopular : ''
+                      className={`${presentation.card} ${
+                        isPopular ? presentation.cardPopular : ''
                       }`}
+                      aria-label={plan.name}
                     >
-                      {isPopular ? (
-                        <span className={styles.planBadge}>Mais escolhido</span>
-                      ) : null}
-                      <h3 className={styles.planName}>{plan.name}</h3>
-                      <p className={styles.planPrice}>
-                        {plan.priceLabel}
-                        {plan.pricePeriodLabel ? (
-                          <span className={styles.planPricePeriod}>
-                            {plan.pricePeriodLabel}
+                      <div className={presentation.planIntro}>
+                        <div className={presentation.planTopline}>
+                          <h3 className={presentation.planName}>{plan.name}</h3>
+                          {isPopular ? (
+                            <span className={presentation.popularBadge}>
+                              Mais escolhido
+                            </span>
+                          ) : null}
+                        </div>
+                        <p className={presentation.summary}>
+                          {plan.description}
+                        </p>
+                        <div className={presentation.priceRow}>
+                          <span
+                            className={presentation.price}
+                            aria-label={priceLabel}
+                          >
+                            {priceParts ? (
+                              <>
+                                {priceParts[1].trim()}{' '}
+                                <span className={presentation.priceCurrency}>
+                                  {priceParts[2]}
+                                </span>
+                              </>
+                            ) : (
+                              priceLabel
+                            )}
                           </span>
-                        ) : null}
-                      </p>
-                      <p className={styles.planDescription}>
-                        {plan.description}
-                      </p>
-                      <ul className={styles.planFeatures}>
-                        {plan.features.slice(0, 8).map((feature, index) => (
-                          <li key={`${feature}-${index}`}>
-                            <FiCheck aria-hidden="true" />
-                            {feature}
-                          </li>
-                        ))}
-                      </ul>
-                      <Link
-                        href={
-                          isFree ? '/register?type=empresa' : '/premium/empresa'
-                        }
-                        className={styles.planAction}
-                      >
-                        {isFree
-                          ? 'Começar gratuitamente'
-                          : `Escolher plano ${plan.name}`}
-                      </Link>
+                          {plan.pricePeriodLabel ? (
+                            <span className={presentation.pricePeriod}>
+                              {plan.pricePeriodLabel}
+                            </span>
+                          ) : null}
+                        </div>
+                        <AccountActionLink
+                          href={
+                            isFree
+                              ? '/register?type=empresa'
+                              : '/premium/empresa'
+                          }
+                          className={`${presentation.subscribeBtn} ${isPopular ? presentation.subscribeBtnPopular : ''}`}
+                        >
+                          {isFree
+                            ? 'Começar gratuitamente'
+                            : `Escolher plano ${plan.name}`}
+                        </AccountActionLink>
+                      </div>
+                      <div className={presentation.planDetails}>
+                        <h4 className={presentation.featuresTitle}>
+                          O que está incluído
+                        </h4>
+                        <ul className={presentation.features}>
+                          {plan.features.slice(0, 8).map((feature, index) => (
+                            <li
+                              key={`${feature}-${index}`}
+                              className={presentation.feature}
+                            >
+                              <span
+                                className={presentation.checkIcon}
+                                aria-hidden="true"
+                              >
+                                <FiCheck />
+                              </span>
+                              <span>{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                     </article>
                   );
                 })}
@@ -433,36 +510,6 @@ export default function EmpresasPage({ companyPlans = [] }) {
           </section>
 
           <section
-            className={styles.toolkitSection}
-            aria-labelledby="toolkit-title"
-          >
-            <div className={`${styles.container} ${styles.toolkitLayout}`}>
-              <div>
-                <span className={styles.sectionEyebrow}>
-                  Tudo numa só plataforma
-                </span>
-                <h2 id="toolkit-title" className={styles.plansTitle}>
-                  Recrute melhor com a EmpregoSTP
-                </h2>
-                <p className={styles.plansSubtitle}>
-                  Publique vagas, encontre candidatos e organize todo o seu
-                  processo de recrutamento numa única plataforma. A EmpregoSTP
-                  ajuda empresas de todos os tamanhos a contratar com mais
-                  rapidez, organização e visibilidade.
-                </p>
-              </div>
-              <ul className={styles.toolkitList}>
-                {RECRUITING_TOOLS.map((tool) => (
-                  <li key={tool}>
-                    <FiCheck aria-hidden="true" />
-                    {tool}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </section>
-
-          <section
             className={styles.visibilitySection}
             aria-labelledby="visibility-title"
           >
@@ -515,13 +562,13 @@ export default function EmpresasPage({ companyPlans = [] }) {
                     avançadas ou apoio especializado.
                   </p>
                 </div>
-                <Link
+                <AccountActionLink
                   href="/register?type=empresa"
                   className={styles.closingAction}
                 >
                   Criar conta de empresa
                   <FiArrowRight aria-hidden="true" />
-                </Link>
+                </AccountActionLink>
               </div>
             </div>
           </section>
@@ -538,10 +585,13 @@ export default function EmpresasPage({ companyPlans = [] }) {
                     Mesmo sem um plano mais elevado, pode contratar serviços
                     específicos à equipa da EmpregoSTP.
                   </p>
-                  <Link href={HR_REQUEST_URL} className={styles.servicesAction}>
+                  <AccountActionLink
+                    href={HR_REQUEST_URL}
+                    className={styles.servicesAction}
+                  >
                     Pedir um serviço
                     <FiArrowRight aria-hidden="true" />
-                  </Link>
+                  </AccountActionLink>
                 </div>
                 <dl className={styles.servicesList}>
                   {EXTRA_SERVICES.map((service) => (
@@ -565,13 +615,13 @@ export default function EmpresasPage({ companyPlans = [] }) {
                     ))}
                   </ul>
                 </div>
-                <Link
+                <AccountActionLink
                   href={SPONSORSHIP_REQUEST_URL}
                   className={styles.closingAction}
                 >
                   Patrocinar uma vaga
                   <FiArrowRight aria-hidden="true" />
-                </Link>
+                </AccountActionLink>
               </div>
             </div>
           </section>
@@ -585,7 +635,7 @@ export default function EmpresasPage({ companyPlans = [] }) {
               <FiBriefcase aria-hidden="true" />
               <span>Vagas</span>
             </Link>
-            <Link href="/candidatos">
+            <Link href="/verificados">
               <FiUsers aria-hidden="true" />
               <span>Candidatos</span>
             </Link>
@@ -596,7 +646,7 @@ export default function EmpresasPage({ companyPlans = [] }) {
           </nav>
         </div>
       </PublicPageShell>
-    </>
+    </AccountActionProvider>
   );
 }
 

@@ -1,4 +1,5 @@
 import { admin as adminApp } from '../../../../lib/firebaseAdmin';
+import { requireActiveApiUser } from '../../../../lib/apiUserAuth';
 import * as firebaseAdmin from 'firebase-admin';
 import {
   canScheduleInterview,
@@ -136,7 +137,6 @@ export default async function handler(req, res) {
       .json({ error: 'Token de autenticacao nao fornecido' });
   }
 
-  const token = authHeader.split('Bearer ')[1];
   const { id } = req.query;
   const {
     status,
@@ -174,20 +174,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    const decodedToken = await adminApp.auth().verifyIdToken(token);
-    const uid = decodedToken.uid;
+    const auth = await requireActiveApiUser(req, res, { adminApp });
+    if (!auth) return;
+    const { uid, userData } = auth;
 
     // Empresas gerem as suas candidaturas; administradores gerem apenas as
     // candidaturas de vagas que foram publicadas pelo Admin.
-    const userDoc = await adminApp
-      .firestore()
-      .collection('users')
-      .doc(uid)
-      .get();
-    if (!userDoc.exists) {
-      return res.status(404).json({ error: 'Usuario nao encontrado' });
-    }
-    const userData = userDoc.data();
     const isCompanyActor = userData.userType === 'empresa';
     const isAdminActor = userData.userType === 'admin';
     if (!isCompanyActor && !isAdminActor) {

@@ -9,6 +9,7 @@ import {
 } from '../../../lib/defaultPlans';
 import { getCandidateMarketingPlans } from '../../../lib/candidateCatalog';
 import { normalizeEmpresaPlanId } from '../../../lib/empresaPlanFeatures';
+import { normalizePlanPriceLabel } from '../../../lib/payments/currency';
 import styles from '../../../styles/AdminPanel.module.css';
 
 // Os planos de candidato são fixos (Verificação, Profissional, Premium): o admin
@@ -32,7 +33,12 @@ function buildFixedCandidatePlans(firestorePlans) {
       ...override,
       id: base.id,
       type: 'candidato',
-      priceLabel: override.priceLabel || base.priceLabel,
+      // Mesmo rótulo que o utilizador final vê: moeda e separador derivados
+      // do preço, nunca do texto guardado.
+      priceLabel: normalizePlanPriceLabel(
+        override.priceLabel || base.priceLabel,
+        override.price ?? base.price,
+      ),
       features:
         Array.isArray(override.features) && override.features.length
           ? override.features
@@ -62,7 +68,12 @@ function buildFixedEmpresaPlans(firestorePlans) {
       // ou, se ainda não existir, no id canónico do tier (o PUT faz upsert).
       id: override.id || base.id,
       type: 'empresa',
-      priceLabel: override.priceLabel || base.priceLabel,
+      // Mesmo rótulo que o utilizador final vê: moeda e separador derivados
+      // do preço, nunca do texto guardado.
+      priceLabel: normalizePlanPriceLabel(
+        override.priceLabel || base.priceLabel,
+        override.price ?? base.price,
+      ),
       features:
         Array.isArray(override.features) && override.features.length
           ? override.features
@@ -992,7 +1003,7 @@ export default function AdminPlans() {
 
                 <div className={styles.formField}>
                   <label htmlFor="plan-price" className={styles.formLabel}>
-                    Preço (em Dobras)
+                    Preço (em STD)
                   </label>
                   <input
                     id="plan-price"

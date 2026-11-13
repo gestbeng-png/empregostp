@@ -3,12 +3,17 @@ import {
   evaluateCandidateJobAccess,
   getJobApplicationPolicy,
 } from '@/lib/applicationPolicy';
-import { CANDIDATE_PLAN_CATALOG } from '@/lib/candidateCatalog';
+import {
+  CANDIDATE_PLAN_CATALOG,
+  getCandidatePlanBenefits,
+} from '@/lib/candidateCatalog';
 import {
   PLAN_FEATURES,
   canApplyToJob,
   canSaveJob,
   canUseCvGenerator,
+  canVerifyProfile,
+  getPlanSummary,
 } from '@/lib/candidatePlanFeatures';
 
 const tiers = Object.keys(PLAN_FEATURES) as Array<keyof typeof PLAN_FEATURES>;
@@ -61,6 +66,37 @@ describe('ADR-016 — nenhum plano compra candidaturas, prioridade ou destaque (
       supportLevel: 'vip',
     });
     expect(PLAN_FEATURES.basic_candidato.canVerifyProfile).toBe(false);
+  });
+
+  test('Premium ativo inclui o pedido de verificação sem contratar outro plano', () => {
+    const active = getPlanSummary({
+      currentPlan: 'unlimited_candidato',
+      planEndDate: new Date(Date.now() + 86400000),
+    });
+    expect(canVerifyProfile(active.planId)).toEqual({ allowed: true });
+    expect(active.features.canVerifyProfile).toBe(true);
+
+    const expired = getPlanSummary({
+      currentPlan: 'unlimited_candidato',
+      planEndDate: new Date(Date.now() - 86400000),
+    });
+    expect(expired.features.canVerifyProfile).toBe(false);
+  });
+
+  test('mantém a verificação visível sem duplicar nem alterar os benefícios do admin', () => {
+    const features = [
+      ...Array.from({ length: 8 }, (_, index) => `Benefício ${index + 1}`),
+      'Verificação incluída',
+    ];
+    const original = [...features];
+    expect(getCandidatePlanBenefits('unlimited_candidato', features)).toEqual([
+      'Verificação incluída',
+      ...features.slice(0, 8),
+    ]);
+    expect(features).toEqual(original);
+    expect(
+      getCandidatePlanBenefits('professional_candidato', features.slice(0, 8)),
+    ).toEqual(features.slice(0, 8));
   });
 
   test('vagas «premium»/acesso antecipado deixam de existir para qualquer plano', () => {

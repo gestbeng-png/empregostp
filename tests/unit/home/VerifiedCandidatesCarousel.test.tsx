@@ -57,8 +57,9 @@ describe('carrossel de candidatos verificados', () => {
     expect(screen.getByText('Carlos Neto')).toBeVisible();
     expect(screen.getByText('Marta Lima')).toBeVisible();
     expect(screen.getByText('3 talentos disponíveis')).toBeInTheDocument();
-    expect(screen.getByText('Anos de experiência: 4 anos')).toBeVisible();
-    expect(screen.getAllByLabelText('Perfil verificado')).toHaveLength(3);
+    expect(screen.getByText('Gestora de projetos')).toBeVisible();
+    // O cartão da home mostra o estado por extenso; o selo é decorativo.
+    expect(screen.getAllByText('Verificado')).toHaveLength(3);
   });
 
   test('agrupa três perfis por página e permite navegar entre grupos', async () => {
@@ -101,7 +102,7 @@ describe('carrossel de candidatos verificados', () => {
       'href',
       '/login?redirect=%2Fcandidatos%2Fcandidate-recruiters',
     );
-    expect(screen.getAllByText('Ver mais')).toHaveLength(3);
+    expect(screen.getAllByText('Ver perfil')).toHaveLength(3);
   });
 
   test('convida a ser verificado quando não há perfis disponíveis', () => {

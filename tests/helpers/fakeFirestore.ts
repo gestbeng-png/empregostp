@@ -117,6 +117,8 @@ export function createFakeFirestore(seed: Record<string, Data> = {}): {
   }
   const db = {
     collection: (name: string) => collectionRef(name),
+    getAll: (...refs: Array<{ get: () => Promise<unknown> }>) =>
+      Promise.all(refs.map((ref) => ref.get())),
     batch: () => {
       const pending: (() => void)[] = [];
       const batch = {

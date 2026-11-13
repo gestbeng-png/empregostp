@@ -10,21 +10,21 @@ const candidateRoutes = [
   {
     path: '/candidatos',
     heading: /Construa a sua carreira em São Tomé com mais confiança/i,
-    currentMarket: 'Para nacional',
+    currentMarket: 'Talento nacional',
     assurance: 'Plano gratuito disponível, sem compromisso',
     serviceHeading: 'Perfil profissional para o mercado nacional',
   },
   {
     path: '/candidatos/nacional',
     heading: /Construa a sua carreira em São Tomé com mais confiança/i,
-    currentMarket: 'Para nacional',
+    currentMarket: 'Talento nacional',
     assurance: 'Plano gratuito disponível, sem compromisso',
     serviceHeading: 'Perfil profissional para o mercado nacional',
   },
   {
     path: '/candidatos/internacional',
     heading: /Descubra novas oportunidades em São Tomé e Príncipe/i,
-    currentMarket: 'Para internacional',
+    currentMarket: 'Talento internacional',
     assurance:
       'Apoio para candidatos internacionais que querem trabalhar em STP',
     serviceHeading: 'Preparação para trabalhar em São Tomé e Príncipe',
@@ -38,7 +38,7 @@ test.describe('catálogo público para candidatos', () => {
 
       await page.emulateMedia({ reducedMotion: 'reduce' });
       const response = await page.goto(route.path, {
-        waitUntil: 'networkidle',
+        waitUntil: 'load',
       });
 
       expect(response?.ok()).toBe(true);
@@ -46,11 +46,26 @@ test.describe('catálogo público para candidatos', () => {
       await expect(
         page.getByRole('heading', { level: 1, name: route.heading }),
       ).toBeVisible();
+      const marketNavigation = page.getByRole('navigation', {
+        name: 'Catálogos de candidatos',
+      });
       await expect(
-        page
-          .getByRole('navigation', { name: 'Catálogos de candidatos' })
-          .getByRole('link', { name: route.currentMarket, exact: true }),
+        marketNavigation.getByRole('link', {
+          name: route.currentMarket,
+          exact: true,
+        }),
       ).toHaveAttribute('aria-current', 'page');
+      await expect(
+        marketNavigation.locator('[aria-current="page"]'),
+      ).toHaveCount(1);
+      for (const market of candidateRoutes.slice(1)) {
+        await expect(
+          marketNavigation.getByRole('link', {
+            name: market.currentMarket,
+            exact: true,
+          }),
+        ).toHaveAttribute('href', market.path);
+      }
       await expect(
         page.getByText(route.assurance, { exact: true }),
       ).toBeVisible();
@@ -80,6 +95,37 @@ test.describe('catálogo público para candidatos', () => {
     });
   }
 
+  test('o seletor alterna entre os catálogos nacional e internacional', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/candidatos/nacional', {
+      waitUntil: 'domcontentloaded',
+    });
+
+    const marketNavigation = page.getByRole('navigation', {
+      name: 'Catálogos de candidatos',
+    });
+    for (const market of [candidateRoutes[2], candidateRoutes[1]]) {
+      await marketNavigation
+        .getByRole('link', { name: market.currentMarket, exact: true })
+        .click();
+      await expect(page).toHaveURL(new RegExp(`${market.path}$`));
+      await expect(
+        page.getByRole('heading', { level: 1, name: market.heading }),
+      ).toBeVisible();
+      await expect(
+        marketNavigation.getByRole('link', {
+          name: market.currentMarket,
+          exact: true,
+        }),
+      ).toHaveAttribute('aria-current', 'page');
+      await expect(
+        marketNavigation.locator('[aria-current="page"]'),
+      ).toHaveCount(1);
+    }
+  });
+
   test('mantém preços e planos legíveis em tablet', async ({
     page,
   }, testInfo) => {
@@ -93,7 +139,7 @@ test.describe('catálogo público para candidatos', () => {
     await page.setViewportSize({ width: 820, height: 1180 });
     await page.emulateMedia({ reducedMotion: 'reduce' });
     const response = await page.goto('/candidatos/nacional', {
-      waitUntil: 'networkidle',
+      waitUntil: 'load',
     });
 
     expect(response?.ok()).toBe(true);
@@ -102,7 +148,7 @@ test.describe('catálogo público para candidatos', () => {
       name: 'Premium',
       exact: true,
     });
-    const premiumPrice = premiumCard.getByText('200 Dobras', { exact: true });
+    const premiumPrice = premiumCard.getByText('200 STD', { exact: true });
     await expect(premiumCard).toBeVisible();
     await expect(premiumPrice).toBeVisible();
 

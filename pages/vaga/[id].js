@@ -526,7 +526,8 @@ export default function VagaDetalhe({
     setAssessmentAnswers(new Array(assessmentQuestions.length).fill(null));
     setApplicationForm(createEmptyApplicationForm());
     setAppliedJobId(jobId);
-  }, [assessmentQuestions, jobId]);
+    setApplyModalOpen(false);
+  }, [assessmentQuestions, jobId, user?.uid]);
 
   // Pré-preenche o formulário com o que o perfil já sabe. Só toca em campos
   // ainda vazios: um rascunho restaurado ou o que a pessoa escreveu ganham
@@ -622,7 +623,12 @@ export default function VagaDetalhe({
   };
 
   const applicationDraftReady = Boolean(
-    user?.uid && jobId && appliedJobId === jobId,
+    !authLoading &&
+    !profileLoading &&
+    userType === 'candidato' &&
+    user?.uid &&
+    jobId &&
+    appliedJobId === jobId,
   );
 
   const applicationDraftValue = useMemo(
@@ -645,7 +651,13 @@ export default function VagaDetalhe({
     scope: 'job-application',
     resourceId: jobId || 'default',
     value: applicationDraftValue,
-    enabled: Boolean(user?.uid && jobId),
+    enabled: Boolean(
+      user?.uid &&
+      jobId &&
+      userType === 'candidato' &&
+      !profileLoading &&
+      !authLoading,
+    ),
     ready: applicationDraftReady,
     getToken: () => user?.getIdToken?.(),
     onRestore: (draft) => {
@@ -719,7 +731,8 @@ export default function VagaDetalhe({
     setErrorMsg('');
 
     async function checkExisting() {
-      if (!user || !vaga?.id) return;
+      if (!user || profileLoading || userType !== 'candidato' || !vaga?.id)
+        return;
       try {
         const { auth } = await import('../../lib/firebaseAuth');
         const token = await auth.currentUser?.getIdToken();
@@ -743,7 +756,7 @@ export default function VagaDetalhe({
     return () => {
       active = false;
     };
-  }, [user, vaga?.id]);
+  }, [user, vaga?.id, profileLoading, userType]);
 
   useEffect(() => {
     let active = true;
@@ -800,7 +813,8 @@ export default function VagaDetalhe({
     setIsSaved(false);
 
     async function loadSavedJobs() {
-      if (!user || !vaga?.id) return;
+      if (!user || profileLoading || userType !== 'candidato' || !vaga?.id)
+        return;
       try {
         const { auth } = await import('../../lib/firebaseAuth');
         const token = await auth.currentUser?.getIdToken();
@@ -823,7 +837,7 @@ export default function VagaDetalhe({
     return () => {
       active = false;
     };
-  }, [user, vaga?.id]);
+  }, [user, vaga?.id, profileLoading, userType]);
 
   const salaryRange = useMemo(() => {
     if (!vaga) return 'A combinar';
@@ -851,7 +865,7 @@ export default function VagaDetalhe({
   );
 
   const candidateJobInsights = useMemo(() => {
-    if (!user || (userType && userType !== 'candidato')) return null;
+    if (!user || userType !== 'candidato') return null;
     if (!candidateProfileData) return null;
     return analyzeCandidateJobFit(
       vaga,
@@ -1023,7 +1037,9 @@ export default function VagaDetalhe({
   const isOpen = status === 'active' || status === 'open' || !status;
   const isApplying = applyStatus === 'loading';
   const isApplied = applyStatus === 'success';
-  const isBlocked = Boolean(userType && userType !== 'candidato');
+  const isBlocked = Boolean(user && userType !== 'candidato');
+  const showCandidateActions =
+    !authLoading && !profileLoading && (!user || userType === 'candidato');
   // A carta deixou de bloquear o botão: vive dentro do modal, que a valida
   // antes do envio. Desativar o botão aqui deixava a pessoa sem forma de a
   // escrever.
@@ -1032,19 +1048,22 @@ export default function VagaDetalhe({
     isApplying ||
     isApplied ||
     isBlocked ||
+    authLoading ||
     profileLoading ||
     !assessmentComplete;
   const applicationButtonLabel = isApplying
     ? 'A enviar…'
-    : profileLoading
+    : authLoading || profileLoading
       ? 'A validar perfil…'
       : isApplied
         ? 'Candidatura enviada'
         : !isOpen
           ? 'Vaga encerrada'
-          : !assessmentComplete
-            ? 'Concluir teste'
-            : 'Candidatar agora';
+          : isBlocked
+            ? 'Conta de candidato necessária'
+            : !assessmentComplete
+              ? 'Concluir teste'
+              : 'Candidatar agora';
 
   const applicationCount = Number(
     vaga.applicationsCount ||
@@ -1180,8 +1199,28 @@ export default function VagaDetalhe({
     setReportSignal((value) => value + 1);
   };
 
+  const requireCandidateAction = () => {
+    if (authLoading || profileLoading) {
+      setErrorMsg('Aguarde enquanto validamos o seu perfil.');
+      return false;
+    }
+    if (!user) {
+      window.location.href = `/login?redirect=/vaga/${vaga.id}`;
+      return false;
+    }
+    if (userType !== 'candidato') {
+      setErrorMsg(
+        userType
+          ? 'Esta ação é exclusiva de contas de candidato. A sua sessão atual não foi alterada.'
+          : 'Não foi possível validar o seu perfil. Recarregue a página antes de tentar novamente.',
+      );
+      return false;
+    }
+    return true;
+  };
+
   const handleToggleSave = async () => {
-    if (saving || authLoading) return;
+    if (saving || !requireCandidateAction()) return;
     setSaving(true);
     setErrorMsg('');
 
@@ -1247,17 +1286,7 @@ export default function VagaDetalhe({
   };
 
   const handleGenerateCoverLetter = async () => {
-    if (!user) {
-      window.location.href = `/login?redirect=/vaga/${vaga.id}`;
-      return;
-    }
-
-    if (userType && userType !== 'candidato') {
-      setErrorMsg(
-        'Inicie sessão com uma conta de candidato para usar este recurso.',
-      );
-      return;
-    }
+    if (!requireCandidateAction()) return;
 
     setIsGeneratingCoverLetter(true);
     try {
@@ -1276,23 +1305,14 @@ export default function VagaDetalhe({
   };
 
   const handleApply = () => {
-    if (!user) {
-      window.location.href = `/login?redirect=/vaga/${vaga.id}`;
-      return;
-    }
-    if (userType && userType !== 'candidato') {
-      setErrorMsg(
-        'O seu perfil atual não pode candidatar a esta vaga. Entre com uma conta de candidato.',
-      );
-      setApplyStatus('error');
-      return;
-    }
+    if (!requireCandidateAction()) return;
     // A partir daqui é o modal que recolhe e valida a candidatura.
     setErrorMsg('');
     setApplyModalOpen(true);
   };
 
   const handleSubmitApplication = async (formulario) => {
+    if (!requireCandidateAction()) return;
     try {
       setApplyStatus('loading');
       setErrorMsg('');
@@ -1452,7 +1472,7 @@ export default function VagaDetalhe({
               >
                 <FiShare2 aria-hidden="true" />
               </button>
-              {userType !== 'empresa' ? (
+              {showCandidateActions ? (
                 <button
                   type="button"
                   onClick={handleToggleSave}
@@ -1659,7 +1679,7 @@ export default function VagaDetalhe({
                   <FiArrowRight size={17} />
                 </button>
 
-                {userType !== 'empresa' && (
+                {showCandidateActions && (
                   <button
                     type="button"
                     className={`${styles.headerSaveButton} ${
@@ -2025,7 +2045,7 @@ export default function VagaDetalhe({
                     {applicationButtonLabel}
                   </button>
 
-                  {userType !== 'empresa' ? (
+                  {showCandidateActions ? (
                     <button
                       type="button"
                       className={`${styles.sidebarSaveButton} ${
@@ -2070,9 +2090,12 @@ export default function VagaDetalhe({
                     loginHref={`/login?redirect=/vaga/${vaga.id}`}
                   />
 
-                  {isBlocked && (
+                  {isBlocked && !profileLoading && (
                     <p className={styles.warningText}>
-                      O seu perfil atual não pode candidatar a esta vaga.
+                      {userType
+                        ? 'Esta ação é exclusiva de contas de candidato.'
+                        : 'Não foi possível validar o seu perfil. Recarregue a página para tentar novamente.'}{' '}
+                      <Link href="/dashboard">Ir para o meu painel</Link>
                     </p>
                   )}
                   {errorMsg && <p className={styles.errorText}>{errorMsg}</p>}
@@ -2081,7 +2104,7 @@ export default function VagaDetalhe({
                       Conclua o teste de competências para ativar a candidatura.
                     </p>
                   )}
-                  {user && userType !== 'empresa' ? (
+                  {user && userType === 'candidato' ? (
                     <AutoSaveStatus
                       status={applicationDraftStatus}
                       lastSavedAt={applicationDraftLastSavedAt}
@@ -2258,7 +2281,7 @@ export default function VagaDetalhe({
             >
               {applicationButtonLabel}
             </button>
-            {userType !== 'empresa' ? (
+            {showCandidateActions ? (
               <button
                 type="button"
                 className={`${styles.mobileSaveButton} ${

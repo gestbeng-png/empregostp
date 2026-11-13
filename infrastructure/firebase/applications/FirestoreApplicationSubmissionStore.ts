@@ -190,7 +190,13 @@ export class FirestoreApplicationSubmissionStore implements ApplicationSubmissio
 
 export interface StorageFileLike {
   bucket: { file(path: string): unknown };
-  copy(destination: unknown): Promise<unknown>;
+  copy(
+    destination: unknown,
+    options?: {
+      cacheControl?: string;
+      metadata?: Record<string, string | null>;
+    },
+  ): Promise<unknown>;
 }
 
 const CV_EXTENSIONS = new Set(['.pdf', '.doc', '.docx']);
@@ -215,7 +221,13 @@ export class StorageCvSnapshotter implements CvSnapshotter {
     try {
       const source = await this.locate(sourcePath);
       if (!source) return null;
-      await source.copy(source.bucket.file(destination));
+      // Storage copies inherit custom metadata, including Firebase's permanent
+      // download tokens. Remove that credential in the copy itself so the
+      // private snapshot is accessible only through the authorized signer.
+      await source.copy(source.bucket.file(destination), {
+        cacheControl: 'private, no-store',
+        metadata: { firebaseStorageDownloadTokens: null },
+      });
       return destination;
     } catch (error) {
       this.onError(error);

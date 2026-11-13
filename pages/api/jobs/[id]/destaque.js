@@ -1,4 +1,5 @@
 import { admin } from '../../../../lib/firebaseAdmin';
+import { requireActiveApiUser } from '../../../../lib/apiUserAuth';
 import {
   canHighlightJob,
   getEmpresaPlanSummary,
@@ -22,22 +23,10 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Verify authentication
-    const token = req.headers['authorization']?.split('Bearer ')[1];
-    if (!token) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    const decodedToken = await admin.auth().verifyIdToken(token);
-    const userId = decodedToken.uid;
-
-    // Verify user is empresa
-    const userDoc = await admin
-      .firestore()
-      .collection('users')
-      .doc(userId)
-      .get();
-    if (!userDoc.exists || userDoc.data().userType !== 'empresa') {
+    const auth = await requireActiveApiUser(req, res, { adminApp: admin });
+    if (!auth) return;
+    const { uid: userId, userData } = auth;
+    if (userData.userType !== 'empresa') {
       return res.status(403).json({ error: 'Only companies can update jobs' });
     }
 
@@ -65,7 +54,7 @@ export default async function handler(req, res) {
         .json({ error: 'Apenas vagas ativas podem ficar em destaque' });
     }
 
-    const planSummary = getEmpresaPlanSummary(userDoc.data());
+    const planSummary = getEmpresaPlanSummary(userData);
     if (highlightRequested && !job.destaque) {
       const highlightCheck = await canHighlightJob(
         userId,

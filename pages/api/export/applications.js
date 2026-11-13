@@ -1,4 +1,5 @@
 import { admin } from '../../../lib/firebaseAdmin';
+import { requireActiveApiUser } from '../../../lib/apiUserAuth';
 import {
   canExportApplications,
   getEmpresaPlanSummary,
@@ -36,27 +37,11 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Método não permitido' });
   }
 
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res
-      .status(401)
-      .json({ error: 'Token de autenticação não fornecido' });
-  }
-  const token = authHeader.split('Bearer ')[1];
-
-  let uid;
-  try {
-    const decoded = await admin.auth().verifyIdToken(token);
-    uid = decoded.uid;
-  } catch {
-    return res.status(401).json({ error: 'Token inválido' });
-  }
-
-  const userDoc = await admin.firestore().collection('users').doc(uid).get();
-  if (!userDoc.exists) {
-    return res.status(404).json({ error: 'Utilizador não encontrado' });
-  }
-  const userData = userDoc.data();
+  const authResult = await requireActiveApiUser(req, res, {
+    invalidTokenMessage: 'Token inválido',
+  });
+  if (!authResult) return;
+  const { uid, userData } = authResult;
   if (userData.userType !== 'empresa') {
     return res
       .status(403)
@@ -133,8 +118,10 @@ export default async function handler(req, res) {
 }
 
 function escapeCsv(value) {
-  const str = String(value ?? '');
-  if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+  const raw = String(value ?? '');
+  // CSV quoting alone does not stop spreadsheet formulas in candidate input.
+  const str = /^[\s]*[=+\-@]|^[\t\r\n]/.test(raw) ? `'${raw}` : raw;
+  if (/[,"\r\n]/.test(str)) {
     return `"${str.replace(/"/g, '""')}"`;
   }
   return str;

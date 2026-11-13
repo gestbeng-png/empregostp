@@ -3,6 +3,7 @@ import { requireActiveApiUser } from '../../../../lib/apiUserAuth';
 import { logServerError } from '../../../../lib/serverLog';
 import { buildCandidateApplicationView } from '../../../../application/applications/candidateApplicationView';
 import { candidateInterviewView } from '../../../../domain/interviews/schedule';
+import { candidateOfferView } from '../../../../infrastructure/firebase/offers/FirestoreOfferService';
 
 const NOT_FOUND = {
   error: { code: 'NOT_FOUND', message: 'Candidatura não encontrada.' },
@@ -48,13 +49,14 @@ export default async function handler(req, res) {
       });
     }
     const db = adminApp.firestore();
-    const [history, interviews, hire] = await Promise.all([
+    const [history, interviews, hire, offers] = await Promise.all([
       db
         .collection('applicationsStatusHistory')
         .where('entityId', '==', id)
         .get(),
       db.collection('interviews').where('applicationId', '==', id).get(),
       db.collection('hires').doc(id).get(),
+      db.collection('offers').where('applicationId', '==', id).get(),
     ]);
     const hireData = hire.exists ? hire.data() : null;
     return res.status(200).json({
@@ -68,6 +70,10 @@ export default async function handler(req, res) {
       interviews: interviews.docs.map((doc) =>
         candidateInterviewView({ id: doc.id, ...doc.data() }),
       ),
+      // Propostas de emprego: o candidato nunca vê os rascunhos da empresa.
+      offers: offers.docs
+        .filter((doc) => doc.data().v2Status !== 'DRAFT')
+        .map((doc) => candidateOfferView(doc.id, doc.data())),
       // E5.3: «Começou a trabalhar?» só depois do pedido aos 30 dias.
       hireConfirmation:
         hireData &&

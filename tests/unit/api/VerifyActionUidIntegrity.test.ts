@@ -86,18 +86,32 @@ function installFirestore() {
           if (!profileSets.has(uid)) {
             profileSets.set(uid, jest.fn().mockResolvedValue(undefined));
           }
-          return { set: profileSets.get(uid) };
+          return {
+            get: jest.fn().mockResolvedValue({ data: () => ({}) }),
+            set: profileSets.get(uid),
+          };
         }),
       };
     }
-    if (name === 'verifications') return { doc: jest.fn(() => verificationRef) };
+    if (name === 'verifications')
+      return { doc: jest.fn(() => verificationRef) };
     if (name === 'activities') {
-      return { add: jest.fn().mockResolvedValue({ id: 'a-1' }) };
+      return { doc: () => ({ set: jest.fn().mockResolvedValue(undefined) }) };
     }
     throw new Error(`Colecao inesperada: ${name}`);
   });
 
-  firestoreMock.mockReturnValue({ collection });
+  const writes: Array<() => Promise<unknown>> = [];
+  firestoreMock.mockReturnValue({
+    collection,
+    batch: () => ({
+      set: (ref: { set: jest.Mock }, data: unknown, options: unknown) =>
+        writes.push(() => ref.set(data, options)),
+      commit: async () => {
+        for (const write of writes) await write();
+      },
+    }),
+  });
   return { profileSets, userSets, verificationSet };
 }
 

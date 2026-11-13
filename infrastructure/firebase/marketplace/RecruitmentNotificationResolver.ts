@@ -203,6 +203,63 @@ export async function resolveRecruitmentNotice(
       atMs(data.startsAt) <= now)
   )
     return null;
+  // A resposta do candidato a uma proposta interessa à empresa, não a ele.
+  if (
+    kind === 'Offer' &&
+    ['ACCEPTED', 'DECLINED'].includes(String(data.v2Status))
+  ) {
+    const orgId = data.organizationId;
+    const organization = await read('organizations', orgId);
+    const userId = text(organization?.ownerUserId) ?? text(orgId);
+    const user = await read('users', userId);
+    if (!userId || !user) return null;
+    const accepted = data.v2Status === 'ACCEPTED';
+    return {
+      userId,
+      email: text(user.email),
+      entityId: id,
+      entityKind: 'Offer',
+      type: accepted ? 'OFFER_ACCEPTED' : 'OFFER_DECLINED',
+      title: accepted
+        ? 'O candidato aceitou a proposta'
+        : 'O candidato recusou a proposta',
+      body: accepted
+        ? 'Confirme a contratação no painel de recrutamento para concluir o processo.'
+        : 'Pode voltar a pré-selecionar o candidato ou seguir com outras candidaturas no painel de recrutamento.',
+      path: '/dashboard/recrutamento',
+    };
+  }
+  if (kind === 'Application') {
+    const status = String(data.v2Status ?? '');
+    // E4: a pré-seleção é interna — o candidato não vê nenhuma mudança, por
+    // isso também não recebe um «foi atualizada» sem nada de novo.
+    if (status === 'SHORTLISTED') return null;
+    // A submissão já cria «Candidatura recebida» no painel (no próprio
+    // pedido); daqui sai só o email, com o mesmo título em vez de um vago
+    // «foi atualizada» em duplicado.
+    if (status === 'SUBMITTED')
+      return {
+        userId: null,
+        email: (await candidate(data)).email,
+        entityId: id,
+        entityKind: kind,
+        type: 'APPLICATION_RECEIVED',
+        title: 'Candidatura recebida',
+        body: 'Recebemos a sua candidatura. Pode acompanhar cada passo do processo no seu painel.',
+        path: '/dashboard/candidato/candidaturas',
+      };
+  }
+  const APPLICATION_TITLES: Record<string, string> = {
+    UNDER_REVIEW: 'A sua candidatura está em análise',
+    INTERVIEW: 'Foi selecionado(a) para entrevista',
+    HIRED: 'A sua contratação foi confirmada',
+    REJECTED: 'Atualização sobre a sua candidatura',
+  };
+  const OFFER_TITLES: Record<string, string> = {
+    SENT: 'Recebeu uma proposta de emprego',
+    WITHDRAWN: 'A empresa retirou a proposta de emprego',
+    EXPIRED: 'A proposta de emprego expirou',
+  };
   const title =
     event.type === 'interview_reminder'
       ? 'Lembrete da sua entrevista'
@@ -211,8 +268,10 @@ export async function resolveRecruitmentNotice(
         : kind === 'Hire'
           ? 'O seu processo de contratação foi atualizado'
           : kind === 'Offer'
-            ? 'A sua proposta foi atualizada'
-            : 'A sua candidatura foi atualizada';
+            ? (OFFER_TITLES[String(data.v2Status)] ??
+              'A sua proposta foi atualizada')
+            : (APPLICATION_TITLES[String(data.v2Status)] ??
+              'A sua candidatura foi atualizada');
   return {
     ...(await candidate(data)),
     entityId: id,

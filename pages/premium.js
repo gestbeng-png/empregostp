@@ -3,8 +3,8 @@ import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 import RedirectGate from '../components/auth/RedirectGate';
 import { useAuth } from '../context/AuthContext';
-import { normalizeUserType } from '../lib/defaultPlans';
 import { buildLoginUrl } from '../lib/loginRedirect';
+import { requireSessionAccount } from '../lib/serverSession';
 
 export default function PremiumRedirect() {
   const router = useRouter();
@@ -36,7 +36,7 @@ export default function PremiumRedirect() {
         }
 
         const data = await response.json();
-        const userType = normalizeUserType(data?.profile?.data?.userType);
+        const userType = data?.profile?.data?.userType;
 
         if (userType === 'candidato') {
           router.replace('/premium/candidatos');
@@ -48,9 +48,15 @@ export default function PremiumRedirect() {
           return;
         }
 
+        if (userType === 'admin') {
+          router.replace('/dashboard/admin');
+          return;
+        }
+
         router.replace(buildLoginUrl(router.asPath));
       } catch (error) {
-        if (error.name !== 'AbortError') router.replace(buildLoginUrl(router.asPath));
+        if (error.name !== 'AbortError')
+          router.replace(buildLoginUrl(router.asPath));
       }
     };
 
@@ -69,4 +75,18 @@ export default function PremiumRedirect() {
       />
     </>
   );
+}
+
+// Decide antes de renderizar: esta rota não precisa de aguardar o arranque
+// diferido do Firebase no browser para identificar o painel da sessão.
+export async function getServerSideProps(context) {
+  const session = await requireSessionAccount(context);
+  if (session.redirect) return session;
+  const destination =
+    {
+      candidato: '/dashboard/candidato?tab=plans',
+      empresa: '/dashboard/empresa?tab=plans',
+      admin: '/dashboard/admin',
+    }[session.accountType] || '/dashboard';
+  return { redirect: { destination, permanent: false } };
 }

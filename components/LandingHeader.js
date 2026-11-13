@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import {
-  FiArrowUpRight,
+  FiArrowRight,
   FiChevronDown,
   FiGrid,
   FiLogOut,
@@ -13,6 +13,19 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useIsInsideDashboardShell } from '../context/DashboardShellContext';
 import styles from '../styles/LandingHeader.module.css';
+
+// Enquanto a sessão não resolve, o bloco de autenticação fica escondido por
+// CSS (.authPending) e com aria-hidden. Até a folha de estilo aplicar, isso
+// deixava um link visível e focável sem nome acessível (axe: link-name).
+// O `inert` que acompanha o aria-hidden não depende do CSS.
+const loginButtonContent = (
+  <>
+    <span>Iniciar sessão</span>
+    <span className={styles.loginButtonIcon} aria-hidden="true">
+      <FiArrowRight />
+    </span>
+  </>
+);
 
 const ABOUT_SUBMENU = [
   { href: '/sobre-nos', label: 'Sobre nós' },
@@ -298,23 +311,15 @@ function LandingHeaderContent({ variant = 'light' }) {
                 authLoading ? styles.authPending : ''
               }`}
               aria-hidden={authLoading || undefined}
+              inert={authLoading || undefined}
             >
-              {isLight ? (
-                <Link href="/login" className={styles.lightLoginButton}>
-                  <span>Iniciar sessão</span>
-                  <span className={styles.loginButtonIcon} aria-hidden="true">
-                    <FiArrowUpRight />
-                  </span>
+              <Link href="/login" className={styles.lightLoginButton}>
+                {loginButtonContent}
+              </Link>
+              {!isLight && (
+                <Link href="/register" className={styles.primaryButton}>
+                  Criar conta
                 </Link>
-              ) : (
-                <>
-                  <Link href="/login" className={styles.ghostButton}>
-                    Iniciar sessão
-                  </Link>
-                  <Link href="/register" className={styles.primaryButton}>
-                    Criar conta
-                  </Link>
-                </>
               )}
             </div>
           ) : (
@@ -509,9 +514,10 @@ function LandingHeaderContent({ variant = 'light' }) {
                 authLoading ? styles.authPending : ''
               }`}
               aria-hidden={authLoading || undefined}
+              inert={authLoading || undefined}
             >
-              <Link href="/login" className={styles.mobileGhostButton}>
-                Iniciar sessão
+              <Link href="/login" className={styles.lightLoginButton}>
+                {loginButtonContent}
               </Link>
               <Link href="/register" className={styles.mobilePrimaryButton}>
                 Criar conta

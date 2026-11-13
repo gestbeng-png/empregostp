@@ -719,7 +719,9 @@
 }
 
 .resultsTools select {
-  min-height: 42px;
+  /* 44px é o alvo mínimo de toque; a regra anterior descia para 42px e
+     anulava os 46px declarados acima. */
+  min-height: 46px;
   border-color: var(--jobs-border);
   border-radius: 12px;
   color: var(--jobs-navy);
@@ -847,7 +849,11 @@
 
 .jobTitleLink {
   display: inline-flex;
+  /* O título é o principal caminho para a vaga: a caixa de toque tinha 30px
+     de altura, abaixo do mínimo de 44px. O texto mantém-se no mesmo sítio. */
+  min-height: 44px;
   max-width: calc(100% - 8px);
+  align-items: center;
   color: inherit;
 }
 
@@ -1193,7 +1199,9 @@
   }
 
   .searchField input {
-    min-height: 42px;
+    /* 44px é o alvo mínimo de toque; estava 2px abaixo. O 16px do tipo de
+       letra evita o zoom automático do iOS ao focar o campo. */
+    min-height: 44px;
     font-size: 16px;
   }
 
@@ -1348,10 +1356,11 @@
   .detailsAction,
   .closedAction {
     /* Não descer abaixo de 44px: é o alvo mínimo de toque, e estes são os
-       dois botões mais usados da listagem em telemóvel. */
+       dois botões mais usados da listagem em telemóvel. O texto também não
+       desce abaixo de 14px, o piso de legibilidade do resto do site. */
     min-height: 44px;
     padding-inline: 8px;
-    font-size: 13px;
+    font-size: 14px;
   }
 
   .detailsAction {

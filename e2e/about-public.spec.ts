@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
 import {
   collectVisibleUiMetrics,
@@ -6,24 +7,47 @@ import {
   monitorPageErrors,
 } from './ui-audit';
 
-test.describe('página sobre o Emprego STP', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.route('**/api/testimonials', async (route) => {
-      if (route.request().method() === 'GET') {
-        await route.fulfill({
-          contentType: 'application/json',
-          body: JSON.stringify({ testimonials: [] }),
-        });
-        return;
-      }
+// Fixtures sintéticas apenas para testes de UI; não são testemunhos reais
+// nem verificam a integração com a API ou a aprovação no servidor.
+const TEST_TESTIMONIALS = [
+  {
+    id: 'test-testimonial-1',
+    name: 'Testemunho de teste 1',
+    role: 'Fixture sintética de teste',
+    rating: 5,
+    message: 'Conteúdo sintético para testar o primeiro slide do carrossel.',
+  },
+  {
+    id: 'test-testimonial-2',
+    name: 'Testemunho de teste 2',
+    role: 'Fixture sintética de teste',
+    rating: 4,
+    message: 'Conteúdo sintético para testar o segundo slide do carrossel.',
+  },
+] as const;
 
-      await route.continue();
-    });
+async function mockTestimonials(
+  page: Page,
+  testimonials: ReadonlyArray<(typeof TEST_TESTIMONIALS)[number]>,
+) {
+  await page.route('**/api/testimonials', async (route) => {
+    if (route.request().method() === 'GET') {
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({ testimonials }),
+      });
+      return;
+    }
+
+    await route.abort();
   });
+}
 
-  test('/sobre-nos carrega e mantém as interações acessíveis', async ({
+test.describe('página sobre o Emprego STP', () => {
+  test('/sobre-nos mantém as interações acessíveis com fixtures sintéticas', async ({
     page,
   }) => {
+    await mockTestimonials(page, TEST_TESTIMONIALS);
     const pageErrors = monitorPageErrors(page);
 
     await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -59,7 +83,7 @@ test.describe('página sobre o Emprego STP', () => {
     const audienceRegion = page.getByRole('region', {
       name: 'Uma plataforma para todos',
     });
-    await expect(audienceRegion.getByRole('article')).toHaveCount(4);
+    await expect(audienceRegion.getByRole('article')).toHaveCount(3);
 
     const testimonialsRegion = page.getByRole('region', {
       name: 'O que dizem de nós',
@@ -69,13 +93,13 @@ test.describe('página sobre o Emprego STP', () => {
     ).toHaveCount(2);
     await expect(
       testimonialsRegion.locator('[data-active="true"]'),
-    ).toContainText('Ana Trindade');
+    ).toContainText(TEST_TESTIMONIALS[0].name);
     await testimonialsRegion
       .getByRole('button', { name: 'Testemunho seguinte' })
       .click();
     await expect(
       testimonialsRegion.locator('[data-active="true"]'),
-    ).toContainText('Nelson Costa');
+    ).toContainText(TEST_TESTIMONIALS[1].name);
 
     const shareRegion = page.getByRole('region', {
       name: 'Quer construir connosco o futuro do emprego em São Tomé e Príncipe?',
@@ -87,9 +111,10 @@ test.describe('página sobre o Emprego STP', () => {
     await shareRegion
       .getByRole('button', { name: 'Enviar', exact: true })
       .click();
-    await expect(
-      page.getByRole('status').getByText('Indique o seu nome'),
-    ).toBeVisible();
+    await expect(shareRegion.getByRole('status')).toContainText(
+      'Indique o seu nome',
+    );
+    await expect(shareRegion.getByRole('status')).toBeVisible();
 
     await expect(
       page.getByRole('link', { name: 'Junte-se à nossa equipa' }),
@@ -103,9 +128,11 @@ test.describe('página sobre o Emprego STP', () => {
     expect(await collectWcagViolations(page)).toEqual([]);
   });
 
-  test('o carrossel atualiza automaticamente sem uma espera longa', async ({
+  test('o carrossel atualiza automaticamente com fixtures sintéticas', async ({
     page,
   }) => {
+    await mockTestimonials(page, TEST_TESTIMONIALS);
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
     await page.goto('/sobre-nos', { waitUntil: 'domcontentloaded' });
 
     const testimonialsRegion = page.getByRole('region', {
@@ -115,9 +142,34 @@ test.describe('página sobre o Emprego STP', () => {
       '[data-active="true"]',
     );
 
-    await expect(activeTestimonial).toContainText('Ana Trindade');
-    await expect(activeTestimonial).toContainText('Nelson Costa', {
+    await expect(activeTestimonial).toContainText(TEST_TESTIMONIALS[0].name);
+    await expect(activeTestimonial).toContainText(TEST_TESTIMONIALS[1].name, {
       timeout: 5000,
     });
+  });
+
+  test('a API vazia apresenta o estado vazio sem testemunhos fictícios', async ({
+    page,
+  }) => {
+    await mockTestimonials(page, []);
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/sobre-nos', { waitUntil: 'domcontentloaded' });
+
+    const testimonialsRegion = page.getByRole('region', {
+      name: 'O que dizem de nós',
+    });
+    await expect(testimonialsRegion.getByRole('status')).toContainText(
+      'Ainda não há testemunhos publicados.',
+    );
+    await expect(
+      testimonialsRegion.locator('[data-testimonial-slide="true"]'),
+    ).toHaveCount(0);
+    await expect(testimonialsRegion.getByRole('button')).toHaveCount(0);
+    await expect(testimonialsRegion).not.toContainText('Ana Trindade');
+    await expect(testimonialsRegion).not.toContainText('Nelson Costa');
+    await expect(testimonialsRegion).not.toContainText('Testemunho de teste');
+    await expect(
+      page.getByRole('button', { name: 'Enviar', exact: true }),
+    ).toBeVisible();
   });
 });

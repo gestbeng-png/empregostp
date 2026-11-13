@@ -1,4 +1,5 @@
 import { admin } from '../../../lib/firebaseAdmin';
+import { requireActiveApiUser } from '../../../lib/apiUserAuth';
 import {
   canCreateJob,
   canHighlightJob,
@@ -13,6 +14,17 @@ import {
 } from '../../../lib/jobExpiration';
 import { normalizeSkillsAssessmentInput } from '../../../lib/skillsAssessment';
 import { logServerError } from '../../../lib/serverLog';
+import { normalizeRequiredDocuments } from '../../../lib/applicationDocuments';
+import { planJobExpand } from '../../../domain/jobs/expand';
+import { deadlineToUtc } from '../../../domain/jobs/deadlines';
+import { readJobLifecycle } from '../../../domain/jobs/legacyView';
+import { assertTransition } from '../../../domain/jobs/states';
+import { buildJobSnapshot } from '../../../domain/applications/snapshot';
+import { getJobClosingService } from '../../../infrastructure/firebase/jobs/createJobClosingService';
+
+function jobManagementError(code, message) {
+  return Object.assign(new Error(message), { code });
+}
 
 function toIsoDateString(value) {
   if (!value) return null;
@@ -41,35 +53,18 @@ function normalizeKeywords(value) {
 }
 
 async function getAuthenticatedCompany(req, res) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    res.status(401).json({ error: 'Token de autenticação não fornecido' });
-    return null;
-  }
-
-  const token = authHeader.split('Bearer ')[1];
-  const decodedToken = await admin.auth().verifyIdToken(token);
-  const userDoc = await admin
-    .firestore()
-    .collection('users')
-    .doc(decodedToken.uid)
-    .get();
-
-  if (!userDoc.exists) {
-    res.status(404).json({ error: 'Utilizador não encontrado' });
-    return null;
-  }
-
-  if (userDoc.data().userType !== 'empresa') {
+  const auth = await requireActiveApiUser(req, res, { adminApp: admin });
+  if (!auth) return null;
+  const { uid, userData } = auth;
+  if (userData.userType !== 'empresa') {
     res.status(403).json({ error: 'Somente empresas podem gerir vagas' });
     return null;
   }
 
-  const userData = userDoc.data();
   const planSummary = getEmpresaPlanSummary(userData);
 
   return {
-    uid: decodedToken.uid,
+    uid,
     userData,
     planSummary,
   };
@@ -175,6 +170,7 @@ export default async function handler(req, res) {
         premiumOnly = false,
         earlyAccessHours = 0,
         requireCoverLetter = false,
+        requiredDocuments,
       } = req.body || {};
 
       if (
@@ -189,12 +185,16 @@ export default async function handler(req, res) {
           .json({ error: 'Preencha os campos obrigatórios da vaga' });
       }
 
-      const requestedCloseDate = new Date(dataFecho);
-      if (Number.isNaN(requestedCloseDate.getTime())) {
+      const requestedCloseDate = deadlineToUtc(dataFecho);
+      if (!requestedCloseDate) {
         return res.status(400).json({ error: 'Data de fecho inválida' });
       }
 
-      const maxExpirationDate = getJobExpirationDate(auth.planSummary.planId);
+      const maxExpirationDate = deadlineToUtc(
+        getJobExpirationDate(auth.planSummary.planId)
+          .toISOString()
+          .slice(0, 10),
+      );
       const finalCloseDate =
         requestedCloseDate > maxExpirationDate
           ? maxExpirationDate
@@ -252,12 +252,74 @@ export default async function handler(req, res) {
         palavrasChave: normalizeKeywords(palavrasChave),
         categoria: `${categoria}`.trim(),
         skillsAssessment: normalizeSkillsAssessmentInput(skillsAssessment),
+        requiredDocuments: normalizeRequiredDocuments(
+          requiredDocuments ?? jobData.requiredDocuments ?? {},
+        ),
         ...premiumApplicationFields,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         expiresAt: admin.firestore.Timestamp.fromDate(finalCloseDate),
       };
 
-      await jobRef.update(payload);
+      // The application flow reads the expanded fields first. Regenerate them
+      // from the edited form, and snapshot the same revision atomically.
+      await admin.firestore().runTransaction(async (tx) => {
+        const fresh = (await tx.get(jobRef)).data();
+        if (!fresh)
+          throw jobManagementError('NOT_FOUND', 'Vaga não encontrada');
+        if (fresh.companyId !== auth.uid)
+          throw jobManagementError(
+            'FORBIDDEN',
+            'Sem permissão para gerir esta vaga.',
+          );
+        if (typeof fresh.v2Status !== 'string') {
+          tx.update(jobRef, payload);
+          return;
+        }
+        const expanded = planJobExpand({
+          ...fresh,
+          ...payload,
+          applicationDeadline: payload.dataFecho,
+        }).fields;
+        const preservedFields = new Set([
+          'v2Status',
+          'version',
+          'organizationId',
+          'applicationMethod',
+          'sourceType',
+          'expandVersion',
+          'secondaryCategoryIds',
+        ]);
+        const editableFields = Object.fromEntries(
+          Object.entries(expanded).filter(
+            ([field]) => !preservedFields.has(field),
+          ),
+        );
+        const version =
+          (Number.isSafeInteger(fresh.version) ? fresh.version : 0) + 1;
+        const currentVersionId = `${id}_v${version}`;
+        const update = {
+          ...payload,
+          ...editableFields,
+          version,
+          currentVersionId,
+          updatedBy: auth.uid,
+        };
+        tx.update(jobRef, update);
+        tx.create(
+          admin.firestore().collection('jobVersions').doc(currentVersionId),
+          {
+            jobId: id,
+            versionNumber: version,
+            snapshot: buildJobSnapshot(
+              id,
+              { ...fresh, ...update },
+              currentVersionId,
+            ),
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            createdBy: auth.uid,
+          },
+        );
+      });
 
       return res.status(200).json({
         message: 'Vaga atualizada com sucesso',
@@ -272,6 +334,17 @@ export default async function handler(req, res) {
     const validStatuses = ['active', 'closed', 'draft'];
     if (!status || !validStatuses.includes(status)) {
       return res.status(400).json({ error: 'Status inválido' });
+    }
+
+    if (status === 'closed') {
+      const result = await getJobClosingService().close(auth.uid, id, req.body);
+      if (!result.ok) {
+        return res.status(result.error.code === 'FORBIDDEN' ? 403 : 409).json({
+          error: result.error.message,
+          code: result.error.code,
+        });
+      }
+      return res.status(200).json({ message: 'Vaga fechada com sucesso' });
     }
 
     if (status === 'active' && jobData.status !== 'active') {
@@ -292,20 +365,129 @@ export default async function handler(req, res) {
       }
     }
 
-    await jobRef.update({
-      status,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    const job = await admin.firestore().runTransaction(async (tx) => {
+      const fresh = (await tx.get(jobRef)).data();
+      if (!fresh) throw jobManagementError('NOT_FOUND', 'Vaga não encontrada');
+      if (fresh.companyId !== auth.uid)
+        throw jobManagementError(
+          'FORBIDDEN',
+          'Sem permissão para gerir esta vaga.',
+        );
+      const lifecycle = readJobLifecycle(fresh);
+      if (
+        ['PENDING_REVIEW', 'REJECTED', 'ARCHIVED', 'FILLED'].includes(
+          lifecycle.status,
+        )
+      )
+        throw jobManagementError(
+          'JOB_REQUIRES_MODERATION',
+          'Esta vaga não pode ser ativada por esta ação. Consulte o estado da revisão.',
+        );
+      const to = status === 'active' ? 'PUBLISHED' : 'DRAFT';
+      const tracked = typeof fresh.v2Status === 'string';
+      if (to === 'PUBLISHED' && lifecycle.status === 'DRAFT')
+        throw jobManagementError(
+          'INVALID_TRANSITION',
+          'Submeta a vaga para publicação antes de a ativar.',
+        );
+      if (
+        status === 'active' &&
+        (isJobExpired(fresh) ||
+          (lifecycle.applicationDeadline &&
+            lifecycle.applicationDeadline <= new Date()) ||
+          (lifecycle.expiresAt && lifecycle.expiresAt <= new Date()))
+      )
+        throw jobManagementError(
+          'JOB_EXPIRED',
+          'Atualize o prazo antes de reativar a vaga.',
+        );
+      if (tracked && lifecycle.status !== to) {
+        const allowed = assertTransition(lifecycle.status, to, 'EMPLOYER', {
+          guards: { deadlineFuture: true, canRenew: true },
+        });
+        if (!allowed.ok)
+          throw jobManagementError(
+            'INVALID_TRANSITION',
+            'Esta mudança de estado não é permitida. Publique uma nova vaga para iniciar outro processo.',
+          );
+      }
+      const update = {
+        status,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedBy: auth.uid,
+        ...(status === 'active'
+          ? {
+              jobEndPending: false,
+              jobEndState: null,
+              jobEndedAt: null,
+              jobEndMessageConfirmed: false,
+              closedAutomatically: false,
+              closedReason: null,
+              closedAt: null,
+              expiredAt: null,
+            }
+          : {}),
+      };
+      if (tracked) {
+        update.v2Status = to;
+        if (lifecycle.status !== to) {
+          update.version = lifecycle.version + 1;
+          tx.create(admin.firestore().collection('jobsStatusHistory').doc(), {
+            entityId: id,
+            from: lifecycle.status,
+            to,
+            actorId: auth.uid,
+            actorType: 'EMPLOYER',
+            reason: 'EMPLOYER_STATUS_CHANGE',
+            at: admin.firestore.FieldValue.serverTimestamp(),
+            version: update.version,
+          });
+          tx.create(admin.firestore().collection('outboxEvents').doc(), {
+            type: 'entity_status_changed',
+            schemaVersion: 1,
+            payload: {
+              entityId: id,
+              entityKind: 'Job',
+              version: update.version,
+            },
+            status: 'PENDING',
+            attempts: 0,
+            createdAtMs: Date.now(),
+            nextAttemptAtMs: Date.now(),
+          });
+        }
+      }
+      tx.update(jobRef, update);
+      return { id, ...fresh, ...update };
     });
 
     return res.status(200).json({
       message: 'Vaga atualizada com sucesso',
-      job: {
-        id: jobDoc.id,
-        ...jobData,
-        status,
-      },
+      job,
     });
   } catch (error) {
+    if (
+      [
+        'NOT_FOUND',
+        'FORBIDDEN',
+        'JOB_REQUIRES_MODERATION',
+        'JOB_EXPIRED',
+        'INVALID_TRANSITION',
+      ].includes(error.code)
+    ) {
+      return res
+        .status(
+          error.code === 'NOT_FOUND'
+            ? 404
+            : error.code === 'FORBIDDEN'
+              ? 403
+              : 409,
+        )
+        .json({
+          error: error.message,
+          code: error.code,
+        });
+    }
     logServerError('jobs_id.api_api_jobs_id_failed', error);
     return res.status(500).json({ error: 'Erro interno do servidor' });
   }

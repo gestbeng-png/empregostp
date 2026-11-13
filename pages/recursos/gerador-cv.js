@@ -1255,8 +1255,8 @@ export default function GeradorCvPage() {
               <LockedState
                 title="Recurso exclusivo para candidatos"
                 description={gate.message}
-                ctaHref="/dashboard/candidato"
-                ctaLabel="Ir para o painel do candidato"
+                ctaHref="/dashboard"
+                ctaLabel="Ir para o meu painel"
                 secondaryHref="/recursos"
                 secondaryLabel="Voltar aos recursos"
               />

@@ -4,6 +4,10 @@ import EmpresasPage, { getServerSideProps } from '../../../pages/empresas';
 
 const mockFetchActiveEmpresaPlans = jest.fn();
 
+jest.mock('../../../context/AuthContext', () => ({
+  useAuth: () => ({ user: null, loading: false }),
+}));
+
 jest.mock('../../../components/PublicPageShell', () => ({
   __esModule: true,
   default: ({ children }: { children: React.ReactNode }) => (
@@ -79,6 +83,19 @@ describe('planos públicos para empresas', () => {
     mockFetchActiveEmpresaPlans.mockReset();
   });
 
+  test('os atalhos para procurar candidatos abrem a listagem de verificados', () => {
+    render(<EmpresasPage />);
+
+    expect(
+      screen.getByRole('link', { name: 'Procurar candidatos' }),
+    ).toHaveAttribute('href', '/verificados');
+    expect(
+      within(
+        screen.getByRole('navigation', { name: 'Navegação rápida' }),
+      ).getByRole('link', { name: 'Candidatos' }),
+    ).toHaveAttribute('href', '/verificados');
+  });
+
   test('usa no servidor os planos empresariais ativos da mesma fonte do dashboard', async () => {
     mockFetchActiveEmpresaPlans.mockResolvedValue(firestorePlans);
 
@@ -102,7 +119,8 @@ describe('planos públicos para empresas', () => {
       id: 'professional_empresa',
       sourcePlanId: 'empresa-profissional-real',
       name: 'Profissional',
-      priceLabel: '375 Dobras',
+      // Gravado como "375 Dobras"; mostrado sempre em STD.
+      priceLabel: '375 STD',
     });
   });
 
@@ -123,7 +141,8 @@ describe('planos públicos para empresas', () => {
     expect(professionalCard).not.toBeNull();
 
     const card = within(professionalCard as HTMLElement);
-    expect(card.getByText('375 Dobras')).toBeVisible();
+    expect(card.getByLabelText('375 STD')).toBeVisible();
+    expect(card.getByLabelText('375 STD')).toHaveTextContent('375 STD');
     expect(card.getByText('por mês')).toBeVisible();
     expect(
       card.getByText('Para equipas com recrutamento recorrente.'),
@@ -131,6 +150,18 @@ describe('planos públicos para empresas', () => {
     expect(card.getByText('Analytics completos')).toBeVisible();
     expect(card.queryByText('Relatórios completos')).not.toBeInTheDocument();
     expect(card.getByText('Mais escolhido')).toBeVisible();
+    const action = card.getByRole('link', {
+      name: 'Escolher plano Profissional',
+    });
+    expect(action).toHaveAttribute(
+      'href',
+      '/login?redirect=%2Fpremium%2Fempresa',
+    );
+    expect(
+      action.compareDocumentPosition(
+        card.getByRole('heading', { name: 'O que está incluído' }),
+      ) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
 
     const proCard = within(plansSection as HTMLElement)
       .getByRole('heading', { name: 'PRO' })

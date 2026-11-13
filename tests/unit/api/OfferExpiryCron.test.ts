@@ -39,6 +39,7 @@ test('lote vazio responde sem escrever dados e termina paginação', async () =>
     expired: 0,
     skipped: 0,
     failed: 0,
+    released: 0,
     nextCursor: null,
   });
 });

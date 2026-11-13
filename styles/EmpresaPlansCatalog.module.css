@@ -1,102 +1,114 @@
 .wrap {
   display: flex;
-  width: 100%;
   flex-direction: column;
-  gap: 24px;
+  gap: 1.75rem;
+  width: 100%;
+  max-width: 72rem;
+  min-width: 0;
+  margin-inline: auto;
+  color: var(--plans-ink);
+  font-family: var(--app-font-sans);
 }
 
 .header {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 24px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid var(--border, #e2e8f0);
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
 }
 
 .headerCopy {
-  max-width: 720px;
+  max-width: 40rem;
 }
 
 .eyebrow,
 .modalStep {
   display: block;
-  margin-bottom: 8px;
-  color: var(--blue, #2057d7);
-  font-size: 14px;
-  font-weight: 750;
+  margin-bottom: 0.75rem;
+  color: var(--plans-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
 }
 
 .title {
-  margin: 0 0 8px;
-  color: var(--text-1, #17233b);
-  font-size: clamp(24px, 3vw, 32px);
-  font-weight: 800;
+  margin: 0 0 0.75rem;
+  color: var(--plans-ink);
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  font-weight: 700;
+  letter-spacing: -0.045em;
   line-height: 1.2;
 }
 
 .header p {
   margin: 0;
-  color: var(--text-2, #475569);
-  font-size: 15px;
+  color: var(--plans-muted);
+  font-size: 1rem;
   line-height: 1.6;
 }
 
 .currentPlanBox {
-  display: grid;
-  min-width: 168px;
-  gap: 4px;
-  padding: 12px 16px;
-  border: 1px solid rgba(22, 138, 85, 0.24);
-  border-radius: 8px;
-  background: rgba(22, 138, 85, 0.08);
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem 0.65rem;
+  max-width: 100%;
+  padding: 0.6rem 1rem;
+  border: 0.0625rem solid var(--plans-border);
+  border-radius: 10rem;
+  background: var(--plans-soft);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 
 .currentPlanBox span {
-  color: #147648;
-  font-size: 14px;
-  font-weight: 700;
+  color: var(--plans-muted);
 }
 
 .currentPlanBox strong {
-  color: var(--text-1, #17233b);
-  font-size: 15px;
+  color: var(--plans-ink);
+  font-weight: 600;
 }
 
 .alert {
-  padding: 12px 16px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 650;
+  padding: 1rem 1.25rem;
+  border: 0.0625rem solid var(--plans-border);
+  border-radius: 1rem;
+  font-size: 0.9375rem;
   line-height: 1.5;
 }
 
 .alertError {
-  border: 1px solid rgba(194, 61, 79, 0.24);
-  background: rgba(194, 61, 79, 0.08);
-  color: var(--dash-danger-text, #a52f42);
+  background: color-mix(
+    in srgb,
+    var(--danger, var(--app-danger)) 8%,
+    var(--plans-paper)
+  );
+  color: var(--danger, var(--app-danger));
 }
 
 .pendingBanner {
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) auto;
+  grid-template-columns: 2.75rem minmax(0, 1fr) auto;
   align-items: center;
-  gap: 12px;
-  padding: 16px;
-  border: 1px solid rgba(32, 87, 215, 0.18);
-  border-radius: 8px;
-  background: rgba(32, 87, 215, 0.06);
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border: 0.0625rem solid var(--plans-border);
+  border-radius: 1rem;
+  background: var(--plans-soft);
 }
 
 .pendingIcon {
   display: grid;
-  width: 44px;
-  height: 44px;
+  width: 2.75rem;
+  height: 2.75rem;
   place-items: center;
-  border-radius: 8px;
-  background: rgba(32, 87, 215, 0.12);
-  color: var(--blue, #2057d7);
-  font-size: 20px;
+  border-radius: 0.75rem;
+  background: var(--plans-paper);
+  color: var(--plans-ink);
+  font-size: 1.25rem;
 }
 
 .pendingTexts {
@@ -106,781 +118,249 @@
 .pendingTexts strong,
 .pendingTexts span {
   display: block;
+  overflow-wrap: anywhere;
 }
 
 .pendingTexts strong {
-  color: var(--text-1, #17233b);
-  font-size: 15px;
+  color: var(--plans-ink);
+  font-size: 0.9375rem;
 }
 
 .pendingTexts span {
-  margin-top: 2px;
-  color: var(--text-2, #475569);
-  font-size: 14px;
+  margin-top: 0.2rem;
+  color: var(--plans-muted);
+  font-size: 0.875rem;
   line-height: 1.5;
 }
 
-.pendingAction,
-.subscribeBtn,
-.btnGhost,
-.btnPrimary {
-  min-height: 44px;
-  border-radius: 8px;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 750;
-  transition:
-    border-color 200ms cubic-bezier(0.4, 0, 0.2, 1),
-    background 200ms cubic-bezier(0.4, 0, 0.2, 1),
-    color 200ms cubic-bezier(0.4, 0, 0.2, 1),
-    transform 200ms cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.pendingAction {
+.wrap .pendingAction,
+.wrap .btnGhost,
+.wrap .btnPrimary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border: 1px solid var(--blue, #2057d7);
-  background: var(--blue, #2057d7);
-  color: #fff;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0.75rem 1.25rem;
+  border: 0.0625rem solid transparent;
+  border-radius: 10rem;
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.5;
   cursor: pointer;
+}
+
+.pendingAction,
+.btnPrimary {
+  background: var(--plans-navy);
+  color: var(--plans-on-dark);
 }
 
 .pendingAction:hover,
-.subscribeBtn:hover:not(:disabled),
 .btnPrimary:hover:not(:disabled) {
-  background: #1949bb;
-  box-shadow: 0 8px 18px rgba(32, 87, 215, 0.18);
-  transform: translateY(-1px);
+  background: var(--app-brand-primary);
 }
 
-.pendingAction:active,
-.subscribeBtn:active:not(:disabled),
-.btnGhost:active:not(:disabled),
-.btnPrimary:active:not(:disabled) {
-  transform: translateY(0);
+.btnGhost {
+  border-color: var(--plans-border);
+  background: var(--plans-paper);
+  color: var(--plans-ink);
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-  align-items: stretch;
+.btnGhost:hover:not(:disabled) {
+  background: var(--plans-soft);
 }
 
-.card {
-  position: relative;
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  padding: 24px;
-  border: 1px solid var(--border, #e2e8f0);
-  border-radius: 8px;
-  background: var(--surface, #fff);
-  box-shadow: var(--shadow-sm, 0 1px 2px rgba(15, 23, 42, 0.04));
-  transition:
-    border-color 200ms cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1),
-    transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.card:hover {
-  border-color: rgba(32, 87, 215, 0.28);
-  box-shadow: var(--shadow-md, 0 8px 22px rgba(15, 23, 42, 0.07));
-  transform: translateY(-2px);
-}
-
-.cardPopular {
-  border-color: rgba(32, 87, 215, 0.46);
-  box-shadow: 0 0 0 2px rgba(32, 87, 215, 0.06);
-}
-
-.cardCurrent {
-  border-color: rgba(22, 138, 85, 0.42);
-}
-
-.cardTopline {
-  display: flex;
-  min-height: 28px;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.popularBadge {
-  flex: 0 0 auto;
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: var(--lime, #d9ff2f);
-  color: #354214;
-  font-size: 14px;
-  font-weight: 750;
-}
-
-.planName {
-  margin: 0;
-  color: var(--text-1, #17233b);
-  font-size: 20px;
-  font-weight: 800;
-  line-height: 1.3;
-}
-
-.priceRow {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin: 16px 0 8px;
-}
-
-.price {
-  color: var(--text-1, #17233b);
-  font-size: 28px;
-  font-weight: 800;
-  line-height: 1.2;
-}
-
-.pricePeriod {
-  color: var(--text-3, #64748b);
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.summary {
-  min-height: 66px;
-  margin: 0;
-  color: var(--text-2, #475569);
-  font-size: 14px;
-  line-height: 1.55;
-}
-
-.features {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 10px;
-  margin: 20px 0 24px;
-  padding: 20px 0 0;
-  border-top: 1px solid var(--border, #e2e8f0);
-  list-style: none;
-}
-
-.feature {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  color: var(--text-2, #475569);
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.checkIcon {
-  display: grid;
-  width: 20px;
-  height: 20px;
-  flex: 0 0 20px;
-  place-items: center;
-  margin-top: 1px;
-  border-radius: 50%;
-  background: rgba(32, 87, 215, 0.1);
-  color: var(--blue, #2057d7);
-  font-size: 14px;
-}
-
-.subscribeBtn {
-  width: 100%;
-  margin-top: auto;
-  padding: 10px 16px;
-  border: 1px solid var(--blue, #2057d7);
-  background: var(--surface, #fff);
-  color: var(--blue, #2057d7);
-  cursor: pointer;
-}
-
-.subscribeBtnPopular,
-.btnPrimary {
-  border-color: var(--blue, #2057d7);
-  background: var(--blue, #2057d7);
-  color: #fff;
-}
-
-.subscribeBtnCurrent {
-  border-color: rgba(22, 138, 85, 0.3);
-  background: rgba(22, 138, 85, 0.08);
-  color: #147648;
-}
-
-.subscribeBtn:disabled,
 .btnGhost:disabled,
 .btnPrimary:disabled {
-  cursor: not-allowed;
   opacity: 0.6;
-  transform: none;
+  cursor: default;
 }
 
-.subscribeBtnCurrent:disabled {
-  opacity: 1;
+.wrap button:focus-visible {
+  outline: 0.1875rem solid var(--blue, var(--app-brand-primary));
+  outline-offset: 0.1875rem;
 }
 
 .overlay {
   position: fixed;
-  z-index: 1000;
   inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  background: rgba(15, 23, 42, 0.56);
-  animation: fadeIn 180ms cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: color-mix(in srgb, var(--plans-navy) 68%, transparent);
 }
 
 .modal {
-  width: min(100%, 520px);
-  max-height: min(90vh, 760px);
+  width: min(100%, 32.5rem);
+  max-height: 90dvh;
   overflow-y: auto;
-  border: 1px solid var(--border, #e2e8f0);
-  border-radius: 8px;
-  background: var(--surface, #fff);
-  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.24);
-  animation: modalIn 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  border: 0.0625rem solid var(--plans-border);
+  border-radius: 1.5rem;
+  background: var(--plans-paper);
+  box-shadow: var(--shadow-lg, var(--app-shadow-lg));
 }
 
 .modalWide {
-  width: min(100%, 680px);
+  width: min(100%, 42.5rem);
 }
 
 .modalHeader {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--border, #e2e8f0);
+  gap: 1rem;
+  padding: 1.5rem 1.5rem 1rem;
 }
 
 .modalHeader h2 {
   margin: 0;
-  color: var(--text-1, #17233b);
-  font-size: 22px;
-  line-height: 1.3;
+  color: var(--plans-ink);
+  font-size: 1.3rem;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: -0.025em;
 }
 
 .modalHeader p {
-  margin: 4px 0 0;
-  color: var(--text-2, #475569);
-  font-size: 14px;
-  line-height: 1.5;
+  margin: 0.4rem 0 0;
+  color: var(--plans-muted);
+  font-size: 0.9375rem;
+  line-height: 1.6;
 }
 
 .modalStep {
-  margin-bottom: 4px;
+  margin-bottom: 0.35rem;
 }
 
-.modalClose {
+.wrap .modalClose {
   display: grid;
-  width: 44px;
-  height: 44px;
-  flex: 0 0 44px;
+  flex: 0 0 2.75rem;
+  width: 2.75rem;
+  height: 2.75rem;
   place-items: center;
-  border: 1px solid var(--border, #e2e8f0);
-  border-radius: 8px;
-  background: var(--surface-2, #f7fbff);
-  color: var(--text-2, #475569);
+  border: 0;
+  border-radius: 50%;
+  background: var(--plans-soft);
+  color: var(--plans-ink);
+  font-size: 1.25rem;
   cursor: pointer;
-  font-size: 20px;
-  transition:
-    background 200ms cubic-bezier(0.4, 0, 0.2, 1),
-    color 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .modalClose:hover:not(:disabled) {
-  background: var(--surface-3, #f1f7ff);
-  color: var(--text-1, #17233b);
+  background: var(--plans-border);
 }
 
 .planSummary {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
-  gap: 16px;
-  margin: 20px 24px 0;
-  padding: 16px;
-  border-radius: 8px;
-  background: var(--surface-2, #f7fbff);
+  gap: 1rem;
+  margin: 0.5rem 1.5rem 0;
+  padding: 1rem 1.25rem;
+  border: 0.0625rem solid var(--plans-border);
+  border-radius: 1rem;
+  background: var(--plans-soft);
 }
 
 .planSummary span {
-  color: var(--text-2, #475569);
-  font-size: 14px;
+  color: var(--plans-muted);
+  font-size: 0.9375rem;
 }
 
 .planSummary strong {
-  color: var(--text-1, #17233b);
-  font-size: 18px;
+  color: var(--plans-ink);
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-align: right;
+  overflow-wrap: anywhere;
 }
 
 .modalNote {
-  margin: 16px 24px 0;
-  color: var(--text-2, #475569);
-  font-size: 14px;
+  margin: 1rem 1.5rem 0;
+  color: var(--plans-muted);
+  font-size: 0.9375rem;
   line-height: 1.6;
 }
 
 .paymentHint {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  margin: 20px 24px 0;
+  gap: 0.5rem;
+  margin: 0.5rem 1.5rem 0;
 }
 
 .paymentHint div {
   min-width: 0;
-  padding: 12px 16px;
-  border: 1px solid var(--border, #e2e8f0);
-  border-radius: 8px;
-  background: var(--surface-2, #f7fbff);
+  padding: 0.75rem 1rem;
+  border: 0.0625rem solid var(--plans-border);
+  border-radius: 1rem;
+  background: var(--plans-soft);
 }
 
 .paymentHint span,
 .paymentHint strong {
   display: block;
+  font-size: 0.875rem;
+  line-height: 1.5;
 }
 
 .paymentHint span {
-  margin-bottom: 4px;
-  color: var(--text-3, #64748b);
-  font-size: 14px;
-  font-weight: 650;
+  margin-bottom: 0.25rem;
+  color: var(--plans-muted);
 }
 
 .paymentHint strong {
+  color: var(--plans-ink);
+  font-weight: 600;
   overflow-wrap: anywhere;
-  color: var(--text-1, #17233b);
-  font-size: 14px;
 }
 
 .modalActions {
   display: flex;
-  gap: 8px;
-  padding: 20px 24px 24px;
+  gap: 0.85rem;
+  padding: 1.5rem;
 }
 
 .btnGhost,
 .btnPrimary {
   flex: 1;
-  padding: 10px 16px;
-  cursor: pointer;
-}
-
-.btnGhost {
-  border: 1px solid var(--border-strong, #cbd5e1);
-  background: var(--surface, #fff);
-  color: var(--text-2, #475569);
-}
-
-.btnGhost:hover:not(:disabled) {
-  background: var(--surface-2, #f7fbff);
-  color: var(--text-1, #17233b);
 }
 
 .modalBody {
-  padding: 20px 24px 24px;
+  padding: 1.25rem 1.5rem 1.5rem;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes modalIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@media (max-width: 1080px) {
-  .grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .card:last-child {
-    grid-column: 1 / -1;
-  }
-}
-
-@media (max-width: 720px) {
-  .header {
-    flex-direction: column;
-  }
-
-  .currentPlanBox {
-    width: 100%;
-  }
-
-  .grid {
-    grid-template-columns: 1fr;
-  }
-
-  .card:last-child {
-    grid-column: auto;
-  }
-
+@media (max-width: 40rem) {
   .pendingBanner {
-    grid-template-columns: 44px minmax(0, 1fr);
+    grid-template-columns: 2.75rem minmax(0, 1fr);
   }
 
   .pendingAction {
     grid-column: 1 / -1;
   }
 
-  .summary {
-    min-height: 0;
-  }
-
   .paymentHint {
     grid-template-columns: 1fr;
   }
 }
 
-@media (max-width: 480px) {
-  .card {
-    padding: 20px;
-  }
-
-  .cardTopline {
-    min-height: 0;
-    flex-direction: column-reverse;
-  }
-
+@media (max-width: 30rem) {
   .modalHeader,
   .modalBody,
   .modalActions {
-    padding-right: 16px;
-    padding-left: 16px;
+    padding-inline: 1rem;
   }
 
   .planSummary,
   .modalNote,
   .paymentHint {
-    margin-right: 16px;
-    margin-left: 16px;
+    margin-inline: 1rem;
   }
 
   .modalActions {
     flex-direction: column-reverse;
   }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .card,
-  .pendingAction,
-  .subscribeBtn,
-  .btnGhost,
-  .btnPrimary,
-  .overlay,
-  .modal {
-    animation: none;
-    transition: none;
-  }
-}
-
-/* Workbridge fidelity layer. */
-.wrap {
-  color: #102441;
-  font-family: var(--font-instrument, "Instrument Sans"), Arial, sans-serif;
-}
-
-.title,
-.planName,
-.price,
-.modalHeader,
-.planSummary strong,
-.paymentHint strong,
-.currentPlanBox strong {
-  color: #102441;
-}
-
-.header p,
-.summary,
-.pricePeriod,
-.modalNote,
-.paymentHint span,
-.pendingTexts span {
-  color: #5f6874;
-}
-
-.eyebrow,
-.modalStep {
-  color: #064bb5;
-}
-
-.card,
-.currentPlanBox,
-.pendingBanner,
-.planSummary,
-.paymentHint div,
-.modal {
-  border-color: #e4e5e8;
-  border-radius: 8px;
-  background: #ffffff;
-  box-shadow: none;
-}
-
-.pendingBanner,
-.paymentHint div {
-  background: #eef4f8;
-}
-
-.card:hover {
-  transform: none;
-  border-color: #69c8ff;
-  box-shadow: none;
-}
-
-.cardPopular {
-  border-color: #69c8ff;
-}
-
-.cardCurrent,
-.currentPlanBox {
-  border-color: #daff45;
-  background: #eefabf;
-}
-
-.cardCurrent .summary {
-  color: #5f6874;
-}
-
-.popularBadge {
-  background: #daff45;
-  color: #102441;
-}
-
-.pendingIcon,
-.checkIcon {
-  border-radius: 4px;
-  background: #eef4f8;
-  color: #064bb5;
-}
-
-.pendingAction,
-.subscribeBtn,
-.btnGhost,
-.btnPrimary,
-.modalClose {
-  border-radius: 4px;
-  box-shadow: none;
-}
-
-.pendingAction,
-.subscribeBtn,
-.btnPrimary {
-  border-color: #064bb5;
-  background: #064bb5;
-  color: var(--dash-action-ink, #ffffff);
-}
-
-.pendingAction:hover,
-.subscribeBtn:hover:not(:disabled),
-.btnPrimary:hover:not(:disabled) {
-  background: #0a65cc;
-  transform: none;
-  box-shadow: none;
-}
-
-.subscribeBtnPopular {
-  border-color: #daff45;
-  background: #daff45;
-  color: #102441;
-}
-
-.subscribeBtnPopular:hover:not(:disabled) {
-  border-color: #bddb40;
-  background: #daff45;
-  color: #102441;
-}
-
-.features,
-.priceRow,
-.planSummary,
-.paymentHint {
-  font-family: var(--font-inter, Inter), Inter, Arial, sans-serif;
-}
-
-.overlay {
-  background: rgba(16, 36, 65, 0.68);
-  backdrop-filter: none;
-}
-
-.modal {
-  box-shadow: 0 16px 36px rgba(16, 36, 65, 0.18);
-}
-
-/* Claude dashboard theme contract. */
-.wrap {
-  color: var(--text-1, #162a55);
-  font-family: "Plus Jakarta Sans", var(--font-inter, Inter), system-ui, sans-serif;
-}
-
-.title,
-.planName,
-.price,
-.modalHeader,
-.planSummary strong,
-.paymentHint strong,
-.currentPlanBox strong {
-  color: var(--text-1, #162a55);
-}
-
-.header p,
-.summary,
-.pricePeriod,
-.modalNote,
-.paymentHint span,
-.pendingTexts span,
-.feature {
-  color: var(--text-2, #46597a);
-}
-
-.eyebrow,
-.modalStep {
-  color: var(--blue, #2057d7);
-}
-
-.card,
-.currentPlanBox,
-.pendingBanner,
-.planSummary,
-.paymentHint div,
-.modal {
-  border-color: var(--border, rgba(30, 43, 77, 0.08));
-  border-radius: 12px;
-  background: var(--surface, #ffffff);
-  color: var(--text-1, #162a55);
-  box-shadow: var(--shadow-sm, 0 8px 20px rgba(15, 23, 42, 0.05));
-}
-
-.pendingBanner,
-.paymentHint div {
-  background: var(--surface-2, #f7fbff);
-}
-
-.card:hover {
-  border-color: var(--border-strong, rgba(30, 43, 77, 0.14));
-  box-shadow: var(--shadow-md, 0 14px 30px rgba(15, 23, 42, 0.07));
-  transform: translateY(-2px);
-}
-
-.cardPopular {
-  border-color: var(--sky, #5fb8f5);
-}
-
-.cardCurrent,
-.currentPlanBox {
-  border-color: var(--lime, #d9ff2f);
-  background: linear-gradient(rgba(217, 255, 47, 0.09), rgba(217, 255, 47, 0.09)), var(--surface, #ffffff);
-}
-
-.currentPlanBox span,
-.subscribeBtnCurrent {
-  color: var(--dash-success-text, #237a50);
-}
-
-.pendingIcon,
-.checkIcon {
-  border-radius: 8px;
-  background: var(--surface-3, #f1f7ff);
-  color: var(--blue, #2057d7);
-}
-
-.pendingAction,
-.subscribeBtn,
-.btnPrimary {
-  border-color: transparent;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #2057d7, #5fb8f5);
-  color: var(--dash-action-ink, #ffffff);
-  box-shadow: 0 8px 18px rgba(32, 87, 215, 0.18);
-}
-
-.pendingAction:hover,
-.subscribeBtn:hover:not(:disabled),
-.btnPrimary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #1749bb, #4aa9eb);
-  color: #ffffff;
-  transform: translateY(-1px);
-}
-
-.subscribeBtnPopular {
-  border-color: transparent;
-  background: linear-gradient(135deg, #2057d7, #5fb8f5);
-  color: var(--dash-action-ink, #ffffff);
-}
-
-.btnGhost,
-.modalClose {
-  border-color: var(--border, rgba(30, 43, 77, 0.08));
-  border-radius: 10px;
-  background: var(--surface, #ffffff);
-  color: var(--text-2, #46597a);
-}
-
-.cardCurrent .summary {
-  color: var(--text-2, #46597a);
-}
-
-.features,
-.priceRow,
-.planSummary,
-.paymentHint {
-  font-family: inherit;
-}
-
-.overlay {
-  background: rgba(13, 21, 38, 0.68);
-  backdrop-filter: blur(6px);
-}
-
-:global(.dashShell.role-empresa[data-theme='dark']) .pendingAction,
-:global(.dashShell.role-empresa[data-theme='dark'])
-  .subscribeBtn:not(.subscribeBtnCurrent):not(.subscribeBtnPopular),
-:global(.dashShell.role-empresa[data-theme='dark']) .btnPrimary {
-  border-color: var(--blue, #6a9cff);
-  background: var(--blue, #6a9cff);
-  color: var(--dash-action-ink, #0d1526);
-}
-
-:global(.dashShell.role-empresa[data-theme='dark'])
-  .subscribeBtnPopular:not(.subscribeBtnCurrent) {
-  border-color: var(--lime, #d9ff2f);
-  background: var(--lime, #d9ff2f);
-  color: var(--lime-text, #0d1526);
-}
-
-:global(.dashShell.role-empresa[data-theme='dark'])
-  .subscribeBtnPopular:not(.subscribeBtnCurrent):hover:not(:disabled) {
-  border-color: var(--dash-lime-border, #c4ea24);
-  background: var(--lime, #d9ff2f);
-  color: var(--lime-text, #0d1526);
-}
-
-:global(.dashShell.role-empresa[data-theme='dark']) .pendingAction:hover,
-:global(.dashShell.role-empresa[data-theme='dark'])
-  .subscribeBtn:not(.subscribeBtnCurrent):not(.subscribeBtnPopular):hover:not(:disabled),
-:global(.dashShell.role-empresa[data-theme='dark'])
-  .btnPrimary:hover:not(:disabled) {
-  border-color: var(--dash-blue-hover, #8eb4ff);
-  background: var(--dash-blue-hover, #8eb4ff);
-  color: var(--dash-action-ink, #0d1526);
 }

@@ -12,6 +12,24 @@ const PUBLIC_AUTH_IDLE_TIMEOUT_MS = 2000;
 
 const AuthContext = createContext();
 
+// O Firebase guarda o utilizador em localStorage (browserLocalPersistence).
+// Quem já tem sessão no browser não pode esperar pela primeira interação: o
+// cookie do servidor dura uma hora, e um clique para uma página com
+// `getServerSideProps` (ex.: perfil de candidato a partir da home) chegava lá
+// com o cookie expirado e era tratado como visitante.
+function hasStoredFirebaseUser() {
+  try {
+    for (let i = 0; i < window.localStorage.length; i += 1) {
+      if (window.localStorage.key(i)?.startsWith('firebase:authUser:')) {
+        return true;
+      }
+    }
+  } catch {
+    // Sem localStorage, fica o arranque diferido.
+  }
+  return false;
+}
+
 // `renderWhileLoading` deixa as páginas públicas renderizar no servidor e no
 // primeiro paint, sem esperar pelo Firebase Auth no browser. Sem isto o HTML
 // de todas as rotas saía vazio (sem título, description nem `og:`), o que
@@ -22,8 +40,14 @@ const AuthContext = createContext();
 export function AuthProvider({ children, renderWhileLoading = false }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [sessionReady, setSessionReady] = useState(false);
+  const [sessionError, setSessionError] = useState('');
   const deferInitialConnect = useRef(renderWhileLoading);
   const connectRef = useRef(() => {});
+  const sessionRevision = useRef(0);
+  const loggingOut = useRef(false);
+  const retrySessionRef = useRef(() => {});
+  const resetSessionRef = useRef(() => {});
 
   // O cookie `token` que as páginas protegidas lêem no servidor é o próprio
   // ID token do Firebase e por isso expira ao fim de uma hora. O SDK renova o
@@ -39,28 +63,52 @@ export function AuthProvider({ children, renderWhileLoading = false }) {
     let subscribed = false;
     let connecting = false;
     let unsubscribe = () => {};
+    let currentUser = null;
+    resetSessionRef.current = () => {
+      currentUser = null;
+      tokenSincronizado = '';
+    };
     const onUserChanged = async (proximoUtilizador) => {
-      if (!active) return;
+      if (!active || loggingOut.current) return;
+      const identityChanged = currentUser?.uid !== proximoUtilizador?.uid;
+      currentUser = proximoUtilizador;
+      const revision = ++sessionRevision.current;
+      const isCurrent = () => active && revision === sessionRevision.current;
       setUser(proximoUtilizador);
-      setLoading(false);
-
-      if (!proximoUtilizador) {
-        tokenSincronizado = '';
-        return;
+      // A renovação normal da mesma conta não desmonta formulários abertos.
+      // A troca de identidade, pelo contrário, retira logo o acesso anterior.
+      if (identityChanged) {
+        setLoading(true);
+        setSessionReady(false);
       }
+      setSessionError('');
 
       try {
-        const token = await proximoUtilizador.getIdToken();
-        if (!active) return;
-        if (token === tokenSincronizado) return;
-        tokenSincronizado = token;
-        await createServerSession(token);
+        if (proximoUtilizador) {
+          const token = await proximoUtilizador.getIdToken();
+          if (!isCurrent()) return;
+          if (token !== tokenSincronizado) {
+            await createServerSession(token);
+          }
+          if (!isCurrent()) return;
+          tokenSincronizado = token;
+        } else {
+          tokenSincronizado = '';
+          // Também limpa um cookie antigo quando o SDK já não tem sessão.
+          // Sem Bearer, não revoga a conta que pertenceu a esse cookie.
+          await destroyServerSession();
+        }
+        if (isCurrent()) setSessionReady(true);
       } catch (error) {
-        // Falhar aqui não deve deslogar ninguém: a sessão do cliente continua
-        // válida e a próxima renovação do token volta a tentar.
+        if (!isCurrent()) return;
         tokenSincronizado = '';
+        setSessionReady(false);
+        setSessionError('Não foi possível validar a sessão. Tente novamente.');
+      } finally {
+        if (isCurrent()) setLoading(false);
       }
     };
+    retrySessionRef.current = () => onUserChanged(currentUser);
     const connect = async () => {
       if (connecting || subscribed || !active) return;
       connecting = true;
@@ -78,6 +126,9 @@ export function AuthProvider({ children, renderWhileLoading = false }) {
       }
     };
     connectRef.current = connect;
+    if (deferInitialConnect.current && hasStoredFirebaseUser()) {
+      deferInitialConnect.current = false;
+    }
     const cancelDeferred = deferInitialConnect.current
       ? runOnFirstInteraction(
           () => void connect(),
@@ -85,12 +136,16 @@ export function AuthProvider({ children, renderWhileLoading = false }) {
         )
       : () => {};
     if (!deferInitialConnect.current) void connect();
-    window.addEventListener('online', connect);
+    const reconnect = () => {
+      if (subscribed) void onUserChanged(currentUser);
+      else void connect();
+    };
+    window.addEventListener('online', reconnect);
     return () => {
       active = false;
       cancelDeferred();
       unsubscribe();
-      window.removeEventListener('online', connect);
+      window.removeEventListener('online', reconnect);
     };
   }, []);
 
@@ -100,6 +155,10 @@ export function AuthProvider({ children, renderWhileLoading = false }) {
   }, [renderWhileLoading]);
 
   const logout = async () => {
+    loggingOut.current = true;
+    sessionRevision.current++;
+    resetSessionRef.current();
+    setSessionReady(false);
     let serverError = null;
     let localError = null;
 
@@ -138,8 +197,8 @@ export function AuthProvider({ children, renderWhileLoading = false }) {
       serverError = error;
     }
 
-    // O estado Firebase local é sempre encerrado, mesmo se a revogação ou o
-    // pedido ao servidor falhar. O resultado distingue uma limpeza parcial.
+    // O estado Firebase local é sempre encerrado, mesmo se a limpeza do
+    // cookie falhar. O resultado distingue uma limpeza parcial.
     try {
       const { auth, signOut } = await import('../lib/authClientRuntime');
       await signOut(auth);
@@ -147,6 +206,9 @@ export function AuthProvider({ children, renderWhileLoading = false }) {
     } catch (error) {
       localError = error;
     }
+    loggingOut.current = false;
+    setLoading(false);
+    setSessionReady(!localError && !serverError);
 
     const error = localError || serverError;
     if (error) {
@@ -167,7 +229,16 @@ export function AuthProvider({ children, renderWhileLoading = false }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        logout,
+        sessionReady,
+        sessionError,
+        retrySession: () => retrySessionRef.current(),
+      }}
+    >
       {renderWhileLoading || !loading ? children : null}
     </AuthContext.Provider>
   );

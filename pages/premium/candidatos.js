@@ -1,8 +1,5 @@
-import nookies from 'nookies';
-
-import { admin } from '../../lib/firebaseAdmin';
 import { buildLoginUrl } from '../../lib/loginRedirect';
-import { isUserAccountActive } from '../../lib/userStatus';
+import { requireSessionAccount } from '../../lib/serverSession';
 
 const PLANS_DESTINATION = '/dashboard/candidato?tab=plans';
 
@@ -10,38 +7,19 @@ export default function PremiumCandidatosRedirect() {
   return null;
 }
 
-// Os planos vivem na tab do dashboard, por isso esta página encaminha para lá.
-// Só que um visitante sem sessão não pode usar o dashboard: era enviado para
-// lá, o guard atirava-o ao login e a intenção perdia-se pelo caminho — logo no
-// CTA de upgrade das ferramentas premium. Sem sessão vai direto ao login, com
-// os planos guardados como destino de retorno.
+// Não confundir uma sessão de outro tipo com um visitante sem sessão:
+// empresa/admin regressam ao próprio painel, sem abrir o painel de candidato.
 export async function getServerSideProps(context) {
-  let isAuthenticated = false;
-
-  try {
-    const cookies = nookies.get(context);
-    if (cookies?.token) {
-      const decodedToken = await admin.auth().verifyIdToken(cookies.token, true);
-      const userDoc = await admin
-        .firestore()
-        .collection('users')
-        .doc(decodedToken.uid)
-        .get();
-      isAuthenticated =
-        userDoc.exists &&
-        userDoc.data().userType === 'candidato' &&
-        isUserAccountActive(userDoc.data());
-    }
-  } catch (error) {
-    isAuthenticated = false;
-  }
+  const session = await requireSessionAccount(context);
 
   return {
     redirect: {
-      destination: isAuthenticated
-        ? PLANS_DESTINATION
-        : buildLoginUrl(PLANS_DESTINATION),
-      permanent: false
-    }
+      destination: session.redirect
+        ? buildLoginUrl(PLANS_DESTINATION)
+        : session.accountType === 'candidato'
+          ? PLANS_DESTINATION
+          : '/dashboard',
+      permanent: false,
+    },
   };
 }

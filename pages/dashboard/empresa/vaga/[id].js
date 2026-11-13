@@ -10,6 +10,8 @@ import { useRouter } from "next/router";
 import { FiArrowLeft } from "react-icons/fi";
 import DashboardShell from "../../../../components/dashboard/DashboardShell";
 import styles from "../../../../styles/EmpresaJobDetail.module.css";
+import { ActionForm } from "../../../../components/empresa/RecruitmentControls";
+import { isUserAccountActive } from "../../../../lib/userStatus";
 
 function safeTimestampToMillis(timestamp) {
   if (!timestamp) return null;
@@ -235,6 +237,9 @@ export default function DetalheVaga({ vaga, candidaturas }) {
   const closingDateMillis = safeTimestampToMillis(dataFecho);
   const canReopenExpiredJob =
     status === "closed" && closingDateMillis && closingDateMillis < Date.now();
+  const canReopen = !vaga.v2Status
+    ? status === "closed" || status === "inactive"
+    : ["EXPIRED", "PAUSED"].includes(vaga.v2Status);
 
   const pendingCount = candidaturas.filter(
     (c) => c.status === "pending" || !c.status,
@@ -461,7 +466,7 @@ export default function DetalheVaga({ vaga, candidaturas }) {
                   <p>{statusFeedback}</p>
                 </div>
               ) : null}
-              {canReopenExpiredJob && !statusFeedback ? (
+              {canReopen && canReopenExpiredJob && !statusFeedback ? (
                 <div className={styles.inlineNotice}>
                   <p>
                     Esta vaga já expirou. Atualize a data de fecho antes de a
@@ -471,17 +476,40 @@ export default function DetalheVaga({ vaga, candidaturas }) {
               ) : null}
               <div className={styles.actionsGrid}>
                 {vaga.status === "active" ? (
-                  <button
-                    type="button"
-                    onClick={() => alterarStatus("closed")}
-                    disabled={isProcessing}
-                    className={`${styles.actionButton} ${styles.actionWarning}`}
-                  >
-                    {isProcessing ? "Processando..." : "Fechar Vaga"}
-                  </button>
+                  <ActionForm
+                    title="Fechar vaga"
+                    path={`/api/jobs/${encodeURIComponent(vaga.id)}/close`}
+                    onSuccess={() => router.reload()}
+                    onBusyChange={setIsProcessing}
+                    submit="Fechar Vaga"
+                    confirmText="Confirmo o fecho desta vaga."
+                    fields={[
+                      {
+                        name: "closeOutcome",
+                        label: "Resultado do processo",
+                        required: true,
+                        placeholder: "Selecione o resultado",
+                        options: [
+                          ["HIRED_VIA_EMPREGOSTP", "Contratação através do EmpregoSTP"],
+                          ["HIRED_OTHER_CHANNEL", "Contratação por outro canal"],
+                          ["NO_SUITABLE_CANDIDATE", "Nenhum candidato selecionado"],
+                          ["POSITION_CANCELLED", "Posição cancelada"],
+                          ["POSITION_ON_HOLD", "Posição suspensa"],
+                          ["OTHER", "Outro"],
+                        ],
+                      },
+                      {
+                        name: "otherText",
+                        label: "Descreva o resultado",
+                        required: true,
+                        maxLength: 300,
+                        showWhen: { field: "closeOutcome", equals: "OTHER" },
+                      },
+                    ]}
+                  />
                 ) : null}
 
-                {vaga.status === "closed" ? (
+                {canReopen ? (
                   <button
                     type="button"
                     onClick={() => alterarStatus("active")}
@@ -713,11 +741,11 @@ export async function getServerSideProps(context) {
       return { redirect: { destination: "/login", permanent: false } };
     }
 
-    const token = await admin.auth().verifyIdToken(cookies.token);
+    const token = await admin.auth().verifyIdToken(cookies.token, true);
     const uid = token.uid;
 
     const userDoc = await admin.firestore().collection("users").doc(uid).get();
-    if (!userDoc.exists || userDoc.data().userType !== "empresa") {
+    if (!userDoc.exists || userDoc.data().userType !== "empresa" || !isUserAccountActive(userDoc.data())) {
       return { redirect: { destination: "/login", permanent: false } };
     }
 
@@ -748,6 +776,7 @@ export async function getServerSideProps(context) {
       dataFecho: vagaData.dataFecho || "",
       isPrivada: vagaData.isPrivada || false,
       status: vagaData.status || "active",
+      v2Status: typeof vagaData.v2Status === "string" ? vagaData.v2Status : null,
       skillsAssessment: vagaData.skillsAssessment || null,
       companyId: vagaData.companyId || "",
       tdrUrl:

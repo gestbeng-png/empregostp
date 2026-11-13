@@ -31,9 +31,10 @@ import {
   FiLock,
 } from 'react-icons/fi';
 import DashboardShell from '../../../components/dashboard/DashboardShell';
-import AffiliateSection from '../../../components/affiliate/AffiliateSection';
 import styles from '../../../styles/EmpresaDashboard.module.css';
 import nookies from 'nookies';
+import { setPrivatePageHeaders } from '../../../lib/privatePageCache';
+import { isUserAccountActive } from '../../../lib/userStatus';
 import VerificationBadge from '../../../components/VerificationBadge';
 import {
   getEmpresaPlanFeatures,
@@ -91,7 +92,6 @@ const MENU_ITEMS = [
   { id: 'hr-services', label: 'Serviço RH', icon: 'briefcase' },
   { id: 'company-profile', label: 'Perfil empresa', icon: 'building' },
   { id: 'plans', label: 'Planos', icon: 'crown' },
-  { id: 'affiliate', label: 'Ser Afiliado', icon: 'star' },
 ];
 const EMPRESA_TAB_IDS = new Set(MENU_ITEMS.map((item) => item.id));
 
@@ -335,6 +335,8 @@ export default function EmpresaDashboard({
   const [analyticsError, setAnalyticsError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [talentAreaFilter, setTalentAreaFilter] = useState('all');
+  const [talentVerificationFilter, setTalentVerificationFilter] =
+    useState('all');
   const [applicationFilter, setApplicationFilter] = useState('all');
   const [jobFilter, setJobFilter] = useState('all');
   const [applicationsData, setApplicationsData] = useState(recentApplications);
@@ -1179,6 +1181,10 @@ export default function EmpresaDashboard({
           avatar: candidate.photoUrl || '',
           profileUrl: `/dashboard/empresa/candidato/${candidate.id}`,
           verified: Boolean(candidate.verified),
+          verificationTypes: Array.isArray(candidate.verificationTypes)
+            ? candidate.verificationTypes
+            : [],
+          qualificationScore: Number(candidate.qualificationScore) || 0,
           highlighted: Boolean(candidate.highlighted),
           profileComplete: Boolean(candidate.profileComplete),
           completionScore: Number(candidate.completionScore) || 0,
@@ -1312,10 +1318,13 @@ export default function EmpresaDashboard({
         const matchesQuery = !query || searchableContent.includes(query);
         const matchesArea =
           talentAreaFilter === 'all' || area === talentAreaFilter;
+        const matchesVerification =
+          talentVerificationFilter === 'all' ||
+          (talent.verificationTypes || []).includes(talentVerificationFilter);
 
-        return matchesQuery && matchesArea;
+        return matchesQuery && matchesArea && matchesVerification;
       }),
-    [searchQuery, talentAreaFilter, talentPool],
+    [searchQuery, talentAreaFilter, talentVerificationFilter, talentPool],
   );
 
   const filteredApplications = useMemo(() => {
@@ -2148,16 +2157,36 @@ export default function EmpresaDashboard({
                     </option>
                   ))}
                 </select>
+                <select
+                  className="form-select"
+                  style={{ maxWidth: 220 }}
+                  aria-label="Tipo de verificação"
+                  value={talentVerificationFilter}
+                  onChange={(event) =>
+                    setTalentVerificationFilter(event.target.value)
+                  }
+                >
+                  <option value="all">Todos os verificados</option>
+                  <option value="paid">Verificação documental</option>
+                  <option value="qualified">Alta qualificação</option>
+                </select>
                 <button
                   type="button"
                   className="btn btn-lime"
                   onClick={() => {
                     setSearchQuery('');
                     setTalentAreaFilter('all');
+                    setTalentVerificationFilter('all');
                   }}
-                  disabled={!searchQuery && talentAreaFilter === 'all'}
+                  disabled={
+                    !searchQuery &&
+                    talentAreaFilter === 'all' &&
+                    talentVerificationFilter === 'all'
+                  }
                 >
-                  {searchQuery || talentAreaFilter !== 'all' ? (
+                  {searchQuery ||
+                  talentAreaFilter !== 'all' ||
+                  talentVerificationFilter !== 'all' ? (
                     <FiX />
                   ) : (
                     <FiFilter />
@@ -2224,9 +2253,19 @@ export default function EmpresaDashboard({
                               }}
                             >
                               {talent.name}
-                              {talent.verified && (
-                                <VerificationBadge verified size="sm" />
-                              )}
+                              {talent.verified &&
+                                (talent.verificationTypes?.length ? (
+                                  talent.verificationTypes.map((type) => (
+                                    <VerificationBadge
+                                      key={type}
+                                      verified
+                                      type={type}
+                                      size="sm"
+                                    />
+                                  ))
+                                ) : (
+                                  <VerificationBadge verified size="sm" />
+                                ))}
                             </div>
                             <div className="list-item-meta">
                               {[talent.headline, talent.location]
@@ -3605,25 +3644,11 @@ export default function EmpresaDashboard({
               paymentInstructions={planPaymentInstructions}
               pendingPaymentRequest={pendingPaymentRequest}
               onPaymentProofSubmitted={setPendingPaymentRequest}
-              onSubscribe={handleSubscribePlan}
-            />
-          </section>
-        );
-      case 'affiliate':
-        return (
-          <section className={styles.sectionBlock}>
-            <AffiliateSection
-              role="empresa"
-              user={user}
-              defaults={{
-                fullName:
-                  profile?.companyName || profile?.name || user?.name || '',
-                email: profile?.email || user?.email || '',
-                phone: profile?.phone || profile?.contact || '',
-                location: profile?.location || '',
-                occupation:
-                  profile?.industry || profile?.segment || profile?.area || '',
+              onPlanApproved={() => {
+                setPendingPaymentRequest(null);
+                router.replace(router.asPath);
               }}
+              onSubscribe={handleSubscribePlan}
             />
           </section>
         );
@@ -3654,7 +3679,6 @@ export default function EmpresaDashboard({
     messages: 'Conversas com candidatos',
     'company-profile': 'Perfil público da empresa',
     plans: 'Gestão do seu plano',
-    affiliate: 'Programa de afiliados EmpregoSTP',
   };
   // Ordem do wireframe (07_COMPANY, E01–E20) e igual à barra do shell em
   // components/dashboard/dashboardNav.js, para a lateral não mudar entre páginas.
@@ -3736,13 +3760,6 @@ export default function EmpresaDashboard({
           label: 'Planos',
           icon: 'star',
           onClick: () => openTab('plans'),
-        },
-        {
-          key: 'affiliate',
-          label: 'Ser afiliado',
-          icon: 'star',
-          badgeStyle: 'lime',
-          onClick: () => openTab('affiliate'),
         },
       ],
     },
@@ -4051,13 +4068,14 @@ function normalizeJobDates(job) {
 }
 
 export async function getServerSideProps(context) {
+  setPrivatePageHeaders(context);
   const { admin } = await import('../../../lib/firebaseAdmin');
   try {
     const cookies = nookies.get(context);
     if (!cookies.token) {
       return redirectToLogin(context);
     }
-    const token = await admin.auth().verifyIdToken(cookies.token);
+    const token = await admin.auth().verifyIdToken(cookies.token, true);
     const { uid } = token;
 
     const userDoc = await admin.firestore().collection('users').doc(uid).get();
@@ -4065,6 +4083,7 @@ export async function getServerSideProps(context) {
       return redirectToLogin(context);
     }
     const userData = userDoc.data();
+    if (!isUserAccountActive(userData)) return redirectToLogin(context);
     if (userData.userType !== 'empresa') {
       return { redirect: { destination: '/dashboard', permanent: false } };
     }
@@ -4241,6 +4260,7 @@ export async function getServerSideProps(context) {
 
     return {
       props: {
+        __sessionUid: uid,
         profile,
         jobs: jobsWithCounts,
         totalApplications: appsSnap.size,

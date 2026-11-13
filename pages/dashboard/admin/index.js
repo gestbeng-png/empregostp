@@ -3,6 +3,8 @@ import Link from 'next/link';
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
 import nookies from 'nookies';
+import { setPrivatePageHeaders } from '../../../lib/privatePageCache';
+import { isUserAccountActive } from '../../../lib/userStatus';
 import {
   FiUsers,
   FiUserCheck,
@@ -705,6 +707,7 @@ export default function AdminDashboard({
 }
 
 export async function getServerSideProps(context) {
+  setPrivatePageHeaders(context);
   try {
     const cookies = nookies.get(context);
 
@@ -712,7 +715,7 @@ export async function getServerSideProps(context) {
       return redirectToLogin(context);
     }
 
-    const token = await admin.auth().verifyIdToken(cookies.token);
+    const token = await admin.auth().verifyIdToken(cookies.token, true);
     const { uid } = token;
 
     const userDoc = await admin.firestore().collection('users').doc(uid).get();
@@ -721,6 +724,7 @@ export async function getServerSideProps(context) {
     }
 
     const userData = userDoc.data();
+    if (!isUserAccountActive(userData)) return redirectToLogin(context);
 
     if (userData.userType !== 'admin') {
       return { redirect: { destination: '/dashboard', permanent: false } };
@@ -931,6 +935,7 @@ export async function getServerSideProps(context) {
 
     return {
       props: {
+        __sessionUid: uid,
         initialStats: {
           totalUsers: usersSnapshot.size,
           totalCandidatos: candidatosSnapshot.data().count,

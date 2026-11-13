@@ -15,6 +15,7 @@ import { logServerError } from '../../../lib/serverLog';
 import { requireActiveApiUser } from '../../../lib/apiUserAuth';
 
 export default async function handler(req, res) {
+  res.setHeader('Cache-Control', 'private, no-store');
   if (req.method !== 'GET') {
     res.setHeader('Allow', ['GET']);
     return res.status(405).json({ error: 'Método não permitido' });

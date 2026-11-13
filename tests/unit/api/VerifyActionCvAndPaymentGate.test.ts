@@ -88,18 +88,33 @@ describe('aprovação de verificação exige CV e plano de verificação confirm
         };
       }
       if (name === 'profiles') {
-        return { doc: jest.fn(() => ({ set: profileSet })) };
+        return {
+          doc: jest.fn(() => ({
+            get: jest.fn().mockResolvedValue({ data: () => ({}) }),
+            set: profileSet,
+          })),
+        };
       }
       if (name === 'verifications') {
         return { doc: jest.fn(() => verificationRef) };
       }
       if (name === 'activities') {
-        return { add: activitiesAdd };
+        return { doc: () => ({ set: activitiesAdd }) };
       }
       throw new Error(`Colecao inesperada: ${name}`);
     });
 
-    firestoreMock.mockReturnValue({ collection });
+    const writes: Array<() => Promise<unknown>> = [];
+    firestoreMock.mockReturnValue({
+      collection,
+      batch: () => ({
+        set: (ref: { set: jest.Mock }, data: unknown, options: unknown) =>
+          writes.push(() => ref.set(data, options)),
+        commit: async () => {
+          for (const write of writes) await write();
+        },
+      }),
+    });
     return { verificationRef };
   }
 

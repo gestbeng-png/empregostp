@@ -16,7 +16,14 @@ test.describe('rotas de planos premium', () => {
     });
 
     expect([307, 308]).toContain(response.status());
-    expect(response.headers().location).toBe('/dashboard/candidato?tab=plans');
+    const destination = new URL(
+      response.headers().location || '',
+      'http://localhost',
+    );
+    expect(destination.pathname).toBe('/login');
+    expect(destination.searchParams.get('redirect')).toBe(
+      '/dashboard/candidato?tab=plans',
+    );
   });
 
   test('/premium/empresa aponta para os planos da empresa', async ({
@@ -27,6 +34,13 @@ test.describe('rotas de planos premium', () => {
     });
 
     expect([307, 308]).toContain(response.status());
-    expect(response.headers().location).toBe('/dashboard/empresa?tab=plans');
+    const destination = new URL(
+      response.headers().location || '',
+      'http://localhost',
+    );
+    expect(destination.pathname).toBe('/login');
+    expect(destination.searchParams.get('redirect')).toBe(
+      '/dashboard/empresa?tab=plans',
+    );
   });
 });

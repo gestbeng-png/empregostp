@@ -1,17 +1,23 @@
 import Head from 'next/head';
 import Image from 'next/image';
-import Link from 'next/link';
+import Link from '../../components/auth/AccountActionLink';
 import {
   FiArrowLeft,
+  FiArrowRight,
   FiBriefcase,
-  FiCheckCircle,
-  FiExternalLink,
+  FiFacebook,
   FiGlobe,
+  FiInstagram,
+  FiLayers,
+  FiLinkedin,
+  FiMail,
   FiMapPin,
+  FiPhone,
   FiUsers,
 } from 'react-icons/fi';
 import CompactJobCard from '../../components/home/CompactJobCard';
 import PublicPageShell from '../../components/PublicPageShell';
+import VerificationBadge from '../../components/VerificationBadge';
 import { getEmpresaPlanSummary } from '../../lib/empresaPlanFeatures';
 import {
   normalizeCompanyWebsite,
@@ -80,10 +86,57 @@ export default function PublicCompanyProfile({
     .map((part) => part[0]?.toUpperCase())
     .join('');
 
+  const contacts = [
+    company.phone && {
+      icon: FiPhone,
+      label: 'Telefone',
+      value: company.phone,
+      href: `tel:${company.phone.replace(/[^+\d]/g, '')}`,
+    },
+    company.email && {
+      icon: FiMail,
+      label: 'Email',
+      value: company.email,
+      href: `mailto:${company.email}`,
+    },
+    company.location && {
+      icon: FiMapPin,
+      label: 'Localização',
+      value: company.location,
+    },
+    company.website && {
+      icon: FiGlobe,
+      label: 'Site',
+      value: company.website.replace(/^https?:\/\//, '').replace(/\/$/, ''),
+      href: company.website,
+    },
+  ].filter(Boolean);
+  const jobsLabel = `${activeJobCount} ${
+    activeJobCount === 1 ? 'vaga ativa' : 'vagas ativas'
+  }`;
+  const facts = [
+    company.location && {
+      icon: FiMapPin,
+      label: 'Localização',
+      value: company.location,
+    },
+    company.companySize && {
+      icon: FiUsers,
+      label: 'Dimensão',
+      value: company.companySize,
+    },
+    company.industrySectors.length > 0 && {
+      icon: FiLayers,
+      label: 'Setor',
+      value: company.industrySectors.slice(0, 2).join(', '),
+    },
+    { icon: FiBriefcase, label: 'Oportunidades', value: jobsLabel },
+  ].filter(Boolean);
+
   return (
     <>
       <Head>
-        <title>{company.name} | Empresa — EmpregoSTP</title>
+        <title>{`${company.name} | Empresa — EmpregoSTP`}</title>
         <meta
           name="description"
           content={
@@ -96,216 +149,288 @@ export default function PublicCompanyProfile({
 
       <PublicPageShell headerVariant="light">
         <div className={styles.page}>
-          <div className={styles.container}>
-            <Link href="/vagas" className={styles.backLink}>
-              <FiArrowLeft aria-hidden="true" />
-              Voltar às vagas
-            </Link>
+          <Link href="/vagas" className={styles.backLink}>
+            <FiArrowLeft className={styles.backIcon} aria-hidden="true" />
+            Voltar às vagas
+          </Link>
 
-            <section className={styles.hero}>
+          <header className={styles.hero}>
+            <div className={styles.heroBanner} aria-hidden="true">
               {company.coverImageUrl ? (
                 <Image
                   src={company.coverImageUrl}
                   alt=""
                   className={styles.coverImage}
                   fill
-                  sizes="(max-width: 760px) 100vw, 1200px"
+                  sizes="(max-width: 760px) 100vw, 1160px"
                   unoptimized
-                  aria-hidden="true"
                 />
-              ) : (
-                <div className={styles.coverFallback} aria-hidden="true" />
-              )}
+              ) : null}
+            </div>
 
-              <div className={styles.heroContent}>
-                <div className={styles.logo}>
-                  {company.logoUrl ? (
-                    <Image
-                      src={company.logoUrl}
-                      alt={`Logótipo de ${company.name}`}
-                      width={112}
-                      height={112}
-                      sizes="112px"
-                      unoptimized
-                    />
-                  ) : (
-                    <span>{initials || 'ES'}</span>
-                  )}
-                </div>
+            <div className={styles.heroMain}>
+              <div className={styles.logo}>
+                {company.logoUrl ? (
+                  <Image
+                    src={company.logoUrl}
+                    alt={`Logótipo de ${company.name}`}
+                    width={120}
+                    height={120}
+                    sizes="120px"
+                    unoptimized
+                  />
+                ) : (
+                  <span aria-hidden="true">{initials || 'ES'}</span>
+                )}
+              </div>
 
-                <div className={styles.identity}>
-                  <span className={styles.eyebrow}>Perfil da empresa</span>
-                  <div className={styles.titleRow}>
-                    <h1>{company.name}</h1>
-                    {/* O texto "Verificada" já nomeia o elemento, pelo que o
-                        `aria-label` era redundante — e proibido sem `role`. */}
-                    {company.verified ? (
-                      <span className={styles.verified}>
-                        <FiCheckCircle aria-hidden="true" />
-                        Verificada
-                      </span>
-                    ) : null}
-                  </div>
-                  <div className={styles.meta}>
-                    {company.location ? (
-                      <span>
-                        <FiMapPin aria-hidden="true" />
-                        {company.location}
-                      </span>
-                    ) : null}
-                    {company.companySize ? (
-                      <span>
-                        <FiUsers aria-hidden="true" />
-                        {company.companySize}
-                      </span>
-                    ) : null}
-                    <span>
-                      <FiBriefcase aria-hidden="true" />
-                      {activeJobCount}{' '}
-                      {activeJobCount === 1
-                        ? 'oportunidade ativa'
-                        : 'oportunidades ativas'}
+              <div className={styles.identity}>
+                <span className={styles.eyebrow}>Perfil da empresa</span>
+                <h1 className={styles.name}>
+                  {company.name}
+                  {company.verified ? (
+                    <span className={styles.nameSeal}>
+                      <VerificationBadge
+                        verified
+                        size="xl"
+                        variant="seal"
+                        detail="Empresa confirmada pela equipa EmpregoSTP."
+                      />
                     </span>
-                  </div>
-                </div>
-
-                {company.website ? (
-                  <a
-                    href={company.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={styles.websiteButton}
-                  >
-                    <FiGlobe aria-hidden="true" />
-                    Site da empresa
-                    <FiExternalLink aria-hidden="true" />
-                  </a>
+                  ) : null}
+                </h1>
+                {company.verified ? (
+                  <p className={styles.verifiedLine}>Empresa verificada</p>
                 ) : null}
               </div>
-            </section>
 
-            <div className={styles.layout}>
-              <div className={styles.main}>
-                <section className={styles.about}>
-                  <span className={styles.sectionEyebrow}>
-                    Marca empregadora
-                  </span>
-                  <h2>Sobre a empresa</h2>
-                  <p>
-                    {company.description ||
-                      'Esta empresa ainda não adicionou uma apresentação pública.'}
-                  </p>
-                </section>
-
-                <section className={styles.jobsSection}>
-                  <div className={styles.sectionHeading}>
-                    <div>
-                      <span className={styles.sectionEyebrow}>
-                        Oportunidades
-                      </span>
-                      <h2>Vagas disponíveis</h2>
-                    </div>
-                    <Link
-                      href={{
-                        pathname: '/vagas',
-                        query: { empresa: company.id },
-                      }}
-                      className={styles.allJobsLink}
+              <div className={styles.heroActions}>
+                {[
+                  {
+                    href: company.website,
+                    icon: FiGlobe,
+                    label: 'Site da empresa',
+                  },
+                  {
+                    href: company.social.linkedin,
+                    icon: FiLinkedin,
+                    label: 'LinkedIn',
+                  },
+                  {
+                    href: company.social.facebook,
+                    icon: FiFacebook,
+                    label: 'Facebook',
+                  },
+                  {
+                    href: company.social.instagram,
+                    icon: FiInstagram,
+                    label: 'Instagram',
+                  },
+                ]
+                  .filter((link) => link.href)
+                  .map(({ href, icon: Icon, label }) => (
+                    <a
+                      key={label}
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.iconLink}
+                      aria-label={`${label} (abre noutro separador)`}
+                      title={label}
                     >
-                      Explorar todas
+                      <Icon aria-hidden="true" />
+                    </a>
+                  ))}
+              </div>
+            </div>
+
+            <dl className={styles.facts}>
+              {facts.map(({ icon: Icon, label, value }) => (
+                <div key={label} className={styles.fact}>
+                  <dt className={styles.factLabel}>
+                    <Icon aria-hidden="true" />
+                    {label}
+                  </dt>
+                  <dd className={styles.factValue}>{value}</dd>
+                </div>
+              ))}
+            </dl>
+          </header>
+
+          <div className={styles.layout}>
+            <div className={styles.mainColumn}>
+              <section className={styles.panel}>
+                <h2 className={styles.panelTitle}>Sobre a empresa</h2>
+                <p
+                  className={
+                    company.description ? styles.text : styles.textMuted
+                  }
+                >
+                  {company.description ||
+                    'Esta empresa ainda não adicionou uma apresentação pública.'}
+                </p>
+              </section>
+
+              <section
+                id="vagas"
+                className={styles.panel}
+                aria-labelledby="vagas-titulo"
+              >
+                <div className={styles.panelHeading}>
+                  <h2 id="vagas-titulo" className={styles.panelTitle}>
+                    Vagas disponíveis
+                    {activeJobCount > 0 ? (
+                      <span className={styles.panelCount}>
+                        {activeJobCount}
+                      </span>
+                    ) : null}
+                  </h2>
+                  <Link
+                    href={{
+                      pathname: '/vagas',
+                      query: { empresa: company.id },
+                    }}
+                    className={styles.textLink}
+                  >
+                    Explorar todas
+                    <FiArrowRight aria-hidden="true" />
+                  </Link>
+                </div>
+
+                {jobs.length > 0 ? (
+                  <div className={styles.jobsList}>
+                    {jobs.map((job) => (
+                      <CompactJobCard
+                        key={job.id}
+                        href={`/vaga/${job.id}`}
+                        actionHref={`/vaga/${job.id}`}
+                        actionLabel="Ver oportunidade"
+                        title={job.title}
+                        companyName={company.name}
+                        companyLogo={company.logoUrl}
+                        imageAlt={`Logótipo de ${company.name}`}
+                        status={job.status}
+                        badgeLabel={job.contractType}
+                        salary={formatSalary(job)}
+                        categoryLabel={job.category}
+                        modalityLabel={job.modality}
+                        experienceLabel={job.experience}
+                        publishedLabel={formatDateLabel(
+                          job.createdAt,
+                          'Publicada',
+                        )}
+                        closingLabel={formatDateLabel(job.deadline, 'Termina')}
+                        vacancyCount={job.vacancyCount}
+                        isFeatured={job.featured}
+                        isVerified={company.verified}
+                        metaItems={[
+                          {
+                            icon: 'location',
+                            text:
+                              job.location ||
+                              company.location ||
+                              'São Tomé e Príncipe',
+                          },
+                          {
+                            icon: 'briefcase',
+                            text: job.contractType,
+                          },
+                          {
+                            icon: 'clock',
+                            text: formatDateLabel(job.createdAt, 'em'),
+                          },
+                        ]}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className={styles.emptyState} role="status">
+                    <span className={styles.emptyIcon} aria-hidden="true">
+                      <FiBriefcase />
+                    </span>
+                    <h3 className={styles.emptyTitle}>
+                      Sem vagas abertas neste momento
+                    </h3>
+                    <p className={styles.emptyText}>
+                      Explore outras empresas ou volte mais tarde para consultar
+                      novas oportunidades.
+                    </p>
+                    <Link href="/vagas" className={styles.textLink}>
+                      Explorar vagas
+                      <FiArrowRight aria-hidden="true" />
                     </Link>
                   </div>
-
-                  {jobs.length > 0 ? (
-                    <div className={styles.jobsGrid}>
-                      {jobs.map((job) => (
-                        <CompactJobCard
-                          key={job.id}
-                          href={`/vaga/${job.id}`}
-                          actionHref={`/vaga/${job.id}`}
-                          actionLabel="Ver oportunidade"
-                          title={job.title}
-                          companyName={company.name}
-                          companyLogo={company.logoUrl}
-                          imageAlt={`Logótipo de ${company.name}`}
-                          status={job.status}
-                          badgeLabel={job.contractType}
-                          salary={formatSalary(job)}
-                          categoryLabel={job.category}
-                          modalityLabel={job.modality}
-                          experienceLabel={job.experience}
-                          publishedLabel={formatDateLabel(
-                            job.createdAt,
-                            'Publicada',
-                          )}
-                          closingLabel={formatDateLabel(
-                            job.deadline,
-                            'Termina',
-                          )}
-                          vacancyCount={job.vacancyCount}
-                          isFeatured={job.featured}
-                          isVerified={company.verified}
-                          metaItems={[
-                            {
-                              icon: 'location',
-                              text:
-                                job.location ||
-                                company.location ||
-                                'São Tomé e Príncipe',
-                            },
-                            {
-                              icon: 'briefcase',
-                              text: job.contractType,
-                            },
-                            {
-                              icon: 'clock',
-                              text: formatDateLabel(job.createdAt, 'em'),
-                            },
-                          ]}
-                        />
-                      ))}
-                    </div>
-                  ) : (
-                    <div className={styles.emptyState} role="status">
-                      <span className={styles.emptyIcon}>
-                        <FiBriefcase aria-hidden="true" />
-                      </span>
-                      <h3>Sem vagas abertas neste momento</h3>
-                      <p>
-                        Explore outras empresas ou volte mais tarde para
-                        consultar novas oportunidades.
-                      </p>
-                      <Link href="/vagas" className={styles.emptyAction}>
-                        Explorar vagas
-                      </Link>
-                    </div>
-                  )}
-                </section>
-              </div>
-
-              <aside className={styles.sidebar}>
-                <section className={styles.infoCard}>
-                  <h2>Informação</h2>
-                  {company.industrySectors.length > 0 ? (
-                    <div className={styles.sectors}>
-                      {company.industrySectors.map((sector) => (
-                        <span key={sector}>{sector}</span>
-                      ))}
-                    </div>
-                  ) : (
-                    <p>Setor de atividade ainda não indicado.</p>
-                  )}
-                </section>
-
-                <section className={styles.ctaCard}>
-                  <span>Quer trabalhar aqui?</span>
-                  <h2>Prepare o seu perfil para a próxima oportunidade.</h2>
-                  <Link href="/register?type=candidato">
-                    Criar perfil profissional
-                  </Link>
-                </section>
-              </aside>
+                )}
+              </section>
             </div>
+
+            <aside className={styles.sideColumn}>
+              <section className={styles.joinPanel}>
+                <span className={styles.joinEyebrow}>Quer trabalhar aqui?</span>
+                <h2 className={styles.joinTitle}>
+                  Prepare o seu perfil para a próxima oportunidade.
+                </h2>
+                <Link
+                  href="/register?type=candidato"
+                  className={styles.joinLink}
+                >
+                  Criar perfil profissional
+                </Link>
+              </section>
+
+              <section className={styles.panel}>
+                <h2 className={styles.panelTitle}>Contactos</h2>
+                {contacts.length > 0 ? (
+                  <ul className={styles.contactList}>
+                    {contacts.map(({ icon: Icon, label, value, href }) => (
+                      <li key={label} className={styles.contactItem}>
+                        <Icon aria-hidden="true" />
+                        <span>
+                          <span className={styles.contactLabel}>{label}</span>
+                          {href ? (
+                            <a
+                              href={href}
+                              className={styles.contactValue}
+                              {...(href.startsWith('http')
+                                ? {
+                                    target: '_blank',
+                                    rel: 'noopener noreferrer',
+                                  }
+                                : {})}
+                            >
+                              {value}
+                            </a>
+                          ) : (
+                            <span className={styles.contactValue}>{value}</span>
+                          )}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className={styles.textMuted}>
+                    A empresa ainda não indicou contactos.
+                  </p>
+                )}
+              </section>
+
+              <section className={styles.panel}>
+                <h2 className={styles.panelTitle}>Setores de atividade</h2>
+                {company.industrySectors.length > 0 ? (
+                  <ul className={styles.tagList}>
+                    {company.industrySectors.map((sector) => (
+                      <li key={sector} className={styles.tag}>
+                        {sector}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className={styles.textMuted}>
+                    Setor de atividade ainda não indicado.
+                  </p>
+                )}
+              </section>
+            </aside>
           </div>
         </div>
       </PublicPageShell>
@@ -348,6 +473,21 @@ export async function getServerSideProps(context) {
       logoUrl: data.logoUrl || data.logo || '',
       coverImageUrl: data.coverImageUrl || '',
       website: normalizeCompanyWebsite(data.website),
+      // Contactos que a empresa preenche no painel ("Perfil da empresa").
+      phone: String(data.phone || '').trim(),
+      email: String(data.contactEmail || data.email || '').trim(),
+      // O painel grava em `socialMedia.*` e, em contas antigas, no topo.
+      social: {
+        linkedin: normalizeCompanyWebsite(
+          data.socialMedia?.linkedin || data.linkedin,
+        ),
+        facebook: normalizeCompanyWebsite(
+          data.socialMedia?.facebook || data.facebook,
+        ),
+        instagram: normalizeCompanyWebsite(
+          data.socialMedia?.instagram || data.instagram,
+        ),
+      },
       verified: Boolean(planSummary?.features?.companyVerified),
     };
 

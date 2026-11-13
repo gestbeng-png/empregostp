@@ -1,6 +1,7 @@
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../context/AuthContext';
+import DashboardAccessGate from '../auth/DashboardAccessGate';
 
 // A shell só é usada nas rotas de dashboard, mas este frame envolve todas as
 // páginas a partir do _app — sem divisão de código, cada página pública
@@ -78,13 +79,27 @@ function getRouteMeta(pathname) {
 
 export default function DashboardRouteFrame({ Component, pageProps }) {
   const router = useRouter();
+  const pathname = router.pathname || '';
+  const match = /^\/dashboard\/(admin|empresa|candidato)(\/|$)/.exec(pathname);
+
+  if (!match) {
+    return <Component {...pageProps} />;
+  }
+  return (
+    <DashboardAccessGate
+      requiredRole={match[1]}
+      serverUid={pageProps.__sessionUid}
+    >
+      <AuthorizedDashboard Component={Component} pageProps={pageProps} />
+    </DashboardAccessGate>
+  );
+}
+
+function AuthorizedDashboard({ Component, pageProps }) {
+  const router = useRouter();
   const { user } = useAuth();
   const pathname = router.pathname || '';
-  const isDashboardRoute = /^\/dashboard\/(admin|empresa|candidato)(\/|$)/.test(
-    pathname,
-  );
-
-  if (!isDashboardRoute || SELF_CONTAINED_ROUTES.has(pathname)) {
+  if (SELF_CONTAINED_ROUTES.has(pathname)) {
     return <Component {...pageProps} />;
   }
 

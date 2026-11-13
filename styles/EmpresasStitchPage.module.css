@@ -837,7 +837,9 @@
 .page.page .sectionEyebrow,
 .page.page .closingEyebrow {
   color: var(--company-blue);
-  font-size: 0.7rem;
+  /* Piso de 14px: abaixo disso o texto deixa de ser legível e falha o
+     contrato de interface (ver tests/unit/design e e2e/ui-audit). */
+  font-size: 0.875rem;
   font-weight: 900;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -907,7 +909,7 @@
   min-height: 50px;
   border-radius: 9px;
   padding: 0 1.25rem;
-  font-size: 0.78rem;
+  font-size: 0.875rem;
   font-weight: 900;
   letter-spacing: 0.02em;
 }
@@ -939,7 +941,7 @@
   gap: 0.6rem;
   margin-top: 1.15rem;
   color: var(--company-muted);
-  font-size: 0.76rem;
+  font-size: 0.875rem;
 }
 
 .page.page .heroAssurance > span {
@@ -988,7 +990,7 @@
 }
 
 .page.page .heroVisualCaption span {
-  font-size: 0.64rem;
+  font-size: 0.875rem;
   font-weight: 800;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -1116,7 +1118,7 @@
 .page.page .planBadge {
   background: var(--company-lime);
   color: var(--company-navy);
-  font-size: 0.64rem;
+  font-size: 0.875rem;
 }
 
 .page.page .planPrice {
@@ -1755,4 +1757,9 @@
   .extrasSection {
     padding: 3.5rem 0;
   }
+}
+
+/* Sem bolinha decorativa antes do texto. */
+.page.page .heroEyebrow::before {
+  display: none !important;
 }

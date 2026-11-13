@@ -1,4 +1,8 @@
 import { admin } from '../../lib/firebaseAdmin';
+import {
+  PLAN_CURRENCY,
+  formatPlanPrice,
+} from '../../lib/payments/currency';
 import { enforceApiRateLimit } from '../../lib/apiRateLimit';
 import {
   getEmpresaPlanFeatures,
@@ -396,7 +400,7 @@ async function handleSubscription(req, res) {
     const resolvedPaymentInstructions = !isFreePlan
       ? {
           amount: planPrice,
-          currency: 'Dobras',
+          currency: PLAN_CURRENCY,
           accountNumber: paymentSettings?.accountNumber || '',
           accountName: paymentSettings?.accountName || '',
           bankName: paymentSettings?.bankName || '',
@@ -565,7 +569,7 @@ async function handleSubscription(req, res) {
         notificationTitle = 'Upgrade de Plano Solicitado';
         const currentPlanName = userData.planName || currentPlanId;
         if (paymentSettings && paymentSettings.accountNumber) {
-          notificationMessage = `Você solicitou upgrade do plano ${currentPlanName} para ${plan.name}. Faça a transferência de ${planPrice} Dobras para a conta ${paymentSettings.accountNumber}${paymentSettings.accountName ? ` (${paymentSettings.accountName})` : ''}${paymentSettings.bankName ? ` - ${paymentSettings.bankName}` : ''} e envie o comprovativo na plataforma. Seu plano atual permanecerá ativo até a aprovação do upgrade.`;
+          notificationMessage = `Você solicitou upgrade do plano ${currentPlanName} para ${plan.name}. Faça a transferência de ${formatPlanPrice(planPrice)} para a conta ${paymentSettings.accountNumber}${paymentSettings.accountName ? ` (${paymentSettings.accountName})` : ''}${paymentSettings.bankName ? ` - ${paymentSettings.bankName}` : ''} e envie o comprovativo na plataforma. Seu plano atual permanecerá ativo até a aprovação do upgrade.`;
         } else {
           notificationMessage = `Você solicitou upgrade do plano ${currentPlanName} para ${plan.name}. Aguarde instruções de pagamento do administrador. Seu plano atual permanecerá ativo até a aprovação do upgrade.`;
         }
@@ -573,7 +577,7 @@ async function handleSubscription(req, res) {
         notificationTitle = 'Aguardando Pagamento';
         // Usar configurações de pagamento buscadas antes da transação
         if (paymentSettings && paymentSettings.accountNumber) {
-          notificationMessage = `Sua solicitação do plano ${plan.name} foi recebida. Faça a transferência de ${planPrice} Dobras para a conta ${paymentSettings.accountNumber}${paymentSettings.accountName ? ` (${paymentSettings.accountName})` : ''}${paymentSettings.bankName ? ` - ${paymentSettings.bankName}` : ''} e envie o comprovativo na plataforma para revisão.`;
+          notificationMessage = `Sua solicitação do plano ${plan.name} foi recebida. Faça a transferência de ${formatPlanPrice(planPrice)} para a conta ${paymentSettings.accountNumber}${paymentSettings.accountName ? ` (${paymentSettings.accountName})` : ''}${paymentSettings.bankName ? ` - ${paymentSettings.bankName}` : ''} e envie o comprovativo na plataforma para revisão.`;
         } else {
           notificationMessage = `Sua solicitação do plano ${plan.name} foi recebida. Aguarde instruções de pagamento do administrador.`;
         }
@@ -652,7 +656,7 @@ async function handleSubscription(req, res) {
         requestId: subscriptionRequestId,
         paymentInstructions: paymentInstructions || {
           amount: planPrice,
-          currency: 'Dobras',
+          currency: PLAN_CURRENCY,
           email: 'empregoSTP@gmail.com',
           message:
             'Faça a transferência e envie o comprovativo pela plataforma.',

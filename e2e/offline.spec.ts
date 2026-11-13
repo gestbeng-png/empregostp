@@ -11,7 +11,7 @@ test('o estado offline apresenta recuperação e regresso acessíveis', async ({
 }) => {
   const pageErrors = monitorPageErrors(page);
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  const response = await page.goto('/offline', { waitUntil: 'networkidle' });
+  const response = await page.goto('/offline', { waitUntil: 'load' });
 
   expect(response?.ok()).toBe(true);
   await expect(page.getByRole('main')).toHaveCount(1);

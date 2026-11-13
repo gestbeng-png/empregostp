@@ -66,8 +66,9 @@ const PERFIL_PUBLICO = {
 function contexto() {
   return {
     params: { id: 'candidato-1' },
+    resolvedUrl: '/candidatos/candidato-1',
     req: { headers: {} },
-    res: {},
+    res: { setHeader: jest.fn() },
   } as unknown as GetServerSidePropsContext;
 }
 
@@ -106,6 +107,35 @@ describe('perfil público do candidato visto por uma empresa', () => {
 
     expect(valoresIndefinidos).toEqual([]);
     expect(JSON.stringify(resultado.props)).toEqual(expect.any(String));
+  });
+
+  test('Premium ativo sem flags recebe selo e não dá 404 no perfil público', async () => {
+    const existingGet = docGet.getMockImplementation();
+    docGet.mockImplementation((collection: string, id: string) => {
+      if (collection === 'users' && id === 'candidato-1') {
+        return Promise.resolve({
+          exists: true,
+          data: () => ({
+            ...CANDIDATO,
+            verified: false,
+            verificationStatus: 'pending',
+            currentPlan: 'unlimited_candidato',
+            planEndDate: '2099-01-01',
+          }),
+        });
+      }
+      return existingGet?.(collection, id);
+    });
+    const result = await getServerSideProps(contexto());
+    expect(result).toMatchObject({
+      props: {
+        candidato: {
+          verified: true,
+          paidVerified: true,
+          qualifiedVerified: false,
+        },
+      },
+    });
   });
 
   test('a empresa é reconhecida como tal, e não como admin nem dona do perfil', async () => {
@@ -249,5 +279,192 @@ describe('perfil público do candidato visto por uma empresa', () => {
       objectiveAspiration: 'Liderar equipas de produto em São Tomé.',
       certifications: ['PMP - PMI', 'Scrum Master I'],
     });
+  });
+});
+
+describe('perfil existente não é confundido com falta de sessão', () => {
+  function install({
+    viewer = 'guest',
+    visibility = 'recruiters',
+    viewerStatus = 'active',
+    exists = true,
+    candidate = CANDIDATO,
+  } = {}) {
+    mockCookies = viewer === 'guest' ? {} : { token: 'viewer-token' };
+    const viewerUid = viewer === 'owner' ? 'candidato-1' : 'viewer-1';
+    verifyIdToken.mockResolvedValue({ uid: viewerUid });
+    docGet.mockImplementation(async (collection: string, id: string) => {
+      if (collection === 'users' && id === 'viewer-1') {
+        return {
+          exists: true,
+          data: () => ({ userType: viewer, status: viewerStatus }),
+        };
+      }
+      if (collection === 'users') return { exists, data: () => candidate };
+      return {
+        exists: true,
+        data: () => ({
+          ...PERFIL_PUBLICO,
+          settings: {
+            privacy: { profileVisibility: visibility, showContactInfo: false },
+          },
+        }),
+      };
+    });
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    getEmpresaPlanSummary.mockReturnValue({
+      planName: 'Profissional',
+      features: { accessTalentPool: true },
+    });
+    install();
+  });
+
+  test('sem cookie, encaminha para login e preserva o perfil pedido sem devolver dados privados', async () => {
+    const ctx = contexto();
+    ctx.resolvedUrl += '?source=verified';
+    await expect(getServerSideProps(ctx)).resolves.toEqual({
+      redirect: {
+        destination:
+          '/login?redirect=%2Fcandidatos%2Fcandidato-1%3Fsource%3Dverified',
+        permanent: false,
+      },
+    });
+  });
+
+  test('sessão expirada não transforma um perfil verificado num 404', async () => {
+    install({ viewer: 'admin' });
+    verifyIdToken.mockRejectedValueOnce(new Error('expired'));
+    await expect(getServerSideProps(contexto())).resolves.toEqual({
+      redirect: {
+        destination: '/login?redirect=%2Fcandidatos%2Fcandidato-1',
+        permanent: false,
+      },
+    });
+    expect(verifyIdToken).toHaveBeenCalledWith('viewer-token', true);
+  });
+
+  test.each(['admin', 'empresa', 'owner'])(
+    'uma sessão válida %s abre o perfil reservado a recrutadores',
+    async (viewer) => {
+      install({ viewer });
+      const result = (await getServerSideProps(contexto())) as {
+        props: {
+          candidato: Record<string, unknown>;
+          viewerAccess: Record<string, unknown>;
+        };
+      };
+      expect(result.props.candidato).toMatchObject({
+        id: 'candidato-1',
+        verified: true,
+      });
+      expect(result.props.viewerAccess).toMatchObject({
+        isAdmin: viewer === 'admin',
+        isEmpresa: viewer === 'empresa',
+        isOwner: viewer === 'owner',
+      });
+    },
+  );
+
+  test('admin não ganha edição nem se torna dono do candidato ao abrir o perfil', async () => {
+    install({ viewer: 'admin' });
+    const result = (await getServerSideProps(contexto())) as {
+      props: { viewerAccess: Record<string, unknown> };
+    };
+    expect(result.props.viewerAccess).toMatchObject({
+      userType: 'admin',
+      isAdmin: true,
+      isOwner: false,
+      isEmpresa: false,
+    });
+  });
+
+  test('perfil público continua a abrir sem autenticação e sem contactos', async () => {
+    install({ visibility: 'public' });
+    const result = (await getServerSideProps(contexto())) as {
+      props: { candidato: Record<string, unknown> };
+    };
+    expect(result.props.candidato).toMatchObject({
+      verified: true,
+      email: '',
+      phone: '',
+      hasCv: false,
+    });
+  });
+
+  test.each(['guest', 'empresa', 'candidato'])(
+    'perfil privado continua oculto para %s',
+    async (viewer) => {
+      install({ viewer, visibility: 'private' });
+      await expect(getServerSideProps(contexto())).resolves.toEqual({
+        notFound: true,
+      });
+    },
+  );
+
+  test('outra conta de candidato não herda acesso de recrutador', async () => {
+    install({ viewer: 'candidato' });
+    // Perfil reservado a empresas: a página explica a reserva em vez de um 404
+    // que parecia avaria a quem vinha de /verificados. O contrato é não enviar
+    // nenhum dado do candidato nesta resposta.
+    const result = (await getServerSideProps(contexto())) as {
+      props?: Record<string, unknown>;
+    };
+    expect(result).toEqual({ props: { restricted: true } });
+    expect(result.props).not.toHaveProperty('candidato');
+    expect(JSON.stringify(result)).not.toContain('@');
+  });
+
+  test.each(['suspended', 'disabled', 'inactive', 'deleted'])(
+    'a conta admin %s não pode ler o perfil',
+    async (viewerStatus) => {
+      install({ viewer: 'admin', viewerStatus });
+      const result = await getServerSideProps(contexto());
+      expect(result).toHaveProperty('redirect');
+      expect(result).not.toHaveProperty('props');
+    },
+  );
+
+  test('perfil inexistente mantém o verdadeiro 404', async () => {
+    install({ exists: false });
+    await expect(getServerSideProps(contexto())).resolves.toEqual({
+      notFound: true,
+    });
+  });
+
+  test('candidato não verificado não aparece publicamente', async () => {
+    install({
+      visibility: 'public',
+      candidate: { ...CANDIDATO, verified: false },
+    });
+    await expect(getServerSideProps(contexto())).resolves.toEqual({
+      notFound: true,
+    });
+  });
+
+  test('resposta personalizada não pode ficar em cache', async () => {
+    const ctx = contexto();
+    await getServerSideProps(ctx);
+    expect(ctx.res.setHeader).toHaveBeenCalledWith(
+      'Cache-Control',
+      'private, no-store, max-age=0',
+    );
+  });
+
+  test('falha do Firestore não é apresentada como candidato inexistente nem expõe detalhes no log', async () => {
+    const log = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined);
+    docGet.mockRejectedValueOnce(new Error('private-canary@example.test'));
+    try {
+      await expect(getServerSideProps(contexto())).rejects.toThrow(
+        'Não foi possível carregar o perfil. Tente novamente.',
+      );
+      expect(JSON.stringify(log.mock.calls)).not.toContain('private-canary');
+    } finally {
+      log.mockRestore();
+    }
   });
 });

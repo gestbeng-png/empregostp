@@ -1,9 +1,12 @@
 /**
  * Gere as contas de teste da auditoria contra o Firebase real.
  *
- *   node --env-file-if-exists=.env.local scripts/qa-accounts.mjs create
- *   node --env-file-if-exists=.env.local scripts/qa-accounts.mjs list
- *   node --env-file-if-exists=.env.local scripts/qa-accounts.mjs delete
+ *   node --import ./scripts/preloadEnv.mjs scripts/qa-accounts.mjs create
+ *   node --import ./scripts/preloadEnv.mjs scripts/qa-accounts.mjs list
+ *   node --import ./scripts/preloadEnv.mjs scripts/qa-accounts.mjs delete
+ *
+ * Usa o preloadEnv e nao o `--env-file-if-exists` nativo: esse parser engasga-se
+ * com o FIREBASE_PRIVATE_KEY entre aspas e perde a variavel seguinte.
  *
  * Regras que este script respeita, e que a fase 6 depende:
  *  - email sempre com prefixo `qa-` e domínio `.test` (RFC 2606, não
@@ -73,7 +76,9 @@ function initAdmin() {
   if (admin.apps.length) return admin;
   const privateKey = (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n');
   if (!privateKey || !process.env.FIREBASE_CLIENT_EMAIL || !process.env.FIREBASE_PROJECT_ID) {
-    throw new Error('Credenciais Admin em falta. Corre com --env-file-if-exists=.env.local');
+    throw new Error(
+      'Credenciais Admin em falta. Corre com --import ./scripts/preloadEnv.mjs',
+    );
   }
   admin.initializeApp({
     credential: admin.credential.cert({

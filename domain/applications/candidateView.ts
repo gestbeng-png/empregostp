@@ -27,6 +27,21 @@ const POSITION_ENDED = new Set<string>([
   'POSITION_CANCELLED',
 ]);
 
+/**
+ * Como terminou uma proposta que não foi recusada pelo candidato. Ficam em
+ * `closedReason` da candidatura em OFFER_DECLINED (o estado que o domínio usa
+ * para «proposta recusada ou expirada»); não são motivos de não seleção.
+ */
+export const OFFER_ENDED_REASONS = [
+  'OFFER_WITHDRAWN',
+  'OFFER_EXPIRED',
+] as const;
+export type OfferEndedReason = (typeof OFFER_ENDED_REASONS)[number];
+const OFFER_ENDED_LABELS: Readonly<Record<OfferEndedReason, string>> = {
+  OFFER_WITHDRAWN: 'Proposta retirada',
+  OFFER_EXPIRED: 'Proposta expirada',
+};
+
 const LABELS: Readonly<Record<ApplicationStatus, string>> = {
   DRAFT: 'Rascunho',
   SUBMITTED: 'Recebida',
@@ -46,6 +61,12 @@ export function candidateStatusLabel(
 ): string {
   if (status === 'REJECTED' && closedReason && POSITION_ENDED.has(closedReason))
     return 'Processo encerrado';
+  if (
+    status === 'OFFER_DECLINED' &&
+    closedReason &&
+    Object.hasOwn(OFFER_ENDED_LABELS, closedReason)
+  )
+    return OFFER_ENDED_LABELS[closedReason as OfferEndedReason];
   return LABELS[status] ?? 'Em análise';
 }
 

@@ -344,6 +344,10 @@ export default function SubscriptionRequests() {
                                 </span>
                               ) : null}
                             </div>
+                          ) : request.stripeCheckout?.status === 'paid' ? (
+                            <span className={styles.proofNote}>
+                              Pago online (Stripe)
+                            </span>
                           ) : (
                             <span className={styles.tableCellSoft}>
                               Ainda não enviado

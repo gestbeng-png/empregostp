@@ -23,7 +23,7 @@ test.describe('páginas legais', () => {
       const pageErrors = monitorPageErrors(page);
       await page.emulateMedia({ reducedMotion: 'reduce' });
       const response = await page.goto(legalPage.route, {
-        waitUntil: 'networkidle',
+        waitUntil: 'load',
       });
 
       expect(response?.ok()).toBe(true);
@@ -42,11 +42,11 @@ test.describe('páginas legais', () => {
   }
 
   test('a política apresenta o contacto oficial', async ({ page }) => {
-    await page.goto('/politica-privacidade', { waitUntil: 'networkidle' });
+    await page.goto('/politica-privacidade', { waitUntil: 'load' });
     await expect(
       page
         .getByRole('main')
-        .getByRole('link', { name: 'suporte@empregos.st', exact: true }),
-    ).toHaveAttribute('href', 'mailto:suporte@empregos.st');
+        .getByRole('link', { name: 'contacto@empregostp.com', exact: true }),
+    ).toHaveAttribute('href', 'mailto:contacto@empregostp.com');
   });
 });

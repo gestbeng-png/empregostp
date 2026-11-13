@@ -16,6 +16,9 @@ import {
 } from 'react-icons/fi';
 import PublicPageShell from '../PublicPageShell';
 import VerifiedCandidatesCarousel from '../home/VerifiedCandidatesCarousel';
+import CandidateActionLink, {
+  CandidateActionProvider,
+} from './CandidateActionLink';
 import { getCandidateMarketingPlans } from '../../lib/candidateCatalog';
 import styles from '../../styles/CandidatosStitchPage.module.css';
 
@@ -297,6 +300,9 @@ function trackSpotlight(event) {
 
 function CandidateServiceCard({ service, index }) {
   const Icon = service.Icon;
+  const ActionLink = ['/vagas', '/recursos'].includes(service.href)
+    ? Link
+    : CandidateActionLink;
 
   return (
     <article
@@ -310,10 +316,10 @@ function CandidateServiceCard({ service, index }) {
       <p className={styles.serviceCategory}>{service.category}</p>
       <h3 className={styles.serviceTitle}>{service.title}</h3>
       <p className={styles.serviceDescription}>{service.description}</p>
-      <Link href={service.href} className={styles.serviceLinkButton}>
+      <ActionLink href={service.href} className={styles.serviceLinkButton}>
         {service.cta}
         <FiArrowRight aria-hidden="true" />
-      </Link>
+      </ActionLink>
     </article>
   );
 }
@@ -356,7 +362,7 @@ function CandidatePlanCard({ plan }) {
         ))}
       </ul>
 
-      <Link
+      <CandidateActionLink
         href={isFree ? '/register?type=candidate' : '/premium/candidatos'}
         className={styles.candidatePlanAction}
         aria-label={
@@ -367,7 +373,7 @@ function CandidatePlanCard({ plan }) {
       >
         {isFree ? 'Criar perfil gratuito' : 'Escolher este plano'}
         <FiArrowRight aria-hidden="true" />
-      </Link>
+      </CandidateActionLink>
     </article>
   );
 }
@@ -404,18 +410,18 @@ export default function CandidateMarketPage({
     ? CANDIDATE_PHOTOS.national
     : CANDIDATE_PHOTOS.international;
 
+  // Uma só string: o React avisa quando <title> recebe vários filhos, porque
+  // o browser trata tudo como texto e não há conversão garantida.
+  const pageTitle = `${
+    isNational ? 'Candidatos Nacionais' : 'Candidatos Internacionais'
+  } - EmpregoSTP`;
+
   return (
-    <>
+    <CandidateActionProvider>
       <Head>
-        <title>
-          {isNational ? 'Candidatos Nacionais' : 'Candidatos Internacionais'}
-          {' - EmpregoSTP'}
-        </title>
+        <title>{pageTitle}</title>
         <meta name="description" content={config.subtitle} />
-        <meta
-          property="og:title"
-          content={`${isNational ? 'Candidatos Nacionais' : 'Candidatos Internacionais'} - EmpregoSTP`}
-        />
+        <meta property="og:title" content={pageTitle} />
         <meta property="og:description" content={config.subtitle} />
         <meta property="og:type" content="website" />
       </Head>
@@ -579,7 +585,9 @@ export default function CandidateMarketPage({
               aria-labelledby="candidatos-verificados-title"
             >
               <div className={styles.container}>
-                <div className={styles.talentHeading}>
+                <div
+                  className={`${styles.talentHeading} ${styles.talentHeadingCentered}`}
+                >
                   <div>
                     <span className={styles.sectionEyebrow}>
                       Perfis verificados
@@ -593,21 +601,29 @@ export default function CandidateMarketPage({
                       quem contrata.
                     </p>
                   </div>
-                  {/* Esta página já é /candidatos: o atalho útil aqui é
-                      verificar o próprio perfil. */}
-                  <Link
+                </div>
+
+                {/* Versão larga do carrossel: três cartões lado a lado. */}
+                <div className={styles.talentCarousel}>
+                  <VerifiedCandidatesCarousel
+                    candidates={verifiedCandidates}
+                    variante="larga"
+                  />
+                </div>
+
+                <div className={styles.talentActions}>
+                  <CandidateActionLink
                     href="/dashboard/candidato?tab=verification"
-                    className={styles.talentLink}
+                    className={styles.talentPrimary}
                   >
-                    Verificar o meu perfil
+                    Ser verificado
+                    <FiArrowRight aria-hidden="true" />
+                  </CandidateActionLink>
+                  <Link href="/verificados" className={styles.talentLink}>
+                    Ver mais perfis verificados
                     <FiArrowRight aria-hidden="true" />
                   </Link>
                 </div>
-
-                <VerifiedCandidatesCarousel
-                  candidates={verifiedCandidates}
-                  variante="larga"
-                />
               </div>
             </section>
           ) : null}
@@ -620,10 +636,13 @@ export default function CandidateMarketPage({
                   <h2>{config.ctaTitle}</h2>
                   <p>{config.ctaText}</p>
                   <div className={styles.ctaActions}>
-                    <Link href={config.ctaHref} className={styles.ctaButton}>
+                    <CandidateActionLink
+                      href={config.ctaHref}
+                      className={styles.ctaButton}
+                    >
                       {config.ctaLabel}
                       <FiArrowRight aria-hidden="true" />
-                    </Link>
+                    </CandidateActionLink>
                     <Link
                       href="/verificados"
                       className={`${styles.ctaButton} ${styles.verifiedButton}`}
@@ -648,6 +667,6 @@ export default function CandidateMarketPage({
           </section>
         </div>
       </PublicPageShell>
-    </>
+    </CandidateActionProvider>
   );
 }

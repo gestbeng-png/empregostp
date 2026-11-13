@@ -31,10 +31,10 @@ function createResponse() {
   return response;
 }
 
-function installFirestore() {
+function installFirestore(user: Record<string, unknown> = {}) {
   const docRef = {
     get: jest.fn().mockResolvedValue({
-      data: () => ({ cvName: 'cv.pdf', userType: 'candidato' }),
+      data: () => ({ cvName: 'cv.pdf', userType: 'candidato', ...user }),
       exists: true,
     }),
     set,
@@ -45,9 +45,15 @@ function installFirestore() {
   });
 }
 
-async function post(body: Record<string, unknown>) {
+async function post(body: Record<string, unknown>, { revoked = false } = {}) {
   authMock.mockReturnValue({
-    verifyIdToken: jest.fn().mockResolvedValue({ uid: 'cand-1' }),
+    verifyIdToken: jest.fn(async (_token: string, checkRevoked?: boolean) => {
+      if (revoked && checkRevoked)
+        throw Object.assign(new Error('Revoked'), {
+          code: 'auth/id-token-revoked',
+        });
+      return { uid: 'cand-1' };
+    }),
   });
   const response = createResponse();
   await handler(
@@ -72,6 +78,14 @@ describe('posse do ficheiro no upload de CV', () => {
 
     expect(response.status).toHaveBeenCalledWith(200);
     expect(update).toHaveBeenCalled();
+  });
+
+  test.each(['admin', 'empresa'])('a conta %s não atualiza CV através do fluxo de candidato', async (userType) => {
+    installFirestore({ userType });
+    const response = await post({ cvName: 'cv.pdf', cvUrl: 'cvUrl/cand-1/cv.pdf' });
+    expect(response.status).toHaveBeenCalledWith(403);
+    expect(update).not.toHaveBeenCalled();
+    expect(set).not.toHaveBeenCalled();
   });
 
   test('rejeita um URL que aponta para o CV de outro candidato', async () => {
@@ -128,5 +142,32 @@ describe('posse do ficheiro no upload de CV', () => {
 
     const payload = JSON.stringify(response.json.mock.calls[0][0]);
     expect(payload).not.toContain('token=t');
+  });
+
+  test.each(['suspended', 'inactive', 'disabled', 'deleted'])(
+    'não altera o CV de uma conta %s',
+    async (status) => {
+      installFirestore({ status });
+
+      const response = await post({
+        cvName: 'cv.pdf',
+        cvUrl: 'cvUrl/cand-1/cv.pdf',
+      });
+
+      expect(response.status).toHaveBeenCalledWith(403);
+      expect(update).not.toHaveBeenCalled();
+      expect(set).not.toHaveBeenCalled();
+    },
+  );
+
+  test('recusa um token revogado antes de atualizar o CV', async () => {
+    const response = await post(
+      { cvName: 'cv.pdf', cvUrl: 'cvUrl/cand-1/cv.pdf' },
+      { revoked: true },
+    );
+
+    expect(response.status).toHaveBeenCalledWith(401);
+    expect(update).not.toHaveBeenCalled();
+    expect(set).not.toHaveBeenCalled();
   });
 });

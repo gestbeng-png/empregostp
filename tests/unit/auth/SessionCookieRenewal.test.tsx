@@ -2,7 +2,10 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 import { onIdTokenChanged } from 'firebase/auth';
 
 import { AuthProvider, useAuth } from '../../../context/AuthContext';
-import { createServerSession } from '../../../lib/authSessionClient';
+import {
+  createServerSession,
+  destroyServerSession,
+} from '../../../lib/authSessionClient';
 
 jest.mock('firebase/auth', () => ({
   onIdTokenChanged: jest.fn(),
@@ -41,8 +44,13 @@ function utilizadorCom(token: string) {
 }
 
 function EstadoProbe() {
-  const { user } = useAuth();
-  return <output>{user ? 'com sessão' : 'sem sessão'}</output>;
+  const { user, sessionReady } = useAuth();
+  return (
+    <>
+      <output>{user ? 'com sessão' : 'sem sessão'}</output>
+      <span>{sessionReady ? 'cookie pronto' : 'cookie pendente'}</span>
+    </>
+  );
 }
 
 describe('renovação do cookie de sessão', () => {
@@ -104,6 +112,61 @@ describe('renovação do cookie de sessão', () => {
 
     expect(await screen.findByText('sem sessão')).toBeVisible();
     expect(mockedCreateSession).not.toHaveBeenCalled();
+    expect(destroyServerSession).toHaveBeenCalledWith();
+  });
+
+  test('não disponibiliza o painel enquanto o cookie pertence à sessão anterior', async () => {
+    let finish!: () => void;
+    mockedCreateSession.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    const obterObservador = capturarObservador();
+    render(
+      <AuthProvider>
+        <EstadoProbe />
+      </AuthProvider>,
+    );
+    await waitFor(() => expect(mockedTokenChanged).toHaveBeenCalledTimes(1));
+    act(() => {
+      obterObservador()(utilizadorCom('new-token'));
+    });
+    await waitFor(() => expect(mockedCreateSession).toHaveBeenCalledTimes(1));
+    expect(screen.queryByText('com sessão')).not.toBeInTheDocument();
+    await act(async () => finish());
+    expect(await screen.findByText('cookie pronto')).toBeVisible();
+  });
+
+  test('um getIdToken atrasado da conta anterior não volta a escrever o cookie', async () => {
+    let finish!: (token: string) => void;
+    const obterObservador = capturarObservador();
+    render(
+      <AuthProvider>
+        <EstadoProbe />
+      </AuthProvider>,
+    );
+    await waitFor(() => expect(mockedTokenChanged).toHaveBeenCalledTimes(1));
+    act(() => {
+      obterObservador()({
+        uid: 'old',
+        getIdToken: () =>
+          new Promise<string>((resolve) => {
+            finish = resolve;
+          }),
+      });
+    });
+    await act(async () =>
+      obterObservador()({
+        uid: 'admin-1',
+        getIdToken: async () => 'admin-token',
+      }),
+    );
+    await act(async () => finish('old-token'));
+    expect(mockedCreateSession).toHaveBeenCalledTimes(1);
+    expect(mockedCreateSession).toHaveBeenCalledWith('admin-token');
+    expect(await screen.findByText('cookie pronto')).toBeVisible();
   });
 
   test('uma falha do servidor não desliga a sessão do cliente', async () => {
@@ -122,6 +185,7 @@ describe('renovação do cookie de sessão', () => {
     expect(await screen.findByText('com sessão')).toBeVisible();
 
     // A renovação seguinte volta a tentar, mesmo com o mesmo token.
+    expect(screen.getByText('cookie pendente')).toBeVisible();
     await act(async () => observador(utilizadorCom('token-1')));
     await waitFor(() => expect(mockedCreateSession).toHaveBeenCalledTimes(2));
   });

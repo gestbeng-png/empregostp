@@ -11,7 +11,7 @@ test.describe('página pública para empresas', () => {
     const pageErrors = monitorPageErrors(page);
 
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    const response = await page.goto('/empresas', { waitUntil: 'networkidle' });
+    const response = await page.goto('/empresas', { waitUntil: 'load' });
 
     expect(response?.ok()).toBe(true);
     await expect(page.getByRole('main')).toBeVisible();
@@ -24,7 +24,7 @@ test.describe('página pública para empresas', () => {
     await expect(
       page.getByRole('heading', {
         level: 2,
-        name: 'Ferramentas para contratar com confiança',
+        name: 'Recrute melhor com a EmpregoSTP',
       }),
     ).toBeVisible();
     await expect(
@@ -34,7 +34,7 @@ test.describe('página pública para empresas', () => {
       ),
     ).toBeVisible();
     await expect(
-      page.getByText('Publicação simples', { exact: true }),
+      page.getByText('Publique oportunidades de emprego', { exact: true }),
     ).toBeVisible();
     await expect(page.getByRole('contentinfo')).toBeVisible();
 
@@ -66,11 +66,14 @@ test.describe('página pública para empresas', () => {
 
     await page.setViewportSize({ width: 820, height: 1180 });
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    const response = await page.goto('/empresas', { waitUntil: 'networkidle' });
+    const response = await page.goto('/empresas', { waitUntil: 'load' });
 
     expect(response?.ok()).toBe(true);
     await expect(
-      page.getByText(/Recrutamento assistido por especialistas/i),
+      page.getByRole('heading', {
+        level: 2,
+        name: 'Dê mais visibilidade às suas oportunidades',
+      }),
     ).toBeVisible();
 
     const metrics = await collectVisibleUiMetrics(page);

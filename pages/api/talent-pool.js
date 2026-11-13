@@ -4,10 +4,10 @@ import {
   getEmpresaPlanSummary,
 } from '../../lib/empresaPlanFeatures';
 import { normalizeUserType } from '../../lib/defaultPlans';
+import { PREMIUM_CANDIDATE_QUERY_FILTERS } from '../../lib/candidatePlanFeatures';
 import {
   buildCandidateVisibility,
   compareCandidatesByVisibility,
-  isCandidateVerified,
 } from '../../lib/candidateProfileInsights';
 import {
   canCandidateAppearInTalentPool,
@@ -88,14 +88,9 @@ export default async function handler(req, res) {
     const db = admin.firestore();
     const maxFetch = Math.min(limit * 10, 300); // keep reads bounded
 
-    // Banco de talentos deve mostrar apenas candidatos verificados.
-    // Usamos users como fonte de verdade (candidatos podem não ter profiles preenchidos).
-    const [
-      verifiedFlagSnap,
-      verifiedStatusSnap,
-      verifiedLegacySnap,
-      verifiedLegacy2Snap,
-    ] = await Promise.all([
+    // Os dois selos usam a mesma projeção. Consultar também os Premium sem
+    // flags antigas, mesmo quando a primeira página de candidatos já encheu.
+    const candidateSnapshots = await Promise.all([
       db
         .collection('users')
         .where('userType', '==', 'candidato')
@@ -120,17 +115,25 @@ export default async function handler(req, res) {
         .where('isVerified', '==', true)
         .limit(maxFetch)
         .get(),
+      db
+        .collection('users')
+        .where('userType', '==', 'candidato')
+        .limit(maxFetch)
+        .get(),
+      ...PREMIUM_CANDIDATE_QUERY_FILTERS.map(([field, value]) =>
+        db
+          .collection('users')
+          .where('userType', '==', 'candidato')
+          .where(field, '==', value)
+          .limit(maxFetch)
+          .get(),
+      ),
     ]);
 
     const usersById = new Map();
-    for (const doc of verifiedFlagSnap.docs)
-      usersById.set(doc.id, doc.data() || {});
-    for (const doc of verifiedStatusSnap.docs)
-      usersById.set(doc.id, doc.data() || {});
-    for (const doc of verifiedLegacySnap.docs)
-      usersById.set(doc.id, doc.data() || {});
-    for (const doc of verifiedLegacy2Snap.docs)
-      usersById.set(doc.id, doc.data() || {});
+    for (const snapshot of candidateSnapshots) {
+      for (const doc of snapshot.docs) usersById.set(doc.id, doc.data() || {});
+    }
 
     const candidateIds = Array.from(usersById.keys());
     const profileDocs = candidateIds.length
@@ -156,7 +159,8 @@ export default async function handler(req, res) {
       if (normalizeUserType(u.userType) !== 'candidato') continue;
       if (!canCandidateAppearInTalentPool(d)) continue;
 
-      const verified = isCandidateVerified(u, d);
+      const visibility = buildCandidateVisibility(u, d);
+      const verified = visibility.verified;
       if (!verified) continue;
 
       if (available === 'true' && !d.availableForWork) continue;
@@ -180,7 +184,6 @@ export default async function handler(req, res) {
         if (!docSkills.includes(skillsLower)) continue;
       }
 
-      const visibility = buildCandidateVisibility(u, d);
       const privacy = getCandidatePrivacy(d);
       const canExposeCv = Boolean(
         privacy.showContactInfo &&
@@ -204,6 +207,12 @@ export default async function handler(req, res) {
         // de curta duração em vez de devolver o link permanente.
         hasCv: canExposeCv && Boolean(d.cvUrl || u.cvUrl),
         verified: true,
+        verificationTypes: visibility.verificationTypes,
+        verificationType: visibility.verificationType,
+        paidVerified: visibility.paidVerified,
+        qualifiedVerified: visibility.qualifiedVerified,
+        qualificationScore: visibility.qualificationScore,
+        qualificationLabel: visibility.qualificationLabel,
         highlighted: visibility.highlighted,
         profileComplete: visibility.isProfileComplete,
         completionScore: visibility.completionScore,

@@ -14,7 +14,7 @@ test.describe('centro público de recursos', () => {
 
     await page.emulateMedia({ reducedMotion: 'reduce' });
     const response = await page.goto('/recursos', {
-      waitUntil: 'networkidle',
+      waitUntil: 'load',
     });
 
     expect(response?.ok()).toBe(true);
@@ -57,9 +57,15 @@ test.describe('centro público de recursos', () => {
           });
 
       return {
-        faqHeadings: [...document.querySelectorAll<HTMLElement>('#faq h2')].map(
-          (heading) =>
-            Math.round(heading.getBoundingClientRect().top + window.scrollY),
+        // Só os títulos das duas colunas de apoio: a secção #faq também
+        // contém o bloco da newsletter, que tem h2 próprio e nunca alinhou
+        // com eles.
+        faqHeadings: [
+          ...document.querySelectorAll<HTMLElement>(
+            '#faq [class*="sectionTitle"]',
+          ),
+        ].map((heading) =>
+          Math.round(heading.getBoundingClientRect().top + window.scrollY),
         ),
         guides: rects('#guias article', 2),
         models: rects('#modelos article', 3),
@@ -89,8 +95,8 @@ test.describe('centro público de recursos', () => {
     await expect(faqRegion).toBeVisible();
 
     await expect(
-      page.getByRole('link', { name: 'suporte@empregos.st', exact: true }),
-    ).toHaveAttribute('href', 'mailto:suporte@empregos.st');
+      page.getByRole('link', { name: 'contacto@empregostp.com', exact: true }),
+    ).toHaveAttribute('href', 'mailto:contacto@empregostp.com');
     await expect(
       page.getByRole('link', { name: '+239 986 9673', exact: true }),
     ).toHaveAttribute('href', 'tel:+2399869673');
@@ -110,7 +116,7 @@ test.describe('centro público de recursos', () => {
   test('trocar de público repõe a categoria Todos e atualiza os modelos', async ({
     page,
   }) => {
-    await page.goto('/recursos', { waitUntil: 'networkidle' });
+    await page.goto('/recursos', { waitUntil: 'load' });
 
     const candidates = page.getByRole('button', {
       name: 'Candidatos',
@@ -166,7 +172,7 @@ test.describe('centro público de recursos', () => {
   test('a pesquisa ignora acentos e apresenta estados vazios claros', async ({
     page,
   }) => {
-    await page.goto('/recursos', { waitUntil: 'networkidle' });
+    await page.goto('/recursos', { waitUntil: 'load' });
 
     await page
       .getByRole('button', { name: 'Pesquisar recursos', exact: true })

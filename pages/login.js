@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Head from 'next/head';
@@ -59,6 +59,9 @@ export default function Login() {
   const [resending, setResending] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  // Enquanto o formulário (ou o Google) inicia sessão, é ele que decide o
+  // destino; a retoma automática não deve correr em paralelo.
+  const signingIn = useRef(false);
   const redirect = readLoginRedirect(router.query);
   const registerHref = buildRegisterUrl(redirect);
   const googleRegisterHref = `${registerHref}${redirect ? '&' : '?'}google=true`;
@@ -69,14 +72,17 @@ export default function Login() {
   useEffect(() => {
     if (router.isReady === false) return undefined;
     let active = true;
+    let revision = 0;
     const unsubscribe = onIdTokenChanged(auth, async (utilizadorAtual) => {
-      if (!utilizadorAtual || !podeRetomarSessao()) return;
+      const currentRevision = ++revision;
+      const isCurrent = () => active && currentRevision === revision && !signingIn.current;
+      if (!utilizadorAtual || signingIn.current || !podeRetomarSessao()) return;
 
       try {
         const token = await utilizadorAtual.getIdToken();
-        if (!active) return;
+        if (!isCurrent()) return;
         await createServerSession(token);
-        if (!active) return;
+        if (!isCurrent()) return;
         marcarRetomaSessao();
         // O cookie já está escrito: o `getServerSideProps` do destino corre
         // com a sessão válida, por isso basta navegar.
@@ -95,6 +101,7 @@ export default function Login() {
   const handleGoogleLogin = async () => {
     setError('');
     setLoading(true);
+    signingIn.current = true;
 
     try {
       const provider = new GoogleAuthProvider();
@@ -121,6 +128,7 @@ export default function Login() {
       if (!isUserAccountActive(userData)) {
         await Promise.allSettled([auth.signOut(), destroyServerSession()]);
         setError(BLOCKED_ACCOUNT_MESSAGE);
+        signingIn.current = false;
         setLoading(false);
         return;
       }
@@ -143,6 +151,7 @@ export default function Login() {
       if (err.code === 'ACCOUNT_BLOCKED') {
         await Promise.allSettled([auth.signOut(), destroyServerSession()]);
       }
+      signingIn.current = false;
       setLoading(false);
 
       if (isNetworkError(err)) {
@@ -187,6 +196,7 @@ export default function Login() {
     }
 
     setLoading(true);
+    signingIn.current = true;
 
     try {
       const userCredential = await signInWithEmailAndPassword(
@@ -203,6 +213,7 @@ export default function Login() {
         setError(
           'Confirme o seu email antes de iniciar sessão. Verifique a caixa de entrada e a pasta de spam.',
         );
+        signingIn.current = false;
         setLoading(false);
         return;
       }
@@ -212,6 +223,7 @@ export default function Login() {
       if (!userDoc.exists()) {
         await Promise.allSettled([auth.signOut(), destroyServerSession()]);
         setError('Utilizador não encontrado. Conclua o seu registo.');
+        signingIn.current = false;
         setLoading(false);
         return;
       }
@@ -220,6 +232,7 @@ export default function Login() {
       if (!isUserAccountActive(userData)) {
         await Promise.allSettled([auth.signOut(), destroyServerSession()]);
         setError(BLOCKED_ACCOUNT_MESSAGE);
+        signingIn.current = false;
         setLoading(false);
         return;
       }
@@ -238,6 +251,7 @@ export default function Login() {
         window.location.href = '/dashboard/candidato';
       }
     } catch (err) {
+      signingIn.current = false;
       setLoading(false);
 
       if (isNetworkError(err)) {
@@ -282,7 +296,16 @@ export default function Login() {
         }),
       });
       await auth.signOut();
-      if (!response.ok) throw new Error('resend_failed');
+      if (!response.ok) {
+        // A senha já foi aceite: o que falhou foi o envio. Mostrar o motivo do
+        // servidor em vez de mandar a pessoa rever credenciais que estão certas.
+        const payload = await response.json().catch(() => ({}));
+        const sendError = new Error(
+          payload.error || 'Não foi possível enviar o email agora.',
+        );
+        sendError.code = 'SEND_FAILED';
+        throw sendError;
+      }
       setError('');
       setInfo(
         'Email de confirmação reenviado. Verifique a sua caixa de entrada.',
@@ -292,8 +315,16 @@ export default function Login() {
         setError(OFFLINE_MESSAGE);
       } else if (err.code === 'auth/too-many-requests') {
         setError('Muitos pedidos. Aguarde alguns minutos e tente novamente.');
+      } else if (err.code === 'SEND_FAILED') {
+        setError(err.message);
+      } else if (
+        err.code === 'auth/invalid-credential' ||
+        err.code === 'auth/wrong-password' ||
+        err.code === 'auth/user-not-found'
+      ) {
+        setError('Email ou senha incorretos.');
       } else {
-        setError('Não foi possível reenviar. Confirme o email e a senha.');
+        setError('Não foi possível reenviar. Tente novamente.');
       }
     } finally {
       setResending(false);

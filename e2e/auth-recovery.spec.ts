@@ -18,7 +18,7 @@ async function expectCleanAuthState(page: Page) {
 test.describe('recuperação da conta', () => {
   test('explica um link de confirmação ausente', async ({ page }) => {
     const pageErrors = monitorPageErrors(page);
-    await page.goto('/verificar-email', { waitUntil: 'networkidle' });
+    await page.goto('/verificar-email', { waitUntil: 'load' });
 
     await expect(
       page.getByRole('heading', {
@@ -35,7 +35,7 @@ test.describe('recuperação da conta', () => {
 
   test('valida o email antes de pedir recuperação', async ({ page }) => {
     const pageErrors = monitorPageErrors(page);
-    await page.goto('/recuperar-senha', { waitUntil: 'networkidle' });
+    await page.goto('/recuperar-senha', { waitUntil: 'load' });
 
     await page
       .getByRole('button', { name: 'Enviar link de recuperação' })
@@ -47,7 +47,7 @@ test.describe('recuperação da conta', () => {
 
   test('explica um link de redefinição ausente', async ({ page }) => {
     const pageErrors = monitorPageErrors(page);
-    await page.goto('/redefinir-senha', { waitUntil: 'networkidle' });
+    await page.goto('/redefinir-senha', { waitUntil: 'load' });
 
     await expect(
       page.getByRole('heading', {

@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import Image from 'next/image';
 import { Fragment, useMemo, useRef, useState } from 'react';
-import Link from 'next/link';
+import Link from '../components/auth/AccountActionLink';
 import {
   FiArrowRight,
   FiAward,

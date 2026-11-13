@@ -13,7 +13,7 @@ test.describe('página inicial', () => {
     const pageErrors = monitorPageErrors(page);
 
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    const response = await page.goto('/', { waitUntil: 'networkidle' });
+    const response = await page.goto('/', { waitUntil: 'load' });
 
     expect(response?.ok()).toBe(true);
     await expect(page.getByRole('main')).toHaveCount(1);

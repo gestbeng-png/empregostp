@@ -74,7 +74,6 @@ JavaScript e TypeScript coexistem. A migração é incremental; `allowJs` contin
 
 - [Publicação e reversão](docs/DEPLOY-GUIDE.md)
 - [Configuração de email](docs/email-brevo-zoho.md)
-- [Estilos e componentes](docs/design-system.md)
-- [Limpeza de código e compatibilidade de dados](docs/CODE_CLEANUP.md)
+- [Índice completo da documentação](docs/README.md)
 
 Resultados antigos em `docs/audits/data/` são artefactos de auditoria, não requisitos atuais. Os registos de contas de teste e as cópias de regras para reversão foram preservados. Relatórios textuais obsoletos podem ser consultados no histórico Git.

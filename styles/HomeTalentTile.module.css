@@ -1,0 +1,223 @@
+/*
+ * Cartão de perfil verificado da home: foto, nome com selo, título,
+ * "Verificado" e o botão "Ver perfil". Cores só por tokens de globals.css.
+ *
+ * Os nomes das classes evitam de propósito "card", "Badge", "Button"… : o
+ * tema global (workbridge-theme.css) mexe em tudo o que os contenha. A sombra
+ * usa `filter`, porque a home anula `box-shadow` em todos os descendentes.
+ */
+
+/* A faixa do carrossel corta o que sai dela: este espaço deixa caber a
+   sombra (curta) e a subida do cartão ao passar o rato. */
+.item {
+  margin: 0;
+  padding: 0 12px;
+  list-style: none;
+}
+
+.item:first-child {
+  padding-top: 6px;
+}
+
+.item:last-child {
+  padding-bottom: 18px;
+}
+
+.tile {
+  --tile-motion: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.35rem 1.5rem 1.35rem 1.35rem;
+  /* O vidro está só na moldura: uma borda larga e translúcida que desfoca o
+     que está por trás, com um fio claro na aresta. O miolo é branco sólido
+     (`background-clip`), para o texto ler como num cartão normal. */
+  border: 7px solid color-mix(in srgb, var(--app-surface-1) 45%, transparent);
+  border-radius: 30px;
+  outline: 1px solid color-mix(in srgb, var(--app-surface-1) 65%, transparent);
+  outline-offset: 0;
+  background-color: var(--app-surface-1);
+  background-clip: padding-box;
+  -webkit-backdrop-filter: blur(14px) saturate(115%);
+  backdrop-filter: blur(14px) saturate(115%);
+  color: var(--app-brand-dark);
+  text-decoration: none;
+  filter: drop-shadow(
+    0 4px 8px color-mix(in srgb, var(--app-brand-dark) 8%, transparent)
+  );
+  transition:
+    transform var(--tile-motion),
+    filter var(--tile-motion);
+}
+
+.tile:hover {
+  color: var(--app-brand-dark);
+  transform: translateY(-3px);
+  filter: drop-shadow(
+    0 6px 10px color-mix(in srgb, var(--app-brand-dark) 11%, transparent)
+  );
+}
+
+.tile:focus-visible {
+  outline: 3px solid var(--app-brand-dark);
+  outline-offset: 4px;
+}
+
+.photo,
+.photoFallback {
+  display: block;
+  width: 88px;
+  height: 88px;
+  border-radius: 20px;
+  object-fit: cover;
+}
+
+.photoFallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: color-mix(
+    in srgb,
+    var(--app-brand-primary) 10%,
+    var(--app-surface-1)
+  );
+  color: var(--app-brand-primary);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.body {
+  display: grid;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.name {
+  margin: 0;
+  overflow: hidden;
+  color: var(--app-brand-dark);
+  font-size: 1.3rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.seal {
+  flex-shrink: 0;
+  width: 1.3rem;
+  height: 1.3rem;
+  color: var(--app-brand-primary);
+}
+
+.role {
+  margin: 0;
+  overflow: hidden;
+  color: var(--app-text-muted);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status {
+  /* Verde um pouco mais escuro: o verde do tema fica abaixo de 4.5:1. */
+  color: color-mix(in srgb, var(--app-success) 75%, var(--app-brand-dark));
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 0 1.5rem;
+  border-radius: 999px;
+  background-color: color-mix(
+    in srgb,
+    var(--app-brand-primary) 7%,
+    var(--app-surface-1)
+  );
+  color: var(--app-brand-primary);
+  font-size: 1rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition:
+    background-color var(--tile-motion),
+    color var(--tile-motion);
+}
+
+.tile:hover .cta {
+  background-color: var(--app-brand-primary);
+  color: var(--app-surface-1);
+}
+
+/* Em ecrãs estreitos o botão desce para debaixo do texto. */
+@media (max-width: 560px) {
+  .item {
+    padding-inline: 8px;
+  }
+
+  .tile {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.9rem 1rem;
+    padding: 1.1rem;
+    border-width: 5px;
+    border-radius: 24px;
+  }
+
+  .photo,
+  .photoFallback {
+    width: 72px;
+    height: 72px;
+    border-radius: 16px;
+  }
+
+  .name {
+    font-size: 1.1rem;
+  }
+
+  .role {
+    font-size: 0.9rem;
+  }
+
+  .cta {
+    grid-column: 1 / -1;
+    min-height: 44px;
+  }
+}
+
+/* Quem pediu menos transparência ao sistema vê a moldura opaca. */
+@media (prefers-reduced-transparency: reduce) {
+  .tile {
+    border-color: color-mix(
+      in srgb,
+      var(--app-surface-1) 55%,
+      var(--app-brand-secondary)
+    );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tile,
+  .cta {
+    transition: none;
+  }
+
+  .tile:hover {
+    transform: none;
+  }
+}

@@ -200,12 +200,6 @@ export const DASHBOARD_NAV = {
           href: '/dashboard/candidato?tab=settings',
           icon: 'settings',
         },
-        {
-          key: 'affiliate',
-          label: 'Ser afiliado',
-          href: '/dashboard/candidato?tab=affiliate',
-          icon: 'dollar',
-        },
       ],
     },
     {
@@ -305,12 +299,6 @@ export const DASHBOARD_NAV = {
           key: 'plans',
           label: 'Planos',
           href: '/dashboard/empresa?tab=plans',
-          icon: 'star',
-        },
-        {
-          key: 'affiliate',
-          label: 'Ser afiliado',
-          href: '/dashboard/empresa?tab=affiliate',
           icon: 'star',
         },
       ],

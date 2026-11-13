@@ -13,7 +13,7 @@ function fixture(records: Record<string, Record<string, unknown>> = {}) {
     collection: (collection: string) => ({
       doc: (id: string) => ({
         get: async () => ({ data: () => records[`${collection}/${id}`] }),
-        set: async (data: Record<string, unknown>) => {
+        create: async (data: Record<string, unknown>) => {
           written.push({ ...data, id });
         },
       }),

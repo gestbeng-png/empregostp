@@ -3,7 +3,7 @@ import path from 'path';
 import Head from 'next/head';
 import Image from 'next/image';
 import { Fragment, useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
+import Link from '../components/auth/AccountActionLink';
 import { useRouter } from 'next/router';
 import { FiArrowRight } from 'react-icons/fi';
 import PublicPageShell from '../components/PublicPageShell';

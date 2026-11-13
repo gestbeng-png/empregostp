@@ -89,6 +89,33 @@ describe('endpoints de expiração executados pelo Vercel Cron', () => {
     expect(commit).not.toHaveBeenCalled();
   });
 
+  test('sem o índice composto, os planos continuam a expirar', async () => {
+    const missingIndex = Object.assign(
+      new Error('The query requires an index.'),
+      { code: 9 },
+    );
+    const compositeGet = jest.fn().mockRejectedValue(missingIndex);
+    const fallbackGet = jest.fn().mockResolvedValue({ docs: [] });
+    const secondWhere = jest.fn().mockReturnValue({ get: compositeGet });
+    const firstWhere = jest
+      .fn()
+      .mockReturnValue({ where: secondWhere, get: fallbackGet });
+    firestoreMock.mockReturnValue({
+      batch: jest.fn().mockReturnValue({ commit: jest.fn() }),
+      collection: jest.fn().mockReturnValue({ where: firstWhere }),
+    });
+
+    const response = createResponse();
+    await checkPlanExpiration(
+      { headers: { authorization: 'Bearer cron-secret' }, method: 'GET' },
+      response,
+    );
+
+    expect(compositeGet).toHaveBeenCalled();
+    expect(firstWhere).toHaveBeenCalledWith('executeAt', '<=', 'firestore-now');
+    expect(response.status).toHaveBeenCalledWith(200);
+  });
+
   test('aceita GET autenticado para verificar vagas expiradas', async () => {
     const get = jest.fn().mockResolvedValue({ docs: [], size: 0 });
     const where = jest.fn().mockReturnValue({ get });

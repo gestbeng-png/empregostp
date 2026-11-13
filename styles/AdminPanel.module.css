@@ -2262,3 +2262,252 @@
 .statusDraft {
   --status-tone: var(--admin-muted);
 }
+
+/* Verificações: superfície operacional neutra, sem bordas decorativas. */
+.verificationAdminPage .headerCard,
+.verificationAdminPage .statCard,
+.verificationAdminPage .tableShell {
+  border-color: var(--admin-border);
+  border-radius: 0.625rem;
+  background: var(--admin-surface);
+  box-shadow: var(--admin-shadow);
+}
+
+.verificationAdminPage .headerCard {
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.verificationAdminPage .headerTitle {
+  font-size: clamp(1.8rem, 3vw, 2.25rem);
+}
+
+.verificationAdminPage .statCard {
+  padding: 1.15rem 1.25rem;
+  cursor: default;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.verificationAdminPage .statCard:hover {
+  transform: none;
+  border-color: var(--admin-border);
+  box-shadow: var(--admin-shadow);
+}
+
+.verificationAdminPage .statValue {
+  color: var(--admin-text);
+  font-size: 1.85rem;
+}
+
+.verificationAdminPage .statLabel {
+  color: var(--admin-muted);
+  font-size: 0.86rem;
+}
+
+.verificationToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.85rem;
+}
+
+.verificationFilterGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.verificationFilterButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.375rem;
+  padding: 0.45rem 0.7rem;
+  border: 0.0625rem solid transparent;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--admin-muted);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.verificationFilterButton span {
+  color: var(--admin-text);
+  font-size: 0.76rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.verificationFilterButton:hover,
+.verificationFilterButtonActive {
+  border-color: var(--admin-border);
+  background: var(--admin-surface);
+  color: var(--admin-text);
+}
+
+.verificationSearch {
+  min-width: min(100%, 17.5rem);
+}
+
+.verificationSearch input {
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0.55rem 0.75rem;
+  border: 0.0625rem solid var(--admin-border);
+  border-radius: 0.5rem;
+  background: var(--admin-surface);
+  color: var(--admin-text);
+  font: inherit;
+  font-size: 0.86rem;
+}
+
+.verificationSearch input:focus,
+.verificationFilterButton:focus-visible {
+  outline: 0.1875rem solid var(--blue);
+  outline-offset: 0.125rem;
+}
+
+.verificationAdminPage .tableHeadRow {
+  background: var(--admin-surface-soft);
+  border-bottom-color: var(--admin-border);
+}
+
+.verificationAdminPage .tableRow {
+  border-bottom-color: var(--admin-border);
+}
+
+.verificationAdminPage .tableRow:hover {
+  background: var(--admin-surface-soft);
+}
+
+.verificationAdminPage .badge {
+  border-color: var(--admin-border);
+}
+
+.verificationModal .modalInfoCard,
+.verificationModal .verificationReviewCard {
+  border-color: var(--admin-border);
+  background: var(--admin-surface);
+  box-shadow: none;
+}
+
+.verificationModal .buttonDangerOutline {
+  border-color: var(--admin-border);
+  background: var(--admin-surface);
+}
+
+.verificationCompactModal {
+  width: min(100%, 42.5rem);
+}
+
+.verificationDocumentList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.verificationDocumentList li {
+  display: grid;
+  grid-template-columns: minmax(6.25rem, 0.4fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+  padding: 0.25rem 0;
+  border-bottom: 0.0625rem solid var(--admin-border);
+}
+
+.verificationDocumentList li > span,
+.verificationExtraDetails dt {
+  color: var(--admin-muted);
+  font-size: 0.85rem;
+}
+
+.verificationDocumentList a,
+.verificationExtraDetails dd {
+  overflow-wrap: anywhere;
+}
+
+.verificationDocumentContent {
+  display: grid;
+  min-width: 0;
+  gap: 0.35rem;
+  padding-block: 0.5rem;
+}
+
+.verificationDocumentContent p {
+  margin: 0;
+  color: var(--admin-text);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.verificationExtraDetails summary {
+  cursor: pointer;
+  padding-block: 0.65rem;
+  color: var(--admin-text);
+  font-weight: 600;
+}
+
+.verificationExtraDetails dl {
+  margin: 0;
+}
+
+.verificationExtraDetails dl > div {
+  padding-block: 0.5rem;
+}
+
+.verificationExtraDetails dd {
+  margin: 0.25rem 0 0;
+  white-space: pre-wrap;
+}
+
+.verificationCompactActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 0.0625rem solid var(--admin-border);
+}
+
+.verificationCompactModal .badge {
+  border-color: var(--admin-border);
+}
+
+@media (max-width: 35rem) {
+  .verificationDocumentList li {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+  .verificationCompactActions > button {
+    flex: 1 1 100%;
+  }
+}
+
+.srOnly {
+  position: absolute;
+  width: 0.0625rem;
+  height: 0.0625rem;
+  padding: 0;
+  margin: -0.0625rem;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 47.5rem) {
+  .verificationToolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .verificationSearch {
+    width: 100%;
+  }
+}

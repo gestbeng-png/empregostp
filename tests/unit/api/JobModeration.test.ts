@@ -160,11 +160,11 @@ describe('criacao de vaga com moderacao', () => {
     };
   }
 
-  async function createJob() {
+  async function createJob(overrides: Record<string, unknown> = {}) {
     const response = createResponse();
     await jobsHandler(
       {
-        body: jobRequestBody(),
+        body: { ...jobRequestBody(), ...overrides },
         headers: { authorization: 'Bearer valid' },
         method: 'POST',
       },
@@ -230,6 +230,28 @@ describe('criacao de vaga com moderacao', () => {
       'Vaga criada com sucesso',
     );
     expect(notificationAdd).not.toHaveBeenCalled();
+  });
+
+  test('a criação mantém a vaga aberta até ao fim do dia de fecho em São Tomé', async () => {
+    mockEvaluate.mockReturnValue(decision('PUBLISH'));
+    mockPersist.mockResolvedValue({
+      kind: 'CREATED',
+      jobId: 'job-1',
+      status: 'PUBLISHED',
+    });
+    expect((await createJob()).status).toHaveBeenCalledWith(201);
+    const payload = mockPersist.mock.calls[0]?.[1].payload;
+    expect(payload.dataFecho).toBe('2098-12-31');
+    expect(payload.expiresAt.toDate().toISOString()).toBe(
+      '2098-12-31T23:59:59.999Z',
+    );
+  });
+
+  test('a criação recusa datas impossíveis antes de avaliar ou gravar a vaga', async () => {
+    const result = await createJob({ dataFecho: '2027-02-31' });
+    expect(result.status).toHaveBeenCalledWith(400);
+    expect(mockEvaluate).not.toHaveBeenCalled();
+    expect(mockPersist).not.toHaveBeenCalled();
   });
 
   test('falha na leitura das settings nao forca a moderacao e regista aviso', async () => {

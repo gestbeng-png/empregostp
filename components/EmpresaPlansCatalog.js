@@ -1,11 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
-import { FiCheck, FiCreditCard, FiUploadCloud, FiX } from 'react-icons/fi';
+import { FiCheck, FiCreditCard, FiX } from 'react-icons/fi';
 
 import { getEmpresaPlanCatalog } from '../lib/empresaPlansCatalog';
 import { normalizeEmpresaPlanId } from '../lib/empresaPlanFeatures';
 import styles from '../styles/EmpresaPlansCatalog.module.css';
+import presentation from '../styles/PlansPresentation.module.css';
 
 import ManualPaymentProofCard from './ManualPaymentProofCard';
+import StripeReturnNotice from './payments/StripeReturnNotice';
+import PaymentMethodPicker from './payments/PaymentMethodPicker';
+import useOnlinePaymentConfig from './payments/useOnlinePaymentConfig';
+import { canChargeOnline } from '../lib/payments/currency';
 
 const FOCUSABLE_SELECTOR =
   'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -20,6 +25,7 @@ const FOCUSABLE_SELECTOR =
  *   paymentInstructions?: Record<string, unknown> | null;
  *   pendingPaymentRequest?: Record<string, unknown> | null;
  *   onPaymentProofSubmitted?: (...args: any[]) => any;
+ *   onPlanApproved?: (...args: any[]) => any;
  *   onSubscribe?: (...args: any[]) => any;
  * }} props
  */
@@ -32,13 +38,21 @@ export default function EmpresaPlansCatalog({
   paymentInstructions = null,
   pendingPaymentRequest = null,
   onPaymentProofSubmitted,
+  onPlanApproved,
   onSubscribe,
 }) {
   const [selectedPlan, setSelectedPlan] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState(null);
+  const { loading: methodsLoading, onlineEnabled } = useOnlinePaymentConfig(
+    Boolean(selectedPlan),
+  );
   const [proofModalOpen, setProofModalOpen] = useState(false);
   const dialogRef = useRef(null);
   const triggerRef = useRef(null);
   const catalog = getEmpresaPlanCatalog(plans);
+  const visiblePlans = catalog.filter(
+    (plan) => plan.normalizedId !== 'basic_empresa',
+  );
   const normalizedCurrentPlanId = normalizeEmpresaPlanId(
     currentPlanId,
     currentPlanName,
@@ -99,11 +113,13 @@ export default function EmpresaPlansCatalog({
   const startSubscription = (plan, trigger) => {
     if (!plan || isBusy) return;
     triggerRef.current = trigger;
+    setPaymentMethod(null);
     setSelectedPlan(plan);
   };
 
   const openProofModal = (trigger) => {
     triggerRef.current = trigger;
+    setPaymentMethod(null);
     setProofModalOpen(true);
   };
 
@@ -115,6 +131,7 @@ export default function EmpresaPlansCatalog({
 
   const confirmSubscription = async () => {
     if (!selectedPlan || isBusy) return;
+    if (Number(selectedPlan.price) > 0 && !paymentMethod) return;
     const result = await onSubscribe?.(
       selectedPlan.subscriptionPlanId ||
         selectedPlan.sourcePlanId ||
@@ -139,7 +156,10 @@ export default function EmpresaPlansCatalog({
   };
 
   return (
-    <section className={styles.wrap} aria-labelledby="empresa-plans-title">
+    <section
+      className={`${styles.wrap} ${presentation.theme}`}
+      aria-labelledby="empresa-plans-title"
+    >
       <div className={styles.header}>
         <div className={styles.headerCopy}>
           <span className={styles.eyebrow}>Planos para empresas</span>
@@ -165,6 +185,13 @@ export default function EmpresaPlansCatalog({
         </div>
       ) : null}
 
+      <StripeReturnNotice
+        onApproved={() => {
+          setProofModalOpen(false);
+          onPlanApproved?.();
+        }}
+      />
+
       {pendingPaymentRequest ? (
         <div className={styles.pendingBanner} role="status">
           <span className={styles.pendingIcon} aria-hidden="true">
@@ -177,23 +204,21 @@ export default function EmpresaPlansCatalog({
                 ? `, plano ${pendingPaymentRequest.planName}`
                 : ''}
             </strong>
-            <span>
-              Envie o comprovativo para a equipa validar e ativar o plano.
-            </span>
+            <span>Conclua o pagamento para ativar o plano.</span>
           </div>
           <button
             type="button"
             className={styles.pendingAction}
             onClick={(event) => openProofModal(event.currentTarget)}
           >
-            <FiUploadCloud aria-hidden="true" />
-            Enviar comprovativo
+            <FiCreditCard aria-hidden="true" />
+            Concluir pagamento
           </button>
         </div>
       ) : null}
 
-      <div className={styles.grid}>
-        {catalog.map((plan) => {
+      <div className={`${presentation.grid} ${presentation.companyGrid}`}>
+        {visiblePlans.map((plan) => {
           const subscriptionPlanId = plan.sourcePlanId || plan.id;
           const isCurrent = hasExactCurrentPlan
             ? plan.id === currentPlanId ||
@@ -203,57 +228,87 @@ export default function EmpresaPlansCatalog({
               normalizedCurrentPlanId === plan.id;
           const isLoading =
             loadingPlanId === subscriptionPlanId || loadingPlanId === plan.id;
+          const priceLabel = String(plan.priceLabel || '');
+          const priceParts = priceLabel.match(/^([\d\s.,]+)\s+(.+)$/);
 
           return (
             <article
               key={plan.id}
-              className={`${styles.card} ${plan.popular ? styles.cardPopular : ''} ${isCurrent ? styles.cardCurrent : ''}`}
+              className={`${presentation.card} ${plan.popular ? presentation.cardPopular : ''} ${isCurrent ? presentation.cardCurrent : ''}`}
+              aria-label={plan.name}
             >
-              <div className={styles.cardTopline}>
-                <h2 className={styles.planName}>{plan.name}</h2>
-                {plan.popular ? (
-                  <span className={styles.popularBadge}>Mais escolhido</span>
-                ) : null}
-              </div>
-              <div className={styles.priceRow}>
-                <span className={styles.price}>{plan.priceLabel}</span>
-                {plan.pricePeriodLabel ? (
-                  <span className={styles.pricePeriod}>
-                    {plan.pricePeriodLabel}
-                  </span>
-                ) : null}
-              </div>
-              <p className={styles.summary}>{plan.description}</p>
-
-              <ul className={styles.features}>
-                {(plan.features || []).slice(0, 8).map((feature) => (
-                  <li key={feature} className={styles.feature}>
-                    <span className={styles.checkIcon} aria-hidden="true">
-                      <FiCheck />
+              <div className={presentation.planIntro}>
+                <div className={presentation.planTopline}>
+                  <h2 className={presentation.planName}>{plan.name}</h2>
+                  {plan.popular ? (
+                    <span className={presentation.popularBadge}>
+                      Mais escolhido
                     </span>
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-              <button
-                type="button"
-                className={`${styles.subscribeBtn} ${plan.popular ? styles.subscribeBtnPopular : ''} ${isCurrent ? styles.subscribeBtnCurrent : ''}`}
-                onClick={(event) =>
-                  startSubscription(
-                    { ...plan, subscriptionPlanId },
-                    event.currentTarget,
-                  )
-                }
-                disabled={!onSubscribe || isCurrent || isBusy}
-              >
-                {isLoading
-                  ? 'A processar'
-                  : isCurrent
-                    ? 'Plano atual'
-                    : Number(plan.price) === 0
-                      ? 'Começar gratuitamente'
-                      : 'Escolher plano'}
-              </button>
+                  ) : null}
+                </div>
+                <p className={presentation.summary}>{plan.description}</p>
+                <div className={presentation.priceRow}>
+                  <span className={presentation.price} aria-label={priceLabel}>
+                    {priceParts ? (
+                      <>
+                        {priceParts[1].trim()}{' '}
+                        <span className={presentation.priceCurrency}>
+                          {priceParts[2]}
+                        </span>
+                      </>
+                    ) : (
+                      priceLabel
+                    )}
+                  </span>
+                  {plan.pricePeriodLabel ? (
+                    <span className={presentation.pricePeriod}>
+                      {plan.pricePeriodLabel}
+                    </span>
+                  ) : null}
+                </div>
+                <button
+                  type="button"
+                  className={`${presentation.subscribeBtn} ${plan.popular ? presentation.subscribeBtnPopular : ''} ${isCurrent ? presentation.subscribeBtnCurrent : ''}`}
+                  onClick={(event) =>
+                    startSubscription(
+                      { ...plan, subscriptionPlanId },
+                      event.currentTarget,
+                    )
+                  }
+                  disabled={!onSubscribe || isCurrent || isBusy}
+                >
+                  {isLoading
+                    ? 'A processar'
+                    : isCurrent
+                      ? 'Plano atual'
+                      : Number(plan.price) === 0
+                        ? 'Começar gratuitamente'
+                        : 'Escolher plano'}
+                </button>
+              </div>
+              <div className={presentation.planDetails}>
+                <h3 className={presentation.featuresTitle}>
+                  O que está incluído
+                </h3>
+                <ul className={presentation.features}>
+                  {(plan.features || []).slice(0, 8).map((feature) => (
+                    <li key={feature} className={presentation.feature}>
+                      <span
+                        className={presentation.checkIcon}
+                        aria-hidden="true"
+                      >
+                        <FiCheck />
+                      </span>
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+                {isCurrent && (
+                  <p className={presentation.currentNote}>
+                    <FiCheck aria-hidden="true" /> O seu plano atual
+                  </p>
+                )}
+              </div>
             </article>
           );
         })}
@@ -275,9 +330,9 @@ export default function EmpresaPlansCatalog({
           >
             <div className={styles.modalHeader}>
               <div>
-                <span className={styles.modalStep}>Confirmar plano</span>
+                <span className={styles.modalStep}>Forma de pagamento</span>
                 <h2 id="empresa-plan-confirm-title">{selectedPlan.name}</h2>
-                <p>Confirme os dados antes de criar o pedido.</p>
+                <p>Escolha como quer pagar para continuar.</p>
               </div>
               <button
                 type="button"
@@ -295,9 +350,24 @@ export default function EmpresaPlansCatalog({
               <strong>{selectedPlan.priceLabel}</strong>
             </div>
 
+            {Number(selectedPlan.price) > 0 ? (
+              <div className={styles.modalBody}>
+                <PaymentMethodPicker
+                  name={`company-plan-method-${selectedPlan.id}`}
+                  value={paymentMethod}
+                  onChange={setPaymentMethod}
+                  onlineAvailable={
+                    onlineEnabled && canChargeOnline(selectedPlan.price)
+                  }
+                  loading={methodsLoading}
+                  disabled={isBusy}
+                />
+              </div>
+            ) : null}
+
             <p className={styles.modalNote}>
               {Number(selectedPlan.price) > 0
-                ? 'Ao confirmar, criamos o pedido e abrimos o envio do comprovativo. O plano só fica ativo depois da validação.'
+                ? 'O plano fica ativo quando o pagamento for confirmado. Os dados bancários só aparecem se escolher transferência.'
                 : 'Este plano é ativado sem comprovativo de pagamento.'}
             </p>
 
@@ -314,7 +384,9 @@ export default function EmpresaPlansCatalog({
                 type="button"
                 className={styles.btnPrimary}
                 onClick={confirmSubscription}
-                disabled={isBusy}
+                disabled={
+                  isBusy || (Number(selectedPlan.price) > 0 && !paymentMethod)
+                }
               >
                 {loadingPlanId === selectedPlan.id
                   ? 'A criar pedido'
@@ -342,42 +414,29 @@ export default function EmpresaPlansCatalog({
             <div className={styles.modalHeader}>
               <div>
                 <span className={styles.modalStep}>Pagamento</span>
-                <h2 id="empresa-proof-title">Enviar comprovativo</h2>
-                <p>
-                  Consulte os dados da transferência e anexe o ficheiro para
-                  validação.
-                </p>
+                <h2 id="empresa-proof-title">Pagamento do plano</h2>
+                <p>Conclua o pagamento para ativar o plano.</p>
               </div>
               <button
                 type="button"
                 className={styles.modalClose}
                 onClick={closeDialogs}
-                aria-label="Fechar envio do comprovativo"
+                aria-label="Fechar pagamento"
               >
                 <FiX aria-hidden="true" />
               </button>
             </div>
 
-            {paymentInstructions ? (
-              <div className={styles.paymentHint}>
-                <div>
-                  <span>Valor</span>
-                  <strong>
-                    {paymentInstructions.amount} {paymentInstructions.currency}
-                  </strong>
-                </div>
-                <div>
-                  <span>Contacto de apoio</span>
-                  <strong>
-                    {paymentInstructions.email || 'Não configurado'}
-                  </strong>
-                </div>
-              </div>
-            ) : null}
-
             <div className={styles.modalBody}>
               <ManualPaymentProofCard
-                request={pendingPaymentRequest}
+                key={pendingPaymentRequest.id}
+                request={{
+                  ...pendingPaymentRequest,
+                  paymentInstructions:
+                    pendingPaymentRequest.paymentInstructions ||
+                    paymentInstructions,
+                }}
+                initialMethod={paymentMethod}
                 title="Comprovativo de pagamento"
                 description="Aceitamos ficheiros PDF, JPG ou PNG até 10 MB."
                 embedded

@@ -1,8 +1,9 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 
 import Dashboard from '../../../pages/dashboard';
 
 const replace = jest.fn();
+const router = { replace };
 const useAuth = jest.fn();
 const fetchMock = jest.fn();
 const getIdToken = jest.fn(async () => 'id-token');
@@ -13,7 +14,7 @@ const profileResponse = (userType: string) => ({
 });
 
 jest.mock('next/router', () => ({
-  useRouter: () => ({ replace }),
+  useRouter: () => router,
 }));
 
 jest.mock('../../../context/AuthContext', () => ({
@@ -89,5 +90,31 @@ describe('encaminhamento do dashboard', () => {
     render(<Dashboard />);
 
     await waitFor(() => expect(replace).toHaveBeenCalledWith('/'));
+  });
+
+  test('uma resposta antiga de candidato não redireciona a nova sessão admin', async () => {
+    let finish!: (value: ReturnType<typeof profileResponse>) => void;
+    fetchMock.mockReturnValueOnce(
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+    );
+    useAuth.mockReturnValue({
+      loading: false,
+      user: { uid: 'old', getIdToken },
+    });
+    const view = render(<Dashboard />);
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    fetchMock.mockResolvedValueOnce(profileResponse('admin'));
+    useAuth.mockReturnValue({
+      loading: false,
+      user: { uid: 'new', getIdToken },
+    });
+    view.rerender(<Dashboard />);
+    await waitFor(() =>
+      expect(replace).toHaveBeenCalledWith('/dashboard/admin'),
+    );
+    await act(async () => finish(profileResponse('candidato')));
+    expect(replace).toHaveBeenCalledTimes(1);
   });
 });

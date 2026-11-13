@@ -1,5 +1,11 @@
 import { admin } from '../../../../lib/firebaseAdmin';
 import { logServerError } from '../../../../lib/serverLog';
+import { isUserAccountActive } from '../../../../lib/userStatus';
+import { normalizeEmail } from '../../../../lib/validation';
+import {
+  resolveBaseUrl,
+  sendResetPasswordEmail,
+} from '../../../../lib/email/authEmails';
 
 export default async function handler(req, res) {
   try {
@@ -18,7 +24,14 @@ export default async function handler(req, res) {
         .json({ message: 'Token de autorização ausente ou inválido' });
     }
 
-    const decodedToken = await admin.auth().verifyIdToken(token);
+    let decodedToken;
+    try {
+      decodedToken = await admin.auth().verifyIdToken(token, true);
+    } catch {
+      return res
+        .status(401)
+        .json({ message: 'Token de autorização inválido ou expirado' });
+    }
     const adminDoc = await admin
       .firestore()
       .collection('users')
@@ -28,6 +41,12 @@ export default async function handler(req, res) {
       return res
         .status(403)
         .json({ message: 'Acesso negado. Apenas administradores.' });
+    }
+    if (!isUserAccountActive(adminDoc.data())) {
+      return res.status(403).json({
+        code: 'ACCOUNT_BLOCKED',
+        message: 'Esta conta está suspensa ou inativa.',
+      });
     }
 
     if (req.method === 'GET') {
@@ -97,19 +116,18 @@ export default async function handler(req, res) {
       return res.status(200).json({ users, stats });
     } else if (req.method === 'POST') {
       // Create or invite an admin/support user
-      const { name, email, userType } = req.body;
+      const { name, userType } = req.body;
+      const email = normalizeEmail(req.body?.email);
       if (!name || !email) {
         return res
           .status(400)
           .json({ message: 'Nome e email são obrigatórios' });
       }
       if (!['admin', 'suporte'].includes(userType)) {
-        return res
-          .status(400)
-          .json({
-            message:
-              'Tipo de utilizador inválido para criação manual. Use admin ou suporte.',
-          });
+        return res.status(400).json({
+          message:
+            'Tipo de utilizador inválido para criação manual. Use admin ou suporte.',
+        });
       }
 
       // Check if user already exists
@@ -126,16 +144,18 @@ export default async function handler(req, res) {
           .json({ message: 'Já existe um utilizador com este email' });
       }
 
-      // Create Firebase Auth user
+      // Create Firebase Auth user. A conta nasce sem senha: só se define pelo
+      // link enviado para este email, o que já prova a posse do endereço —
+      // sem `emailVerified` o login (que o exige) deixava a pessoa à porta.
       let authUser;
       try {
-        authUser = await admin.auth().createUser({ email, displayName: name });
+        authUser = await admin
+          .auth()
+          .createUser({ email, displayName: name, emailVerified: true });
       } catch (authError) {
-        return res
-          .status(400)
-          .json({
-            message: 'Erro ao criar autenticação: ' + authError.message,
-          });
+        return res.status(400).json({
+          message: 'Erro ao criar autenticação: ' + authError.message,
+        });
       }
 
       await admin.firestore().collection('users').doc(authUser.uid).set({
@@ -148,8 +168,17 @@ export default async function handler(req, res) {
         createdBy: decodedToken.uid,
       });
 
-      // Generate password reset link so user can set their password
-      const resetLink = await admin.auth().generatePasswordResetLink(email);
+      // A pessoa define a senha pelo email da EmpregoSTP, com link para o nosso
+      // domínio — nunca o link padrão do Firebase (que antes vinha na resposta
+      // e ninguém enviava). Falhar o email não desfaz a conta: pode sempre usar
+      // «Recuperar senha» no login.
+      let passwordEmailSent = false;
+      try {
+        await sendResetPasswordEmail({ email, baseUrl: resolveBaseUrl(req) });
+        passwordEmailSent = true;
+      } catch (emailError) {
+        logServerError('admin_users.enviar_email_senha_failed', emailError);
+      }
 
       await admin
         .firestore()
@@ -165,7 +194,7 @@ export default async function handler(req, res) {
       return res.status(201).json({
         message: 'Utilizador criado com sucesso',
         id: authUser.uid,
-        resetLink,
+        passwordEmailSent,
       });
     } else {
       res.setHeader('Allow', ['GET', 'POST']);

@@ -135,6 +135,13 @@ describe('requireCandidateSession', () => {
     ).resolves.toBeNull();
   });
 
+  test('o HTML e os dados SSR privados não podem ser reutilizados por cache', async () => {
+    comSessao('candidato');
+    const setHeader = jest.fn();
+    await requireCandidateSession({ resolvedUrl: '/dashboard/candidato', res: { setHeader } });
+    expect(setHeader).toHaveBeenCalledWith('Cache-Control', 'private, no-store, max-age=0');
+  });
+
   test.each(['empresa', 'admin'])(
     'reencaminha %s para o seu próprio painel em vez de o deixar preencher o formulário',
     async (userType) => {

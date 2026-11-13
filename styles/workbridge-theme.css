@@ -692,11 +692,9 @@
   z-index: 1;
 }
 
-/* Dark Workbridge bands for candidate detail and pricing pages. */
-.workbridgePublicRoute[data-workbridge-page='candidate-detail']
-  .workbridgePublicContent
-  > div
-  > section:first-of-type,
+/* Dark Workbridge band for the pricing pages. O perfil do candidato tem o
+   seu próprio cabeçalho: esta faixa pintava-o todo de azul-noite e forçava
+   os textos a branco. */
 .workbridgePublicRoute[data-workbridge-page='pricing']
   main
   > section:first-of-type {
@@ -705,11 +703,6 @@
   box-shadow: none;
 }
 
-.workbridgePublicRoute[data-workbridge-page='candidate-detail']
-  .workbridgePublicContent
-  > div
-  > section:first-of-type
-  :where(h1, h2, h3),
 .workbridgePublicRoute[data-workbridge-page='pricing']
   main
   > section:first-of-type
@@ -717,11 +710,6 @@
   color: var(--workbridge-white);
 }
 
-.workbridgePublicRoute[data-workbridge-page='candidate-detail']
-  .workbridgePublicContent
-  > div
-  > section:first-of-type
-  :where(p, span),
 .workbridgePublicRoute[data-workbridge-page='pricing']
   main
   > section:first-of-type

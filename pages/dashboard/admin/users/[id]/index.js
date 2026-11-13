@@ -249,7 +249,7 @@ export default function AdminUserDetail({ user, profile, applications }) {
             {/* Botão Ver Perfil Completo */}
             {user.userType === 'candidato' && (
               <Link
-                href={`/dashboard/empresa/candidato/${user.id}`}
+                href={`/candidatos/${user.id}`}
                 style={{
                   display: 'block',
                   marginTop: '2rem',
